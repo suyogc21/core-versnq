@@ -1,0 +1,11 @@
+{
+  "key": "generic",
+  "name": "Generic",
+  "labels": {
+    "lead": {"singular": "Lead", "plural": "Leads"},
+    "contact": {"singular": "Contact", "plural": "Contacts"},
+    "deal": {"singular": "Deal", "plural": "Deals"},
+    "customer": {"singular": "Customer", "plural": "Customers"},
+    "pipeline": {"singular": "Pipeline", "plural": "Pipelines"}
+  }
+}

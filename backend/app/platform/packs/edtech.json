@@ -1,0 +1,11 @@
+{
+  "key": "edtech",
+  "name": "EdTech",
+  "labels": {
+    "lead": {"singular": "Student", "plural": "Students"},
+    "contact": {"singular": "Contact", "plural": "Contacts"},
+    "deal": {"singular": "Course enrolment", "plural": "Course enrolments"},
+    "customer": {"singular": "Enrolled student", "plural": "Enrolled students"},
+    "pipeline": {"singular": "Course pipeline", "plural": "Course pipelines"}
+  }
+}
