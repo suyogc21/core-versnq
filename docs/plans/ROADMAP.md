@@ -17,7 +17,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ## Phase 0 — Project setup
 
-- [ ] 0.1 Git repository initialised, `.gitignore`, first commit
+- [x] 0.1 Git repository initialised, `.gitignore`, first commit
 - [ ] 0.2 Decisions confirmed (see "Decisions needed before Phase 0" below)
 - [ ] 0.3 Folder structure created (see "Proposed folder structure")
 - [ ] 0.4 `docker-compose.yml`: Postgres 16 + Redis for local dev and tests
