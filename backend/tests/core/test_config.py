@@ -12,6 +12,7 @@ ENV = {
     "TEST_MIGRATION_DATABASE_URL": "postgresql+asyncpg://o:p@h:5433/versnq_test",
     "REDIS_URL": "redis://h:6380/0",
     "JWT_SECRET": "x" * 40,
+    "TOTP_ENCRYPTION_KEY": "k" * 44,
     "BASE_DOMAIN": "versnq.in",
 }
 

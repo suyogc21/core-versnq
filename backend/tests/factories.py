@@ -5,6 +5,7 @@ from uuid import UUID
 
 from app.core.security import create_access_token, hash_password
 from app.core.tenancy import platform_session, tenant_session
+from app.core.twofactor import encrypt_secret, new_secret
 from app.modules.roles.models import Role
 from app.platform.models import Tenant
 from app.platform.staff.models import PlatformStaff
@@ -29,7 +30,9 @@ async def make_role(tenant_id: UUID, name: str, scope: str = "all") -> UUID:
     return role.id
 
 
-async def make_staff(password: str = "s3cret-pass-123", is_active: bool = True) -> str:
+async def make_staff(
+    password: str = "s3cret-pass-123", is_active: bool = True, totp_secret: str | None = None
+) -> str:
     email = f"staff-{uuid.uuid4().hex[:10]}@versnq.in"
     async with platform_session() as s:
         s.add(
@@ -38,18 +41,82 @@ async def make_staff(password: str = "s3cret-pass-123", is_active: bool = True) 
                 name="Staff",
                 password_hash=hash_password(password),
                 is_active=is_active,
+                totp_secret_enc=encrypt_secret(totp_secret) if totp_secret else None,
+                totp_enabled=totp_secret is not None,
             )
         )
     return email
 
 
-async def staff_headers() -> dict[str, str]:
+async def staff_headers(two_factor: bool = True) -> dict[str, str]:
     """A staff account plus a valid bearer header for it."""
     staff = PlatformStaff(
         email=f"staff-{uuid.uuid4().hex[:10]}@versnq.in",
         name="Staff",
         password_hash=hash_password("s3cret-pass-123"),
+        totp_secret_enc=encrypt_secret(new_secret()),
+        totp_enabled=two_factor,
     )
     async with platform_session() as s:
         s.add(staff)
     return {"Authorization": f"Bearer {create_access_token(staff.id, 'staff', None)}"}
+
+
+PASSWORD = "pass-word-123"
+
+
+async def make_workspace(slug: str | None = None, status: str = "active") -> tuple[UUID, str]:
+    """A tenant with its five system roles. Returns (tenant_id, slug)."""
+    from app.modules.settings.models import TenantSettings
+    from app.platform.packs import load_pack
+    from app.platform.tenants.service import _seed_roles
+
+    slug = slug or f"w{uuid.uuid4().hex[:10]}"
+    tenant = Tenant(name=f"Co {slug}", slug=slug, status=status, industry_pack="generic")
+    async with platform_session() as s:
+        s.add(tenant)
+    async with tenant_session(tenant.id) as s:
+        s.add(
+            TenantSettings(
+                tenant_id=tenant.id,
+                labels=load_pack("generic").model_dump()["labels"],
+                timezone="Asia/Kolkata",
+                default_country="IN",
+                branding={},
+            )
+        )
+        await _seed_roles(s, tenant.id)
+    return tenant.id, slug
+
+
+async def make_user(
+    tenant_id: UUID,
+    *,
+    role_key: str = "sales_user",
+    email: str | None = None,
+    password: str | None = PASSWORD,
+    status: str = "active",
+    must_change_password: bool = False,
+    totp_secret: str | None = None,
+) -> tuple[UUID, str]:
+    """Returns (user_id, email)."""
+    from sqlalchemy import select
+
+    from app.modules.users.models import User
+
+    email = email or f"u-{uuid.uuid4().hex[:10]}@client.com"
+    async with tenant_session(tenant_id) as s:
+        role_id = await s.scalar(select(Role.id).where(Role.key == role_key))
+        user = User(
+            tenant_id=tenant_id,
+            email=email,
+            name="Test User",
+            password_hash=hash_password(password) if password else None,
+            status=status,
+            role_id=role_id,
+            must_change_password=must_change_password,
+            totp_secret_enc=encrypt_secret(totp_secret) if totp_secret else None,
+            totp_enabled=totp_secret is not None,
+        )
+        s.add(user)
+    return user.id, email

@@ -18,7 +18,9 @@ REFRESH_TOKEN_DAYS = 30
 _ALGORITHM = "HS256"
 _hasher = PasswordHasher()
 
-TokenType = Literal["staff", "user"]
+# "*_mfa" tokens only prove the password step; they open nothing but /2fa/verify.
+TokenType = Literal["staff", "user", "staff_mfa", "user_mfa"]
+MFA_CHALLENGE_MINUTES = 5
 
 
 class InvalidToken(Exception):
@@ -48,7 +50,12 @@ DUMMY_PASSWORD_HASH = hash_password(secrets.token_urlsafe(16))
 
 
 def create_access_token(
-    sub: uuid.UUID, typ: TokenType, tenant_id: uuid.UUID | None, *, now: datetime | None = None
+    sub: uuid.UUID,
+    typ: TokenType,
+    tenant_id: uuid.UUID | None,
+    *,
+    now: datetime | None = None,
+    minutes: int = ACCESS_TOKEN_MINUTES,
 ) -> str:
     issued = now or datetime.now(UTC)
     claims = {
@@ -56,7 +63,7 @@ def create_access_token(
         "typ": typ,
         "tid": str(tenant_id) if tenant_id else None,
         "iat": issued,
-        "exp": issued + timedelta(minutes=ACCESS_TOKEN_MINUTES),
+        "exp": issued + timedelta(minutes=minutes),
     }
     return jwt.encode(claims, get_settings().jwt_secret, algorithm=_ALGORITHM)
 

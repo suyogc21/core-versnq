@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     test_migration_database_url: str
     redis_url: str
     jwt_secret: str = Field(min_length=32)
+    totp_encryption_key: str  # Fernet key: encrypts 2FA secrets at rest
     base_domain: str  # client workspaces live at <slug>.<base_domain>
 
 

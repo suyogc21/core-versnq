@@ -1,16 +1,15 @@
 """One-step tenant provisioning and tenant management by Versnq staff."""
 
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.mailer import Email
-from app.core.security import new_refresh_token
 from app.core.tenancy import set_tenant_context
-from app.modules.auth.models import AuthToken
+from app.modules.auth.service import INVITE_TTL, issue_link_token
 from app.modules.roles.models import Role
 from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
@@ -19,7 +18,7 @@ from app.platform.models import Tenant
 from app.platform.packs import load_pack
 from app.platform.tenants.schemas import TenantCreate
 
-INVITE_HOURS = 72
+INVITE_HOURS = int(INVITE_TTL.total_seconds() // 3600)
 
 # key, name, scope — seeded for every tenant. Permissions arrive in slice 1-C.
 SYSTEM_ROLES = (
@@ -54,17 +53,7 @@ async def _seed_roles(db: AsyncSession, tenant_id: uuid.UUID) -> dict[str, uuid.
 
 
 async def _new_invite(db: AsyncSession, tenant_id: uuid.UUID, user_id: uuid.UUID) -> str:
-    plain, hashed = new_refresh_token()
-    db.add(
-        AuthToken(
-            tenant_id=tenant_id,
-            user_id=user_id,
-            kind="invite",
-            token_hash=hashed,
-            expires_at=_now() + timedelta(hours=INVITE_HOURS),
-        )
-    )
-    return plain
+    return await issue_link_token(db, tenant_id, user_id, "invite", INVITE_TTL)
 
 
 def invite_email(tenant: Tenant, owner_name: str, owner_email: str, plain_token: str) -> Email:
@@ -201,13 +190,7 @@ async def renew_owner_invite(
     )
     if owner is None:
         raise OwnerAlreadyActive
-    await db.execute(
-        update(AuthToken)
-        .where(AuthToken.user_id == owner.id, AuthToken.kind == "invite")
-        .where(AuthToken.used_at.is_(None))
-        .values(used_at=_now())
-    )
-    plain = await _new_invite(db, tenant.id, owner.id)
+    plain = await _new_invite(db, tenant.id, owner.id)  # older invite links stop working
     await audit.record(
         db,
         staff_id=staff_id,

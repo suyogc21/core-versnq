@@ -24,7 +24,9 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
-async def _open_session(db: AsyncSession, staff: PlatformStaff, ip: str | None, ua: str | None):
+async def open_session(
+    db: AsyncSession, staff: PlatformStaff, ip: str | None, ua: str | None
+) -> tuple[str, str]:
     plain, hashed = new_refresh_token()
     db.add(
         PlatformStaffSession(
@@ -35,12 +37,11 @@ async def _open_session(db: AsyncSession, staff: PlatformStaff, ip: str | None, 
             user_agent=(ua or "")[:400] or None,
         )
     )
+    staff.last_login_at = _now()
     return create_access_token(staff.id, "staff", None), plain
 
 
-async def login(
-    db: AsyncSession, email: str, password: str, ip: str | None, ua: str | None
-) -> tuple[str, str]:
+async def authenticate(db: AsyncSession, email: str, password: str) -> PlatformStaff:
     staff = await db.scalar(
         select(PlatformStaff).where(func.lower(PlatformStaff.email) == email.lower())
     )
@@ -49,8 +50,7 @@ async def login(
         raise AuthError
     if not verify_password(password, staff.password_hash) or not staff.is_active:
         raise AuthError
-    staff.last_login_at = _now()
-    return await _open_session(db, staff, ip, ua)
+    return staff
 
 
 async def refresh(
@@ -77,7 +77,7 @@ async def refresh(
     if row.expires_at <= _now() or staff is None or not staff.is_active:
         raise AuthError
     row.revoked_at = _now()
-    return await _open_session(db, staff, ip, ua)
+    return await open_session(db, staff, ip, ua)
 
 
 async def logout(db: AsyncSession, plain_token: str) -> None:
