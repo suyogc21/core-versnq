@@ -7,7 +7,9 @@ from tests.support import assert_test_database
 ENV = {
     "ENVIRONMENT": "test",
     "DATABASE_URL": "postgresql+asyncpg://u:p@h:5433/versnq",
+    "MIGRATION_DATABASE_URL": "postgresql+asyncpg://o:p@h:5433/versnq",
     "TEST_DATABASE_URL": "postgresql+asyncpg://u:p@h:5433/versnq_test",
+    "TEST_MIGRATION_DATABASE_URL": "postgresql+asyncpg://o:p@h:5433/versnq_test",
     "REDIS_URL": "redis://h:6380/0",
 }
 

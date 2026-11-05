@@ -30,7 +30,7 @@ def _current_revision(url: str) -> str | None:
 
 
 def test_upgrade_downgrade_upgrade(settings):
-    cfg = _alembic_config(settings.test_database_url)
+    cfg = _alembic_config(settings.migration_database_url)
 
     command.upgrade(cfg, "head")
     assert _current_revision(settings.test_database_url) == "0001"

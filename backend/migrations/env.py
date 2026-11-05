@@ -15,8 +15,8 @@ target_metadata = Base.metadata
 
 
 def _url() -> str:
-    # Tests pass an explicit URL; otherwise use the app's DATABASE_URL.
-    return config.get_main_option("sqlalchemy.url") or get_settings().database_url
+    # Tests pass an explicit URL; otherwise migrate as the owner role.
+    return config.get_main_option("sqlalchemy.url") or get_settings().migration_database_url
 
 
 def _run(connection) -> None:
