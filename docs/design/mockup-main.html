@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Versnq Core — Main Screen Mockup</title>
+<style>
+  :root {
+    --accent: #4f46e5;
+    --accent-fg: #ffffff;
+    --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+    --bg: #ffffff;
+    --bg-subtle: #f7f7f8;
+    --bg-hover: #f1f1f3;
+    --border: #e7e7ea;
+    --text: #18181b;
+    --text-muted: #6b6b76;
+    --text-faint: #9a9aa4;
+    --danger: #dc2626;
+    --ok: #16a34a;
+    --warn: #d97706;
+    --radius: 8px;
+  }
+  :root[data-theme="dark"] {
+    --bg: #111113;
+    --bg-subtle: #18181b;
+    --bg-hover: #222226;
+    --border: #2a2a2f;
+    --text: #ededf0;
+    --text-muted: #a1a1aa;
+    --text-faint: #71717a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  input { font: inherit; color: inherit; }
+
+  /* Sidebar */
+  .sidebar { width: 224px; flex-shrink: 0; background: var(--bg-subtle); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 10px 8px; gap: 2px; }
+  .ws { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; margin-bottom: 8px; }
+  .ws:hover { background: var(--bg-hover); }
+  .ws-logo { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); color: var(--accent-fg);
+    display: grid; place-items: center; font-weight: 700; font-size: 11px; }
+  .ws-name { font-weight: 600; }
+  .ws-sub { color: var(--text-faint); font-size: 11px; }
+  .nav-label { color: var(--text-faint); font-size: 11px; padding: 10px 8px 4px; }
+  .nav { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 6px; color: var(--text-muted); }
+  .nav:hover { background: var(--bg-hover); color: var(--text); }
+  .nav.active { background: var(--bg-hover); color: var(--text); font-weight: 500; }
+  .nav svg { width: 15px; height: 15px; opacity: .8; }
+  .nav .count { margin-left: auto; font-size: 11px; color: var(--text-faint); }
+  .nav .count.hot { color: var(--accent); font-weight: 600; }
+  .spacer { flex: 1; }
+  .me { display: flex; align-items: center; gap: 8px; padding: 8px; border-top: 1px solid var(--border); margin-top: 6px; }
+
+  .avatar { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 10px;
+    font-weight: 600; color: #fff; flex-shrink: 0; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+  .topbar h1 { font-size: 14px; font-weight: 600; margin: 0; }
+  .topbar .total { color: var(--text-faint); }
+  .search { margin-left: auto; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 8px; width: 240px; color: var(--text-faint); }
+  .search input { border: 0; outline: 0; background: none; width: 100%; }
+  .kbd { font-size: 10px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 6px;
+    border: 1px solid var(--border); font-weight: 500; }
+  .btn:hover { background: var(--bg-hover); }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  .btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, black); }
+
+  .views { display: flex; align-items: center; gap: 4px; padding: 8px 16px; border-bottom: 1px solid var(--border); }
+  .view { padding: 4px 10px; border-radius: 6px; color: var(--text-muted); }
+  .view:hover { background: var(--bg-hover); }
+  .view.active { background: var(--bg-hover); color: var(--text); font-weight: 500; }
+  .view .n { color: var(--text-faint); margin-left: 4px; }
+  .filters { margin-left: auto; display: flex; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px dashed var(--border);
+    border-radius: 6px; color: var(--text-muted); font-size: 12px; }
+  .chip.on { border-style: solid; background: var(--accent-soft); color: var(--text); }
+
+  .content { flex: 1; display: flex; min-height: 0; }
+  .table-wrap { flex: 1; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { position: sticky; top: 0; background: var(--bg); text-align: left; font-weight: 500; color: var(--text-faint);
+    font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--bg-subtle); }
+  tbody tr.selected { background: var(--accent-soft); }
+  .person { display: flex; align-items: center; gap: 8px; }
+  .person .sub { color: var(--text-faint); font-size: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px;
+    font-size: 12px; border: 1px solid var(--border); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .muted { color: var(--text-muted); }
+  .overdue { color: var(--danger); font-weight: 500; }
+  .intent { font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
+  .intent.hot { color: #b91c1c; background: #fee2e2; }
+  .intent.warm { color: #b45309; background: #fef3c7; }
+  .intent.cold { color: #475569; background: #e2e8f0; }
+  :root[data-theme="dark"] .intent.hot { background: #3f1d1d; color: #fca5a5; }
+  :root[data-theme="dark"] .intent.warm { background: #3b2a0f; color: #fcd34d; }
+  :root[data-theme="dark"] .intent.cold { background: #1e293b; color: #cbd5e1; }
+
+  /* Detail panel (lead 360) */
+  .panel { width: 400px; flex-shrink: 0; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: auto; }
+  .panel-head { padding: 16px; border-bottom: 1px solid var(--border); }
+  .panel-head h2 { margin: 6px 0 2px; font-size: 16px; }
+  .ids { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; color: var(--text-muted); }
+  .ids span { display: flex; gap: 6px; align-items: center; }
+  .actions { display: flex; gap: 6px; margin-top: 12px; }
+  .meta { display: grid; grid-template-columns: 110px 1fr; gap: 8px 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .meta dt { color: var(--text-faint); }
+  .meta dd { margin: 0; }
+  .followup { margin: 14px 16px 0; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border);
+    background: var(--bg-subtle); display: flex; align-items: center; gap: 10px; }
+  .followup.late { border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
+  .followup strong { display: block; }
+  .tabs { display: flex; gap: 14px; padding: 12px 16px 0; border-bottom: 1px solid var(--border); }
+  .tab { padding-bottom: 8px; color: var(--text-muted); border-bottom: 2px solid transparent; }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 500; }
+  .timeline { padding: 12px 16px 24px; }
+  .event { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 8px 0; position: relative; }
+  .event::before { content: ""; position: absolute; left: 10px; top: 30px; bottom: -8px; width: 1px; background: var(--border); }
+  .event:last-child::before { display: none; }
+  .ev-icon { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px;
+    background: var(--bg-hover); border: 1px solid var(--border); }
+  .ev-time { color: var(--text-faint); font-size: 12px; }
+  .ev-body { margin-top: 2px; }
+  .bubble { margin-top: 6px; padding: 8px 10px; border-radius: var(--radius); background: var(--bg-subtle);
+    border: 1px solid var(--border); color: var(--text); }
+  .tag { font-size: 11px; color: var(--text-faint); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; margin-left: 6px; }
+
+  /* Mockup controls */
+  .controls { position: fixed; right: 16px; bottom: 16px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.12); padding: 12px; width: 250px; z-index: 10; }
+  .controls h4 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); }
+  .swatches { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .sw { width: 22px; height: 22px; border-radius: 6px; border: 2px solid transparent; }
+  .sw.on { border-color: var(--text); }
+  .row { display: flex; gap: 6px; margin-top: 6px; }
+  .row .btn { flex: 1; justify-content: center; }
+  .row .btn.on { background: var(--accent-soft); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="ws">
+    <div class="ws-logo">A</div>
+    <div><div class="ws-name">Acme Academy</div><div class="ws-sub">acme.core.versnq.in</div></div>
+  </div>
+
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>My Day<span class="count hot">7</span></button>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5l-1 4z"/></svg>Inbox<span class="count hot">3</span></button>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7H4V5h11"/></svg>Tasks<span class="count">12</span></button>
+
+  <div class="nav-label">Pipeline</div>
+  <button class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M17 11a3 3 0 1 0 0-6M22 21c0-3-2-5-4-5.5"/></svg><span data-label="lead.plural">Students</span><span class="count">248</span></button>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="6" rx="1"/></svg><span data-label="deal.plural">Course enrolments</span></button>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-3-3.9M4 21v-2a4 4 0 0 1 4-4h4"/><circle cx="10" cy="7" r="4"/><path d="M16 11l2 2 4-4"/></svg><span data-label="customer.plural">Enrolled students</span></button>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sequences</button>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Reports</button>
+
+  <div class="spacer"></div>
+  <button class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1A2 2 0 1 1 4.3 17l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1A2 2 0 1 1 7 4.3l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1A2 2 0 1 1 19.7 7l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+  <div class="me"><div class="avatar" style="background:#0ea5e9">PS</div><div><div style="font-weight:500">Priya Shah</div><div class="ws-sub">Sales User</div></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h1 data-label="lead.plural">Students</h1><span class="total">248</span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="Search name, phone, email…"><span class="kbd">⌘K</span></div>
+    <button class="btn">Import CSV</button>
+    <button class="btn btn-primary">+ Add <span data-label="lead.singular_lc">student</span></button>
+  </div>
+
+  <div class="views">
+    <button class="view active">My <span data-label="lead.plural_lc">students</span><span class="n">42</span></button>
+    <button class="view">New today<span class="n">6</span></button>
+    <button class="view">No follow-up<span class="n" style="color:var(--danger)">3</span></button>
+    <button class="view">Hot<span class="n">9</span></button>
+    <button class="view">All<span class="n">248</span></button>
+    <div class="filters">
+      <span class="chip on">Owner: me ✕</span><span class="chip">+ Stage</span><span class="chip">+ Source</span><span class="chip">+ Course</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Stage</th><th>Intent</th><th>Next follow-up</th><th>Source</th><th>Course interest</th><th>Owner</th><th>Last activity</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <aside class="panel" id="panel"></aside>
+  </div>
+</main>
+
+<div class="controls">
+  <h4>Mockup controls</h4>
+  <div class="swatches" id="swatches"></div>
+  <div class="row"><button class="btn on" data-theme-btn="light">Light</button><button class="btn" data-theme-btn="dark">Dark</button></div>
+  <div class="row"><button class="btn on" data-pack-btn="edtech">EdTech labels</button><button class="btn" data-pack-btn="generic">Generic</button></div>
+</div>
+
+<script>
+  const STAGES = {
+    New: "#6366f1", Contacted: "#0ea5e9", "Counselling done": "#a855f7",
+    "Demo attended": "#f59e0b", Qualified: "#16a34a", Invalid: "#9ca3af",
+  };
+  const OWNERS = { PS: ["Priya Shah", "#0ea5e9"], RK: ["Rohan Kapoor", "#f97316"], AM: ["Anita Menon", "#14b8a6"] };
+  const LEADS = [
+    { name: "Aarav Mehta", phone: "+91 98201 44120", email: "aarav.m@gmail.com", stage: "Demo attended", intent: "hot", follow: "Today, 4:00 PM", late: false, source: "Meta ads", course: "Data Science", owner: "PS", last: "WhatsApp reply · 12m" },
+    { name: "Sneha Iyer", phone: "+91 99870 11234", email: "", stage: "New", intent: "warm", follow: "Overdue · 2h", late: true, source: "Website form", course: "UI/UX Design", owner: "PS", last: "Lead created · 3h" },
+    { name: "Kabir Singh", phone: "+91 90040 55321", email: "kabir.s@outlook.com", stage: "Counselling done", intent: "warm", follow: "Tomorrow, 11:00 AM", late: false, source: "Referral", course: "Full-stack", owner: "PS", last: "Call · Interested · 1d" },
+    { name: "Meera Nair", phone: "", email: "meera.nair@gmail.com", stage: "Contacted", intent: "cold", follow: "Fri, 10:00 AM", late: false, source: "Google ads", course: "Data Science", owner: "PS", last: "Email opened · 2d" },
+    { name: "Ishaan Gupta", phone: "+91 98111 20987", email: "ishaan.g@gmail.com", stage: "Qualified", intent: "hot", follow: "Today, 6:30 PM", late: false, source: "Walk-in", course: "Cloud & DevOps", owner: "PS", last: "Site visit logged · 5h" },
+    { name: "Diya Sharma", phone: "+91 97690 33445", email: "", stage: "New", intent: null, follow: "—", late: true, source: "Inbound WhatsApp", course: "—", owner: "PS", last: "WhatsApp received · 20m" },
+    { name: "Arjun Rao", phone: "+91 98450 66778", email: "arjun.rao@yahoo.com", stage: "Invalid", intent: null, follow: "—", late: false, source: "CSV import", course: "—", owner: "PS", last: "Marked invalid · 6d" },
+  ];
+  const TIMELINE = [
+    ["💬", "WhatsApp reply received", "12 min ago", "“Is there an EMI option for the 6-month course?”", "system"],
+    ["📞", "Call logged by Priya — <b>Interested</b>", "Today 11:15", "Wants weekend batch. Sending fee details. Next: call at 4 PM.", "rep"],
+    ["🎓", "Custom: Demo class attended", "Yesterday 6:00 PM", null, "rep"],
+    ["↗", "Stage changed: Counselling done → Demo attended", "Yesterday 6:02 PM", null, "system"],
+    ["✉", "Email “Your free demo is booked” opened", "Mon 10:40", null, "system"],
+    ["👤", "Assigned to Priya — rule: Course = Data Science", "Mon 10:02", null, "system"],
+    ["➕", "Created from Meta ads <span class='tag'>utm: ig/reels</span>", "Mon 10:02", null, "system"],
+  ];
+  const PACKS = {
+    edtech: { "lead.singular": "Student", "lead.plural": "Students", "deal.plural": "Course enrolments", "customer.plural": "Enrolled students" },
+    generic: { "lead.singular": "Lead", "lead.plural": "Leads", "deal.plural": "Deals", "customer.plural": "Customers" },
+  };
+  let selected = 0, pack = "edtech";
+
+  const esc = (s) => s;
+  function initials(n) { return n.split(" ").map((p) => p[0]).join("").slice(0, 2); }
+
+  function renderRows() {
+    document.getElementById("rows").innerHTML = LEADS.map((l, i) => `
+      <tr class="${i === selected ? "selected" : ""}" data-i="${i}">
+        <td><div class="person"><div class="avatar" style="background:${STAGES[l.stage]}">${initials(l.name)}</div>
+          <div><div style="font-weight:500">${l.name}</div><div class="sub">${l.phone || l.email}</div></div></div></td>
+        <td><span class="pill"><span class="dot" style="background:${STAGES[l.stage]}"></span>${l.stage}</span></td>
+        <td>${l.intent ? `<span class="intent ${l.intent}">${l.intent[0].toUpperCase() + l.intent.slice(1)}</span>` : '<span class="muted">—</span>'}</td>
+        <td class="${l.late ? "overdue" : ""}">${l.follow === "—" && l.late ? "Not set" : l.follow}</td>
+        <td class="muted">${l.source}</td>
+        <td class="muted">${l.course}</td>
+        <td><div class="avatar" title="${OWNERS[l.owner][0]}" style="background:${OWNERS[l.owner][1]}">${l.owner}</div></td>
+        <td class="muted">${l.last}</td>
+      </tr>`).join("");
+    document.querySelectorAll("#rows tr").forEach((tr) => tr.onclick = () => { selected = +tr.dataset.i; renderRows(); renderPanel(); });
+  }
+
+  function renderPanel() {
+    const l = LEADS[selected];
+    const noFollow = l.follow === "—" && l.stage !== "Invalid";
+    document.getElementById("panel").innerHTML = `
+      <div class="panel-head">
+        <span class="pill"><span class="dot" style="background:${STAGES[l.stage]}"></span>${l.stage}</span>
+        ${l.intent ? `<span class="intent ${l.intent}" style="margin-left:6px">${l.intent.toUpperCase()}</span>` : ""}
+        <h2>${l.name}</h2>
+        <div class="ids">
+          ${l.phone ? `<span>📱 ${l.phone} <span class="tag">WhatsApp</span></span>` : ""}
+          ${l.email ? `<span>✉ ${l.email}</span>` : ""}
+          ${!l.phone && !l.email ? `<span>in linkedin.com/in/…</span>` : ""}
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary">📞 Call</button><button class="btn">💬 WhatsApp</button><button class="btn">✉ Email</button><button class="btn">✎ Note</button>
+        </div>
+      </div>
+      <div class="followup ${l.late || noFollow ? "late" : ""}">
+        <span style="font-size:18px">⏰</span>
+        <div><strong>${noFollow ? "No follow-up set" : "Next follow-up: " + l.follow}</strong>
+        <span class="muted">${noFollow ? "Every open " + PACKS[pack]["lead.singular"].toLowerCase() + " needs one — set it now" : "Call back about EMI options"}</span></div>
+      </div>
+      <dl class="meta">
+        <dt>Owner</dt><dd>${OWNERS[l.owner][0]}</dd>
+        <dt>Source</dt><dd>${l.source} <span class="tag">first: Google ads</span></dd>
+        <dt>Course interest</dt><dd>${l.course}</dd>
+        <dt>City</dt><dd>Pune</dd>
+        <dt>Score</dt><dd>72 / 100</dd>
+        <dt>Consent</dt><dd>WhatsApp ✓ · Email ✓</dd>
+      </dl>
+      <div class="tabs"><span class="tab active">Timeline</span><span class="tab">Details</span><span class="tab">Tasks (2)</span><span class="tab">Documents</span></div>
+      <div class="timeline">
+        ${TIMELINE.map(([icon, title, time, note]) => `
+          <div class="event"><div class="ev-icon">${icon}</div>
+            <div><div class="ev-time">${time}</div><div class="ev-body">${title}</div>${note ? `<div class="bubble">${note}</div>` : ""}</div>
+          </div>`).join("")}
+      </div>`;
+  }
+
+  // Client brand colour: text on the accent switches to black or white for contrast.
+  function setAccent(hex) {
+    const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    document.documentElement.style.setProperty("--accent", hex);
+    document.documentElement.style.setProperty("--accent-fg", lum > 0.6 ? "#111111" : "#ffffff");
+    document.querySelectorAll(".sw").forEach((s) => s.classList.toggle("on", s.dataset.c === hex));
+  }
+  const COLOURS = ["#4f46e5", "#059669", "#ea580c", "#e11d48", "#0f172a", "#facc15"];
+  document.getElementById("swatches").innerHTML =
+    COLOURS.map((c) => `<button class="sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join("") +
+    `<input type="color" value="#4f46e5" title="Any colour" style="width:26px;height:24px;border:0;background:none;padding:0">`;
+  document.querySelectorAll(".sw").forEach((s) => s.onclick = () => setAccent(s.dataset.c));
+  document.querySelector('#swatches input').oninput = (e) => setAccent(e.target.value);
+
+  document.querySelectorAll("[data-theme-btn]").forEach((b) => b.onclick = () => {
+    document.documentElement.dataset.theme = b.dataset.themeBtn;
+    document.querySelectorAll("[data-theme-btn]").forEach((x) => x.classList.toggle("on", x === b));
+  });
+  document.querySelectorAll("[data-pack-btn]").forEach((b) => b.onclick = () => {
+    pack = b.dataset.packBtn;
+    document.querySelectorAll("[data-pack-btn]").forEach((x) => x.classList.toggle("on", x === b));
+    const p = PACKS[pack];
+    document.querySelectorAll("[data-label]").forEach((el) => {
+      const key = el.dataset.label;
+      el.textContent = key.endsWith("_lc") ? p[key.replace("_lc", "")].toLowerCase() : p[key];
+    });
+    renderPanel();
+  });
+
+  setAccent("#4f46e5");
+  renderRows();
+  renderPanel();
+</script>
+</body>
+</html>
