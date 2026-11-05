@@ -1,13 +1,13 @@
 # Phase 1-E — Frontend (Staff Console + Client App)
 
-Status: **proposed 2026-11-05** — awaiting approval of the dependencies below. Roadmap 1.14–1.17 + Gate 1. Decision log #19.
+Status: **approved 2026-11-05** (dependencies approved; addresses per Decision log #20). Roadmap 1.14–1.17 + Gate 1. Decision log #19.
 
 ## Two apps
 
 | App | Folder | Address (prod / dev) | Talks to |
 | --- | --- | --- | --- |
-| Staff console | `frontend-admin/` | `admin.<BASE_DOMAIN>` / `admin.localhost:3001` | `/platform/*` |
-| Client app | `frontend/` | `<slug>.<BASE_DOMAIN>` / `<slug>.localhost:3000` | `/api/v1/*` |
+| Staff console | `frontend-admin/` | `admincore.versnq.in` / `admincore.localhost:3001` | `/platform/*` |
+| Client app | `frontend/` | `<slug>.core.versnq.in` / `<slug>.localhost:3000` | `/api/v1/*` |
 
 Both: Next.js 16.2.6, React 19.2.4, TypeScript, Tailwind 4, shadcn/ui (`base-nova`, `@base-ui/react`), lucide icons — the same versions as AMS.
 
