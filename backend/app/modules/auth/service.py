@@ -145,10 +145,11 @@ async def _consume(db: AsyncSession, plain: str, kind: str, user_status: str) ->
     return user
 
 
-async def accept_invite(db: AsyncSession, plain: str, password: str) -> None:
+async def accept_invite(db: AsyncSession, plain: str, password: str) -> User:
     user = await _consume(db, plain, "invite", user_status="invited")
     user.password_hash = hash_password(password)
     user.status = "active"
+    return user
 
 
 async def request_reset(db: AsyncSession, email: str) -> tuple[User, str] | None:
@@ -158,11 +159,12 @@ async def request_reset(db: AsyncSession, email: str) -> tuple[User, str] | None
     return user, await issue_link_token(db, user.tenant_id, user.id, "reset", RESET_TTL)
 
 
-async def reset_password(db: AsyncSession, plain: str, password: str) -> None:
+async def reset_password(db: AsyncSession, plain: str, password: str) -> User:
     user = await _consume(db, plain, "reset", user_status="active")
     user.password_hash = hash_password(password)
     user.must_change_password = False
     await revoke_all_sessions(db, user.id)
+    return user
 
 
 async def change_password(db: AsyncSession, user: User, current: str, new: str) -> None:

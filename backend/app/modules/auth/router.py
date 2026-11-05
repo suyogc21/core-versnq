@@ -23,6 +23,7 @@ from app.core.twofactor import (
     provisioning_uri,
     verify_code,
 )
+from app.modules.audit.models import record
 from app.modules.auth import service
 from app.modules.auth.deps import AnyUser, TenantDb, WorkspaceDep
 from app.modules.auth.schemas import (
@@ -67,6 +68,20 @@ def _issue(response: Response, access: str, refresh_plain: str) -> LoginOut:
         samesite="strict",
     )
     return LoginOut(access_token=access, expires_in=ACCESS_TOKEN_MINUTES * 60)
+
+
+async def _audit_self(db, user: User, action: str, after: dict, request: Request) -> None:
+    """A user's own security action. Never includes passwords, tokens or 2FA secrets."""
+    await record(
+        db,
+        tenant_id=user.tenant_id,
+        actor_id=user.id,
+        action=action,
+        entity_type="user",
+        entity_id=user.id,
+        after=after,
+        ip=_ip(request),
+    )
 
 
 async def _send(mailer: Mailer, email: Email) -> None:
@@ -172,11 +187,12 @@ async def me(current: AnyUser, ws: WorkspaceDep) -> MeOut:
 
 
 @router.post("/invite/accept", status_code=status.HTTP_204_NO_CONTENT)
-async def accept_invite(body: AcceptInviteIn, db: TenantDb) -> None:
+async def accept_invite(body: AcceptInviteIn, request: Request, db: TenantDb) -> None:
     try:
-        await service.accept_invite(db, body.token, body.password)
+        user = await service.accept_invite(db, body.token, body.password)
     except service.InvalidLink:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, _BAD_LINK) from None
+    await _audit_self(db, user, "user.invite_accepted", {"status": user.status}, request)
 
 
 @router.post("/password/forgot", status_code=status.HTTP_202_ACCEPTED)
@@ -202,19 +218,25 @@ async def forgot_password(
 
 
 @router.post("/password/reset", status_code=status.HTTP_204_NO_CONTENT)
-async def reset_password(body: ResetIn, db: TenantDb) -> None:
+async def reset_password(body: ResetIn, request: Request, db: TenantDb) -> None:
     try:
-        await service.reset_password(db, body.token, body.password)
+        user = await service.reset_password(db, body.token, body.password)
     except service.InvalidLink:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, _BAD_LINK) from None
+    await _audit_self(db, user, "user.password_reset", {"sessions_revoked": True}, request)
 
 
 @router.post("/password/change", status_code=status.HTTP_204_NO_CONTENT)
-async def change_password(body: ChangePasswordIn, current: AnyUser, db: TenantDb) -> None:
+async def change_password(
+    body: ChangePasswordIn, request: Request, current: AnyUser, db: TenantDb
+) -> None:
     try:
         await service.change_password(db, current.user, body.current_password, body.new_password)
     except service.AuthError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is wrong") from None
+    await _audit_self(
+        db, current.user, "user.password_changed", {"sessions_revoked": True}, request
+    )
 
 
 @router.post("/2fa/setup", response_model=TwoFactorSetupOut)
@@ -229,10 +251,13 @@ async def setup_two_factor(current: AnyUser) -> TwoFactorSetupOut:
 
 
 @router.post("/2fa/enable", status_code=status.HTTP_204_NO_CONTENT)
-async def enable_two_factor(body: TwoFactorEnableIn, current: AnyUser) -> None:
+async def enable_two_factor(
+    body: TwoFactorEnableIn, request: Request, current: AnyUser, db: TenantDb
+) -> None:
     u = current.user
     if u.totp_enabled:
         raise HTTPException(status.HTTP_409_CONFLICT, "Two-factor is already enabled")
     if not u.totp_secret_enc or not verify_code(decrypt_secret(u.totp_secret_enc), body.code):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid code")
     u.totp_enabled = True
+    await _audit_self(db, u, "user.2fa_enabled", {"totp_enabled": True}, request)
