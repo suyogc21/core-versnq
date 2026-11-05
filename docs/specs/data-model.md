@@ -1,6 +1,6 @@
 # Versnq Core — Data Model
 
-Status: **proposed 2026-11-05** — awaiting Suyog's approval. Tables are built phase by phase from this document; changes go through this file first.
+Status: **approved 2026-11-05** except DM5 (retention) — see spec Decision log #15–#17. Tables are built phase by phase from this document; changes go through this file first.
 
 ## Rules that apply to every table
 
@@ -69,7 +69,7 @@ A **lead** is the record a salesperson works. It is either a **person** (student
 | Column | Type | Notes |
 | --- | --- | --- |
 | `lead_id` | uuid | |
-| `type` | `email` / `phone` | A WhatsApp number is a phone |
+| `type` | `email` / `phone` / `linkedin` | A WhatsApp number is a phone; LinkedIn = profile URL |
 | `value` | text | As entered |
 | `value_normalized` | text | Email: trimmed, lowercased. Phone: E.164 using the tenant's default country |
 | `is_primary` | bool | One primary per type per lead |
@@ -82,7 +82,7 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 
 | Rule | Decision |
 | --- | --- |
-| **R1 Minimum data** | A lead needs **at least one of phone or email**. Name is optional (WhatsApp leads may arrive with a number only; display name falls back to the number). Organisation leads need `org_name`. A tenant may relax this to "name only" for walk-ins. |
+| **R1 Minimum data** | A lead needs **at least one identifier: phone, email or LinkedIn profile URL** (Decision log #17). Name is optional (display name falls back to the identifier). Organisation leads need `org_name`. |
 | **R2 Email optional?** | **Yes.** Most EdTech/real-estate leads arrive with a phone only. |
 | **R3 What is unique?** | **Nothing is hard-unique** on email or phone. Real case: two siblings enquire using one parent's phone. Instead, a **de-duplication rule** runs on every capture (below). |
 | **R4 Follow-up** | Every **open** lead must have `next_follow_up_at` once a rep has touched it. The API rejects closing an activity without one (spec "anti-leakage rule"). |
@@ -97,7 +97,7 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 | `lead_stages` | Per-tenant lifecycle: name, order, `is_open`, `is_converted`, `is_unqualified`, colour |
 | `lead_sources` | Per-tenant sources: name, `is_active` |
 | `tags`, `lead_tags` | Tags and the many-to-many link |
-| `custom_field_definitions` | entity (`lead` / `deal` / `customer` / `activity`), key, label, type (text, number, date, select, multi-select, phone, email, url, file), options, required, group (e.g. KYC), order |
+| `custom_field_definitions` | entity (`lead` / `deal` / `customer` / `activity`), **key (fixed backend ID, never changes; used by API/webhooks/automations)**, label (display name, renamable), type (text, number, date, select, multi-select, phone, email, url, file), options, required, group (e.g. KYC), order |
 | `consents` | lead_id, channel (`whatsapp` / `email`), status (`opted_in` / `opted_out`), source, captured_at, evidence — full history; latest row = current state |
 | `lead_merges` | survivor_id, merged_id, merged_by, snapshot jsonb |
 | `external_refs` | entity, entity_id, system (`ace`, `website`, `hubspot`…), external_id — unique per tenant+system+external_id; makes API/ACE upserts safe to retry |
@@ -149,4 +149,4 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 | DM2 | Default duplicate policy (R5) | **Update the existing lead** + "Re-enquiry" activity |
 | DM3 | Minimum data (R1) | **Phone or email required**; name optional |
 | DM4 | Phone normalization needs the `phonenumbers` library (new dependency) | Approve |
-| DM5 | Soft-deleted leads: keep forever or purge after N days? | Keep 90 days in a "Deleted" bin, then purge (data-protection friendly) |
+| DM5 | Soft-deleted leads: keep forever or purge after N days? | **Open** — 90-day purge rejected; awaiting Suyog's rule |

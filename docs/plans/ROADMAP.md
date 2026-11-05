@@ -95,6 +95,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 2.9 Pipelines, stages, deals, kanban moves, won/lost reasons, products / catalogue
 - [ ] 2.10 Convert lead → customer, registration form link, document checklist and vault (S3)
 - [ ] 2.11 Tags, lists, smart views, bulk actions, rule-based lead scoring
+- [ ] 2.11b Automation builder: WHEN event IF conditions THEN actions (task, field, owner, stage, webhook) — Decision log #16
 - [ ] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts)
 - [ ] 2.13 CSV export
 - [ ] 2.14 Frontend for 2.1–2.13
