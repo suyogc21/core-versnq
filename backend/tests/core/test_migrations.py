@@ -1,19 +1,11 @@
 import asyncio
-from pathlib import Path
 
 from alembic import command
-from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
-BACKEND = Path(__file__).resolve().parents[2]
-
-
-def _alembic_config(url: str) -> Config:
-    cfg = Config(str(BACKEND / "alembic.ini"))
-    cfg.set_main_option("script_location", str(BACKEND / "migrations"))
-    cfg.set_main_option("sqlalchemy.url", url)
-    return cfg
+from tests.support import alembic_config
 
 
 def _current_revision(url: str) -> str | None:
@@ -30,13 +22,15 @@ def _current_revision(url: str) -> str | None:
 
 
 def test_upgrade_downgrade_upgrade(settings):
-    cfg = _alembic_config(settings.migration_database_url)
+    url = settings.migration_database_url
+    cfg = alembic_config(url)
+    head = ScriptDirectory.from_config(cfg).get_current_head()
 
     command.upgrade(cfg, "head")
-    assert _current_revision(settings.test_database_url) == "0001"
+    assert _current_revision(url) == head
 
     command.downgrade(cfg, "base")
-    assert _current_revision(settings.test_database_url) is None
+    assert _current_revision(url) is None
 
     command.upgrade(cfg, "head")
-    assert _current_revision(settings.test_database_url) == "0001"
+    assert _current_revision(url) == head
