@@ -86,6 +86,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 2.1 Leads: create, edit, person or linked to a company/account; custom fields; source and UTM; origin tag
 - [ ] 2.2 Lead capture: web form / webhook endpoint per source, manual quick-add, CSV import with field mapping
 - [ ] 2.3 De-duplication on phone and email + merge tool
+- [ ] 2.3b Group person leads under organisation leads by domain / company name (suggest, optional auto-link; Decision log #14)
 - [ ] 2.4 Consent capture (WhatsApp and email opt-in with timestamp)
 - [ ] 2.5 Auto-assignment: round-robin and rule-based routing
 - [ ] 2.6 Leakage guard: untouched in X hours → alert or reassign
