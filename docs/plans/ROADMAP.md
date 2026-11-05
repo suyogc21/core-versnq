@@ -18,21 +18,21 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 ## Phase 0 — Project setup
 
 - [x] 0.1 Git repository initialised, `.gitignore`, first commit
-- [ ] 0.2 Decisions confirmed (see "Decisions needed before Phase 0" below)
-- [ ] 0.3 Folder structure created (see "Proposed folder structure")
-- [ ] 0.4 `docker-compose.yml`: Postgres 16 + Redis for local dev and tests
-  - [ ] Test: both containers start and report healthy
-- [ ] 0.5 Backend skeleton: FastAPI app, settings from env vars, `/health` endpoint
-  - [ ] Test: `/health` returns ok and confirms DB + Redis reachable
-- [ ] 0.6 Alembic set up against Postgres (empty baseline migration)
-  - [ ] Test: upgrade and downgrade both run cleanly
-- [ ] 0.7 Test harness: pytest on a real Postgres test database, fresh schema per run
-  - [ ] Test: a sample test passes; the suite refuses to run against a non-test DB
-- [ ] 0.8 Worker skeleton (Redis queue) with one sample job
-  - [ ] Test: a job is queued, picked up and completed
-- [ ] 0.9 `.env.example` complete; no secret in the repo
-  - [ ] Test: secret scan of the repo is clean
-- [ ] 0.10 `Makefile` / scripts: `dev`, `test`, `migrate`, `lint`
+- [x] 0.2 Decisions confirmed (see "Decisions needed before Phase 0" below)
+- [x] 0.3 Folder structure created (see "Proposed folder structure")
+- [x] 0.4 `docker-compose.yml`: Postgres 16 + Redis for local dev and tests
+  - [x] Test: both containers start and report healthy
+- [x] 0.5 Backend skeleton: FastAPI app, settings from env vars, `/health` endpoint
+  - [x] Test: `/health` returns ok and confirms DB + Redis reachable
+- [x] 0.6 Alembic set up against Postgres (empty baseline migration)
+  - [x] Test: upgrade and downgrade both run cleanly
+- [x] 0.7 Test harness: pytest on a real Postgres test database, fresh schema per run
+  - [x] Test: a sample test passes; the suite refuses to run against a non-test DB
+- [x] 0.8 Worker skeleton (Redis queue) with one sample job
+  - [x] Test: a job is queued, picked up and completed
+- [x] 0.9 `.env.example` complete; no secret in the repo
+  - [x] Test: secret scan of the repo is clean
+- [x] 0.10 `Makefile` / scripts: `dev`, `test`, `migrate`, `lint`
 - [ ] **Gate 0:** whole setup runs from a clean clone with one command; Suyog approves
 
 ## Phase 1 — Foundation (Milestone 1)
@@ -137,12 +137,12 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 | # | Decision | Recommendation |
 | --- | --- | --- |
-| D1 | Backend language | FastAPI (Python) — already in CLAUDE.md |
-| D2 | Python version | 3.12 in Docker (3.14 on this Mac is very new; some libraries may lag) |
-| D3 | Local infra | Docker Compose for Postgres 16 + Redis |
-| D4 | Package manager | `uv` (fast, lockfile) — or plain pip + `requirements.txt` |
-| D5 | Worker | arq (async, Redis) — CLAUDE.md allows Celery or RQ; arq needs approval |
-| D6 | Lint / format | ruff (needs approval: not in CLAUDE.md) |
+| D1 | Backend language | ✅ FastAPI (Python) |
+| D2 | Python version | ✅ 3.12, managed by uv (system 3.14 untouched) |
+| D3 | Local infra | ✅ Docker Compose: Postgres 16 (5433) + Redis 7 (6380); app runs on host |
+| D4 | Package manager | ✅ uv (installed in ~/.local/share/uv-tool; Homebrew belongs to another macOS user) |
+| D5 | Worker | ✅ arq |
+| D6 | Lint / format | ✅ ruff |
 | D7 | WhatsApp connection | Direct Meta Cloud API (needed by Phase 3, not now) |
 
 ## Proposed folder structure
@@ -174,3 +174,4 @@ CORE/
 | Date | Item | Note |
 | --- | --- | --- |
 | 2026-11-05 | — | Roadmap created |
+| 2026-11-05 | 0.1–0.10 | Phase 0 built and verified: 11 tests green on Postgres, lint clean, gitleaks clean, fresh-clone `make setup && make test` green. Awaiting Gate 0 approval |
