@@ -42,12 +42,12 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 1.1 Platform staff (Versnq super-admins): model, login, sessions separate from tenant sessions
   - [ ] Test: staff token rejected on tenant routes and vice versa
 - [ ] 1.2 Tenants (companies): create, list, view, update, suspend; one-step provisioning (company + first Owner + invite + default roles + industry labels)
-  - [ ] Test: provisioning is all-or-nothing (failure leaves nothing behind)
+  - [x] Test: provisioning is all-or-nothing (failure leaves nothing behind)
   - [ ] Test: suspended tenant cannot log in
 - [ ] 1.3 Tenant isolation: `tenant_id` on every business table + Postgres row-level security + app-level filter
   - [ ] Test: tenant A can never read or write tenant B's rows (API and direct SQL)
   - [ ] Test: cross-tenant IDs return 404, not 403
-  - [ ] Test: a query without tenant context returns nothing
+  - [x] Test: a query without tenant context returns nothing
 - [ ] 1.4 Users: invite, accept invite, login, logout, logout-all, refresh, forgot/reset password, temporary password with forced change
   - [ ] Test: invite and reset links are single use and expire
   - [ ] Test: password change revokes all sessions
@@ -176,4 +176,5 @@ CORE/
 | --- | --- | --- |
 | 2026-11-05 | — | Roadmap created |
 | 2026-11-05 | 0.1–0.10 | Phase 0 built and verified: 11 tests green on Postgres, lint clean, gitleaks clean, fresh-clone `make setup && make test` green. Gate 0 approved by Suyog |
-| 2026-11-05 | Phase 1 | Proposal written: `docs/plans/phase-1-foundation-proposal.md` — awaiting approval |
+| 2026-11-05 | Phase 1 | Proposal written and approved |
+| 2026-11-05 | 1-A | Slice 1-A built: DB roles (app cannot bypass RLS), tenant context, tenants/settings/roles/users with forced RLS + tripwire, industry packs, staff login with refresh rotation + reuse detection, one-step provisioning, append-only platform audit. 89 tests green; live run verified. Still open in 1.1–1.3: staff 2FA, suspended-tenant login and API-level cross-tenant tests (need tenant login, slice 1-B) |
