@@ -1,5 +1,7 @@
 # Phase 1-C — Roles, Permissions, Teams and User Management
 
+> **Done 2026-11-05** — 159 tests green; mutation checks on grant escalation, owner protection and team visibility. The last-Owner rule is unreachable through the API (self-protection + owner-only) and is enforced and tested in the service as a safety net.
+>
 > **Execution:** inline, test-first. Approved by Suyog 2026-11-05 ("yes, go ahead"). Roadmap 1.6, 1.7, last test of 1.3, and the tenant audit log from 1.10 (moved forward).
 
 **Goal:** Admins manage their people: invite, edit, disable, temporary password, roles (incl. custom) and teams of any depth; every endpoint checks a permission and record visibility (own / team / all) is computed in one place.
