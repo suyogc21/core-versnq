@@ -120,3 +120,45 @@ async def make_user(
         )
         s.add(user)
     return user.id, email
+
+
+async def login_as(
+    tenant_id: UUID, role_key: str | None = "sales_user", *, role_id: UUID | None = None
+) -> tuple[UUID, dict[str, str]]:
+    """Create an active user with a role and return (user_id, bearer headers).
+    Owner/Admin get 2FA enabled so they are not restricted."""
+    from sqlalchemy import select
+
+    from app.modules.users.models import User
+
+    async with tenant_session(tenant_id) as s:
+        if role_id is None:
+            role_id = await s.scalar(select(Role.id).where(Role.key == role_key))
+        user = User(
+            tenant_id=tenant_id,
+            email=f"u-{uuid.uuid4().hex[:10]}@client.com",
+            name="Member",
+            password_hash=hash_password(PASSWORD),
+            status="active",
+            role_id=role_id,
+            totp_secret_enc=encrypt_secret(new_secret()),
+            totp_enabled=role_key in ("owner", "admin"),
+        )
+        s.add(user)
+    return user.id, {"Authorization": f"Bearer {create_access_token(user.id, 'user', tenant_id)}"}
+
+
+async def make_custom_role(
+    tenant_id: UUID, name: str, scope: str = "all", permissions: tuple[str, ...] = ()
+) -> UUID:
+    from app.modules.roles.models import RolePermission
+
+    role = Role(tenant_id=tenant_id, name=name, scope=scope, is_system=False)
+    async with tenant_session(tenant_id) as s:
+        s.add(role)
+        await s.flush()
+        s.add_all(
+            RolePermission(tenant_id=tenant_id, role_id=role.id, permission_code=c)
+            for c in permissions
+        )
+    return role.id

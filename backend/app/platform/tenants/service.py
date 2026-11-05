@@ -10,7 +10,8 @@ from app.core.config import get_settings
 from app.core.mailer import Email
 from app.core.tenancy import set_tenant_context
 from app.modules.auth.service import INVITE_TTL, issue_link_token
-from app.modules.roles.models import Role
+from app.modules.roles.models import Role, RolePermission
+from app.modules.roles.permissions import DEFAULT_GRANTS
 from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 from app.platform import audit
@@ -20,7 +21,7 @@ from app.platform.tenants.schemas import TenantCreate
 
 INVITE_HOURS = int(INVITE_TTL.total_seconds() // 3600)
 
-# key, name, scope — seeded for every tenant. Permissions arrive in slice 1-C.
+# key, name, scope — seeded for every tenant, with DEFAULT_GRANTS (Owner holds every code).
 SYSTEM_ROLES = (
     ("owner", "Owner", "all"),
     ("admin", "Admin", "all"),
@@ -49,6 +50,11 @@ async def _seed_roles(db: AsyncSession, tenant_id: uuid.UUID) -> dict[str, uuid.
     }
     db.add_all(roles.values())
     await db.flush()
+    db.add_all(
+        RolePermission(tenant_id=tenant_id, role_id=roles[key].id, permission_code=code)
+        for key, codes in DEFAULT_GRANTS.items()
+        for code in sorted(codes)
+    )
     return {key: role.id for key, role in roles.items()}
 
 
