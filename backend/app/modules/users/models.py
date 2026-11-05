@@ -10,6 +10,7 @@ from sqlalchemy import (
     Index,
     String,
     Text,
+    UniqueConstraint,
     Uuid,
     text,
 )
@@ -25,6 +26,7 @@ class User(IdMixin, TimestampMixin, Base):
 
     __tablename__ = "users"
     __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_users_tenant_id_id"),
         # role must belong to the same tenant: enforced by the database
         ForeignKeyConstraint(
             ["tenant_id", "role_id"],

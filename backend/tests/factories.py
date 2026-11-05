@@ -3,7 +3,7 @@
 import uuid
 from uuid import UUID
 
-from app.core.security import hash_password
+from app.core.security import create_access_token, hash_password
 from app.core.tenancy import platform_session, tenant_session
 from app.modules.roles.models import Role
 from app.platform.models import Tenant
@@ -41,3 +41,15 @@ async def make_staff(password: str = "s3cret-pass-123", is_active: bool = True) 
             )
         )
     return email
+
+
+async def staff_headers() -> dict[str, str]:
+    """A staff account plus a valid bearer header for it."""
+    staff = PlatformStaff(
+        email=f"staff-{uuid.uuid4().hex[:10]}@versnq.in",
+        name="Staff",
+        password_hash=hash_password("s3cret-pass-123"),
+    )
+    async with platform_session() as s:
+        s.add(staff)
+    return {"Authorization": f"Bearer {create_access_token(staff.id, 'staff', None)}"}

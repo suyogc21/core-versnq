@@ -53,3 +53,10 @@ def tenant_session(
 def platform_session(*, sessionmaker: async_sessionmaker[AsyncSession] = SessionLocal):
     """Session with no tenant: tenant tables return zero rows."""
     return _session(None, sessionmaker)
+
+
+async def set_tenant_context(session: AsyncSession, tenant_id: UUID) -> None:
+    """Switch an open platform transaction to one tenant (used only by tenant provisioning
+    and staff support actions). Lasts until the transaction ends."""
+    session.info[_TENANT_KEY] = tenant_id
+    await session.execute(_SET_TENANT, {"tenant_id": str(tenant_id)})
