@@ -1,10 +1,8 @@
 import uuid
 
-from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select, text
 
 from app.core.tenancy import tenant_session
-from app.main import app
 from app.modules.audit.models import AuditLog
 from tests.factories import login_as, make_workspace
 
@@ -164,16 +162,13 @@ async def test_other_tenant_user_id_is_404(ws):
     assert (await c.get(f"/api/v1/users/{uuid.uuid4()}", headers=admin)).status_code == 404
 
 
-async def test_other_tenant_role_id_rejected(ws):
+async def test_other_tenant_role_id_rejected(ws, client_for):
     tenant_id, c = ws
     _, admin = await login_as(tenant_id, "admin")
     rep, _ = await login_as(tenant_id, "sales_user")
     other, other_slug = await make_workspace()
     _, other_admin = await login_as(other, "admin")
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url=f"http://{other_slug}.versnq.in"
-    ) as oc:
-        foreign_role = await _role_id(oc, other_admin, "admin")
+    foreign_role = await _role_id(client_for(other_slug), other_admin, "admin")
     r = await c.patch(f"/api/v1/users/{rep}", json={"role_id": foreign_role}, headers=admin)
     assert r.status_code == 422
 
