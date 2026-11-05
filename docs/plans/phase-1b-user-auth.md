@@ -1,5 +1,7 @@
 # Phase 1-B — User Authentication Implementation Plan
 
+> **Done 2026-11-05** — 127 tests green; mutation checks on token/workspace binding, restriction gate and account lock.
+>
 > **Execution:** inline, test-first. Approved by Suyog 2026-11-05 ("Build slice 1-B now"). Roadmap 1.4, 1.5 + open items of 1.1–1.3.
 
 **Goal:** People of a client company log in on `<slug>.<BASE_DOMAIN>`, accept invites, reset passwords and use 2FA; staff get 2FA too; brute force is rate-limited.

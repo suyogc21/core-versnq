@@ -39,20 +39,20 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ### 1A Backend
 
-- [ ] 1.1 Platform staff (Versnq super-admins): model, login, sessions separate from tenant sessions
-  - [ ] Test: staff token rejected on tenant routes and vice versa
-- [ ] 1.2 Tenants (companies): create, list, view, update, suspend; one-step provisioning (company + first Owner + invite + default roles + industry labels)
+- [x] 1.1 Platform staff (Versnq super-admins): model, login, sessions separate from tenant sessions
+  - [x] Test: staff token rejected on tenant routes and vice versa
+- [x] 1.2 Tenants (companies): create, list, view, update, suspend; one-step provisioning (company + first Owner + invite + default roles + industry labels)
   - [x] Test: provisioning is all-or-nothing (failure leaves nothing behind)
-  - [ ] Test: suspended tenant cannot log in
+  - [x] Test: suspended tenant cannot log in
 - [ ] 1.3 Tenant isolation: `tenant_id` on every business table + Postgres row-level security + app-level filter
-  - [ ] Test: tenant A can never read or write tenant B's rows (API and direct SQL)
+  - [x] Test: tenant A can never read or write tenant B's rows (API and direct SQL)
   - [ ] Test: cross-tenant IDs return 404, not 403
   - [x] Test: a query without tenant context returns nothing
-- [ ] 1.4 Users: invite, accept invite, login, logout, logout-all, refresh, forgot/reset password, temporary password with forced change
-  - [ ] Test: invite and reset links are single use and expire
-  - [ ] Test: password change revokes all sessions
-- [ ] 1.5 2FA (TOTP) for Owner and Admin
-  - [ ] Test: Owner/Admin cannot reach protected routes without the second factor
+- [x] 1.4 Users: invite, accept invite, login, logout, logout-all, refresh, forgot/reset password, temporary password with forced change
+  - [x] Test: invite and reset links are single use and expire
+  - [x] Test: password change revokes all sessions
+- [x] 1.5 2FA (TOTP) for Owner and Admin
+  - [x] Test: Owner/Admin cannot reach protected routes without the second factor
 - [ ] 1.6 Roles and permissions: permission codes, default roles (Owner, Admin, Sales Manager, Sales User, Finance), custom roles, scope own / team / all
   - [ ] Test: deny by default for every unknown permission
   - [ ] Test: Sales User sees only own records; Manager sees team; Owner/Admin see all
@@ -178,4 +178,5 @@ CORE/
 | 2026-11-05 | — | Roadmap created |
 | 2026-11-05 | 0.1–0.10 | Phase 0 built and verified: 11 tests green on Postgres, lint clean, gitleaks clean, fresh-clone `make setup && make test` green. Gate 0 approved by Suyog |
 | 2026-11-05 | Phase 1 | Proposal written and approved |
-| 2026-11-05 | 1-A | Slice 1-A built: DB roles (app cannot bypass RLS), tenant context, tenants/settings/roles/users with forced RLS + tripwire, industry packs, staff login with refresh rotation + reuse detection, one-step provisioning, append-only platform audit. 89 tests green; live run verified. Still open in 1.1–1.3: staff 2FA, suspended-tenant login and API-level cross-tenant tests (need tenant login, slice 1-B) |
+| 2026-11-05 | 1-A | Slice 1-A built: DB roles (app cannot bypass RLS), tenant context, tenants/settings/roles/users with forced RLS + tripwire, industry packs, staff login with refresh rotation + reuse detection, one-step provisioning, append-only platform audit. 89 tests green; live run verified. Staff 2FA, suspended-workspace block and API cross-tenant tests done in 1-B |
+| 2026-11-05 | 1-B | Slice 1-B built: workspace from web address, user login/refresh/logout(-all), invites, reset, change password, temporary-password and 2FA restrictions, TOTP 2FA for users + staff (staff actions require it), Redis rate limits. 127 tests green. Open in 1.3: cross-tenant **ID** → 404 test (needs ID routes, slice 1-C) |
