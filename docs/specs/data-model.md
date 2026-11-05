@@ -1,12 +1,12 @@
 # Versnq Core — Data Model
 
-Status: **approved 2026-11-05** except DM5 (retention) — see spec Decision log #15–#17. Tables are built phase by phase from this document; changes go through this file first.
+Status: **approved 2026-11-05** — see spec Decision log #15–#18. Tables are built phase by phase from this document; changes go through this file first.
 
 ## Rules that apply to every table
 
 - `id uuid` primary key; `created_at`, `updated_at` (timestamptz, UTC).
 - Every business table has `tenant_id uuid not null` + forced row-level security (Phase 1-A).
-- Soft delete where records matter for history: `deleted_at timestamptz null` (leads, deals, customers, contacts). Hard delete only for junk/imports undone.
+- **Delete is permanent** (Decision log #18): a confirmed delete removes the record and its timeline. To stop working a lead without deleting it, move it to an **Invalid** stage. Opted-out identifiers survive on the suppression list.
 - Money columns (when Money is unparked): `amount_minor bigint` + `currency char(3)`. Never floats.
 - Free-form tenant data lives in `custom_fields jsonb`, validated against `custom_field_definitions`. Never add a column for one client.
 - Labels shown to users (Lead → "Student") come from tenant settings; table names never change.
@@ -62,7 +62,6 @@ A **lead** is the record a salesperson works. It is either a **person** (student
 | `merged_into_id` | uuid → `leads` | no | Set when merged; record kept for history |
 | `created_by_user_id` | uuid | no | Null for system/API |
 | `version` | int | yes | Stops two people overwriting each other's edits |
-| `deleted_at` | timestamptz | no | Soft delete |
 
 ### 1.2 `lead_identities` — every email and phone a lead has
 
@@ -88,17 +87,19 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 | **R4 Follow-up** | Every **open** lead must have `next_follow_up_at` once a rep has touched it. The API rejects closing an activity without one (spec "anti-leakage rule"). |
 | **R5 Duplicate policy** (per tenant) | Match on normalized phone **or** email within the tenant. Default: **update the existing lead** (log a "Re-enquiry" activity, keep the owner, re-open if closed). Options: *flag as possible duplicate* or *always create new*. Merge tool for manual merges. |
 | **R6 Grouping** | Domain / company-name matching suggests linking a person to an organisation lead (Decision log #14). |
+| **R8 Delete vs Invalid** | Delete is permanent, after a warning, and needs the `leads.delete` permission. **Invalid** is a closed stage seeded for every tenant (no follow-up required, reason required, searchable, can be reopened). Converted leads (with a customer) cannot be deleted. |
 | **R7 Normalization** | Phones stored as E.164 using the tenant's default country code; emails lowercased and trimmed (Gmail dots are **not** removed). |
 
 ### 1.4 Supporting tables (Phase 2)
 
 | Table | Purpose |
 | --- | --- |
-| `lead_stages` | Per-tenant lifecycle: name, order, `is_open`, `is_converted`, `is_unqualified`, colour |
+| `lead_stages` | Per-tenant lifecycle: name, order, `is_open`, `is_converted`, `is_unqualified`, colour. Every tenant gets a closed **Invalid** stage |
 | `lead_sources` | Per-tenant sources: name, `is_active` |
 | `tags`, `lead_tags` | Tags and the many-to-many link |
 | `custom_field_definitions` | entity (`lead` / `deal` / `customer` / `activity`), **key (fixed backend ID, never changes; used by API/webhooks/automations)**, label (display name, renamable), type (text, number, date, select, multi-select, phone, email, url, file), options, required, group (e.g. KYC), order |
 | `consents` | lead_id, channel (`whatsapp` / `email`), status (`opted_in` / `opted_out`), source, captured_at, evidence — full history; latest row = current state |
+| `suppression_list` | channel (`whatsapp` / `email` / `sms`), value_normalized, reason (`opt_out` / `bounce` / `complaint`), created_at — **not linked to any lead**, survives lead deletion (Phase 2 creates it; Phase 3 sends check it) |
 | `lead_merges` | survivor_id, merged_id, merged_by, snapshot jsonb |
 | `external_refs` | entity, entity_id, system (`ace`, `website`, `hubspot`…), external_id — unique per tenant+system+external_id; makes API/ACE upserts safe to retry |
 | `assignment_rules` | order, conditions jsonb (source, language, region, custom field), strategy (`round_robin` / `specific_user` / `team`), target, is_active |
@@ -149,4 +150,4 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 | DM2 | Default duplicate policy (R5) | **Update the existing lead** + "Re-enquiry" activity |
 | DM3 | Minimum data (R1) | **Phone or email required**; name optional |
 | DM4 | Phone normalization needs the `phonenumbers` library (new dependency) | Approve |
-| DM5 | Soft-deleted leads: keep forever or purge after N days? | **Open** — 90-day purge rejected; awaiting Suyog's rule |
+| DM5 | What happens to deleted leads? | **Closed:** delete is permanent; use the Invalid stage to keep a lead (Decision log #18) |
