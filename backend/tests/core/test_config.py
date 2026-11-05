@@ -11,6 +11,8 @@ ENV = {
     "TEST_DATABASE_URL": "postgresql+asyncpg://u:p@h:5433/versnq_test",
     "TEST_MIGRATION_DATABASE_URL": "postgresql+asyncpg://o:p@h:5433/versnq_test",
     "REDIS_URL": "redis://h:6380/0",
+    "JWT_SECRET": "x" * 40,
+    "BASE_DOMAIN": "versnq.in",
 }
 
 
@@ -44,3 +46,12 @@ def test_harness_refuses_non_test_database():
 
 def test_harness_accepts_test_database():
     assert_test_database("postgresql+asyncpg://u:p@h:5433/versnq_test")
+
+
+def test_short_jwt_secret_rejected(monkeypatch):
+    for key, value in ENV.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setenv("JWT_SECRET", "too-short")
+
+    with pytest.raises(ValidationError, match="jwt_secret"):
+        Settings(_env_file=None)

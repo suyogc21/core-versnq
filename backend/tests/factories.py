@@ -3,9 +3,11 @@
 import uuid
 from uuid import UUID
 
+from app.core.security import hash_password
 from app.core.tenancy import platform_session, tenant_session
 from app.modules.roles.models import Role
 from app.platform.models import Tenant
+from app.platform.staff.models import PlatformStaff
 
 
 async def make_tenant(slug: str | None = None, name: str = "Test Co") -> UUID:
@@ -25,3 +27,17 @@ async def make_role(tenant_id: UUID, name: str, scope: str = "all") -> UUID:
     async with tenant_session(tenant_id) as s:
         s.add(role)
     return role.id
+
+
+async def make_staff(password: str = "s3cret-pass-123", is_active: bool = True) -> str:
+    email = f"staff-{uuid.uuid4().hex[:10]}@versnq.in"
+    async with platform_session() as s:
+        s.add(
+            PlatformStaff(
+                email=email,
+                name="Staff",
+                password_hash=hash_password(password),
+                is_active=is_active,
+            )
+        )
+    return email

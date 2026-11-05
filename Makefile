@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan
+.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -38,3 +38,6 @@ lint: ## Check code style and common bugs
 
 secrets-scan: ## Scan the repository for committed secrets
 	docker run --rm -v "$(CURDIR)":/repo zricethezav/gitleaks:latest detect --source /repo --no-banner
+
+create-staff: ## Create a Versnq staff (platform admin) account
+	$(UV) python -m app.platform.cli create-staff

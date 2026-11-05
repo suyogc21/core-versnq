@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +16,8 @@ class Settings(BaseSettings):
     test_database_url: str
     test_migration_database_url: str
     redis_url: str
+    jwt_secret: str = Field(min_length=32)
+    base_domain: str  # client workspaces live at <slug>.<base_domain>
 
 
 @lru_cache
