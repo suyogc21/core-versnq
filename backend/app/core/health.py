@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable
+from typing import Annotated
 
 import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends
@@ -45,8 +46,8 @@ async def _status(check: Awaitable[None]) -> str:
 
 @router.get("/health")
 async def health(
-    db_check: Callable[[], Awaitable[None]] = Depends(get_db_check),
-    redis_url: str = Depends(get_redis_url),
+    db_check: Annotated[Callable[[], Awaitable[None]], Depends(get_db_check)],
+    redis_url: Annotated[str, Depends(get_redis_url)],
 ) -> JSONResponse:
     db, redis = await asyncio.gather(_status(db_check()), _status(_redis_check(redis_url)))
     ok = db == "ok" and redis == "ok"

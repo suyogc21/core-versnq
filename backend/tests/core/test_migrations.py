@@ -20,8 +20,9 @@ def _current_revision(url: str) -> str | None:
     async def read() -> str | None:
         engine = create_async_engine(url)
         async with engine.connect() as conn:
-            exists = await conn.scalar(text("SELECT to_regclass('alembic_version')"))
-            rev = await conn.scalar(text("SELECT version_num FROM alembic_version")) if exists else None
+            rev = None
+            if await conn.scalar(text("SELECT to_regclass('alembic_version')")):
+                rev = await conn.scalar(text("SELECT version_num FROM alembic_version"))
         await engine.dispose()
         return rev
 
