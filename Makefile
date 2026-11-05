@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi
+.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -45,3 +45,21 @@ create-staff: ## Create a Versnq staff (platform admin) account
 openapi: ## Write the API spec to docs/api/openapi.json (commit it with API changes)
 	@mkdir -p docs/api
 	$(UV) python -c "import json; from app.main import app; print(json.dumps(app.openapi(), indent=2, sort_keys=True))" > $(CURDIR)/docs/api/openapi.json
+
+fe-setup: ## Install frontend dependencies (client app + staff console)
+	cd frontend && npm ci
+	cd frontend-admin && npm ci
+
+fe-dev: ## Run the client app on http://<slug>.localhost:3000
+	cd frontend && npm run dev
+
+admin-dev: ## Run the staff console on http://admincore.localhost:3001
+	cd frontend-admin && npm run dev
+
+fe-check: ## Typecheck, lint and verify the API client is up to date (both apps)
+	@for app in frontend frontend-admin; do \
+	  (cd $$app && npm run -s gen:api >/dev/null && git diff --quiet -- lib/api/schema.d.ts \
+	    || { echo "$$app: API client out of date - run 'make openapi' then 'npm run gen:api'"; exit 1; }) || exit 1; \
+	  (cd $$app && npm run -s typecheck && npm run -s lint) || exit 1; \
+	done
+	@echo "frontend checks passed"
