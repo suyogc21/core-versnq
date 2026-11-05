@@ -26,7 +26,7 @@ from app.core.twofactor import (
 )
 from app.platform.staff import service
 from app.platform.staff.models import PlatformStaff
-from app.platform.staff.schemas import LoginIn, StaffOut
+from app.platform.staff.schemas import ChangePasswordIn, LoginIn, StaffOut
 
 router = APIRouter(prefix="/platform/auth", tags=["platform-auth"])
 
@@ -64,9 +64,10 @@ async def current_staff_any(
 async def current_staff(
     staff: Annotated[PlatformStaff, Depends(current_staff_any)],
 ) -> PlatformStaff:
-    """Logged-in staff with 2FA enabled (required for every staff action)."""
-    if not staff.totp_enabled:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "two_factor_setup_required")
+    """Logged-in staff with no outstanding restriction (own password set, 2FA enabled)."""
+    pending = service.restrictions(staff)
+    if pending:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, pending[0])
     return staff
 
 
@@ -165,7 +166,17 @@ async def logout(
 
 @router.get("/me", response_model=StaffOut)
 async def me(staff: AnyStaff) -> StaffOut:
-    return StaffOut(id=staff.id, email=staff.email, name=staff.name)
+    return StaffOut(
+        id=staff.id, email=staff.email, name=staff.name, restrictions=service.restrictions(staff)
+    )
+
+
+@router.post("/password/change", status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(body: ChangePasswordIn, staff: AnyStaff, db: Db) -> None:
+    try:
+        await service.change_password(db, staff, body.current_password, body.new_password)
+    except service.AuthError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is wrong") from None
 
 
 @router.post("/2fa/setup", response_model=TwoFactorSetupOut)

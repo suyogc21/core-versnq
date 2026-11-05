@@ -3,11 +3,13 @@ from fastapi.routing import APIRoute
 
 from app.core import errors
 from app.core.health import router as health_router
+from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
 from app.modules.roles.router import router as roles_router
 from app.modules.settings.router import router as settings_router
 from app.modules.teams.router import router as teams_router
 from app.modules.users.router import router as users_router
+from app.platform.staff.accounts import router as staff_accounts_router
 from app.platform.staff.router import router as staff_auth_router
 from app.platform.tenants.router import router as tenants_router
 
@@ -27,3 +29,5 @@ app.include_router(settings_router)
 app.include_router(roles_router)
 app.include_router(teams_router)
 app.include_router(users_router)
+app.include_router(audit_router)
+app.include_router(staff_accounts_router)

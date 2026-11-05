@@ -37,8 +37,16 @@ def slug_from_host(host: str) -> str | None:
         return None
 
 
+def request_host(request: Request) -> str:
+    if get_settings().trust_proxy_headers:
+        forwarded = request.headers.get("x-forwarded-host")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+    return request.headers.get("host", "")
+
+
 async def get_workspace(request: Request) -> Workspace:
-    slug = slug_from_host(request.headers.get("host", ""))
+    slug = slug_from_host(request_host(request))
     if slug is None:
         raise _not_found()
     async with platform_session() as s:

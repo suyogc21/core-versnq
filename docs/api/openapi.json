@@ -23,100 +23,6 @@
         "title": "AcceptInviteIn",
         "type": "object"
       },
-      "AuditOut": {
-        "properties": {
-          "action": {
-            "title": "Action",
-            "type": "string"
-          },
-          "after": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "After"
-          },
-          "before": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Before"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "staff_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Staff Id"
-          },
-          "target_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Target Id"
-          },
-          "target_type": {
-            "title": "Target Type",
-            "type": "string"
-          },
-          "tenant_slug_snapshot": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tenant Slug Snapshot"
-          }
-        },
-        "required": [
-          "id",
-          "staff_id",
-          "action",
-          "target_type",
-          "target_id",
-          "tenant_slug_snapshot",
-          "before",
-          "after",
-          "created_at"
-        ],
-        "title": "AuditOut",
-        "type": "object"
-      },
       "Branding": {
         "properties": {
           "logo_url": {
@@ -724,6 +630,110 @@
         "title": "SettingsPatch",
         "type": "object"
       },
+      "StaffAccountOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "must_change_password": {
+            "title": "Must Change Password",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "totp_enabled": {
+            "title": "Totp Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "is_active",
+          "totp_enabled",
+          "must_change_password"
+        ],
+        "title": "StaffAccountOut",
+        "type": "object"
+      },
+      "StaffCreate": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ],
+        "title": "StaffCreate",
+        "type": "object"
+      },
+      "StaffCreated": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "must_change_password": {
+            "title": "Must Change Password",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "temporary_password": {
+            "title": "Temporary Password",
+            "type": "string"
+          },
+          "totp_enabled": {
+            "title": "Totp Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "is_active",
+          "totp_enabled",
+          "must_change_password",
+          "temporary_password"
+        ],
+        "title": "StaffCreated",
+        "type": "object"
+      },
       "StaffOut": {
         "properties": {
           "email": {
@@ -738,6 +748,14 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "restrictions": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Restrictions",
+            "type": "array"
           }
         },
         "required": [
@@ -746,6 +764,36 @@
           "name"
         ],
         "title": "StaffOut",
+        "type": "object"
+      },
+      "StaffPatch": {
+        "properties": {
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "StaffPatch",
         "type": "object"
       },
       "TeamIn": {
@@ -1220,6 +1268,93 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "app__modules__audit__router__AuditOut": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "actor_type": {
+            "title": "Actor Type",
+            "type": "string"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "actor_type",
+          "actor_id",
+          "action",
+          "entity_type",
+          "entity_id",
+          "before",
+          "after",
+          "created_at"
+        ],
+        "title": "AuditOut",
+        "type": "object"
+      },
       "app__modules__auth__schemas__RoleOut": {
         "properties": {
           "key": {
@@ -1298,6 +1433,100 @@
         ],
         "title": "RoleOut",
         "type": "object"
+      },
+      "app__platform__tenants__schemas__AuditOut": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "staff_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Staff Id"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "target_type": {
+            "title": "Target Type",
+            "type": "string"
+          },
+          "tenant_slug_snapshot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenant Slug Snapshot"
+          }
+        },
+        "required": [
+          "id",
+          "staff_id",
+          "action",
+          "target_type",
+          "target_id",
+          "tenant_slug_snapshot",
+          "before",
+          "after",
+          "created_at"
+        ],
+        "title": "AuditOut",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -1313,6 +1542,88 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/audit": {
+      "get": {
+        "operationId": "audit-list_audit",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__modules__audit__router__AuditOut"
+                  },
+                  "title": "Response Audit-List Audit",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Audit",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
     "/api/v1/auth/2fa/enable": {
       "post": {
         "operationId": "auth-enable_two_factor",
@@ -2752,7 +3063,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AuditOut"
+                    "$ref": "#/components/schemas/app__platform__tenants__schemas__AuditOut"
                   },
                   "title": "Response Platform-Tenants-List Audit",
                   "type": "array"
@@ -2998,6 +3309,45 @@
         ]
       }
     },
+    "/platform/auth/password/change": {
+      "post": {
+        "operationId": "platform-auth-change_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change Password",
+        "tags": [
+          "platform-auth"
+        ]
+      }
+    },
     "/platform/auth/refresh": {
       "post": {
         "operationId": "platform-auth-refresh",
@@ -3044,6 +3394,139 @@
         "summary": "Refresh",
         "tags": [
           "platform-auth"
+        ]
+      }
+    },
+    "/platform/staff": {
+      "get": {
+        "operationId": "platform-staff-list_staff",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StaffAccountOut"
+                  },
+                  "title": "Response Platform-Staff-List Staff",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Staff",
+        "tags": [
+          "platform-staff"
+        ]
+      },
+      "post": {
+        "description": "The temporary password is shown once; the new person must change it and set up 2FA.",
+        "operationId": "platform-staff-create_staff",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffCreated"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Staff",
+        "tags": [
+          "platform-staff"
+        ]
+      }
+    },
+    "/platform/staff/{staff_id}": {
+      "patch": {
+        "operationId": "platform-staff-update_staff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "staff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Staff Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffAccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Staff",
+        "tags": [
+          "platform-staff"
         ]
       }
     },

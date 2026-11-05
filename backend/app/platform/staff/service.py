@@ -9,6 +9,7 @@ from app.core.security import (
     DUMMY_PASSWORD_HASH,
     REFRESH_TOKEN_DAYS,
     create_access_token,
+    hash_password,
     hash_token,
     new_refresh_token,
     verify_password,
@@ -87,3 +88,30 @@ async def logout(db: AsyncSession, plain_token: str) -> None:
         .where(PlatformStaffSession.revoked_at.is_(None))
         .values(revoked_at=_now())
     )
+
+
+async def revoke_all_sessions(db: AsyncSession, staff_id) -> None:
+    await db.execute(
+        update(PlatformStaffSession)
+        .where(PlatformStaffSession.staff_id == staff_id)
+        .where(PlatformStaffSession.revoked_at.is_(None))
+        .values(revoked_at=_now())
+    )
+
+
+async def change_password(db: AsyncSession, staff: PlatformStaff, current: str, new: str) -> None:
+    if not verify_password(current, staff.password_hash):
+        raise AuthError
+    staff.password_hash = hash_password(new)
+    staff.must_change_password = False
+    await revoke_all_sessions(db, staff.id)
+
+
+def restrictions(staff: PlatformStaff) -> list[str]:
+    """What a staff member must do before any staff action. 2FA is always required."""
+    found = []
+    if staff.must_change_password:
+        found.append("password_change_required")
+    if not staff.totp_enabled:
+        found.append("two_factor_setup_required")
+    return found

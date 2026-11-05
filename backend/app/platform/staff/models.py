@@ -18,6 +18,7 @@ class PlatformStaff(IdMixin, TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(200))
     password_hash: Mapped[str] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
     totp_secret_enc: Mapped[str | None] = mapped_column(Text)
     totp_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
