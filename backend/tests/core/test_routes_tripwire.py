@@ -1,0 +1,70 @@
+"""Every route needs a login unless it is on this explicit list."""
+
+from fastapi.routing import APIRoute
+
+from app.main import app
+from app.modules.auth.deps import current_user_any
+from app.platform.staff.router import current_staff_any
+
+PUBLIC = {
+    ("GET", "/health"),
+    ("POST", "/platform/auth/login"),
+    ("POST", "/platform/auth/2fa/verify"),
+    ("POST", "/platform/auth/refresh"),
+    ("POST", "/platform/auth/logout"),
+    ("POST", "/api/v1/auth/login"),
+    ("POST", "/api/v1/auth/2fa/verify"),
+    ("POST", "/api/v1/auth/refresh"),
+    ("POST", "/api/v1/auth/logout"),
+    ("POST", "/api/v1/auth/invite/accept"),
+    ("POST", "/api/v1/auth/password/forgot"),
+    ("POST", "/api/v1/auth/password/reset"),
+}
+
+
+def _calls(dependant) -> set:
+    found = {dependant.call}
+    for sub in dependant.dependencies:
+        found |= _calls(sub)
+    return found
+
+
+def _api_routes(routes):
+    """Flatten included routers (FastAPI >=0.16x wraps them in _IncludedRouter)."""
+    for route in routes:
+        if isinstance(route, APIRoute):
+            yield route
+        elif hasattr(route, "original_router"):
+            yield from _api_routes(route.original_router.routes)
+
+
+def _routes():
+    for route in _api_routes(app.routes):
+        for method in route.methods:
+            yield method, route.path, _calls(route.dependant)
+
+
+def test_walk_sees_every_route_in_the_api_spec():
+    """Guards this test itself: if the walk misses routes, the checks below prove nothing."""
+    walked = {(m, p) for m, p, _ in _routes()}
+    spec = {
+        (method.upper(), path) for path, ops in app.openapi()["paths"].items() for method in ops
+    }
+    assert walked == spec
+
+
+def test_no_unlisted_public_route():
+    unprotected = {
+        (m, p)
+        for m, p, calls in _routes()
+        if current_user_any not in calls and current_staff_any not in calls
+    }
+    assert unprotected == PUBLIC
+
+
+def test_staff_and_user_guards_never_mix():
+    for method, path, calls in _routes():
+        if path.startswith("/api/v1"):
+            assert current_staff_any not in calls, (method, path)
+        if path.startswith("/platform"):
+            assert current_user_any not in calls, (method, path)

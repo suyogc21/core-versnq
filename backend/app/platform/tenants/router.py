@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_platform_db
 from app.core.mailer import Email, Mailer, get_mailer
+from app.core.modules import module_states, set_module
+from app.core.tenancy import set_tenant_context
 from app.platform import audit
 from app.platform.models import Tenant
 from app.platform.staff.models import PlatformStaff
@@ -128,3 +130,35 @@ async def list_audit(
     limit: Annotated[int, Query(ge=1, le=200)] = 100,
 ) -> list:
     return await audit.list_entries(db, target_id, limit)
+
+
+@router.get("/tenants/{tenant_id}/modules", response_model=dict[str, bool])
+async def get_modules(tenant_id: uuid.UUID, db: Db) -> dict[str, bool]:
+    tenant = await _tenant_or_404(db, tenant_id)
+    await set_tenant_context(db, tenant.id)
+    return await module_states(db, tenant.id)
+
+
+@router.put("/tenants/{tenant_id}/modules", response_model=dict[str, bool])
+async def put_modules(
+    tenant_id: uuid.UUID, body: dict[str, bool], request: Request, db: Db, staff: Staff
+) -> dict[str, bool]:
+    """Switch modules on or off for one tenant. Keys not sent are left unchanged."""
+    tenant = await _tenant_or_404(db, tenant_id)
+    await set_tenant_context(db, tenant.id)
+    before = await module_states(db, tenant.id)
+    for key, enabled in body.items():
+        await set_module(db, tenant.id, key, enabled)
+    after = await module_states(db, tenant.id)
+    await audit.record(
+        db,
+        staff_id=staff.id,
+        action="tenant.modules_changed",
+        target_type="tenant",
+        target_id=tenant.id,
+        tenant_slug=tenant.slug,
+        before=before,
+        after=after,
+        ip=_ip(request),
+    )
+    return after

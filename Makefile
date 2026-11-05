@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff
+.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -41,3 +41,7 @@ secrets-scan: ## Scan the repository for committed secrets
 
 create-staff: ## Create a Versnq staff (platform admin) account
 	$(UV) python -m app.platform.cli create-staff
+
+openapi: ## Write the API spec to docs/api/openapi.json (commit it with API changes)
+	@mkdir -p docs/api
+	$(UV) python -c "import json; from app.main import app; print(json.dumps(app.openapi(), indent=2, sort_keys=True))" > $(CURDIR)/docs/api/openapi.json

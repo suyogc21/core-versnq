@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 
 from app.core import errors
 from app.core.health import router as health_router
@@ -10,7 +11,13 @@ from app.modules.users.router import router as users_router
 from app.platform.staff.router import router as staff_auth_router
 from app.platform.tenants.router import router as tenants_router
 
-app = FastAPI(title="Versnq Core API", version="0.1.0")
+
+def _operation_id(route: APIRoute) -> str:
+    """Stable, readable operation IDs (e.g. users-invite_user) for generated clients."""
+    return f"{route.tags[0]}-{route.name}" if route.tags else route.name
+
+
+app = FastAPI(title="Versnq Core API", version="0.1.0", generate_unique_id_function=_operation_id)
 errors.install(app)
 app.include_router(health_router)
 app.include_router(staff_auth_router)

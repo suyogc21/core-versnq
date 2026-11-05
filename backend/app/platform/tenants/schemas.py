@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from app.core.validators import valid_timezone
 from app.platform.packs import available_packs
 from app.platform.tenants.slugs import validate_slug
 
@@ -31,14 +31,7 @@ class TenantCreate(BaseModel):
             )
         return v
 
-    @field_validator("timezone")
-    @classmethod
-    def _tz(cls, v: str) -> str:
-        try:
-            ZoneInfo(v)
-        except (ZoneInfoNotFoundError, ValueError):
-            raise ValueError("Unknown timezone (use an IANA name like Asia/Kolkata)") from None
-        return v
+    _tz = field_validator("timezone")(valid_timezone)
 
 
 class TenantUpdate(BaseModel):
