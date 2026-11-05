@@ -33,7 +33,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 0.9 `.env.example` complete; no secret in the repo
   - [x] Test: secret scan of the repo is clean
 - [x] 0.10 `Makefile` / scripts: `dev`, `test`, `migrate`, `lint`
-- [ ] **Gate 0:** whole setup runs from a clean clone with one command; Suyog approves
+- [x] **Gate 0:** whole setup runs from a clean clone with one command; Suyog approves
 
 ## Phase 1 — Foundation (Milestone 1)
 
@@ -174,4 +174,5 @@ CORE/
 | Date | Item | Note |
 | --- | --- | --- |
 | 2026-11-05 | — | Roadmap created |
-| 2026-11-05 | 0.1–0.10 | Phase 0 built and verified: 11 tests green on Postgres, lint clean, gitleaks clean, fresh-clone `make setup && make test` green. Awaiting Gate 0 approval |
+| 2026-11-05 | 0.1–0.10 | Phase 0 built and verified: 11 tests green on Postgres, lint clean, gitleaks clean, fresh-clone `make setup && make test` green. Gate 0 approved by Suyog |
+| 2026-11-05 | Phase 1 | Proposal written: `docs/plans/phase-1-foundation-proposal.md` — awaiting approval |
