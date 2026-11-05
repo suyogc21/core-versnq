@@ -59,18 +59,18 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
   - [x] Test: nobody can raise their own role; a tenant always keeps one Owner
 - [x] 1.7 Teams: teams and manager hierarchy of any depth, no size limits
   - [x] Test: a manager sees every level below, never sideways or above
-- [ ] 1.8 Tenant settings: industry labels (Lead → "Student" etc.), timezone, branding
-  - [ ] Test: labels are per tenant and never leak across tenants
-- [ ] 1.9 Feature flags per tenant (module on/off)
-  - [ ] Test: a switched-off module's endpoints return 404 and emit no events
-- [ ] 1.10 Audit log: who changed what, when, before/after; staff audit separate from tenant audit
-  - [ ] Test: every write in 1.1–1.9 produces an audit row; secrets never stored
-- [ ] 1.11 Event bus foundation (internal events table + catalogue from the spec)
-  - [ ] Test: events are written in the same transaction as the change
-- [ ] 1.12 Route safety net: every route requires auth unless on an explicit public list
-  - [ ] Test: walking all routes finds no unlisted public route and no staff/tenant guard mix
-- [ ] 1.13 OpenAPI spec published and versioned
-  - [ ] Test: spec generates without errors and matches the routes
+- [x] 1.8 Tenant settings: industry labels (Lead → "Student" etc.), timezone, branding
+  - [x] Test: labels are per tenant and never leak across tenants
+- [x] 1.9 Feature flags per tenant (module on/off)
+  - [x] Test: a switched-off module's endpoints return 404 and emit no events
+- [x] 1.10 Audit log: who changed what, when, before/after; staff audit separate from tenant audit
+  - [x] Test: every write in 1.1–1.9 produces an audit row; secrets never stored
+- [x] 1.11 Event bus foundation (internal events table + catalogue from the spec)
+  - [x] Test: events are written in the same transaction as the change
+- [x] 1.12 Route safety net: every route requires auth unless on an explicit public list
+  - [x] Test: walking all routes finds no unlisted public route and no staff/tenant guard mix
+- [x] 1.13 OpenAPI spec published and versioned
+  - [x] Test: spec generates without errors and matches the routes
 
 ### 1B Frontend (after the UI discussion)
 
@@ -181,3 +181,4 @@ CORE/
 | 2026-11-05 | 1-A | Slice 1-A built: DB roles (app cannot bypass RLS), tenant context, tenants/settings/roles/users with forced RLS + tripwire, industry packs, staff login with refresh rotation + reuse detection, one-step provisioning, append-only platform audit. 89 tests green; live run verified. Staff 2FA, suspended-workspace block and API cross-tenant tests done in 1-B |
 | 2026-11-05 | 1-B | Slice 1-B built: workspace from web address, user login/refresh/logout(-all), invites, reset, change password, temporary-password and 2FA restrictions, TOTP 2FA for users + staff (staff actions require it), Redis rate limits. 127 tests green. Cross-tenant ID 404 done in 1-C |
 | 2026-11-05 | 1-C | Slice 1-C built: permission catalogue + deny-by-default, default/custom roles, anti-escalation, teams of any depth with visibility (own/team/all), user management, tenant audit log (moved forward from 1.10). 159 tests green. **Harness bug found and fixed:** one test run wrote ~76 junk tenants into the dev DB (shared fixtures imported before the test DB switch); added an engine guard proven to stop such a run, and rebuilt the dev DB |
+| 2026-11-05 | 1-D | Slice 1-D built: settings editing (labels/timezone/locale/country/branding), module switches (money and ace off by default, crm always on, 404 + no events when off), events outbox with the spec's 20-event catalogue, audit of self-service security actions, route tripwire (self-checked against the API spec), committed OpenAPI spec (`make openapi`). 184 tests green. **Phase 1 backend (1A) complete**; 1B frontend waits for the UI discussion |

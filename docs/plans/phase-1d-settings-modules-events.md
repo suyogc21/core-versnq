@@ -1,5 +1,7 @@
 # Phase 1-D — Settings, Modules, Events, Route Safety Net, API Spec
 
+> **Done 2026-11-05** — 184 tests green; mutation checks on staff-route guard, spec drift and module-off events. Found and fixed: the route tripwire first walked zero routes (FastAPI 0.162 wraps included routers); it now flattens them and checks itself against the API spec. Added: audit of invite accept, password reset/change and 2FA enable.
+>
 > **Execution:** inline, test-first. Approved by Suyog 2026-11-05 ("lovely lets do this"). Roadmap 1.8–1.13. Completes the Phase 1 backend.
 
 ## Rules
