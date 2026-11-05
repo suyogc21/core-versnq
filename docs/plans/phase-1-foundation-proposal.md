@@ -1,6 +1,6 @@
 # Phase 1 — Foundation: Proposal
 
-Status: **awaiting approval** · Roadmap items 1.1–1.17 · Spec §10 + Decision log #6, #7, #10
+Status: **approved 2026-11-05** (Q2 = subdomain per tenant; other answers as recommended — see spec Decision log #12, #13) · Roadmap items 1.1–1.17 · Spec §10 + Decision log #6, #7, #10
 
 This is the design for Phase 1 (schema, security model, endpoints, screens, tests, open questions). After approval, each slice below gets its own step-by-step plan (writing-plans skill) and is built test-first.
 
@@ -67,7 +67,7 @@ UUID primary keys everywhere; `created_at`, `updated_at` (timestamptz) on every 
 
 ## 3. Auth design
 
-- Login: workspace (tenant slug) + email + password → access JWT (15 min) + refresh token (opaque, stored hashed, rotated on every use, httpOnly cookie scoped to `/auth`).
+- Login: on `<slug>.<BASE_DOMAIN>` (tenant resolved from the web address) with email + password → access JWT (15 min) + refresh token (opaque, stored hashed, rotated on every use, httpOnly cookie scoped to `/auth`).
 - Token carries `typ` (`staff` / `user`), `sub`, `tenant_id`. Staff and user tokens never work on each other's routes.
 - Password change or reset → all sessions revoked. Forgot-password always returns the same response.
 - Temporary password from an admin → every route blocked until changed (server-enforced).

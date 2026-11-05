@@ -333,7 +333,9 @@ Recommended order: **EdTech first** (your first client, a reference case), then 
 | 8 | **MCP layer** is wanted and will be built in parallel later, on top of the REST API. Not designed or built yet. | §11 |
 | 9 | **API-first.** Build the APIs first; MCP and UI follow. UI design is discussed later. | — |
 
-| 10 | **A lead can be a person or belong to a company/account.** Generic, configured per tenant: EdTech and FinTech run on individuals; B2B and agency tenants link leads to a company. No industry branches in code. | Niche table ("need company objects") |
+| 10 | **A lead is either a person or an organisation** (company / agency), chosen per lead. An organisation lead has one or more contact persons. Example: Versnq selling Core treats "Acme Agency" as the lead. EdTech/FinTech mostly use person leads. No industry branches in code. | Niche table ("need company objects") |
+| 12 | **Each client company gets its own web address:** `<slug>.<BASE_DOMAIN>` (e.g. `acme.versnq.in`). Domain is a setting. Reserved slugs: www, app, api, admin, platform. End customers (students, buyers) never log in. | §12 Access |
+| 13 | Phase 1 answers: one email may belong to several client companies (kept separate); invite/reset emails use a console mailer until the ESP is chosen in Phase 3; no staff "log in as" in Phase 1; Finance role kept with minimal access; app connects as restricted `versnq_app` (RLS enforced). | — |
 | 11 | **The developer is Claude**, working with the copied Superpowers skills and subagents where useful. | — |
 
 Still open: pricing tiers; niche list (Hector SaaS); WhatsApp connection model (direct Meta Cloud API vs a BSP).
