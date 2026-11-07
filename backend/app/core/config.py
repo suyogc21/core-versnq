@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     # Read the workspace from X-Forwarded-Host. Only when a trusted proxy (Next dev server,
     # nginx) always overwrites that header; otherwise clients could spoof it.
     trust_proxy_headers: bool = False
+    # Dev/e2e only: save outgoing emails as files here instead of logging them. Ignored in prod.
+    mail_outbox_dir: str | None = None
 
 
 @lru_cache

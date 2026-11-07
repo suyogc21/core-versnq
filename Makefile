@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed
+.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed demo-reset
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -64,5 +64,8 @@ fe-check: ## Typecheck, lint and verify the API client is up to date (both apps)
 	done
 	@echo "frontend checks passed"
 
-demo-seed: ## Create the demo workspace 'acme' with users (dev only; prints passwords once)
+demo-seed: ## Add the demo companies (dev only; prints the shared password once)
 	$(UV) python -m app.platform.demo
+
+demo-reset: ## Wipe the dev database, rebuild it, then add fresh demo companies (dev only)
+	$(UV) python -m app.platform.demo --reset

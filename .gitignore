@@ -27,3 +27,9 @@ node_modules/
 
 # third-party archives (reviewed, not part of the product)
 *.zip
+
+# Saved emails (MAIL_OUTBOX_DIR) and end-to-end test output
+.outbox/
+frontend/e2e/.state/
+frontend/test-results/
+frontend/playwright-report/
