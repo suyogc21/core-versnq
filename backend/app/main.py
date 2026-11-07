@@ -5,6 +5,7 @@ from app.core import errors
 from app.core.health import router as health_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
+from app.modules.crm.setup_router import router as crm_setup_router
 from app.modules.roles.router import router as roles_router
 from app.modules.settings.router import router as settings_router
 from app.modules.teams.router import router as teams_router
@@ -30,4 +31,5 @@ app.include_router(roles_router)
 app.include_router(teams_router)
 app.include_router(users_router)
 app.include_router(audit_router)
+app.include_router(crm_setup_router)
 app.include_router(staff_accounts_router)
