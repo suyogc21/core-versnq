@@ -79,7 +79,20 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 1.16 Staff console: login, companies list, create / edit / suspend company, staff audit
 - [x] 1.17 Tenant app: login, invite accept, reset password, 2FA, users, roles, teams, settings and labels
   - [x] Test: end-to-end — create company → owner accepts invite → adds a Sales User → user sees only allowed screens
+- [x] 1.18 Phase 1 review fixes (from the 2026-11-07 audit against the spec)
+  - [x] Works in phone browsers: slide-in menu, tables scroll in place (spec §12, Decision log #19)
+  - [x] Turn off 2FA with password + current code (`POST /auth/2fa/disable`; in the approved proposal, missed in the 1-B plan)
+  - [x] Security headers on both apps (no framing, nosniff, referrer policy) — e2e checked
+  - [x] My account: change password, 2FA on/off, sign out of all devices
+  - [x] Demo data (`make demo-reset`) and dev-only `DEMO_SKIP_2FA` for invented demo accounts
 - [ ] **Gate 1:** all tests green, Suyog walks the flow end to end and approves
+
+## Before the first real client (go-live)
+
+- [ ] G.1 Real email sending for invites and password resets (pull the transactional part of 3.2 forward; provider needs Suyog's approval)
+- [ ] G.2 Lost-phone recovery: one-time backup codes; Owner/Admin can reset a user's 2FA; staff can reset an Owner's 2FA (audited)
+- [ ] G.3 Deployment: hosting, HTTPS + HSTS at the proxy, backend reachable only through the proxy (TRUST_PROXY_HEADERS), encrypted database storage (spec §10 "encrypted at rest"), daily backups with a tested restore, error monitoring
+- [ ] **Gate G:** a real company can be created, invited and used over HTTPS; Suyog approves
 
 ## Phase 2 — Core CRM (Milestone 2)
 
@@ -113,6 +126,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 3.7 LinkedIn steps as rep tasks
 - [ ] 3.8 Sequence analytics per step
 - [ ] 3.9 Frontend for 3.1–3.8
+- [ ] 3.10 Multi-brand: several brands and sending domains in one company (spec §10, v1 — was missing from the roadmap)
 - [ ] **Gate 3:** all tests green, Suyog approves
 
 ## Phase 4 — API, webhooks and ACE endpoints (Milestone 4)
@@ -124,6 +138,14 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 4.5 Frontend for API keys, webhooks and logs
 - [ ] **Gate 4:** all tests green, Suyog approves
 
+## Security and data protection (after Phase 2)
+
+- [ ] S.1 Login history (who, when, IP, device) and admin "sign out everyone"
+- [ ] S.2 Auto sign-out after idle time, set per company
+- [ ] S.3 IP allowlist per company (optional)
+- [ ] S.4 Email alert to the user after repeated failed sign-ins
+- [ ] S.5 India DPDP readiness: export everything a company owns; full erasure when a company leaves; breach-notice runbook
+
 ## Phase 5 — MCP layer ⏸ (design when asked)
 
 - ⏸ 5.1 MCP server over the REST API (read tools first, write tools with confirmation)
@@ -132,6 +154,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 - ⏸ Money: invoices, installments, payment links, gateways, balances, reminders, money dashboard (any country / currency when unparked)
 - ⏸ Later items in the spec: ad lead forms, Google Workspace, Zapier/n8n, HubSpot/LeadSquared import, A/B testing, SMS, PWA, custom reports, field-level permissions
+- ⏸ Not now (2026-11-07 review): single sign-on (Google / Microsoft), custom password rules
 
 ---
 
@@ -182,3 +205,4 @@ CORE/
 | 2026-11-05 | 1-B | Slice 1-B built: workspace from web address, user login/refresh/logout(-all), invites, reset, change password, temporary-password and 2FA restrictions, TOTP 2FA for users + staff (staff actions require it), Redis rate limits. 127 tests green. Cross-tenant ID 404 done in 1-C |
 | 2026-11-05 | 1-C | Slice 1-C built: permission catalogue + deny-by-default, default/custom roles, anti-escalation, teams of any depth with visibility (own/team/all), user management, tenant audit log (moved forward from 1.10). 159 tests green. **Harness bug found and fixed:** one test run wrote ~76 junk tenants into the dev DB (shared fixtures imported before the test DB switch); added an engine guard proven to stop such a run, and rebuilt the dev DB |
 | 2026-11-05 | 1-D | Slice 1-D built: settings editing (labels/timezone/locale/country/branding), module switches (money and ace off by default, crm always on, 404 + no events when off), events outbox with the spec's 20-event catalogue, audit of self-service security actions, route tripwire (self-checked against the API spec), committed OpenAPI spec (`make openapi`). 184 tests green. **Phase 1 backend (1A) complete**; 1B frontend waits for the UI discussion |
+| 2026-11-07 | 1B + review | Both apps built (client admin pages, staff console), Gate 1 e2e test on its own database, demo data. Audit against the spec found 4 gaps (phones, 2FA off, framing headers, My account) — fixed. Go-live items (G.1–G.3), multi-brand (3.10) and security/DPDP items (S.1–S.5) added to the roadmap. 209 tests + 3 e2e green |
