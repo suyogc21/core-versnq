@@ -33,3 +33,18 @@ def test_available_packs_lists_both():
 def test_pack_key_cannot_escape_the_packs_folder():
     with pytest.raises(UnknownPackError):
         load_pack("../../core/config")
+
+
+async def test_staff_can_list_packs_for_the_create_company_form():
+    from httpx import ASGITransport, AsyncClient
+
+    from app.main import app
+    from tests.factories import staff_headers
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        anonymous = await c.get("/platform/packs")
+        listed = await c.get("/platform/packs", headers=await staff_headers())
+    assert anonymous.status_code == 401
+    assert listed.status_code == 200
+    assert {"key": "edtech", "name": "EdTech"} in listed.json()
+    assert [p["key"] for p in listed.json()] == available_packs()

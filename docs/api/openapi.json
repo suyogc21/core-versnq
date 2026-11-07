@@ -411,6 +411,24 @@
         "title": "ModuleOut",
         "type": "object"
       },
+      "PackOut": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "title": "PackOut",
+        "type": "object"
+      },
       "PermissionOut": {
         "properties": {
           "code": {
@@ -3402,6 +3420,37 @@
         "summary": "Refresh",
         "tags": [
           "platform-auth"
+        ]
+      }
+    },
+    "/platform/packs": {
+      "get": {
+        "description": "Industry packs a new company can start from.",
+        "operationId": "platform-tenants-list_packs",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PackOut"
+                  },
+                  "title": "Response Platform-Tenants-List Packs",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Packs",
+        "tags": [
+          "platform-tenants"
         ]
       }
     },

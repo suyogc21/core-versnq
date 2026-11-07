@@ -3,6 +3,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +13,7 @@ from app.core.modules import module_states, set_module
 from app.core.tenancy import set_tenant_context
 from app.platform import audit
 from app.platform.models import Tenant
+from app.platform.packs import available_packs, load_pack
 from app.platform.staff.models import PlatformStaff
 from app.platform.staff.router import current_staff
 from app.platform.tenants import service
@@ -69,6 +71,17 @@ async def create_tenant(
     email = service.invite_email(tenant, body.owner_name, str(body.owner_email), plain)
     sent = await _try_send(mailer, email)
     return TenantCreated(**TenantOut.model_validate(tenant).model_dump(), invite_sent=sent)
+
+
+class PackOut(BaseModel):
+    key: str
+    name: str
+
+
+@router.get("/packs", response_model=list[PackOut])
+async def list_packs() -> list[PackOut]:
+    """Industry packs a new company can start from."""
+    return [PackOut(key=k, name=load_pack(k).name) for k in available_packs()]
 
 
 @router.get("/tenants", response_model=list[TenantOut])
