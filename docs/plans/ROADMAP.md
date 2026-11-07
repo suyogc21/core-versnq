@@ -85,7 +85,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
   - [x] Security headers on both apps (no framing, nosniff, referrer policy) — e2e checked
   - [x] My account: change password, 2FA on/off, sign out of all devices
   - [x] Demo data (`make demo-reset`) and dev-only `DEMO_SKIP_2FA` for invented demo accounts
-- [ ] **Gate 1:** all tests green, Suyog walks the flow end to end and approves
+- [x] **Gate 1:** all tests green, Suyog walks the flow end to end and approves (2026-11-07: "let's start with phase 2")
 
 ## Before the first real client (go-live)
 
@@ -206,3 +206,4 @@ CORE/
 | 2026-11-05 | 1-C | Slice 1-C built: permission catalogue + deny-by-default, default/custom roles, anti-escalation, teams of any depth with visibility (own/team/all), user management, tenant audit log (moved forward from 1.10). 159 tests green. **Harness bug found and fixed:** one test run wrote ~76 junk tenants into the dev DB (shared fixtures imported before the test DB switch); added an engine guard proven to stop such a run, and rebuilt the dev DB |
 | 2026-11-05 | 1-D | Slice 1-D built: settings editing (labels/timezone/locale/country/branding), module switches (money and ace off by default, crm always on, 404 + no events when off), events outbox with the spec's 20-event catalogue, audit of self-service security actions, route tripwire (self-checked against the API spec), committed OpenAPI spec (`make openapi`). 184 tests green. **Phase 1 backend (1A) complete**; 1B frontend waits for the UI discussion |
 | 2026-11-07 | 1B + review | Both apps built (client admin pages, staff console), Gate 1 e2e test on its own database, demo data. Audit against the spec found 4 gaps (phones, 2FA off, framing headers, My account) — fixed. Go-live items (G.1–G.3), multi-brand (3.10) and security/DPDP items (S.1–S.5) added to the roadmap. 209 tests + 3 e2e green |
+| 2026-11-07 | Gate 1 / Phase 2 | Gate 1 approved. Email/go-live deferred until the product is built (Suyog). Phase 2 plan written (`phase-2-crm.md`): slices A–F, slice A in detail, 6 open questions |
