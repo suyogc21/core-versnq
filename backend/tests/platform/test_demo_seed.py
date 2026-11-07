@@ -70,3 +70,19 @@ def test_demo_reset_never_touches_a_database_other_than_dev():
     # Tests run against versnq_test, so the reset must refuse.
     with pytest.raises(DemoRefused):
         _reset_dev_database()
+
+
+def test_credentials_file_lists_every_account(tmp_path):
+    from app.platform.demo import Account, DemoResult, write_credentials_file
+
+    result = DemoResult(
+        created=True,
+        password="pw-123456789",
+        accounts=[Account("Acme Academy", "Owner", "Riya Sharma", "owner@acme.demo")],
+    )
+    text = write_credentials_file(result, "localhost", tmp_path / "creds.md").read_text()
+    assert (
+        "`pw-123456789`" in text
+        and "| Acme Academy | Owner | Riya Sharma | owner@acme.demo |" in text
+    )
+    assert "http://acme.localhost:3000/login" in text

@@ -469,6 +469,41 @@ def main() -> None:
         "It is shown once. Owner, Admin and staff set up 2FA on first sign-in\n"
         "(skipped for these demo accounts while DEMO_SKIP_2FA=true).\n"
     )
+    path = write_credentials_file(result, base)
+    print(f"Saved to {path} (local only, never committed).\n")
+
+
+CREDENTIALS_FILE = Path(__file__).resolve().parents[3] / "DEMO_CREDENTIALS.md"
+
+
+def write_credentials_file(result: DemoResult, base: str, path: Path = CREDENTIALS_FILE) -> Path:
+    """Local reference for demos: invented accounts only, rewritten on every demo-reset.
+    The file is git-ignored; it never holds real people's passwords."""
+    lines = [
+        "# Demo credentials (local only, invented accounts)",
+        "",
+        "Rewritten by `make demo-reset`. Never commit this file. Dev machines only.",
+        "",
+        f"**Password for every account:** `{result.password}`",
+        "",
+        "2FA: skipped for these demo accounts while `DEMO_SKIP_2FA=true` is in `.env`.",
+        "",
+        "## Where to sign in",
+        "",
+        f"- Acme Academy (EdTech, 300 students): http://acme.{base}:3000/login",
+        f"- Bluewave Realty (real estate setup, 60 enquiries): http://bluewave.{base}:3000/login",
+        f"- Versnq staff console: http://admincore.{base}:3001/login",
+        "- Sunrise Coaching is suspended (shows in the staff console only)",
+        "",
+        "## Accounts",
+        "",
+        "| Company | Role | Name | Email |",
+        "| --- | --- | --- | --- |",
+        *[f"| {a.company} | {a.role} | {a.name} | {a.email} |" for a in result.accounts],
+        "",
+    ]
+    path.write_text("\n".join(lines))
+    return path
 
 
 if __name__ == "__main__":

@@ -33,3 +33,6 @@ node_modules/
 frontend/e2e/.state/
 frontend/test-results/
 frontend/playwright-report/
+
+# Local demo password reference (written by make demo-reset)
+DEMO_CREDENTIALS.md
