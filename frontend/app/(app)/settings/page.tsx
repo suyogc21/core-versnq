@@ -34,7 +34,8 @@ type Form = {
   logo_url: string;
 };
 
-const TIMEZONES = Intl.supportedValuesOf("timeZone");
+// Browsers list some zones under old names (e.g. Asia/Calcutta); always offer the saved one.
+const timezones = (current: string) => [...new Set([current, ...Intl.supportedValuesOf("timeZone")])].sort();
 
 export default function SettingsPage() {
   const settings = useWorkspaceSettings();
@@ -121,7 +122,7 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
           <div className="space-y-1.5">
             <Label htmlFor="timezone">Time zone</Label>
             <NativeSelect id="timezone" {...form.register("timezone")}>
-              {TIMEZONES.map((tz) => (
+              {timezones(settings.timezone).map((tz) => (
                 <option key={tz}>{tz}</option>
               ))}
             </NativeSelect>
@@ -156,6 +157,7 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
             <input
               id="primary_color"
               type="color"
+              defaultValue={branding.primary_color ?? DEFAULT_ACCENT}
               className="h-8 w-14 cursor-pointer rounded-lg border bg-transparent"
               {...form.register("primary_color")}
             />

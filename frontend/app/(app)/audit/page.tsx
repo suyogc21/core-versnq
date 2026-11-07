@@ -15,12 +15,24 @@ import { cn } from "@/lib/utils";
 
 const PAGE = 100;
 
+type Flat = Record<string, unknown>;
+
+/** Nested objects become dotted keys, e.g. labels.lead.singular. */
+function flat(obj: Flat | null, prefix = "", out: Flat = {}): Flat {
+  for (const [k, v] of Object.entries(obj ?? {})) {
+    if (v && typeof v === "object" && !Array.isArray(v)) flat(v as Flat, `${prefix}${k}.`, out);
+    else out[prefix + k] = v;
+  }
+  return out;
+}
+
 /** Fields whose value changed between two snapshots. */
-function changes(before: Record<string, unknown> | null, after: Record<string, unknown> | null) {
-  const keys = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+function changes(before: Flat | null, after: Flat | null) {
+  const [b, a] = [flat(before), flat(after)];
+  const keys = new Set([...Object.keys(b), ...Object.keys(a)]);
   return [...keys]
-    .filter((k) => JSON.stringify(before?.[k]) !== JSON.stringify(after?.[k]))
-    .map((k) => ({ key: k, before: before?.[k], after: after?.[k] }));
+    .filter((k) => JSON.stringify(b[k]) !== JSON.stringify(a[k]))
+    .map((k) => ({ key: k, before: b[k], after: a[k] }));
 }
 
 const show = (v: unknown) => (v === undefined ? "—" : typeof v === "string" ? v : JSON.stringify(v));
@@ -87,7 +99,7 @@ export default function AuditPage() {
                         <TableRow className="hover:bg-transparent">
                           <TableCell />
                           <TableCell colSpan={4} className="pb-3">
-                            <dl className="grid grid-cols-[10rem_1fr_1fr] gap-x-3 gap-y-1 text-xs">
+                            <dl className="grid grid-cols-[14rem_1fr_1fr] gap-x-3 gap-y-1 text-xs">
                               <dt className="text-muted-foreground">Field</dt>
                               <dd className="text-muted-foreground">Before</dd>
                               <dd className="text-muted-foreground">After</dd>
