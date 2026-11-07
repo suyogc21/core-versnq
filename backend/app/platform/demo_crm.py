@@ -257,8 +257,11 @@ async def seed_leads(
             r = rng.random()
             if r < 0.05:
                 due = None
-            elif r < 0.20:
-                due = _ago(rng.uniform(0.1, 3))
+            elif r < 0.20:  # overdue: a business hour on one of the last three days
+                past = datetime.now(UTC) - timedelta(days=rng.randint(1, 3))
+                due = past.replace(
+                    hour=rng.choice([4, 6, 8, 10]), minute=0, second=0, microsecond=0
+                )
             elif r < 0.38:
                 due = datetime.now(UTC).replace(minute=0, second=0, microsecond=0) + timedelta(
                     hours=rng.randint(1, 6)

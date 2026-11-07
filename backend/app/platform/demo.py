@@ -162,6 +162,64 @@ async def _real_estate_setup(db, tenant_id: uuid.UUID) -> None:
     await db.flush()
 
 
+FIELD_STAFF = 236  # so the Users list can be seen at the size of a real company (250 people)
+FIELD_TEAMS = [
+    "Field Pune",
+    "Field Mumbai",
+    "Field Delhi",
+    "Field Bengaluru",
+    "Field Hyderabad",
+    "Field Chennai",
+]
+
+
+async def _field_staff(db, tenant_id, roles, parent_team_id, pw_hash, count: int) -> None:
+    """Invented field counsellors in six teams under Admissions. They own no leads; they are
+    here so lists of people can be judged at real size. Not listed in the credentials file."""
+    import random
+
+    from app.platform.demo_crm import FIRST, LAST
+
+    rng = random.Random(23)
+    team_ids = []
+    for name in FIELD_TEAMS:
+        team = Team(tenant_id=tenant_id, name=name, parent_team_id=parent_team_id)
+        db.add(team)
+        await db.flush()
+        team_ids.append(team.id)
+    used: set[str] = set()
+    for i in range(count):
+        first, last = rng.choice(FIRST), rng.choice(LAST)
+        local = f"{first}.{last}".lower()
+        while local in used:
+            local = f"{first}.{last}{rng.randint(2, 99)}".lower()
+        used.add(local)
+        r = rng.random()
+        status = "active" if r < 0.9 else "invited" if r < 0.96 else "disabled"
+        user = User(
+            tenant_id=tenant_id,
+            email=f"{local}@field.acme.demo",
+            name=f"{first} {last}",
+            status=status,
+            role_id=roles["team_lead"] if i % 25 == 0 else roles["sales_user"],
+            password_hash=pw_hash if status != "invited" else None,
+            last_login_at=_ago(rng.uniform(0.05, 14))
+            if status == "active" and rng.random() < 0.85
+            else None,
+        )
+        db.add(user)
+        await db.flush()
+        db.add(
+            TeamMember(
+                tenant_id=tenant_id,
+                team_id=team_ids[i % len(team_ids)],
+                user_id=user.id,
+                is_manager=i < len(team_ids),
+            )
+        )
+    await db.flush()
+
+
 def _ago(days: float) -> datetime:
     return datetime.now(UTC) - timedelta(days=days)
 
@@ -347,6 +405,7 @@ async def seed_demo(prefix: str = "") -> DemoResult:
         teams = await _teams(db, tenant, owner, ACME_TEAMS, 38)
         added = await _people(db, tenant, owner, roles, teams, ACME_PEOPLE, domain, pw_hash, 36)
         reps = [u.id for u, k in added if u.status == "active" and k in SELLING_ROLES]
+        await _field_staff(db, tenant.id, roles, teams["Admissions"], pw_hash, count=FIELD_STAFF)
         await seed_leads(
             db, tenant.id, count=300, country="IN", reps=reps, unassigned=8, custom=ACME_FIELDS
         )
@@ -456,7 +515,7 @@ def main() -> None:
         return
     base = get_settings().base_domain
     print("\nDemo companies (all invented):")
-    print(f"  Acme Academy     http://acme.{base}:3000      EdTech, 14 people, 300 students")
+    print(f"  Acme Academy     http://acme.{base}:3000      EdTech, 250 people, 300 students")
     print(
         f"  Bluewave Realty  http://bluewave.{base}:3000  generic pack relabelled for real estate"
     )

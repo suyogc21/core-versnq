@@ -148,7 +148,7 @@ export function LeadPanel({ leadId, onClose, onLogged }: { leadId: string; onClo
   );
 }
 
-function ActionButton({
+export function ActionButton({
   icon: Icon,
   label,
   href,
@@ -185,7 +185,7 @@ function ActionButton({
 }
 
 /** Stage, owner, source and custom field values, with stage and owner changeable in place. */
-function Facts({ lead }: { lead: Lead }) {
+export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: boolean }) {
   const { can, me } = useAuth();
   const stages = useStages();
   const sources = useSources();
@@ -239,8 +239,8 @@ function Facts({ lead }: { lead: Lead }) {
   return (
     <div className="space-y-3 p-4">
       <dl className="grid grid-cols-[7rem_1fr] items-center gap-x-3 gap-y-2 text-xs">
-        <dt className="text-muted-foreground">Stage</dt>
-        <dd>
+        {showStage && <dt className="text-muted-foreground">Stage</dt>}
+        {showStage && <dd>
           {editable ? (
             <NativeSelect aria-label="Stage" className="h-7 w-auto" value={lead.stage_id} onChange={(e) => moveTo(e.target.value)}>
               {(stages.data ?? []).map((s) => (
@@ -252,7 +252,7 @@ function Facts({ lead }: { lead: Lead }) {
           ) : (
             <StagePill stage={stages.data?.find((s) => s.id === lead.stage_id)} />
           )}
-        </dd>
+        </dd>}
         {reasonFor && (
           <>
             <dt className="text-muted-foreground">Reason</dt>
@@ -313,7 +313,7 @@ function Facts({ lead }: { lead: Lead }) {
   );
 }
 
-function FactRow({ label, value }: { label: string; value: string }) {
+export function FactRow({ label, value }: { label: string; value: string }) {
   return (
     <>
       <dt className="text-muted-foreground">{label}</dt>
@@ -332,13 +332,24 @@ const ICON: Record<string, string> = {
   task_completed: "✓",
 };
 
-function Timeline({ leadId }: { leadId: string }) {
+/** Which timeline entries each filter shows. */
+export const TIMELINE_FILTERS: Record<string, ((type: string) => boolean) | null> = {
+  All: null,
+  Calls: (t) => t === "call",
+  Notes: (t) => t === "note",
+  "Stage changes": (t) => t === "stage_changed",
+  Tasks: (t) => t === "task_completed",
+  System: (t) => ["lead_created", "lead_updated", "owner_changed"].includes(t),
+};
+
+export function Timeline({ leadId, filter = "All" }: { leadId: string; filter?: string }) {
   const timeline = useTimeline(leadId);
   const types = useActivityTypes();
   const typeLabel = (key: string) => types.data?.find((t) => t.key === key)?.label ?? key;
   if (timeline.isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  const items = timeline.data ?? [];
-  if (!items.length) return <p className="text-muted-foreground">Nothing yet.</p>;
+  const keep = TIMELINE_FILTERS[filter];
+  const items = (timeline.data ?? []).filter((a) => !keep || keep(a.type_key));
+  if (!items.length) return <p className="text-muted-foreground">Nothing here yet.</p>;
   return (
     <ol className="space-y-3">
       {items.map((a: ActivityItem) => (
@@ -364,7 +375,7 @@ function Timeline({ leadId }: { leadId: string }) {
 }
 
 /** Edit names, identities, city, source and custom fields. Stale edits are refused (409). */
-function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => void }) {
+export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => void }) {
   const { can } = useAuth();
   const router = useRouter();
   const fields = useFields();
@@ -486,7 +497,7 @@ function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => void }) {
   );
 }
 
-function LeadTasks({ lead }: { lead: Lead }) {
+export function LeadTasks({ lead }: { lead: Lead }) {
   const tasks = useLeadTasks(lead.id);
   const refresh = useRefreshLead();
   const [title, setTitle] = useState("");

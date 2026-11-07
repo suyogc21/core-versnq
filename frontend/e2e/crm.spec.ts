@@ -25,7 +25,7 @@ test("a rep works a lead end to end, and visibility follows the team", async ({ 
   await expect(page.getByText("Lead added")).toBeVisible();
 
   // Phone-sized screens open the lead's own page; wide ones the side panel. Either way:
-  const panel = page.locator("aside, main").filter({ hasText: "Zoya Fernandes" }).last();
+  const panel = page.getByRole("dialog", { name: "Preview" }); // slides over the list
   await expect(panel.getByText("+91 98765 12345")).toBeVisible();
   await panel.getByRole("button", { name: "Interested", exact: true }).click();
   await panel.getByRole("button", { name: "Log call" }).click();
@@ -35,8 +35,9 @@ test("a rep works a lead end to end, and visibility follows the team", async ({ 
   await panel.getByRole("button", { name: "Log call" }).click();
   await expect(page.getByText("Call logged")).toBeVisible();
   await expect(panel.getByText("Call: Interested")).toBeVisible(); // on the timeline
-  await expect(panel.getByText(/Next follow-up: Tomorrow/)).toBeVisible();
+  await expect(panel.getByText(/^Tomorrow /).first()).toBeVisible(); // the follow-up card
 
+  await page.keyboard.press("Escape"); // close the preview
   await page.getByRole("link", { name: "My Day" }).click();
   await page.waitForURL(`${base}/`);
   await expect(page.getByRole("link", { name: /Zoya Fernandes/ })).toBeVisible(); // tomorrow's follow-up
@@ -53,7 +54,7 @@ test("a rep works a lead end to end, and visibility follows the team", async ({ 
   await signIn(other, base, otherRep.email, otherRep.password);
   await other.getByRole("heading", { name: "My Day" }).waitFor(); // signed in
   await other.goto(`${base}/leads`);
-  await other.getByRole("button", { name: "All" }).click();
+  await other.getByRole("tab", { name: /^All/ }).click();
   await other.getByPlaceholder("Search name, phone, email…").fill("Zoya");
-  await expect(other.getByText("No leads here.")).toBeVisible();
+  await expect(other.getByText("Nothing matches these filters.")).toBeVisible();
 });

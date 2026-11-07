@@ -165,3 +165,8 @@ export function phone(e164: string | null | undefined): string {
   if (m1) return `+1 ${m1[1]} ${m1[2]} ${m1[3]}`;
   return e164;
 }
+
+export function useLeadCounts() {
+  return useQuery({ queryKey: ["leads", "counts"], queryFn: async () => unwrap(await api.GET("/api/v1/leads/counts")) });
+}
+export type BulkResult = components["schemas"]["BulkOut"];

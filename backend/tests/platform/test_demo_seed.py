@@ -7,7 +7,7 @@ from app.modules.crm.models import Lead, LeadStage, Task
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team
 from app.modules.users.models import User
-from app.platform.demo import DemoRefused, _reset_dev_database, seed_demo
+from app.platform.demo import FIELD_STAFF, DemoRefused, _reset_dev_database, seed_demo
 from app.platform.models import Tenant
 
 
@@ -38,8 +38,9 @@ async def test_demo_seed_creates_three_companies_and_is_idempotent():
         blue_won = await s.scalar(select(LeadStage.id).where(LeadStage.name == "Won"))
 
     assert first.created and not second.created
-    assert len(users) == 14
+    assert len(users) == 14 + FIELD_STAFF  # core cast + invented field staff (list at scale)
     assert {u.status for u in users} == {"active", "invited", "disabled"}
+    assert all(not a.email.endswith("@field.acme.demo") for a in first.accounts)
     assert teams["Pune Counsellors"].parent_team_id == teams["Admissions"].id
     assert audit_count >= 14
     assert labels["lead"]["singular"] == "Buyer enquiry"
