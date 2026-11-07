@@ -917,6 +917,8 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Permissions */
+            permissions: string[];
             /** Restrictions */
             restrictions: string[];
             role: components["schemas"]["app__modules__auth__schemas__RoleOut"];

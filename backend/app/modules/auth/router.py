@@ -182,6 +182,7 @@ async def me(current: AnyUser, ws: WorkspaceDep) -> MeOut:
         role=RoleOut(key=r.key, name=r.name, scope=r.scope),
         tenant=TenantRef(id=ws.id, name=ws.name, slug=ws.slug),
         restrictions=current.restrictions,
+        permissions=sorted(current.permissions),
         two_factor_enabled=u.totp_enabled,
     )
 

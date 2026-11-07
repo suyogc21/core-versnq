@@ -48,4 +48,5 @@ class MeOut(BaseModel):
     role: RoleOut
     tenant: TenantRef
     restrictions: list[str]
+    permissions: list[str]
     two_factor_enabled: bool

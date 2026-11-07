@@ -35,3 +35,13 @@ async def test_unknown_permission_is_denied():
 
     assert has_permission({"users.read"}, "users.read")
     assert not has_permission({"users.read"}, "users.delete_everything")
+
+
+async def test_me_lists_the_users_permissions(ws):
+    tenant_id, c = ws
+    _, mgr = await login_as(tenant_id, "sales_manager")
+    _, owner = await login_as(tenant_id, "owner")
+    assert (await c.get("/api/v1/auth/me", headers=mgr)).json()["permissions"] == ["users.read"]
+    assert set((await c.get("/api/v1/auth/me", headers=owner)).json()["permissions"]) == set(
+        ALL_CODES
+    )
