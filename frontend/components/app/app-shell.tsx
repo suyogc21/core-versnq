@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Building2, LogOut, Menu, Moon, Settings, Shield, Sun, Sunrise, Users, UsersRound, X } from "lucide-react";
+import { Activity, Building2, Contact, LogOut, Menu, Moon, Settings, Shield, SlidersHorizontal, Sun, Sunrise, Users, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -8,15 +8,19 @@ import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-import { useWorkspaceSettings } from "@/lib/settings";
+import { useLabels, useWorkspaceSettings } from "@/lib/settings";
 
 type NavItem = { href: string; label: string; icon: typeof Users; permission?: string };
 
-const MAIN: NavItem[] = [{ href: "/", label: "My Day", icon: Sunrise }];
+const MAIN: NavItem[] = [
+  { href: "/", label: "My Day", icon: Sunrise },
+  { href: "/leads", label: "lead", icon: Contact, permission: "leads.edit" }, // label from settings
+];
 const WORKSPACE: NavItem[] = [
   { href: "/users", label: "Users", icon: Users, permission: "users.read" },
   { href: "/teams", label: "Teams", icon: UsersRound, permission: "users.read" },
   { href: "/roles", label: "Roles", icon: Shield, permission: "roles.manage" },
+  { href: "/setup", label: "Pipeline setup", icon: SlidersHorizontal, permission: "crm.configure" },
   { href: "/settings", label: "Settings", icon: Settings, permission: "settings.manage" },
   { href: "/audit", label: "Audit log", icon: Activity, permission: "audit.read" },
 ];
@@ -50,7 +54,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { resolvedTheme, setTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   useWorkspaceSettings(); // loads labels and applies the workspace colour
+  const label = useLabels();
   if (!me) return null;
+  const mainItems = MAIN.filter((i) => !i.permission || can(i.permission)).map((i) =>
+    i.href === "/leads" ? { ...i, label: label("lead", true) } : i,
+  );
   const workspaceItems = WORKSPACE.filter((i) => !i.permission || can(i.permission));
   // Typing an admin address directly gets a clear refusal (the backend refuses the data too).
   const locked = WORKSPACE.find((i) => path.startsWith(i.href) && i.permission && !can(i.permission));
@@ -90,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <X className="size-4" />
           </button>
         </div>
-        {MAIN.map((i) => (
+        {mainItems.map((i) => (
           <NavLink key={i.href} item={i} onNavigate={close} />
         ))}
         {workspaceItems.length > 0 && (

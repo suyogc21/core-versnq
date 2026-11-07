@@ -1,22 +1,149 @@
 "use client";
 
+import { Play } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
 import { PageHeader } from "@/components/app/app-shell";
+import { LeadPanel } from "@/components/crm/lead-panel";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { phone, type TaskItem, useMyDay, when } from "@/lib/crm";
 import { useLabels } from "@/lib/settings";
+import { cn } from "@/lib/utils";
 
 export default function MyDayPage() {
-  const { me } = useAuth();
+  const { me, can } = useAuth();
   const label = useLabels();
+  const day = useMyDay();
+  const [queue, setQueue] = useState<TaskItem[] | null>(null);
+  const [position, setPosition] = useState(0);
+  const leadsWord = label("lead", true).toLowerCase();
+
+  // Calling queue (#21): overdue first, then today; one lead at a time.
+  const workable = [...(day.data?.overdue ?? []), ...(day.data?.today ?? [])].filter((t) => t.lead_id);
+  if (queue) {
+    const item = queue[position];
+    if (!item) {
+      return (
+        <>
+          <PageHeader title="Working the queue" />
+          <div className="p-8 text-center">
+            <h2 className="text-lg font-semibold">All done. 🎉</h2>
+            <p className="mt-1 text-muted-foreground">You worked through {queue.length} follow-ups.</p>
+            <Button className="mt-4" onClick={() => setQueue(null)}>
+              Back to My Day
+            </Button>
+          </div>
+        </>
+      );
+    }
+    return (
+      <>
+        <PageHeader
+          title={`Working the queue · ${position + 1} of ${queue.length}`}
+          actions={
+            <>
+              <Button size="sm" variant="outline" onClick={() => setPosition(position + 1)}>
+                Skip
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setQueue(null)}>
+                Stop
+              </Button>
+            </>
+          }
+        />
+        <div className="mx-auto w-full max-w-3xl">
+          <LeadPanel
+            key={item.id}
+            leadId={item.lead_id!}
+            onLogged={() => setPosition(position + 1)} // logging the outcome moves to the next one
+          />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <PageHeader title="My Day" />
-      <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
-        <h2 className="text-lg font-semibold">Good to see you, {me?.name.split(" ")[0]}.</h2>
-        <p className="mt-1 text-muted-foreground">
-          Your {label("lead", true).toLowerCase()}, follow-ups and tasks will appear here once the CRM module
-          arrives (Phase 2). For now you can manage your workspace from the sidebar.
-        </p>
+      <PageHeader
+        title="My Day"
+        actions={
+          workable.length > 0 && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setQueue(workable);
+                setPosition(0);
+              }}
+            >
+              <Play /> Start working ({workable.length})
+            </Button>
+          )
+        }
+      />
+      <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
+        <div>
+          <h2 className="text-lg font-semibold">Good to see you, {me?.name.split(" ")[0]}.</h2>
+          <p className="text-muted-foreground">
+            {day.data
+              ? `${day.data.overdue.length} overdue · ${day.data.today.length} due today · ${day.data.new_leads.length} new ${leadsWord}`
+              : "Loading your day…"}
+          </p>
+        </div>
+        {day.data?.unassigned_count ? (
+          <Link href="/leads" className="block rounded-lg border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
+            <b>{day.data.unassigned_count}</b> open {leadsWord} have no owner yet. Assign them from the list (view “Unassigned”).
+          </Link>
+        ) : null}
+        <Bucket title="Overdue" tone="danger" tasks={day.data?.overdue} empty="Nothing overdue." />
+        <Bucket title="Today" tasks={day.data?.today} empty="Nothing else due today." />
+        {day.data && day.data.new_leads.length > 0 && (
+          <section>
+            <h3 className="mb-2 text-xs font-medium text-muted-foreground uppercase">New {leadsWord} — not contacted yet</h3>
+            <ul className="divide-y rounded-lg border">
+              {day.data.new_leads.map((l) => (
+                <li key={l.id}>
+                  <Link href={`/leads/${l.id}`} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent/50">
+                    <span className="font-medium">{l.display_name}</span>
+                    <span className="text-muted-foreground">{l.primary_phone ? phone(l.primary_phone) : l.primary_email}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <Bucket title="Coming up this week" tasks={day.data?.upcoming} empty="Nothing scheduled." muted />
+        {!can("leads.edit") && <p className="text-xs text-muted-foreground">Your role does not work {leadsWord}.</p>}
       </div>
     </>
+  );
+}
+
+function Bucket({ title, tasks, empty, tone, muted }: { title: string; tasks?: TaskItem[]; empty: string; tone?: "danger"; muted?: boolean }) {
+  return (
+    <section>
+      <h3 className={cn("mb-2 text-xs font-medium uppercase", tone === "danger" ? "text-destructive" : "text-muted-foreground")}>
+        {title} {tasks?.length ? `(${tasks.length})` : ""}
+      </h3>
+      {!tasks ? null : tasks.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{empty}</p>
+      ) : (
+        <ul className={cn("divide-y rounded-lg border", muted && "opacity-80")}>
+          {tasks.map((t) => (
+            <li key={t.id}>
+              <Link href={t.lead_id ? `/leads/${t.lead_id}` : "#"} className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent/50">
+                <span className={cn("w-28 shrink-0 text-xs", tone === "danger" ? "text-destructive" : "text-muted-foreground")}>{when(t.due_at)}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="font-medium">{t.lead_name ?? t.title}</span>
+                  {t.lead_name && <span className="text-muted-foreground"> · {t.is_follow_up ? "follow-up" : t.title}</span>}
+                </span>
+                {t.lead_phone && <span className="hidden text-xs text-muted-foreground sm:inline">{phone(t.lead_phone)}</span>}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
