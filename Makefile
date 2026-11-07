@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check
+.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -63,3 +63,6 @@ fe-check: ## Typecheck, lint and verify the API client is up to date (both apps)
 	  (cd $$app && npm run -s typecheck && npm run -s lint) || exit 1; \
 	done
 	@echo "frontend checks passed"
+
+demo-seed: ## Create the demo workspace 'acme' with users (dev only; prints passwords once)
+	$(UV) python -m app.platform.demo
