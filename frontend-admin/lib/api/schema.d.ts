@@ -21,6 +21,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/2fa/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable Two Factor
+         * @description Turn off 2FA (e.g. before moving to a new phone). Needs the password and a current code.
+         *     Roles that require 2FA are sent straight back to setup.
+         */
+        post: operations["auth-disable_two_factor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/2fa/enable": {
         parameters: {
             query?: never;
@@ -1247,6 +1268,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** TwoFactorDisableIn */
+        TwoFactorDisableIn: {
+            /** Code */
+            code: string;
+            /** Password */
+            password: string;
+        };
         /** TwoFactorEnableIn */
         TwoFactorEnableIn: {
             /** Code */
@@ -1430,6 +1458,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["app__modules__audit__router__AuditOut"][];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "auth-disable_two_factor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorDisableIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

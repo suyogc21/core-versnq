@@ -4,7 +4,13 @@ from typing import Annotated
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 
 from app.core import ratelimit
-from app.core.auth_schemas import LoginOut, TwoFactorEnableIn, TwoFactorSetupOut, TwoFactorVerifyIn
+from app.core.auth_schemas import (
+    LoginOut,
+    TwoFactorDisableIn,
+    TwoFactorEnableIn,
+    TwoFactorSetupOut,
+    TwoFactorVerifyIn,
+)
 from app.core.config import get_settings
 from app.core.mailer import Email, Mailer, get_mailer
 from app.core.security import (
@@ -15,6 +21,7 @@ from app.core.security import (
     create_access_token,
     decode_access_token,
     hash_token,
+    verify_password,
 )
 from app.core.twofactor import (
     decrypt_secret,
@@ -262,3 +269,21 @@ async def enable_two_factor(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid code")
     u.totp_enabled = True
     await _audit_self(db, u, "user.2fa_enabled", {"totp_enabled": True}, request)
+
+
+@router.post("/2fa/disable", status_code=status.HTTP_204_NO_CONTENT)
+async def disable_two_factor(
+    body: TwoFactorDisableIn, request: Request, current: AnyUser, db: TenantDb
+) -> None:
+    """Turn off 2FA (e.g. before moving to a new phone). Needs the password and a current code.
+    Roles that require 2FA are sent straight back to setup."""
+    u = current.user
+    await ratelimit.enforce(f"rl:2fa-off:{u.id}", *MFA_TRIES)
+    if not u.totp_enabled or not u.totp_secret_enc:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Two-factor is not enabled")
+    if not u.password_hash or not verify_password(body.password, u.password_hash):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Password or code is wrong")
+    if not verify_code(decrypt_secret(u.totp_secret_enc), body.code):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Password or code is wrong")
+    u.totp_enabled, u.totp_secret_enc = False, None
+    await _audit_self(db, u, "user.2fa_disabled", {"totp_enabled": False}, request)

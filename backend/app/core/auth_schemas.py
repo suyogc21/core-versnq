@@ -25,3 +25,8 @@ class TwoFactorSetupOut(BaseModel):
 
 class TwoFactorEnableIn(BaseModel):
     code: str = Field(min_length=6, max_length=6)
+
+
+class TwoFactorDisableIn(BaseModel):
+    password: str = Field(min_length=1, max_length=200)
+    code: str = Field(min_length=6, max_length=6)

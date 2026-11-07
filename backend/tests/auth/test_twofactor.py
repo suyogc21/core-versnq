@@ -143,3 +143,83 @@ async def test_staff_can_set_up_2fa():
         )
         after = await c.get("/platform/tenants", headers=headers)
     assert r.status_code == 204 and after.status_code == 200
+
+
+async def _signed_in_with_2fa(client_for, role_key="owner"):
+    secret = new_secret()
+    tenant_id, slug = await make_workspace()
+    user_id, email = await make_user(tenant_id, role_key=role_key, totp_secret=secret)
+    c = client_for(slug)
+    challenge = (await _login(c, email)).json()["challenge_token"]
+    token = (
+        await c.post(
+            "/api/v1/auth/2fa/verify",
+            json={"challenge_token": challenge, "code": pyotp.TOTP(secret).now()},
+        )
+    ).json()["access_token"]
+    return c, token, secret, tenant_id, user_id
+
+
+async def test_turning_off_2fa_needs_password_and_current_code(client_for):
+    c, token, secret, tenant_id, user_id = await _signed_in_with_2fa(client_for)
+    off = "/api/v1/auth/2fa/disable"
+    code = pyotp.TOTP(secret).now()
+
+    wrong_pw = await c.post(off, json={"password": "wrong", "code": code}, headers=bearer(token))
+    wrong_code = await c.post(
+        off, json={"password": PASSWORD, "code": "000000"}, headers=bearer(token)
+    )
+    ok = await c.post(off, json={"password": PASSWORD, "code": code}, headers=bearer(token))
+    again = await c.post(off, json={"password": PASSWORD, "code": code}, headers=bearer(token))
+
+    assert (wrong_pw.status_code, wrong_code.status_code) == (400, 400)
+    assert ok.status_code == 204 and again.status_code == 409
+    async with tenant_session(tenant_id) as s:
+        user = await s.get(User, user_id)
+    assert user.totp_enabled is False and user.totp_secret_enc is None
+
+
+async def test_owner_who_turns_off_2fa_must_set_it_up_again(client_for):
+    """Changing phones: turn off, then the Owner is sent straight back to setup."""
+    c, token, secret, *_ = await _signed_in_with_2fa(client_for)
+    await c.post(
+        "/api/v1/auth/2fa/disable",
+        json={"password": PASSWORD, "code": pyotp.TOTP(secret).now()},
+        headers=bearer(token),
+    )
+    me = await c.get("/api/v1/auth/me", headers=bearer(token))
+    blocked = await c.get("/api/v1/settings", headers=bearer(token))
+    assert me.json()["restrictions"] == ["two_factor_setup_required"]
+    assert blocked.status_code == 403
+
+
+async def test_turning_off_2fa_is_audited_and_rate_limited(client_for):
+    from app.modules.audit.models import AuditLog
+
+    c, token, secret, tenant_id, user_id = await _signed_in_with_2fa(client_for, "sales_user")
+    for _ in range(5):
+        await c.post(
+            "/api/v1/auth/2fa/disable",
+            json={"password": PASSWORD, "code": "000000"},
+            headers=bearer(token),
+        )
+    locked = await c.post(
+        "/api/v1/auth/2fa/disable",
+        json={"password": PASSWORD, "code": pyotp.TOTP(secret).now()},
+        headers=bearer(token),
+    )
+    assert locked.status_code == 429
+
+    from app.core import ratelimit
+
+    await ratelimit.clear(f"rl:2fa-off:{user_id}")
+    await c.post(
+        "/api/v1/auth/2fa/disable",
+        json={"password": PASSWORD, "code": pyotp.TOTP(secret).now()},
+        headers=bearer(token),
+    )
+    async with tenant_session(tenant_id) as s:
+        actions = (
+            await s.scalars(select(AuditLog.action).where(AuditLog.entity_id == user_id))
+        ).all()
+    assert "user.2fa_disabled" in actions

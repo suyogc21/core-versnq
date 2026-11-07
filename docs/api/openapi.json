@@ -1106,6 +1106,28 @@
         "title": "TenantUpdate",
         "type": "object"
       },
+      "TwoFactorDisableIn": {
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "title": "Code",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "code"
+        ],
+        "title": "TwoFactorDisableIn",
+        "type": "object"
+      },
       "TwoFactorEnableIn": {
         "properties": {
           "code": {
@@ -1647,6 +1669,46 @@
         "summary": "List Audit",
         "tags": [
           "audit"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/disable": {
+      "post": {
+        "description": "Turn off 2FA (e.g. before moving to a new phone). Needs the password and a current code.\nRoles that require 2FA are sent straight back to setup.",
+        "operationId": "auth-disable_two_factor",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorDisableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disable Two Factor",
+        "tags": [
+          "auth"
         ]
       }
     },
