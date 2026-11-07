@@ -1,0 +1,137 @@
+"""One definition of 'which leads' for the list, the view counts and bulk actions, so
+'select all matching' acts on exactly the rows the list shows."""
+
+import uuid
+from typing import Literal
+
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.errors import Invalid
+from app.modules.auth.deps import CurrentUser
+from app.modules.crm import leads as L
+from app.modules.crm.models import Lead, LeadIdentity, LeadSource, LeadStage
+from app.modules.users.models import User
+
+SortKey = Literal[
+    "name", "stage", "follow_up", "owner", "last_activity", "source", "created", "city"
+]
+
+
+class LeadFilter(BaseModel):
+    """Every value list is OR within itself and AND across fields."""
+
+    q: str | None = Field(default=None, max_length=200)
+    stage_id: list[uuid.UUID] = []
+    source_id: list[uuid.UUID] = []
+    owner: list[str] = Field(default=[], description="'me', 'unassigned' or user ids")
+    status: Literal["open", "closed"] | None = None
+    follow_up: Literal["overdue", "today", "none"] | None = None
+    cf: list[str] = Field(default=[], description="custom field filters as key:value")
+
+
+async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> list:
+    where = [await L.visibility_filter(db, actor)]
+    if f.q and f.q.strip():
+        term = f"%{f.q.strip().lower()}%"
+        digits = "".join(ch for ch in f.q if ch.isdigit())
+        identity = select(LeadIdentity.lead_id).where(
+            or_(
+                LeadIdentity.value_normalized.like(term),
+                LeadIdentity.value_normalized.like(f"%{digits}%") if len(digits) >= 4 else False,
+            )
+        )
+        where.append(
+            or_(
+                func.lower(Lead.display_name).like(term),
+                func.lower(Lead.org_name).like(term),
+                Lead.id.in_(identity),
+            )
+        )
+    if f.stage_id:
+        where.append(Lead.stage_id.in_(f.stage_id))
+    if f.source_id:
+        where.append(Lead.source_id.in_(f.source_id))
+    if f.owner:
+        owners, unassigned = set(), False
+        for o in f.owner:
+            if o == "me":
+                owners.add(actor.user.id)
+            elif o == "unassigned":
+                unassigned = True
+            else:
+                try:
+                    owners.add(uuid.UUID(o))
+                except ValueError:
+                    raise Invalid("owner must be 'me', 'unassigned' or a user id") from None
+        parts = ([Lead.owner_user_id.in_(owners)] if owners else []) + (
+            [Lead.owner_user_id.is_(None)] if unassigned else []
+        )
+        where.append(or_(*parts))
+    if f.status:
+        where.append(Lead.is_open.is_(f.status == "open"))
+    if f.follow_up:
+        now, end_of_day = await L.day_bounds(db, actor.user.tenant_id)
+        where.append(Lead.is_open.is_(True))
+        where.append(
+            {
+                "overdue": Lead.next_follow_up_at < now,
+                "today": and_(Lead.next_follow_up_at >= now, Lead.next_follow_up_at < end_of_day),
+                "none": Lead.next_follow_up_at.is_(None),
+            }[f.follow_up]
+        )
+    by_key: dict[str, list[str]] = {}
+    for item in f.cf:
+        key, sep, value = item.partition(":")
+        if not sep or not key:
+            raise Invalid("Custom field filters look like key:value")
+        by_key.setdefault(key, []).append(value)
+    for key, values in by_key.items():
+        # A select field holds a string, a multi-select a list: match either.
+        where.append(
+            or_(
+                Lead.custom_fields[key].astext.in_(values),
+                *[Lead.custom_fields[key].contains([v]) for v in values],
+            )
+        )
+    return where
+
+
+def ordered(query, sort: SortKey, direction: Literal["asc", "desc"]):
+    """Apply a sort; ties break on newest first so pages never overlap."""
+    up = direction == "asc"
+
+    def by(col):
+        return (col.asc() if up else col.desc()).nulls_last()
+
+    if sort == "stage":
+        query = query.join(LeadStage, LeadStage.id == Lead.stage_id)
+        key = by(LeadStage.position)
+    elif sort == "owner":
+        query = query.outerjoin(User, User.id == Lead.owner_user_id)
+        key = by(User.name)
+    elif sort == "source":
+        query = query.join(LeadSource, LeadSource.id == Lead.source_id)
+        key = by(LeadSource.name)
+    else:
+        column = {
+            "name": Lead.display_name,
+            "follow_up": Lead.next_follow_up_at,
+            "last_activity": Lead.last_activity_at,
+            "created": Lead.created_at,
+            "city": Lead.city,
+        }[sort]
+        key = by(column)
+    return query.order_by(key, Lead.created_at.desc(), Lead.id)
+
+
+async def matching_ids(
+    db: AsyncSession, actor: CurrentUser, f: LeadFilter, cap: int
+) -> list[uuid.UUID]:
+    where = await where_clauses(db, actor, f)
+    rows = await db.scalars(select(Lead.id).where(*where).order_by(Lead.created_at).limit(cap + 1))
+    ids = list(rows.all())
+    if len(ids) > cap:
+        raise Invalid(f"That matches more than {cap} leads; narrow the filters first")
+    return ids

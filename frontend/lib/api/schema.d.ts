@@ -462,6 +462,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bulk Action
+         * @description Each lead goes through the same rules as a single change; leads that fail a rule
+         *     (e.g. a stage's required fields) are skipped and reported, the rest are done.
+         */
+        post: operations["leads-bulk_action"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * View Counts
+         * @description Numbers on the view tabs (within what this person may see).
+         */
+        get: operations["leads-view_counts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}": {
         parameters: {
             query?: never;
@@ -730,6 +771,26 @@ export interface paths {
         put?: never;
         /** Invite User */
         post: operations["users-invite_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page Users
+         * @description Users this person may see, a page at a time, for lists of hundreds of people.
+         */
+        get: operations["users-page_users"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1230,6 +1291,35 @@ export interface components {
             /** Primary Color */
             primary_color?: string | null;
         };
+        /**
+         * BulkIn
+         * @description Act on the ticked leads (ids) or on everything matching a filter.
+         */
+        BulkIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "assign" | "stage" | "follow_up" | "delete";
+            filter?: components["schemas"]["LeadFilter"] | null;
+            /** Ids */
+            ids?: string[] | null;
+            /** Next Follow Up At */
+            next_follow_up_at?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Unqualified Reason */
+            unqualified_reason?: string | null;
+        };
+        /** BulkOut */
+        BulkOut: {
+            /** Done */
+            done: number;
+            /** Skipped */
+            skipped: components["schemas"]["Skipped"][];
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
@@ -1414,6 +1504,40 @@ export interface components {
             plural: string;
             /** Singular */
             singular: string;
+        };
+        /**
+         * LeadFilter
+         * @description Every value list is OR within itself and AND across fields.
+         */
+        LeadFilter: {
+            /**
+             * Cf
+             * @description custom field filters as key:value
+             * @default []
+             */
+            cf: string[];
+            /** Follow Up */
+            follow_up?: ("overdue" | "today" | "none") | null;
+            /**
+             * Owner
+             * @description 'me', 'unassigned' or user ids
+             * @default []
+             */
+            owner: string[];
+            /** Q */
+            q?: string | null;
+            /**
+             * Source Id
+             * @default []
+             */
+            source_id: string[];
+            /**
+             * Stage Id
+             * @default []
+             */
+            stage_id: string[];
+            /** Status */
+            status?: ("open" | "closed") | null;
         };
         /** LeadIn */
         LeadIn: {
@@ -1836,6 +1960,18 @@ export interface components {
             locale?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /** Skipped */
+        Skipped: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
         };
         /** SourceIn */
         SourceIn: {
@@ -2292,6 +2428,13 @@ export interface components {
             /** Totp Enabled */
             totp_enabled: boolean;
         };
+        /** UserPage */
+        UserPage: {
+            /** Items */
+            items: components["schemas"]["UserRow"][];
+            /** Total */
+            total: number;
+        };
         /** UserPatch */
         UserPatch: {
             /** Name */
@@ -2300,6 +2443,35 @@ export interface components {
             phone?: string | null;
             /** Role Id */
             role_id?: string | null;
+        };
+        /** UserRow */
+        UserRow: {
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Login At */
+            last_login_at: string | null;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string | null;
+            /**
+             * Role Id
+             * Format: uuid
+             */
+            role_id: string;
+            /** Role Name */
+            role_name: string;
+            /** Status */
+            status: string;
+            /** Teams */
+            teams: string[];
+            /** Totp Enabled */
+            totp_enabled: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -2313,6 +2485,21 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** ViewCounts */
+        ViewCounts: {
+            /** All */
+            all: number;
+            /** Mine */
+            mine: number;
+            /** None */
+            none: number;
+            /** Overdue */
+            overdue: number;
+            /** Today */
+            today: number;
+            /** Unassigned */
+            unassigned: number;
         };
         /** AuditOut */
         app__modules__audit__router__AuditOut: {
@@ -3403,13 +3590,16 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string | null;
-                stage_id?: string | null;
-                source_id?: string | null;
-                /** @description me, unassigned or a user id */
-                owner?: string | null;
+                stage_id?: string[];
+                source_id?: string[];
+                /** @description 'me', 'unassigned' or user ids */
+                owner?: string[];
                 status?: ("open" | "closed") | null;
                 follow_up?: ("overdue" | "today" | "none") | null;
-                sort?: "newest" | "follow_up" | "recent_activity" | "name";
+                /** @description custom field filters as key:value */
+                cf?: string[];
+                sort?: "name" | "stage" | "follow_up" | "owner" | "last_activity" | "source" | "created" | "city";
+                dir?: "asc" | "desc";
                 limit?: number;
                 offset?: number;
             };
@@ -3468,6 +3658,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-bulk_action": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-view_counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewCounts"];
                 };
             };
         };
@@ -4254,6 +4497,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvitedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "users-page_users": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                role_id?: string[];
+                team_id?: string[];
+                status?: ("invited" | "active" | "disabled")[];
+                sort?: "name" | "email" | "role" | "status" | "last_login";
+                dir?: "asc" | "desc";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPage"];
                 };
             };
             /** @description Validation Error */

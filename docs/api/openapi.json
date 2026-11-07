@@ -206,6 +206,121 @@
         "title": "Branding",
         "type": "object"
       },
+      "BulkIn": {
+        "description": "Act on the ticked leads (ids) or on everything matching a filter.",
+        "properties": {
+          "action": {
+            "enum": [
+              "assign",
+              "stage",
+              "follow_up",
+              "delete"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LeadFilter"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ids"
+          },
+          "next_follow_up_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Follow Up At"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "stage_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Id"
+          },
+          "unqualified_reason": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unqualified Reason"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "BulkIn",
+        "type": "object"
+      },
+      "BulkOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "skipped"
+        ],
+        "title": "BulkOut",
+        "type": "object"
+      },
       "ChangePasswordIn": {
         "properties": {
           "current_password": {
@@ -672,6 +787,92 @@
           "plural"
         ],
         "title": "Label",
+        "type": "object"
+      },
+      "LeadFilter": {
+        "description": "Every value list is OR within itself and AND across fields.",
+        "properties": {
+          "cf": {
+            "default": [],
+            "description": "custom field filters as key:value",
+            "items": {
+              "type": "string"
+            },
+            "title": "Cf",
+            "type": "array"
+          },
+          "follow_up": {
+            "anyOf": [
+              {
+                "enum": [
+                  "overdue",
+                  "today",
+                  "none"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up"
+          },
+          "owner": {
+            "default": [],
+            "description": "'me', 'unassigned' or user ids",
+            "items": {
+              "type": "string"
+            },
+            "title": "Owner",
+            "type": "array"
+          },
+          "q": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q"
+          },
+          "source_id": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Source Id",
+            "type": "array"
+          },
+          "stage_id": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Stage Id",
+            "type": "array"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "open",
+                  "closed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "LeadFilter",
         "type": "object"
       },
       "LeadIn": {
@@ -2150,6 +2351,30 @@
         "title": "SettingsPatch",
         "type": "object"
       },
+      "Skipped": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "reason"
+        ],
+        "title": "Skipped",
+        "type": "object"
+      },
       "SourceIn": {
         "properties": {
           "name": {
@@ -3417,6 +3642,27 @@
         "title": "UserOut",
         "type": "object"
       },
+      "UserPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UserRow"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "UserPage",
+        "type": "object"
+      },
       "UserPatch": {
         "properties": {
           "name": {
@@ -3460,6 +3706,84 @@
         "title": "UserPatch",
         "type": "object"
       },
+      "UserRow": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "role_id": {
+            "format": "uuid",
+            "title": "Role Id",
+            "type": "string"
+          },
+          "role_name": {
+            "title": "Role Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Teams",
+            "type": "array"
+          },
+          "totp_enabled": {
+            "title": "Totp Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "phone",
+          "status",
+          "role_id",
+          "totp_enabled",
+          "role_name",
+          "teams",
+          "last_login_at"
+        ],
+        "title": "UserRow",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -3498,6 +3822,44 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "ViewCounts": {
+        "properties": {
+          "all": {
+            "title": "All",
+            "type": "integer"
+          },
+          "mine": {
+            "title": "Mine",
+            "type": "integer"
+          },
+          "none": {
+            "title": "None",
+            "type": "integer"
+          },
+          "overdue": {
+            "title": "Overdue",
+            "type": "integer"
+          },
+          "today": {
+            "title": "Today",
+            "type": "integer"
+          },
+          "unassigned": {
+            "title": "Unassigned",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mine",
+          "today",
+          "overdue",
+          "none",
+          "unassigned",
+          "all"
+        ],
+        "title": "ViewCounts",
         "type": "object"
       },
       "app__modules__audit__router__AuditOut": {
@@ -5226,16 +5588,13 @@
             "name": "stage_id",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "uuid",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Stage Id"
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Stage Id",
+              "type": "array"
             }
           },
           {
@@ -5243,34 +5602,28 @@
             "name": "source_id",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "uuid",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Source Id"
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Source Id",
+              "type": "array"
             }
           },
           {
-            "description": "me, unassigned or a user id",
+            "description": "'me', 'unassigned' or user ids",
             "in": "query",
             "name": "owner",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "me, unassigned or a user id",
-              "title": "Owner"
+              "default": [],
+              "description": "'me', 'unassigned' or user ids",
+              "items": {
+                "type": "string"
+              },
+              "title": "Owner",
+              "type": "array"
             }
           },
           {
@@ -5315,18 +5668,51 @@
             }
           },
           {
+            "description": "custom field filters as key:value",
+            "in": "query",
+            "name": "cf",
+            "required": false,
+            "schema": {
+              "default": [],
+              "description": "custom field filters as key:value",
+              "items": {
+                "type": "string"
+              },
+              "title": "Cf",
+              "type": "array"
+            }
+          },
+          {
             "in": "query",
             "name": "sort",
             "required": false,
             "schema": {
-              "default": "newest",
+              "default": "created",
               "enum": [
-                "newest",
+                "name",
+                "stage",
                 "follow_up",
-                "recent_activity",
-                "name"
+                "owner",
+                "last_activity",
+                "source",
+                "created",
+                "city"
               ],
               "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dir",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "title": "Dir",
               "type": "string"
             }
           },
@@ -5426,6 +5812,80 @@
           }
         ],
         "summary": "Create Lead",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/bulk": {
+      "post": {
+        "description": "Each lead goes through the same rules as a single change; leads that fail a rule\n(e.g. a stage's required fields) are skipped and reported, the rest are done.",
+        "operationId": "leads-bulk_action",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bulk Action",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/counts": {
+      "get": {
+        "description": "Numbers on the view tabs (within what this person may see).",
+        "operationId": "leads-view_counts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ViewCounts"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "View Counts",
         "tags": [
           "leads"
         ]
@@ -6682,6 +7142,162 @@
           }
         ],
         "summary": "Invite User",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/page": {
+      "get": {
+        "description": "Users this person may see, a page at a time, for lists of hundreds of people.",
+        "operationId": "users-page_users",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Role Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "team_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Team Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "enum": [
+                  "invited",
+                  "active",
+                  "disabled"
+                ],
+                "type": "string"
+              },
+              "title": "Status",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "name",
+              "enum": [
+                "name",
+                "email",
+                "role",
+                "status",
+                "last_login"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dir",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "title": "Dir",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Page Users",
         "tags": [
           "users"
         ]

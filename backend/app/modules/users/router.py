@@ -1,14 +1,19 @@
 import logging
 import uuid
-from typing import Annotated
+from datetime import datetime
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import func, or_, select
 
 from app.core.config import get_settings
 from app.core.hosts import Workspace
 from app.core.mailer import Email, Mailer, get_mailer
 from app.modules.auth.deps import CurrentUser, TenantDb, WorkspaceDep, require
+from app.modules.roles.models import Role
+from app.modules.teams.models import Team, TeamMember
+from app.modules.teams.service import visible_user_ids
 from app.modules.users import service
 from app.modules.users.models import User
 
@@ -75,6 +80,82 @@ async def _send_invite(mailer: Mailer, ws: Workspace, user: User, plain: str) ->
 @router.get("", response_model=list[UserOut])
 async def list_users(db: TenantDb, actor: Reader) -> list[User]:
     return await service.list_visible(db, actor)
+
+
+class UserRow(UserOut):
+    role_name: str
+    teams: list[str]
+    last_login_at: datetime | None
+
+
+class UserPage(BaseModel):
+    items: list[UserRow]
+    total: int
+
+
+USER_SORTS = {
+    "name": User.name,
+    "email": User.email,
+    "role": Role.name,
+    "status": User.status,
+    "last_login": User.last_login_at,
+}
+
+
+@router.get("/page", response_model=UserPage)
+async def page_users(
+    db: TenantDb,
+    actor: Reader,
+    q: Annotated[str | None, Query(max_length=200)] = None,
+    role_id: Annotated[list[uuid.UUID], Query()] = [],  # noqa: B006 (FastAPI query default)
+    team_id: Annotated[list[uuid.UUID], Query()] = [],  # noqa: B006
+    status_: Annotated[list[Literal["invited", "active", "disabled"]], Query(alias="status")] = [],  # noqa: B006
+    sort: Literal["name", "email", "role", "status", "last_login"] = "name",
+    direction: Annotated[Literal["asc", "desc"], Query(alias="dir")] = "asc",
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> UserPage:
+    """Users this person may see, a page at a time, for lists of hundreds of people."""
+    where = []
+    visible = await visible_user_ids(db, actor.user.id, actor.role.scope)
+    if visible is not None:
+        where.append(User.id.in_(visible))
+    if q and q.strip():
+        term = f"%{q.strip().lower()}%"
+        where.append(or_(func.lower(User.name).like(term), func.lower(User.email).like(term)))
+    if role_id:
+        where.append(User.role_id.in_(role_id))
+    if team_id:
+        where.append(User.id.in_(select(TeamMember.user_id).where(TeamMember.team_id.in_(team_id))))
+    if status_:
+        where.append(User.status.in_(status_))
+    base = select(User, Role.name).join(Role, Role.id == User.role_id).where(*where)
+    total = await db.scalar(select(func.count()).select_from(User).where(*where))
+    col = USER_SORTS[sort]
+    key = (col.asc() if direction == "asc" else col.desc()).nulls_last()
+    rows = (
+        await db.execute(base.order_by(key, User.name, User.id).limit(limit).offset(offset))
+    ).all()
+    ids = [u.id for u, _ in rows]
+    teams: dict[uuid.UUID, list[str]] = {i: [] for i in ids}
+    if ids:
+        for user_id, team in await db.execute(
+            select(TeamMember.user_id, Team.name)
+            .join(Team, Team.id == TeamMember.team_id)
+            .where(TeamMember.user_id.in_(ids))
+            .order_by(Team.name)
+        ):
+            teams[user_id].append(team)
+    items = [
+        UserRow(
+            **UserOut.model_validate(u).model_dump(),
+            role_name=role_name,
+            teams=teams[u.id],
+            last_login_at=u.last_login_at,
+        )
+        for u, role_name in rows
+    ]
+    return UserPage(items=items, total=total or 0)
 
 
 @router.post("", response_model=InvitedOut, status_code=status.HTTP_201_CREATED)

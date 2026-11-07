@@ -6,13 +6,14 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, delete, func, inspect, or_, select
+from sqlalchemy import delete, func, inspect, select
 
 from app.core.errors import Conflict, Forbidden, Invalid
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
-from app.modules.crm.models import CustomFieldUniqueValue, Lead, LeadIdentity
+from app.modules.crm.lead_query import LeadFilter, SortKey, ordered, where_clauses
+from app.modules.crm.models import CustomFieldUniqueValue, Lead
 from app.modules.users.models import User
 
 router = APIRouter(prefix="/api/v1/leads", tags=["leads"], dependencies=CRM)
@@ -168,75 +169,143 @@ def _clean(values: dict) -> dict:
     return {k: (v.strip() or None) if isinstance(v, str) else v for k, v in values.items()}
 
 
-SORTS = {
-    "newest": [Lead.created_at.desc()],
-    "follow_up": [Lead.next_follow_up_at.asc().nulls_last(), Lead.created_at.desc()],
-    "recent_activity": [Lead.last_activity_at.desc().nulls_last()],
-    "name": [Lead.display_name.asc()],
-}
-
-
 @router.get("", response_model=LeadPage)
 async def list_leads(
     db: CrmDb,
     actor: ActiveUser,
-    q: Annotated[str | None, Query(max_length=200)] = None,
-    stage_id: uuid.UUID | None = None,
-    source_id: uuid.UUID | None = None,
-    owner: Annotated[str | None, Query(description="me, unassigned or a user id")] = None,
-    status_: Annotated[Literal["open", "closed"] | None, Query(alias="status")] = None,
-    follow_up: Literal["overdue", "today", "none"] | None = None,
-    sort: Literal["newest", "follow_up", "recent_activity", "name"] = "newest",
+    f: Annotated[LeadFilter, Query()],
+    sort: SortKey = "created",
+    direction: Annotated[Literal["asc", "desc"], Query(alias="dir")] = "desc",
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> LeadPage:
-    where = [await L.visibility_filter(db, actor)]
-    if q and q.strip():
-        term = f"%{q.strip().lower()}%"
-        digits = "".join(ch for ch in q if ch.isdigit())
-        match_identity = select(LeadIdentity.lead_id).where(
-            or_(
-                LeadIdentity.value_normalized.like(term),
-                LeadIdentity.value_normalized.like(f"%{digits}%") if len(digits) >= 4 else False,
-            )
-        )
-        where.append(
-            or_(
-                func.lower(Lead.display_name).like(term),
-                func.lower(Lead.org_name).like(term),
-                Lead.id.in_(match_identity),
-            )
-        )
-    if stage_id:
-        where.append(Lead.stage_id == stage_id)
-    if source_id:
-        where.append(Lead.source_id == source_id)
-    if owner == "me":
-        where.append(Lead.owner_user_id == actor.user.id)
-    elif owner == "unassigned":
-        where.append(Lead.owner_user_id.is_(None))
-    elif owner:
-        try:
-            where.append(Lead.owner_user_id == uuid.UUID(owner))
-        except ValueError:
-            raise Invalid("owner must be 'me', 'unassigned' or a user id") from None
-    if status_:
-        where.append(Lead.is_open.is_(status_ == "open"))
-    if follow_up:
-        now, end_of_day = await L.day_bounds(db, actor.user.tenant_id)
-        where.append(Lead.is_open.is_(True))
-        where.append(
-            {
-                "overdue": Lead.next_follow_up_at < now,
-                "today": and_(Lead.next_follow_up_at >= now, Lead.next_follow_up_at < end_of_day),
-                "none": Lead.next_follow_up_at.is_(None),
-            }[follow_up]
-        )
+    where = await where_clauses(db, actor, f)
     total = await db.scalar(select(func.count()).select_from(Lead).where(*where))
-    rows = await db.scalars(
-        select(Lead).where(*where).order_by(*SORTS[sort]).limit(limit).offset(offset)
-    )
+    query = ordered(select(Lead).where(*where), sort, direction).limit(limit).offset(offset)
+    rows = await db.scalars(query)
     return LeadPage(items=await _out(db, list(rows.all())), total=total or 0)
+
+
+class ViewCounts(BaseModel):
+    mine: int
+    today: int
+    overdue: int
+    none: int
+    unassigned: int
+    all: int
+
+
+@router.get("/counts", response_model=ViewCounts)
+async def view_counts(db: CrmDb, actor: ActiveUser) -> ViewCounts:
+    """Numbers on the view tabs (within what this person may see)."""
+
+    async def count(**kw) -> int:
+        where = await where_clauses(db, actor, LeadFilter(**kw))
+        return await db.scalar(select(func.count()).select_from(Lead).where(*where)) or 0
+
+    return ViewCounts(
+        mine=await count(owner=["me"], status="open"),
+        today=await count(follow_up="today"),
+        overdue=await count(follow_up="overdue"),
+        none=await count(follow_up="none"),
+        unassigned=await count(owner=["unassigned"], status="open"),
+        all=await count(),
+    )
+
+
+BULK_CAP = 1000
+BULK_PERMISSION = {
+    "assign": "leads.assign",
+    "stage": "leads.edit",
+    "follow_up": "leads.edit",
+    "delete": "leads.delete",
+}
+
+
+class BulkIn(BaseModel):
+    """Act on the ticked leads (ids) or on everything matching a filter."""
+
+    action: Literal["assign", "stage", "follow_up", "delete"]
+    ids: list[uuid.UUID] | None = Field(default=None, max_length=BULK_CAP)
+    filter: LeadFilter | None = None
+    owner_user_id: uuid.UUID | None = None
+    stage_id: uuid.UUID | None = None
+    unqualified_reason: str | None = Field(default=None, max_length=300)
+    next_follow_up_at: datetime | None = None
+
+
+class Skipped(BaseModel):
+    id: uuid.UUID
+    name: str
+    reason: str
+
+
+class BulkOut(BaseModel):
+    done: int
+    skipped: list[Skipped]
+
+
+@router.post("/bulk", response_model=BulkOut)
+async def bulk_action(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
+    """Each lead goes through the same rules as a single change; leads that fail a rule
+    (e.g. a stage's required fields) are skipped and reported, the rest are done."""
+    if not L.can(actor, BULK_PERMISSION[body.action]):
+        raise Forbidden("permission_denied")
+    if (body.ids is None) == (body.filter is None):
+        raise Invalid("Send either ids or a filter")
+    f = body.filter or LeadFilter()
+    where = await where_clauses(db, actor, f)
+    if body.ids is not None:
+        where.append(Lead.id.in_(body.ids))
+    leads = list((await db.scalars(select(Lead).where(*where).limit(BULK_CAP + 1))).all())
+    if len(leads) > BULK_CAP:
+        raise Invalid(f"That matches more than {BULK_CAP} leads; narrow the filters first")
+
+    owner = stage = None
+    if body.action == "assign":
+        owner = await L.check_assignable(db, actor, body.owner_user_id)
+    elif body.action == "stage":
+        if body.stage_id is None:
+            raise Invalid("Choose a stage")
+        stage = await L.get_stage(db, body.stage_id)
+        if stage.is_unqualified and not (body.unqualified_reason or "").strip():
+            raise Invalid(f"Give a reason for moving to {stage.name}")
+    elif body.action == "follow_up" and (
+        body.next_follow_up_at is None or body.next_follow_up_at <= L.now()
+    ):
+        raise Invalid("Choose a follow-up time in the future")
+
+    done, skipped = 0, []
+    for lead in leads:
+        try:
+            if body.action == "assign":
+                await L.change_owner(db, lead, owner, actor)
+            elif body.action == "stage":
+                if stage.is_unqualified:
+                    lead.unqualified_reason = body.unqualified_reason.strip()
+                await L.move_stage(db, lead, stage, actor)
+            elif body.action == "follow_up":
+                if not lead.is_open:
+                    raise Invalid("Closed leads have no follow-up")
+                await L.set_follow_up(db, lead, body.next_follow_up_at, actor)
+            else:
+                lead_id = lead.id
+                await db.execute(
+                    delete(CustomFieldUniqueValue).where(
+                        CustomFieldUniqueValue.entity == "lead",
+                        CustomFieldUniqueValue.record_id == lead_id,
+                    )
+                )
+                await db.delete(lead)
+                await audit(db, actor, "lead.deleted", "lead", lead_id)
+                done += 1
+                continue
+            lead.version += 1
+            done += 1
+        except Invalid as e:
+            skipped.append(Skipped(id=lead.id, name=lead.display_name, reason=e.detail))
+    await db.flush()
+    return BulkOut(done=done, skipped=skipped)
 
 
 @router.post("", response_model=LeadOut, status_code=status.HTTP_201_CREATED)
