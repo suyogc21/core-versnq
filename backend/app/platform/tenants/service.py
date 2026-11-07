@@ -10,6 +10,7 @@ from app.core.config import get_settings
 from app.core.mailer import Email
 from app.core.tenancy import set_tenant_context
 from app.modules.auth.service import INVITE_TTL, issue_link_token
+from app.modules.crm.setup import seed_crm
 from app.modules.roles.models import Role, RolePermission
 from app.modules.roles.permissions import DEFAULT_GRANTS
 from app.modules.settings.models import TenantSettings
@@ -103,6 +104,7 @@ async def provision_tenant(
         )
     )
     role_ids = await _seed_roles(db, tenant.id)
+    await seed_crm(db, tenant.id, pack)
     owner = User(
         tenant_id=tenant.id,
         email=str(data.owner_email),

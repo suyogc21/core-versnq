@@ -2,10 +2,87 @@
   "key": "generic",
   "name": "Generic",
   "labels": {
-    "lead": {"singular": "Lead", "plural": "Leads"},
-    "contact": {"singular": "Contact", "plural": "Contacts"},
-    "deal": {"singular": "Deal", "plural": "Deals"},
-    "customer": {"singular": "Customer", "plural": "Customers"},
-    "pipeline": {"singular": "Pipeline", "plural": "Pipelines"}
+    "lead": {
+      "singular": "Lead",
+      "plural": "Leads"
+    },
+    "contact": {
+      "singular": "Contact",
+      "plural": "Contacts"
+    },
+    "deal": {
+      "singular": "Deal",
+      "plural": "Deals"
+    },
+    "customer": {
+      "singular": "Customer",
+      "plural": "Customers"
+    },
+    "pipeline": {
+      "singular": "Pipeline",
+      "plural": "Pipelines"
+    }
+  },
+  "crm": {
+    "stages": [
+      {
+        "name": "New",
+        "is_open": true,
+        "colour": "#64748b"
+      },
+      {
+        "name": "Contacted",
+        "is_open": true,
+        "colour": "#0ea5e9"
+      },
+      {
+        "name": "Qualified",
+        "is_open": true,
+        "colour": "#8b5cf6"
+      },
+      {
+        "name": "Nurturing",
+        "is_open": true,
+        "colour": "#f59e0b"
+      },
+      {
+        "name": "Won",
+        "is_open": false,
+        "is_converted": true,
+        "colour": "#16a34a"
+      },
+      {
+        "name": "Lost",
+        "is_open": false,
+        "is_unqualified": true,
+        "colour": "#dc2626"
+      }
+    ],
+    "sources": [
+      "Website",
+      "Referral",
+      "Walk-in",
+      "Social media",
+      "Paid ads",
+      "Event",
+      "Phone call",
+      "Other"
+    ],
+    "dispositions": [
+      "Interested",
+      "Call back later",
+      "Not reachable",
+      "Wrong number",
+      "Not interested"
+    ],
+    "custom_fields": [],
+    "activity_types": [
+      {
+        "key": "meeting",
+        "label": "Meeting held",
+        "icon": "handshake",
+        "fields": []
+      }
+    ]
   }
 }

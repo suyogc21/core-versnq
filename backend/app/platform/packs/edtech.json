@@ -2,10 +2,196 @@
   "key": "edtech",
   "name": "EdTech",
   "labels": {
-    "lead": {"singular": "Student", "plural": "Students"},
-    "contact": {"singular": "Contact", "plural": "Contacts"},
-    "deal": {"singular": "Course enrolment", "plural": "Course enrolments"},
-    "customer": {"singular": "Enrolled student", "plural": "Enrolled students"},
-    "pipeline": {"singular": "Course pipeline", "plural": "Course pipelines"}
+    "lead": {
+      "singular": "Student",
+      "plural": "Students"
+    },
+    "contact": {
+      "singular": "Contact",
+      "plural": "Contacts"
+    },
+    "deal": {
+      "singular": "Course enrolment",
+      "plural": "Course enrolments"
+    },
+    "customer": {
+      "singular": "Enrolled student",
+      "plural": "Enrolled students"
+    },
+    "pipeline": {
+      "singular": "Course pipeline",
+      "plural": "Course pipelines"
+    }
+  },
+  "crm": {
+    "stages": [
+      {
+        "name": "New enquiry",
+        "is_open": true,
+        "colour": "#64748b"
+      },
+      {
+        "name": "Counselling done",
+        "is_open": true,
+        "colour": "#0ea5e9"
+      },
+      {
+        "name": "Application",
+        "is_open": true,
+        "colour": "#8b5cf6",
+        "required_fields": [
+          "program_interest"
+        ]
+      },
+      {
+        "name": "Enrolled",
+        "is_open": false,
+        "is_converted": true,
+        "colour": "#16a34a"
+      },
+      {
+        "name": "Not interested",
+        "is_open": false,
+        "is_unqualified": true,
+        "colour": "#dc2626"
+      }
+    ],
+    "sources": [
+      "Website",
+      "Meta ads",
+      "Google ads",
+      "Walk-in",
+      "Referral",
+      "Education fair",
+      "Other"
+    ],
+    "dispositions": [
+      "Interested",
+      "Call back later",
+      "Not reachable",
+      "Wrong number",
+      "Not interested"
+    ],
+    "custom_fields": [
+      {
+        "key": "program_interest",
+        "label": "Course interest",
+        "type": "select",
+        "options": [
+          {
+            "value": "data_science",
+            "label": "Data Science"
+          },
+          {
+            "value": "full_stack_development",
+            "label": "Full-stack Development"
+          },
+          {
+            "value": "digital_marketing",
+            "label": "Digital Marketing"
+          }
+        ],
+        "group_name": "Interest"
+      },
+      {
+        "key": "batch",
+        "label": "Batch",
+        "type": "select",
+        "options": [
+          {
+            "value": "ds_weekend_batch",
+            "label": "DS Weekend Batch",
+            "parent": "data_science"
+          },
+          {
+            "value": "ds_weekday_batch",
+            "label": "DS Weekday Batch",
+            "parent": "data_science"
+          },
+          {
+            "value": "fs_evening_batch",
+            "label": "FS Evening Batch",
+            "parent": "full_stack_development"
+          },
+          {
+            "value": "fs_weekend_batch",
+            "label": "FS Weekend Batch",
+            "parent": "full_stack_development"
+          },
+          {
+            "value": "dm_online_batch",
+            "label": "DM Online Batch",
+            "parent": "digital_marketing"
+          }
+        ],
+        "depends_on": "program_interest",
+        "group_name": "Interest"
+      },
+      {
+        "key": "qualification",
+        "label": "Highest qualification",
+        "type": "select",
+        "options": [
+          {
+            "value": "12th",
+            "label": "12th"
+          },
+          {
+            "value": "graduate",
+            "label": "Graduate"
+          },
+          {
+            "value": "postgraduate",
+            "label": "Postgraduate"
+          },
+          {
+            "value": "working_professional",
+            "label": "Working professional"
+          }
+        ],
+        "group_name": "Background"
+      },
+      {
+        "key": "application_number",
+        "label": "Application number",
+        "type": "text",
+        "is_unique": true,
+        "group_name": "Application"
+      }
+    ],
+    "activity_types": [
+      {
+        "key": "demo_class",
+        "label": "Demo class attended",
+        "icon": "presentation",
+        "fields": []
+      },
+      {
+        "key": "counselling_session",
+        "label": "Counselling session",
+        "icon": "messages-square",
+        "fields": [
+          {
+            "key": "mode",
+            "label": "Mode",
+            "type": "select",
+            "options": [
+              {
+                "value": "in_person",
+                "label": "In person"
+              },
+              {
+                "value": "video_call",
+                "label": "Video call"
+              },
+              {
+                "value": "phone",
+                "label": "Phone"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

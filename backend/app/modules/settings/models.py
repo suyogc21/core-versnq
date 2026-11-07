@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Uuid
+from sqlalchemy import Boolean, ForeignKey, String, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,3 +19,5 @@ class TenantSettings(TimestampMixin, Base):
     locale: Mapped[str] = mapped_column(String(10), default="en")
     default_country: Mapped[str] = mapped_column(String(2))  # ISO 3166, for phone normalization
     branding: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
+    follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)

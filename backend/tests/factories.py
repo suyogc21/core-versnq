@@ -67,6 +67,7 @@ PASSWORD = "pass-word-123"
 
 async def make_workspace(slug: str | None = None, status: str = "active") -> tuple[UUID, str]:
     """A tenant with its five system roles. Returns (tenant_id, slug)."""
+    from app.modules.crm.setup import seed_crm
     from app.modules.settings.models import TenantSettings
     from app.platform.packs import load_pack
     from app.platform.tenants.service import _seed_roles
@@ -86,6 +87,7 @@ async def make_workspace(slug: str | None = None, status: str = "active") -> tup
             )
         )
         await _seed_roles(s, tenant.id)
+        await seed_crm(s, tenant.id, load_pack("generic"))
     return tenant.id, slug
 
 

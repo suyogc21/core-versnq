@@ -20,10 +20,48 @@ class Label(BaseModel):
     plural: str
 
 
+class PackStage(BaseModel):
+    name: str
+    is_open: bool
+    is_unqualified: bool = False
+    is_converted: bool = False
+    colour: str | None = None
+    required_fields: list[str] = []
+
+
+class PackField(BaseModel):
+    key: str
+    label: str
+    type: str
+    options: list[dict] = []
+    required: bool = False
+    is_unique: bool = False
+    depends_on: str | None = None
+    group_name: str | None = None
+
+
+class PackActivityType(BaseModel):
+    key: str
+    label: str
+    fields: list[dict] = []
+    icon: str | None = None
+
+
+class CrmPack(BaseModel):
+    """Starting CRM setup for a new company. Configuration only; every company can edit it."""
+
+    stages: list[PackStage]
+    sources: list[str]
+    dispositions: list[str]
+    custom_fields: list[PackField] = []
+    activity_types: list[PackActivityType] = []
+
+
 class IndustryPack(BaseModel):
     key: str
     name: str
     labels: dict[str, Label]
+    crm: CrmPack
 
 
 def available_packs() -> list[str]:
