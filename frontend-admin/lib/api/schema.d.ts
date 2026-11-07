@@ -4,6 +4,42 @@
  */
 
 export interface paths {
+    "/api/v1/activity-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Types */
+        get: operations["crm-setup-list_types"];
+        put?: never;
+        /** Create Type */
+        post: operations["crm-setup-create_type"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activity-types/{type_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Type */
+        delete: operations["crm-setup-delete_type"];
+        options?: never;
+        head?: never;
+        /** Update Type */
+        patch: operations["crm-setup-update_type"];
+        trace?: never;
+    };
     "/api/v1/audit": {
         parameters: {
             query?: never;
@@ -246,6 +282,264 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/custom-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Fields */
+        get: operations["crm-setup-list_fields"];
+        put?: never;
+        /** Create Field */
+        post: operations["crm-setup-create_field"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-fields/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Fields */
+        put: operations["crm-setup-order_fields"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-fields/{field_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Field
+         * @description Delete is permanent: the field's values are removed from every lead.
+         */
+        delete: operations["crm-setup-delete_field"];
+        options?: never;
+        head?: never;
+        /** Update Field */
+        patch: operations["crm-setup-update_field"];
+        trace?: never;
+    };
+    "/api/v1/lead-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sources */
+        get: operations["crm-setup-list_sources"];
+        put?: never;
+        /** Create Source */
+        post: operations["crm-setup-create_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-sources/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Sources */
+        put: operations["crm-setup-order_sources"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-sources/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Source */
+        delete: operations["crm-setup-delete_source"];
+        options?: never;
+        head?: never;
+        /** Update Source */
+        patch: operations["crm-setup-update_source"];
+        trace?: never;
+    };
+    "/api/v1/lead-stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Stages */
+        get: operations["crm-setup-list_stages"];
+        put?: never;
+        /** Create Stage */
+        post: operations["crm-setup-create_stage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-stages/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Stages */
+        put: operations["crm-setup-order_stages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-stages/{stage_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Stage */
+        delete: operations["crm-setup-delete_stage"];
+        options?: never;
+        head?: never;
+        /** Update Stage */
+        patch: operations["crm-setup-update_stage"];
+        trace?: never;
+    };
+    "/api/v1/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Leads */
+        get: operations["leads-list_leads"];
+        put?: never;
+        /** Create Lead */
+        post: operations["leads-create_lead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Lead */
+        get: operations["leads-get_lead"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Lead
+         * @description Permanent (Decision log #18): the lead, its timeline and tasks are gone. The audit row
+         *     keeps only the lead's ID, no personal data.
+         */
+        delete: operations["leads-delete_lead"];
+        options?: never;
+        head?: never;
+        /** Update Lead */
+        patch: operations["leads-update_lead"];
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Activities */
+        get: operations["work-list_activities"];
+        put?: never;
+        /** Log Activity */
+        post: operations["work-log_activity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/owner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Assign Lead */
+        put: operations["leads-assign_lead"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Day
+         * @description Overdue first, then today: the order the calling queue works through (#21).
+         */
+        get: operations["work-my_day"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/modules": {
         parameters: {
             query?: never;
@@ -333,6 +627,42 @@ export interface paths {
         head?: never;
         /** Update Settings */
         patch: operations["settings-update_settings"];
+        trace?: never;
+    };
+    "/api/v1/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: operations["work-list_tasks"];
+        put?: never;
+        /** Create Task */
+        post: operations["work-create_task"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Task */
+        delete: operations["work-delete_task"];
+        options?: never;
+        head?: never;
+        /** Update Task */
+        patch: operations["work-update_task"];
         trace?: never;
     };
     "/api/v1/teams": {
@@ -839,6 +1169,60 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** ActivityIn */
+        ActivityIn: {
+            /** Body */
+            body?: string | null;
+            /**
+             * Data
+             * @default {}
+             */
+            data: {
+                [key: string]: unknown;
+            };
+            /** Next Follow Up At */
+            next_follow_up_at?: string | null;
+            /** Occurred At */
+            occurred_at?: string | null;
+            /** Type Key */
+            type_key: string;
+        };
+        /** ActivityOut */
+        ActivityOut: {
+            /** Actor Id */
+            actor_id: string | null;
+            /** Actor Name */
+            actor_name?: string | null;
+            /** Actor Type */
+            actor_type: string;
+            /** Body */
+            body: string | null;
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /** Disposition */
+            disposition: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Summary */
+            summary: string;
+            /** Type Key */
+            type_key: string;
+        };
         /** Branding */
         Branding: {
             /** Logo Url */
@@ -853,6 +1237,82 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** FieldIn */
+        FieldIn: {
+            /** Depends On */
+            depends_on?: string | null;
+            /** Group Name */
+            group_name?: string | null;
+            /**
+             * Is Unique
+             * @default false
+             */
+            is_unique: boolean;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Options
+             * @default []
+             */
+            options: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Type */
+            type: string;
+        };
+        /** FieldOut */
+        FieldOut: {
+            /** Depends On */
+            depends_on: string | null;
+            /** Entity */
+            entity: string;
+            /** Group Name */
+            group_name: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Unique */
+            is_unique: boolean;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Options */
+            options: {
+                [key: string]: unknown;
+            }[];
+            /** Position */
+            position: number;
+            /** Required */
+            required: boolean;
+            /** Type */
+            type: string;
+        };
+        /**
+         * FieldPatch
+         * @description key, type and is_unique are fixed once created.
+         */
+        FieldPatch: {
+            /** Group Name */
+            group_name?: string | null;
+            /** Label */
+            label?: string | null;
+            /** Options */
+            options?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Required */
+            required?: boolean | null;
+        };
         /** ForgotIn */
         ForgotIn: {
             /**
@@ -865,6 +1325,43 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** IdentityIn */
+        IdentityIn: {
+            /**
+             * Is Primary
+             * @default false
+             */
+            is_primary: boolean;
+            /**
+             * Is Whatsapp
+             * @default false
+             */
+            is_whatsapp: boolean;
+            /** Label */
+            label?: string | null;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "email" | "phone" | "linkedin";
+            /** Value */
+            value: string;
+        };
+        /** IdentityOut */
+        IdentityOut: {
+            /** Is Primary */
+            is_primary: boolean;
+            /** Is Whatsapp */
+            is_whatsapp: boolean;
+            /** Label */
+            label: string | null;
+            /** Type */
+            type: string;
+            /** Value */
+            value: string;
+            /** Value Normalized */
+            value_normalized: string;
         };
         /** InviteIn */
         InviteIn: {
@@ -917,6 +1414,237 @@ export interface components {
             plural: string;
             /** Singular */
             singular: string;
+        };
+        /** LeadIn */
+        LeadIn: {
+            /**
+             * Assign To Me
+             * @default true
+             */
+            assign_to_me: boolean;
+            /** Campaign */
+            campaign?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /**
+             * Custom Fields
+             * @default {}
+             */
+            custom_fields: {
+                [key: string]: unknown;
+            };
+            /** Employee Range */
+            employee_range?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Identities */
+            identities: components["schemas"]["IdentityIn"][];
+            /** Industry */
+            industry?: string | null;
+            /**
+             * Kind
+             * @default person
+             * @enum {string}
+             */
+            kind: "person" | "organisation";
+            /** Last Name */
+            last_name?: string | null;
+            /** Next Follow Up At */
+            next_follow_up_at?: string | null;
+            /** Org Name */
+            org_name?: string | null;
+            /**
+             * Origin
+             * @default outside
+             * @enum {string}
+             */
+            origin: "inbound" | "outbound_ace" | "outside";
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Preferred Language */
+            preferred_language?: string | null;
+            /** Region */
+            region?: string | null;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Unqualified Reason */
+            unqualified_reason?: string | null;
+            /** Utm Campaign */
+            utm_campaign?: string | null;
+            /** Utm Content */
+            utm_content?: string | null;
+            /** Utm Medium */
+            utm_medium?: string | null;
+            /** Utm Source */
+            utm_source?: string | null;
+            /** Utm Term */
+            utm_term?: string | null;
+            /** Website */
+            website?: string | null;
+        };
+        /** LeadOut */
+        LeadOut: {
+            /** Campaign */
+            campaign: string | null;
+            /** City */
+            city: string | null;
+            /** Country Code */
+            country_code: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created Via */
+            created_via: string;
+            /** Custom Fields */
+            custom_fields: {
+                [key: string]: unknown;
+            };
+            /** Display Name */
+            display_name: string;
+            /** Employee Range */
+            employee_range: string | null;
+            /** First Name */
+            first_name: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Identities
+             * @default []
+             */
+            identities: components["schemas"]["IdentityOut"][];
+            /** Industry */
+            industry: string | null;
+            /** Intent */
+            intent: string | null;
+            /** Is Open */
+            is_open: boolean;
+            /** Kind */
+            kind: string;
+            /** Last Activity At */
+            last_activity_at: string | null;
+            /** Last Contacted At */
+            last_contacted_at: string | null;
+            /** Last Disposition */
+            last_disposition: string | null;
+            /** Last Name */
+            last_name: string | null;
+            /** Next Follow Up At */
+            next_follow_up_at: string | null;
+            /** Org Name */
+            org_name: string | null;
+            /** Origin */
+            origin: string;
+            /** Owner Name */
+            owner_name?: string | null;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Preferred Language */
+            preferred_language: string | null;
+            /** Primary Email */
+            primary_email: string | null;
+            /** Primary Phone */
+            primary_phone: string | null;
+            /** Region */
+            region: string | null;
+            /** Score */
+            score: number;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /**
+             * Stage Changed At
+             * Format: date-time
+             */
+            stage_changed_at: string;
+            /**
+             * Stage Id
+             * Format: uuid
+             */
+            stage_id: string;
+            /** Unqualified Reason */
+            unqualified_reason: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Utm Campaign */
+            utm_campaign: string | null;
+            /** Utm Medium */
+            utm_medium: string | null;
+            /** Utm Source */
+            utm_source: string | null;
+            /** Version */
+            version: number;
+            /** Website */
+            website: string | null;
+        };
+        /** LeadPage */
+        LeadPage: {
+            /** Items */
+            items: components["schemas"]["LeadOut"][];
+            /** Total */
+            total: number;
+        };
+        /** LeadPatch */
+        LeadPatch: {
+            /** City */
+            city?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Custom Fields */
+            custom_fields?: {
+                [key: string]: unknown;
+            } | null;
+            /** Employee Range */
+            employee_range?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Identities */
+            identities?: components["schemas"]["IdentityIn"][] | null;
+            /** Industry */
+            industry?: string | null;
+            /** Kind */
+            kind?: ("person" | "organisation") | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Next Follow Up At */
+            next_follow_up_at?: string | null;
+            /** Org Name */
+            org_name?: string | null;
+            /** Preferred Language */
+            preferred_language?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Unqualified Reason */
+            unqualified_reason?: string | null;
+            /** Version */
+            version: number;
+            /** Website */
+            website?: string | null;
+        };
+        /** LoggedOut */
+        LoggedOut: {
+            activity: components["schemas"]["ActivityOut"];
+            lead: components["schemas"]["LeadOut"];
         };
         /** LoginIn */
         LoginIn: {
@@ -1004,6 +1732,29 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** MyDayOut */
+        MyDayOut: {
+            /** New Leads */
+            new_leads: components["schemas"]["LeadOut"][];
+            /** Overdue */
+            overdue: components["schemas"]["TaskOut"][];
+            /** Today */
+            today: components["schemas"]["TaskOut"][];
+            /** Unassigned Count */
+            unassigned_count: number | null;
+            /** Upcoming */
+            upcoming: components["schemas"]["TaskOut"][];
+        };
+        /** OrderIn */
+        OrderIn: {
+            /** Ids */
+            ids: string[];
+        };
+        /** OwnerIn */
+        OwnerIn: {
+            /** Owner User Id */
+            owner_user_id: string | null;
+        };
         /** PackOut */
         PackOut: {
             /** Key */
@@ -1059,6 +1810,8 @@ export interface components {
             };
             /** Default Country */
             default_country: string;
+            /** Follow Up Required */
+            follow_up_required: boolean;
             /** Labels */
             labels: {
                 [key: string]: unknown;
@@ -1073,6 +1826,8 @@ export interface components {
             branding?: components["schemas"]["Branding"] | null;
             /** Default Country */
             default_country?: string | null;
+            /** Follow Up Required */
+            follow_up_required?: boolean | null;
             /** Labels */
             labels?: {
                 [key: string]: components["schemas"]["Label"];
@@ -1081,6 +1836,32 @@ export interface components {
             locale?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /** SourceIn */
+        SourceIn: {
+            /** Name */
+            name: string;
+        };
+        /** SourceOut */
+        SourceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+        };
+        /** SourcePatch */
+        SourcePatch: {
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
         };
         /** StaffAccountOut */
         StaffAccountOut: {
@@ -1153,6 +1934,145 @@ export interface components {
             is_active?: boolean | null;
             /** Name */
             name?: string | null;
+        };
+        /** StageIn */
+        StageIn: {
+            /** Colour */
+            colour?: string | null;
+            /**
+             * Is Converted
+             * @default false
+             */
+            is_converted: boolean;
+            /**
+             * Is Open
+             * @default true
+             */
+            is_open: boolean;
+            /**
+             * Is Unqualified
+             * @default false
+             */
+            is_unqualified: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Required Fields
+             * @default []
+             */
+            required_fields: string[];
+        };
+        /** StageOut */
+        StageOut: {
+            /** Colour */
+            colour: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Converted */
+            is_converted: boolean;
+            /** Is Open */
+            is_open: boolean;
+            /** Is System */
+            is_system: boolean;
+            /** Is Unqualified */
+            is_unqualified: boolean;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+            /** Required Fields */
+            required_fields: string[];
+        };
+        /** StagePatch */
+        StagePatch: {
+            /** Colour */
+            colour?: string | null;
+            /** Is Converted */
+            is_converted?: boolean | null;
+            /** Is Open */
+            is_open?: boolean | null;
+            /** Is Unqualified */
+            is_unqualified?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Required Fields */
+            required_fields?: string[] | null;
+        };
+        /** TaskIn */
+        TaskIn: {
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            /** Lead Id */
+            lead_id?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /**
+             * Priority
+             * @default normal
+             * @enum {string}
+             */
+            priority: "low" | "normal" | "high";
+            /** Title */
+            title: string;
+        };
+        /** TaskOut */
+        TaskOut: {
+            /** Completed At */
+            completed_at: string | null;
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Follow Up */
+            is_follow_up: boolean;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Lead Name */
+            lead_name?: string | null;
+            /** Lead Phone */
+            lead_phone?: string | null;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Owner User Id
+             * Format: uuid
+             */
+            owner_user_id: string;
+            /** Priority */
+            priority: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+        };
+        /** TaskPatch */
+        TaskPatch: {
+            /** Due At */
+            due_at?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Priority */
+            priority?: ("low" | "normal" | "high") | null;
+            /** Status */
+            status?: ("open" | "done" | "cancelled") | null;
+            /** Title */
+            title?: string | null;
         };
         /** TeamIn */
         TeamIn: {
@@ -1293,6 +2213,61 @@ export interface components {
             challenge_token: string;
             /** Code */
             code: string;
+        };
+        /** TypeIn */
+        TypeIn: {
+            /**
+             * Fields
+             * @default []
+             */
+            fields: {
+                [key: string]: unknown;
+            }[];
+            /** Icon */
+            icon?: string | null;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** TypeOut */
+        TypeOut: {
+            /** Fields */
+            fields: {
+                [key: string]: unknown;
+            }[];
+            /** Icon */
+            icon: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Is Loggable */
+            is_loggable: boolean;
+            /** Is System */
+            is_system: boolean;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Position */
+            position: number;
+        };
+        /** TypePatch */
+        TypePatch: {
+            /** Fields */
+            fields?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Icon */
+            icon?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Label */
+            label?: string | null;
         };
         /** UserOut */
         UserOut: {
@@ -1437,6 +2412,123 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "crm-setup-list_types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypeOut"][];
+                };
+            };
+        };
+    };
+    "crm-setup-create_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TypeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-delete_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-update_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TypePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "audit-list_audit": {
         parameters: {
             query?: {
@@ -1844,6 +2936,761 @@ export interface operations {
             };
         };
     };
+    "crm-setup-list_fields": {
+        parameters: {
+            query?: {
+                entity?: "lead";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-create_field": {
+        parameters: {
+            query?: {
+                entity?: "lead";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FieldIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-order_fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-delete_field": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-update_field": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FieldPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-list_sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"][];
+                };
+            };
+        };
+    };
+    "crm-setup-create_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-order_sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-delete_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-update_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourcePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-list_stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StageOut"][];
+                };
+            };
+        };
+    };
+    "crm-setup-create_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-order_stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StageOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-delete_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                stage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-setup-update_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                stage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StagePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-list_leads": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                stage_id?: string | null;
+                source_id?: string | null;
+                /** @description me, unassigned or a user id */
+                owner?: string | null;
+                status?: ("open" | "closed") | null;
+                follow_up?: ("overdue" | "today" | "none") | null;
+                sort?: "newest" | "follow_up" | "recent_activity" | "name";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-create_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-get_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-delete_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-update_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-list_activities": {
+        parameters: {
+            query?: {
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-log_activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoggedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-assign_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-my_day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyDayOut"];
+                };
+            };
+        };
+    };
     "settings-list_modules": {
         parameters: {
             query?: never;
@@ -2072,6 +3919,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-list_tasks": {
+        parameters: {
+            query?: {
+                scope?: "mine" | "team";
+                status?: ("open" | "done" | "cancelled") | null;
+                lead_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-create_task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-delete_task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "work-update_task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskOut"];
                 };
             };
             /** @description Validation Error */

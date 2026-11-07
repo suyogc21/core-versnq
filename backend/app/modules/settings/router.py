@@ -29,6 +29,7 @@ class SettingsOut(BaseModel):
     locale: str
     default_country: str
     branding: dict
+    follow_up_required: bool
 
 
 class SettingsPatch(BaseModel):
@@ -37,6 +38,7 @@ class SettingsPatch(BaseModel):
     locale: str | None = Field(default=None, pattern=r"^[a-z]{2}(-[A-Z]{2})?$")
     default_country: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
     branding: Branding | None = None
+    follow_up_required: bool | None = None  # False = the follow-up rule only warns
 
     _tz = field_validator("timezone")(lambda v: v if v is None else valid_timezone(v))
 
@@ -64,6 +66,7 @@ def _out(s: TenantSettings) -> SettingsOut:
         locale=s.locale,
         default_country=s.default_country,
         branding=s.branding,
+        follow_up_required=s.follow_up_required,
     )
 
 
@@ -84,7 +87,7 @@ async def update_settings(
         s.labels = s.labels | {k: v.model_dump() for k, v in body.labels.items()}
     if body.branding:
         s.branding = s.branding | body.branding.model_dump(exclude_none=True)
-    for field in ("timezone", "locale", "default_country"):
+    for field in ("timezone", "locale", "default_country", "follow_up_required"):
         value = getattr(body, field)
         if value is not None:
             setattr(s, field, value)
