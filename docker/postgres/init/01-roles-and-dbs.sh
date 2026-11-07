@@ -10,9 +10,10 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname postgres <<-EOSQL
     NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
   CREATE DATABASE versnq OWNER versnq_owner;
   CREATE DATABASE versnq_test OWNER versnq_owner;
+  CREATE DATABASE versnq_e2e OWNER versnq_owner;
 EOSQL
 
-for db in versnq versnq_test; do
+for db in versnq versnq_test versnq_e2e; do
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$db" <<-EOSQL
     REVOKE ALL ON DATABASE $db FROM PUBLIC;
     GRANT CONNECT ON DATABASE $db TO versnq_owner, versnq_app;

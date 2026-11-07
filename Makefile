@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed demo-reset
+.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed demo-reset e2e-db e2e
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -69,3 +69,9 @@ demo-seed: ## Add the demo companies (dev only; prints the shared password once)
 
 demo-reset: ## Wipe the dev database, rebuild it, then add fresh demo companies (dev only)
 	$(UV) python -m app.platform.demo --reset
+
+e2e-db: ## Create the end-to-end test database on an existing Postgres volume (once)
+	./scripts/e2e-db.sh
+
+e2e: ## Gate 1 browser test: own API, database and app builds; never touches dev data
+	cd frontend && npx playwright test

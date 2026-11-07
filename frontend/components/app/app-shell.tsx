@@ -44,10 +44,13 @@ function NavLink({ item }: { item: NavItem }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { me, can, logout } = useAuth();
+  const path = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   useWorkspaceSettings(); // loads labels and applies the workspace colour
   if (!me) return null;
   const workspaceItems = WORKSPACE.filter((i) => !i.permission || can(i.permission));
+  // Typing an admin address directly gets a clear refusal (the backend refuses the data too).
+  const locked = WORKSPACE.find((i) => path.startsWith(i.href) && i.permission && !can(i.permission));
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -95,7 +98,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col overflow-auto">{children}</main>
+      <main className="flex min-w-0 flex-1 flex-col overflow-auto">
+        {locked ? (
+          <>
+            <PageHeader title={locked.label} />
+            <p className="p-8 text-center text-muted-foreground">You don&apos;t have permission to do that.</p>
+          </>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }
