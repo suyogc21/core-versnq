@@ -78,7 +78,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 1.15 Next.js skeleton + typed API client generated from the OpenAPI spec
 - [x] 1.16 Staff console: login, companies list, create / edit / suspend company, staff audit
 - [x] 1.17 Tenant app: login, invite accept, reset password, 2FA, users, roles, teams, settings and labels
-  - [ ] Test: end-to-end — create company → owner accepts invite → adds a Sales User → user sees only allowed screens
+  - [x] Test: end-to-end — create company → owner accepts invite → adds a Sales User → user sees only allowed screens
 - [ ] **Gate 1:** all tests green, Suyog walks the flow end to end and approves
 
 ## Phase 2 — Core CRM (Milestone 2)
