@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Versnq Core — CRM UI v2 (mockup)</title>
+<style>
+  :root {
+    --accent: #4f46e5; --accent-fg: #fff;
+    --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+    --bg: #fff; --bg-subtle: #f7f7f8; --bg-hover: #f2f2f4; --bg-sel: color-mix(in srgb, var(--accent) 7%, transparent);
+    --border: #e7e7ea; --border-strong: #d6d6db;
+    --text: #18181b; --text-muted: #6b6b76; --text-faint: #9a9aa4;
+    --danger: #dc2626; --ok: #16a34a; --warn: #d97706;
+    --row: 36px; --radius: 8px;
+    --shadow: 0 12px 32px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #111113; --bg-subtle: #18181b; --bg-hover: #222226; --border: #2a2a2f; --border-strong: #3a3a40;
+    --text: #ededf0; --text-muted: #a1a1aa; --text-faint: #71717a; --shadow: 0 12px 32px rgba(0,0,0,.5);
+  }
+  :root[data-density="comfortable"] { --row: 44px; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #e9e9ec; color: var(--text); height: 100vh; overflow: hidden; }
+  button, input, select { font: inherit; color: inherit; }
+  button { background: none; border: 0; cursor: pointer; }
+  .frame { height: 100vh; display: flex; background: var(--bg); margin: 0 auto; position: relative; overflow: hidden; transition: width .2s; width: 100%; }
+  .frame.phone { width: 390px; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+
+  /* Sidebar */
+  .sidebar { width: 216px; flex-shrink: 0; background: var(--bg-subtle); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 10px 8px; gap: 2px; }
+  .phone .sidebar { display: none; }
+  .ws { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin-bottom: 6px; }
+  .logo { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); color: var(--accent-fg); display: grid; place-items: center; font-weight: 700; font-size: 11px; }
+  .sub { color: var(--text-faint); font-size: 11px; }
+  .nav { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 6px; color: var(--text-muted); text-align: left; width: 100%; }
+  .nav:hover { background: var(--bg-hover); color: var(--text); }
+  .nav.active { background: var(--bg-hover); color: var(--text); font-weight: 500; }
+  .nav .n { margin-left: auto; font-size: 11px; color: var(--text-faint); }
+  .nav .n.hot { color: var(--danger); font-weight: 600; }
+  .label { color: var(--text-faint); font-size: 11px; padding: 10px 8px 4px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  .topbar { min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .topbar h1 { font-size: 14px; font-weight: 600; margin: 0; }
+  .menu-btn { display: none; font-size: 16px; padding: 4px; }
+  .phone .menu-btn { display: inline-block; }
+  .phone .footer label { display: none; }
+  .muted { color: var(--text-muted); } .faint { color: var(--text-faint); }
+  .search { display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 6px; padding: 0 8px; height: 28px; width: 260px; margin-left: auto; }
+  .search input { border: 0; outline: 0; background: none; width: 100%; }
+  .phone .search { width: 100%; order: 5; margin: 0 0 8px; }
+  .kbd { font-size: 10px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--text-faint); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--border); font-weight: 500; white-space: nowrap; background: var(--bg); }
+  .btn:hover { background: var(--bg-hover); }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  .btn.ghost { border-color: transparent; }
+  .btn.sm { height: 24px; padding: 0 8px; font-size: 12px; }
+  .btn.danger { color: var(--danger); }
+
+  /* Views + filters */
+  .views { display: flex; align-items: center; gap: 2px; padding: 6px 12px 0; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .view { padding: 6px 10px 8px; color: var(--text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+  .view:hover { color: var(--text); }
+  .view.active { color: var(--text); border-color: var(--accent); font-weight: 500; }
+  .view .c { color: var(--text-faint); margin-left: 4px; font-size: 12px; }
+  .view .c.hot { color: var(--danger); }
+  .filterbar { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .phone .filterbar { flex-wrap: nowrap; overflow-x: auto; }
+  .fbtn { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 8px; border: 1px dashed var(--border-strong); border-radius: 6px; color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+  .fbtn:hover { background: var(--bg-hover); }
+  .fbtn.on { border-style: solid; border-color: color-mix(in srgb, var(--accent) 40%, transparent); background: var(--accent-soft); color: var(--text); }
+  .fbtn .x { margin-left: 2px; opacity: .6; }
+  .right-tools { margin-left: auto; display: flex; gap: 6px; }
+  .phone .right-tools { display: none; }
+
+  /* Table */
+  .tablewrap { flex: 1; overflow: auto; position: relative; }
+  table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
+  th, td { height: var(--row); padding: 0 10px; border-bottom: 1px solid var(--border); white-space: nowrap; text-align: left; }
+  th { position: sticky; top: 0; z-index: 2; background: var(--bg); font-weight: 500; color: var(--text-muted); font-size: 12px; height: 34px; user-select: none; }
+  th.sortable { cursor: pointer; } th.sortable:hover { color: var(--text); }
+  th .arrow { font-size: 10px; margin-left: 3px; }
+  td.sticky, th.sticky { position: sticky; left: 0; z-index: 1; background: inherit; }
+  th.sticky { z-index: 3; background: var(--bg); }
+  td.sticky2, th.sticky2 { position: sticky; left: 36px; z-index: 1; background: inherit; box-shadow: 1px 0 0 var(--border); }
+  th.sticky2 { z-index: 3; background: var(--bg); }
+  tr { background: var(--bg); }
+  tbody tr:hover { background: var(--bg-hover); cursor: pointer; }
+  tbody tr.sel { background: var(--bg-sel); }
+  tbody tr.cursor { box-shadow: inset 2px 0 0 var(--accent); }
+  td.cb, th.cb { width: 36px; padding: 0 0 0 14px; }
+  input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .name { font-weight: 500; max-width: 220px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); font-size: 12px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .late { color: var(--danger); }
+  .owner { display: inline-flex; align-items: center; gap: 6px; }
+  .av { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9px; font-weight: 600; color: #fff; flex-shrink: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Mobile cards */
+  .cards { display: none; }
+  .phone .tablewrap table { display: none; }
+  .phone .cards { display: block; }
+  .card { display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .card .grow { flex: 1; min-width: 0; }
+  .card .row1 { display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
+  .card .row1 b { overflow: hidden; text-overflow: ellipsis; }
+  .card .row2 { display: flex; gap: 8px; margin-top: 4px; font-size: 12px; align-items: center; flex-wrap: wrap; }
+
+  /* Footer + bulk */
+  .footer { display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 42px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+  .pager { margin-left: auto; display: flex; gap: 2px; align-items: center; }
+  .pager button { min-width: 26px; height: 26px; border-radius: 6px; }
+  .pager button:hover { background: var(--bg-hover); }
+  .pager button.cur { background: var(--accent-soft); color: var(--text); font-weight: 600; }
+  .pager button:disabled { opacity: .35; cursor: default; }
+  .selbanner { padding: 6px 16px; background: var(--accent-soft); font-size: 12px; text-align: center; border-bottom: 1px solid var(--border); }
+  .selbanner button { color: var(--accent); font-weight: 600; }
+  .bulk { position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 14px; background: var(--text); color: var(--bg); border-radius: 10px; box-shadow: var(--shadow); z-index: 20; white-space: nowrap; }
+  .bulk .btn { background: transparent; color: inherit; border-color: color-mix(in srgb, var(--bg) 25%, transparent); }
+  .bulk .btn:hover { background: color-mix(in srgb, var(--bg) 12%, transparent); }
+  .phone .bulk { left: 8px; right: 8px; transform: none; overflow-x: auto; bottom: 50px; }
+
+  /* Popover */
+  .pop { position: absolute; z-index: 30; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); padding: 6px; min-width: 200px; }
+  .pop label, .pop .item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
+  .pop label:hover, .pop .item:hover { background: var(--bg-hover); }
+  .pop .head { padding: 4px 8px; font-size: 11px; color: var(--text-faint); }
+
+  /* Slide-over preview */
+  .scrim { position: absolute; inset: 0; background: rgba(0,0,0,.08); z-index: 40; }
+  .slide { position: absolute; top: 0; right: 0; bottom: 0; width: 460px; max-width: 100%; background: var(--bg); box-shadow: var(--shadow); z-index: 41; display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+  .slide header { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .slide .body { flex: 1; overflow: auto; padding: 14px 16px; }
+
+  /* Record page */
+  .record { flex: 1; overflow: auto; }
+  .rhead { padding: 14px 20px 12px; border-bottom: 1px solid var(--border); }
+  .crumbs { font-size: 12px; color: var(--text-faint); margin-bottom: 6px; }
+  .rtitle { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .rtitle h2 { margin: 0; font-size: 18px; }
+  .stepper { display: flex; margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .step { flex: 1; padding: 6px 10px; font-size: 12px; color: var(--text-muted); border-right: 1px solid var(--border); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .step:last-child { border-right: 0; }
+  .step.done { background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--text); }
+  .step.cur { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  .phone .stepper { overflow-x: auto; }
+  .phone .step { min-width: 110px; }
+  .cols { display: grid; grid-template-columns: 300px minmax(0,1fr) 300px; min-height: 0; }
+  .phone .cols { grid-template-columns: 1fr; }
+  .col { padding: 16px 20px; border-right: 1px solid var(--border); }
+  .col:last-child { border-right: 0; }
+  .phone .col { border-right: 0; border-bottom: 1px solid var(--border); }
+  .sect { margin-bottom: 18px; }
+  .sect h4 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); display: flex; justify-content: space-between; }
+  dl.kv { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; margin: 0; font-size: 12px; }
+  dl.kv dt { color: var(--text-muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+  .box { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .box.alert { border-color: color-mix(in srgb, var(--danger) 40%, transparent); background: color-mix(in srgb, var(--danger) 5%, transparent); }
+  .composer { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+  .ctabs { display: flex; gap: 2px; padding: 4px; background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
+  .ctab { padding: 4px 10px; border-radius: 5px; font-size: 12px; color: var(--text-muted); }
+  .ctab.on { background: var(--bg); color: var(--text); font-weight: 500; box-shadow: 0 0 0 1px var(--border); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .opt { padding: 2px 10px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; }
+  .opt.on { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  textarea { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font: inherit; resize: vertical; background: var(--bg); color: var(--text); }
+  .tfilter { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+  .ev { display: flex; gap: 10px; padding: 8px 0; }
+  .ev .ic { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); display: grid; place-items: center; font-size: 12px; flex-shrink: 0; background: var(--bg); }
+  .ev .t { font-size: 11px; color: var(--text-faint); }
+  .bubble { margin-top: 4px; background: var(--bg-subtle); border-radius: 6px; padding: 6px 8px; font-size: 12px; }
+  .task { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; font-size: 12px; }
+
+  /* Mockup controls */
+  .controls { position: fixed; left: 12px; bottom: 64px; z-index: 100; background: #fff; color: #18181b; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.15); width: 220px; font-size: 12px; }
+  .controls h5 { margin: 0 0 6px; font-size: 11px; color: #888; text-transform: uppercase; }
+  .controls .row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+  .controls button { border: 1px solid #ddd; border-radius: 6px; padding: 3px 8px; background: #fff; }
+  .controls button.on { background: #18181b; color: #fff; border-color: #18181b; }
+  .controls .hint { color: #888; line-height: 1.4; }
+  .controls.min > :not(h5) { display: none; }
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <aside class="sidebar">
+    <div class="ws"><div class="logo">A</div><div><div style="font-weight:600">Acme Academy</div><div class="sub">acme.core.versnq.in</div></div></div>
+    <button class="nav" data-go="myday">◷ My Day<span class="n hot">7</span></button>
+    <div class="label">Pipeline</div>
+    <button class="nav" data-go="leads">☺ Students<span class="n">312</span></button>
+    <button class="nav">▤ Course enrolments</button>
+    <div class="label">Workspace</div>
+    <button class="nav" data-go="users">👥 Users<span class="n">250</span></button>
+    <button class="nav">◎ Teams</button>
+    <button class="nav">⚙ Pipeline setup</button>
+    <div style="flex:1"></div>
+    <div style="display:flex;gap:8px;align-items:center;padding:8px;border-top:1px solid var(--border)"><span class="av" style="background:#0ea5e9">RK</span><div><div style="font-weight:500">Rohan Kapoor</div><div class="sub">Sales Manager</div></div></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="controls" id="controls">
+  <h5 style="display:flex;justify-content:space-between">Mockup controls <button id="hidectl" style="border:0;padding:0">hide</button></h5>
+  <div class="row"><button data-screen="leads" class="on">Leads list</button><button data-screen="record">Lead record</button><button data-screen="users">Users list</button></div>
+  <div class="row"><button data-w="desk" class="on">Desktop</button><button data-w="phone">Phone</button></div>
+  <div class="row"><button data-d="compact" class="on">Compact</button><button data-d="comfortable">Comfortable</button></div>
+  <div class="row"><button data-t="light" class="on">Light</button><button data-t="dark">Dark</button></div>
+  <div class="hint">Try: sort headers · page size · Columns · tick rows (then “Select all 312”) · click a row · keys J / K / Enter / Esc.</div>
+</div>
+
+<script>
+// ---------- deterministic fake data ----------
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const pick = (a) => a[Math.floor(rnd() * a.length)];
+const FIRST = "Aarav Vivaan Aditya Vihaan Arjun Sai Reyansh Krishna Ishaan Shaurya Atharv Kabir Ananya Diya Aadhya Saanvi Pari Anika Navya Myra Sara Ira Riya Kavya Meera Sneha Tanvi Nikhil Karthik Rahul Varun Yash Neha Pooja Shreya Isha Zara Fatima Imran Farhan Gurpreet Simran Lakshmi Deepak Priyanka Aisha Omar".split(" ");
+const LAST = "Sharma Verma Gupta Iyer Nair Reddy Rao Patel Shah Mehta Joshi Kulkarni Desai Pillai Menon Khan Singh Kaur Das Banerjee Bose Naidu Hegde Shetty Agarwal Malhotra".split(" ");
+const STAGES = [["New enquiry","#64748b"],["Counselling done","#0ea5e9"],["Application","#8b5cf6"],["Enrolled","#16a34a"],["Not interested","#dc2626"],["Invalid","#94a3b8"]];
+const OWNERS = [["Priya Shah","#0ea5e9"],["Anita Menon","#14b8a6"],["Vikram Rao","#f97316"],["Rohan Kapoor","#6366f1"],[null,null]];
+const SOURCES = ["Website","Meta ads","Google ads","Walk-in","Referral","Education fair"];
+const COURSES = ["Data Science","Full-stack Development","Digital Marketing"];
+const OUTCOMES = ["Interested","Call back later","Not reachable","Not interested"];
+const now = Date.now(), H = 3600e3, D = 24 * H;
+const LEADS = Array.from({ length: 312 }, (_, i) => {
+  const st = rnd() < .7 ? STAGES[Math.floor(rnd() * 3)] : pick(STAGES.slice(3));
+  const open = ["New enquiry","Counselling done","Application"].includes(st[0]);
+  const r = rnd();
+  // Follow-ups land on the half hour in business hours (10:00–18:30).
+  const slot = (t) => { const d = new Date(t); d.setHours(10 + Math.floor(rnd() * 9), rnd() < .5 ? 0 : 30, 0, 0); return d.getTime(); };
+  const fu = !open ? null : r < .06 ? null : r < .2 ? slot(now - (1 + rnd() * 3) * D) : r < .38 ? Math.max(slot(now), now + (1 + Math.floor(rnd() * 3)) * H) : slot(now + (1 + rnd() * 9) * D);
+  const owner = i < 9 ? OWNERS[4] : pick(OWNERS.slice(0, 4));
+  return { id: i, name: `${pick(FIRST)} ${pick(LAST)}`, phone: `+91 9${String(Math.floor(rnd() * 1e9)).padStart(9, "0").replace(/(\d{4})(\d{5})/, "$1 $2")}`,
+    email: rnd() < .5 ? "x" : "", stage: st, open, fu, owner, source: pick(SOURCES), course: pick(COURSES),
+    last: now - rnd() * 20 * D, lastOutcome: rnd() < .6 ? pick(OUTCOMES) : null, created: now - rnd() * 45 * D, city: pick(["Pune","Mumbai","Bengaluru","Delhi"]) };
+});
+const ROLES = [["Sales User", .8], ["Sales Manager", .08], ["Team Lead", .06], ["Admin", .03], ["Finance", .03]];
+const TEAMS = ["Pune Counsellors","Mumbai Counsellors","Online Admissions","Delhi North","Bengaluru Tech","—"];
+const USERS = Array.from({ length: 250 }, (_, i) => {
+  let r = rnd(), role = ROLES[0][0]; for (const [k, p] of ROLES) { if ((r -= p) < 0) { role = k; break; } }
+  const n = `${pick(FIRST)} ${pick(LAST)}`;
+  const status = rnd() < .9 ? "Active" : rnd() < .5 ? "Invited" : "Disabled";
+  return { id: i, name: n, email: n.toLowerCase().replace(" ", ".") + "@acme.in", role, team: pick(TEAMS), status, tfa: role === "Admin" || rnd() < .3, seen: status === "Active" ? now - rnd() * 12 * D : null };
+});
+
+// ---------- helpers ----------
+const ini = (n) => n.split(" ").map((p) => p[0]).join("").slice(0, 2);
+const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+function rel(t) { const d = (t - now) / 1000, a = Math.abs(d); return a < 3600 ? rtf.format(Math.round(d / 60), "minute") : a < 86400 ? rtf.format(Math.round(d / 3600), "hour") : rtf.format(Math.round(d / 86400), "day"); }
+function when(t) {
+  if (!t) return "—"; const d = new Date(t), days = Math.round((new Date(d).setHours(0,0,0,0) - new Date(now).setHours(0,0,0,0)) / D);
+  const tm = d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  return days === 0 ? `Today ${tm}` : days === 1 ? `Tomorrow ${tm}` : days === -1 ? `Yesterday ${tm}` : d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+const pill = (s) => `<span class="pill"><span class="dot" style="background:${s[1]}"></span>${s[0]}</span>`;
+const ownerCell = (o) => o[0] ? `<span class="owner"><span class="av" style="background:${o[1]}">${ini(o[0])}</span>${o[0]}</span>` : `<span class="faint">Unassigned</span>`;
+const fuCell = (l) => !l.open ? `<span class="faint">—</span>` : !l.fu ? `<span class="late">Not set</span>` : `<span class="${l.fu < now ? "late" : ""}">${when(l.fu)}</span>`;
+
+// ---------- generic table state (the one component every list uses) ----------
+function makeTable(cfg) {
+  return { ...cfg, page: 1, size: 50, sort: cfg.defaultSort, dir: cfg.defaultDir ?? 1, selected: new Set(), allMatching: false, cursor: -1,
+    visible: new Set(cfg.columns.filter((c) => !c.hidden).map((c) => c.key)), filters: {}, view: cfg.views[0].key, q: "" };
+}
+
+const leadTable = makeTable({
+  noun: "students", rows: LEADS, defaultSort: "fu", defaultDir: 1,
+  views: [
+    { key: "mine", label: "My students", f: (l) => l.owner[0] === "Priya Shah" && l.open },
+    { key: "today", label: "Due today", f: (l) => l.open && l.fu && l.fu >= now && l.fu < now + 12 * H },
+    { key: "overdue", label: "Overdue", f: (l) => l.open && l.fu && l.fu < now, hot: true },
+    { key: "none", label: "No follow-up", f: (l) => l.open && !l.fu, hot: true },
+    { key: "unassigned", label: "Unassigned", f: (l) => !l.owner[0] },
+    { key: "all", label: "All", f: () => true },
+  ],
+  filterDefs: [
+    { key: "stage", label: "Stage", values: STAGES.map((s) => s[0]), get: (l) => l.stage[0] },
+    { key: "owner", label: "Owner", values: ["Priya Shah","Anita Menon","Vikram Rao","Rohan Kapoor","Unassigned"], get: (l) => l.owner[0] ?? "Unassigned" },
+    { key: "source", label: "Source", values: SOURCES, get: (l) => l.source },
+    { key: "course", label: "Course interest", values: COURSES, get: (l) => l.course },
+  ],
+  columns: [
+    { key: "name", label: "Name", sort: (l) => l.name, cell: (l) => `<span class="name">${l.name}</span>`, sticky: true },
+    { key: "phone", label: "Phone", cell: (l) => `<span class="num muted">${l.phone}</span>` },
+    { key: "stage", label: "Stage", sort: (l) => STAGES.indexOf(l.stage), cell: (l) => pill(l.stage) },
+    { key: "fu", label: "Next follow-up", sort: (l) => l.open ? (l.fu ?? -1) : 9e15, cell: fuCell },
+    { key: "owner", label: "Owner", sort: (l) => l.owner[0] ?? "~", cell: (l) => ownerCell(l.owner) },
+    { key: "last", label: "Last activity", sort: (l) => -l.last, cell: (l) => `<span class="muted">${l.lastOutcome ? l.lastOutcome + " · " : ""}${rel(l.last)}</span>` },
+    { key: "source", label: "Source", sort: (l) => l.source, cell: (l) => `<span class="muted">${l.source}</span>` },
+    { key: "course", label: "Course interest", sort: (l) => l.course, cell: (l) => `<span class="muted">${l.course}</span>` },
+    { key: "city", label: "City", sort: (l) => l.city, cell: (l) => `<span class="muted">${l.city}</span>`, hidden: true },
+    { key: "created", label: "Created", sort: (l) => -l.created, cell: (l) => `<span class="muted">${rel(l.created)}</span>`, hidden: true },
+  ],
+  card: (l) => `<span class="av" style="background:${l.stage[1]}">${ini(l.name)}</span><div class="grow"><div class="row1"><b>${l.name}</b>${fuCell(l)}</div><div class="row2">${pill(l.stage)}<span class="muted">${l.owner[0] ?? "Unassigned"}</span></div></div>`,
+  bulk: ["Assign to ▾", "Change stage ▾", "Set follow-up ▾", "Delete"],
+  search: (l, q) => (l.name + l.phone).toLowerCase().includes(q),
+});
+
+const userTable = makeTable({
+  noun: "users", rows: USERS, defaultSort: "name",
+  views: [
+    { key: "all", label: "All", f: () => true },
+    { key: "active", label: "Active", f: (u) => u.status === "Active" },
+    { key: "invited", label: "Invited", f: (u) => u.status === "Invited" },
+    { key: "disabled", label: "Disabled", f: (u) => u.status === "Disabled" },
+    { key: "no2fa", label: "Admins without 2FA", f: (u) => u.role === "Admin" && !u.tfa, hot: true },
+  ],
+  filterDefs: [
+    { key: "role", label: "Role", values: ROLES.map((r) => r[0]), get: (u) => u.role },
+    { key: "team", label: "Team", values: TEAMS, get: (u) => u.team },
+  ],
+  columns: [
+    { key: "name", label: "Name", sort: (u) => u.name, cell: (u) => `<span class="owner"><span class="av" style="background:#64748b">${ini(u.name)}</span><span class="name">${u.name}</span></span>`, sticky: true },
+    { key: "email", label: "Email", sort: (u) => u.email, cell: (u) => `<span class="muted">${u.email}</span>` },
+    { key: "role", label: "Role", sort: (u) => u.role, cell: (u) => u.role },
+    { key: "team", label: "Team", sort: (u) => u.team, cell: (u) => `<span class="muted">${u.team}</span>` },
+    { key: "status", label: "Status", sort: (u) => u.status, cell: (u) => `<span class="pill"><span class="dot" style="background:${u.status === "Active" ? "#16a34a" : u.status === "Invited" ? "#d97706" : "#94a3b8"}"></span>${u.status}</span>` },
+    { key: "tfa", label: "2FA", sort: (u) => !u.tfa, cell: (u) => u.tfa ? "On" : `<span class="faint">Off</span>` },
+    { key: "seen", label: "Last sign-in", sort: (u) => -(u.seen ?? 0), cell: (u) => u.seen ? `<span class="muted">${rel(u.seen)}</span>` : `<span class="faint">Never</span>` },
+  ],
+  card: (u) => `<span class="av" style="background:#64748b">${ini(u.name)}</span><div class="grow"><div class="row1"><b>${u.name}</b><span class="muted">${u.status}</span></div><div class="row2"><span>${u.role}</span><span class="muted">${u.team}</span></div></div>`,
+  bulk: ["Change role ▾", "Add to team ▾", "Resend invites", "Disable"],
+  search: (u, q) => (u.name + u.email).toLowerCase().includes(q),
+});
+
+let screen = "leads", openPop = null, preview = null;
+
+function matches(t, ignoreView) {
+  const view = t.views.find((v) => v.key === t.view);
+  let rows = t.rows.filter((r) => (ignoreView || view.f(r)) && t.filterDefs.every((f) => !t.filters[f.key]?.size || t.filters[f.key].has(f.get(r))) && (!t.q || t.search(r, t.q)));
+  const col = t.columns.find((c) => c.key === t.sort);
+  if (col?.sort) rows = [...rows].sort((a, b) => { const x = col.sort(a), y = col.sort(b); return (x > y ? 1 : x < y ? -1 : 0) * t.dir; });
+  return rows;
+}
+
+// ---------- list screen ----------
+function renderList(t, title, primary) {
+  const rows = matches(t), total = rows.length, pages = Math.max(1, Math.ceil(total / t.size));
+  t.page = Math.min(t.page, pages);
+  const pageRows = rows.slice((t.page - 1) * t.size, t.page * t.size);
+  const cols = t.columns.filter((c) => t.visible.has(c.key));
+  const allOnPage = pageRows.length && pageRows.every((r) => t.selected.has(r.id));
+  const nSel = t.allMatching ? total : t.selected.size;
+  const counts = t.views.map((v) => t.rows.filter(v.f).length);
+  const pagesList = (() => { const out = []; for (let p = 1; p <= pages; p++) if (p === 1 || p === pages || Math.abs(p - t.page) <= 1) out.push(p); else if (out[out.length - 1] !== "…") out.push("…"); return out; })();
+
+  document.getElementById("main").innerHTML = `
+    <div class="topbar">
+      <button class="menu-btn" title="Menu">☰</button><h1>${title}</h1><span class="faint num">${t.rows.length}</span>
+      <div class="search">🔍<input id="q" placeholder="Search name, phone, email…" value="${t.q}"><span class="kbd">/</span></div>
+      ${t === leadTable ? `<button class="btn">Import</button>` : ""}
+      <button class="btn primary">${primary}</button>
+    </div>
+    <div class="views">${t.views.map((v, i) => `<button class="view ${t.view === v.key ? "active" : ""}" data-view="${v.key}">${v.label}<span class="c ${v.hot && counts[i] ? "hot" : ""}">${counts[i]}</span></button>`).join("")}
+      <button class="view faint" title="Save the current filters as a view">+ Save view</button></div>
+    <div class="filterbar">
+      ${t.filterDefs.map((f) => { const s = t.filters[f.key]; return s?.size ? `<button class="fbtn on" data-filter="${f.key}">${f.label}: ${[...s].slice(0, 2).join(", ")}${s.size > 2 ? ` +${s.size - 2}` : ""}<span class="x" data-clear="${f.key}">✕</span></button>` : `<button class="fbtn" data-filter="${f.key}">+ ${f.label}</button>`; }).join("")}
+      <button class="fbtn">+ More filters</button>
+      ${Object.values(t.filters).some((s) => s.size) ? `<button class="btn ghost sm" id="clearall">Clear all</button>` : ""}
+      <div class="right-tools"><button class="btn sm" id="cols">⚙ Columns</button>${t === leadTable ? `<button class="btn sm" title="Board view (with Deals, slice B)">▦ Board</button>` : ""}</div>
+    </div>
+    ${allOnPage && !t.allMatching && total > pageRows.length ? `<div class="selbanner">All ${pageRows.length} on this page are selected. <button id="selall">Select all ${total} matching</button></div>` : ""}
+    ${t.allMatching ? `<div class="selbanner">All ${total} matching ${t.noun} are selected. <button id="selnone">Clear selection</button></div>` : ""}
+    <div class="tablewrap" id="tw">
+      <table><thead><tr>
+        <th class="cb sticky"><input type="checkbox" id="cball" ${allOnPage ? "checked" : ""} aria-label="Select page"></th>
+        ${cols.map((c) => `<th class="${c.sort ? "sortable" : ""} ${c.sticky ? "sticky2" : ""}" data-sort="${c.sort ? c.key : ""}">${c.label}${t.sort === c.key ? `<span class="arrow">${t.dir > 0 ? "▲" : "▼"}</span>` : ""}</th>`).join("")}
+      </tr></thead><tbody>
+        ${pageRows.map((r, i) => `<tr data-id="${r.id}" class="${t.selected.has(r.id) || t.allMatching ? "sel" : ""} ${t.cursor === i ? "cursor" : ""}">
+          <td class="cb sticky"><input type="checkbox" data-cb="${r.id}" ${t.selected.has(r.id) || t.allMatching ? "checked" : ""}></td>
+          ${cols.map((c) => `<td class="${c.sticky ? "sticky2" : ""}">${c.cell(r)}</td>`).join("")}</tr>`).join("")}
+        ${pageRows.length ? "" : `<tr><td colspan="${cols.length + 1}" style="text-align:center;height:120px" class="muted">Nothing matches. <button class="btn sm" id="clearall2">Clear filters</button></td></tr>`}
+      </tbody></table>
+      <div class="cards">${pageRows.map((r) => `<div class="card" data-id="${r.id}"><input type="checkbox" data-cb="${r.id}" ${t.selected.has(r.id) ? "checked" : ""}>${t.card(r)}</div>`).join("")}</div>
+    </div>
+    <div class="footer">
+      <span class="num">${total ? `${(t.page - 1) * t.size + 1}–${Math.min(t.page * t.size, total)} of ${total}` : "0"} ${t.noun}</span>
+      <label>Rows <select id="size">${[25, 50, 100].map((n) => `<option ${n === t.size ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+      <div class="pager"><button id="prev" ${t.page === 1 ? "disabled" : ""}>‹</button>${pagesList.map((p) => p === "…" ? `<span class="faint">…</span>` : `<button class="${p === t.page ? "cur" : ""}" data-page="${p}">${p}</button>`).join("")}<button id="next" ${t.page === pages ? "disabled" : ""}>›</button></div>
+    </div>
+    ${nSel ? `<div class="bulk"><b>${nSel} selected</b>${t.bulk.map((b) => `<button class="btn sm ${b === "Delete" || b === "Disable" ? "danger" : ""}">${b}</button>`).join("")}<button class="btn sm" id="clearsel">✕</button></div>` : ""}
+    ${preview !== null && t === leadTable ? previewHtml(LEADS[preview]) : ""}`;
+
+  const $ = (s) => document.querySelector(s), $$ = (s) => document.querySelectorAll(s);
+  const rerender = () => render();
+  $("#q").oninput = (e) => { t.q = e.target.value.toLowerCase(); t.page = 1; rerender(); const q = $("#q"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); };
+  $$("[data-view]").forEach((b) => b.onclick = () => { t.view = b.dataset.view; t.page = 1; t.selected.clear(); t.allMatching = false; rerender(); });
+  $$("[data-sort]").forEach((th) => th.dataset.sort && (th.onclick = () => { t.dir = t.sort === th.dataset.sort ? -t.dir : 1; t.sort = th.dataset.sort; rerender(); }));
+  $$("[data-page]").forEach((b) => b.onclick = () => { t.page = +b.dataset.page; rerender(); });
+  $("#prev").onclick = () => { t.page--; rerender(); }; $("#next").onclick = () => { t.page++; rerender(); };
+  $("#size").onchange = (e) => { t.size = +e.target.value; t.page = 1; rerender(); };
+  $("#cball").onclick = (e) => { pageRows.forEach((r) => e.target.checked ? t.selected.add(r.id) : t.selected.delete(r.id)); t.allMatching = false; rerender(); };
+  $$("[data-cb]").forEach((c) => c.onclick = (e) => { e.stopPropagation(); const id = +c.dataset.cb; t.selected.has(id) ? t.selected.delete(id) : t.selected.add(id); t.allMatching = false; rerender(); });
+  $("#selall")?.addEventListener("click", () => { t.allMatching = true; rerender(); });
+  $("#selnone")?.addEventListener("click", () => { t.allMatching = false; t.selected.clear(); rerender(); });
+  $("#clearsel")?.addEventListener("click", () => { t.allMatching = false; t.selected.clear(); rerender(); });
+  for (const id of ["#clearall", "#clearall2"]) $(id)?.addEventListener("click", () => { t.filters = {}; t.q = ""; rerender(); });
+  $$("[data-clear]").forEach((x) => x.onclick = (e) => { e.stopPropagation(); delete t.filters[x.dataset.clear]; rerender(); });
+  $$("[data-filter]").forEach((b) => b.onclick = (e) => {
+    const f = t.filterDefs.find((d) => d.key === b.dataset.filter); const s = t.filters[f.key] ?? new Set();
+    showPop(b, `<div class="head">${f.label}</div>${f.values.map((v) => `<label><input type="checkbox" data-v="${v}" ${s.has(v) ? "checked" : ""}> ${v}</label>`).join("")}`, (pop) => {
+      pop.querySelectorAll("[data-v]").forEach((c) => c.onchange = () => { c.checked ? s.add(c.dataset.v) : s.delete(c.dataset.v); t.filters[f.key] = s; t.page = 1; render({ keepPop: true }); });
+    });
+  });
+  $("#cols").onclick = (e) => showPop(e.currentTarget, `<div class="head">Show columns</div>${t.columns.map((c) => `<label><input type="checkbox" data-col="${c.key}" ${t.visible.has(c.key) ? "checked" : ""} ${c.sticky ? "disabled" : ""}> ${c.label}</label>`).join("")}<div class="head">Saved per person</div>`, (pop) => {
+    pop.querySelectorAll("[data-col]").forEach((c) => c.onchange = () => { c.checked ? t.visible.add(c.dataset.col) : t.visible.delete(c.dataset.col); render({ keepPop: true }); });
+  }, true);
+  $$("tbody tr[data-id], .card[data-id]").forEach((tr) => tr.onclick = () => { if (t === leadTable) { preview = +tr.dataset.id; rerender(); } });
+  $("#scrim")?.addEventListener("click", () => { preview = null; rerender(); });
+  $("#closeprev")?.addEventListener("click", () => { preview = null; rerender(); });
+  $("#openfull")?.addEventListener("click", () => { screen = "record"; render(); });
+}
+
+function showPop(anchor, html, wire, keepOpen) {
+  closePop(); const r = anchor.getBoundingClientRect(), f = document.getElementById("frame").getBoundingClientRect();
+  const pop = document.createElement("div"); pop.className = "pop"; pop.innerHTML = html;
+  pop.style.top = (r.bottom - f.top + 4) + "px"; pop.style.left = Math.min(r.left - f.left, f.width - 220) + "px";
+  document.getElementById("frame").appendChild(pop); openPop = pop; wire(pop);
+  setTimeout(() => document.addEventListener("click", outside), 0);
+  function outside(e) { if (!pop.contains(e.target)) { closePop(); document.removeEventListener("click", outside); } }
+}
+function closePop() { openPop?.remove(); openPop = null; }
+
+function previewHtml(l) {
+  return `<div class="scrim" id="scrim"></div><aside class="slide">
+    <header><div style="display:flex;gap:8px;align-items:center">${pill(l.stage)}<span class="faint" style="margin-left:auto;font-size:11px">J / K next · Esc close</span><button class="btn ghost sm" id="closeprev">✕</button></div>
+      <h2 style="margin:8px 0 2px;font-size:17px">${l.name}</h2><div class="muted num">📱 ${l.phone} <span class="pill" style="font-size:10px;padding:0 5px">WhatsApp</span></div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn primary sm">📞 Call</button><button class="btn sm">💬 WhatsApp</button><button class="btn sm">✎ Note</button><button class="btn sm" id="openfull" style="margin-left:auto">Open full record ↗</button></div></header>
+    <div class="body">
+      ${l.open ? `<div class="box ${!l.fu || l.fu < now ? "alert" : ""}" style="margin-bottom:12px"><b>${!l.fu ? "No follow-up set" : "Next follow-up: " + when(l.fu)}</b><div class="muted" style="font-size:12px">${!l.fu || l.fu < now ? "Log what happened and set the next one." : rel(l.fu)}</div></div>` : ""}
+      ${composerHtml()}
+      <dl class="kv"><dt>Owner</dt><dd>${l.owner[0] ?? "Unassigned"}</dd><dt>Source</dt><dd>${l.source}</dd><dt>Course interest</dt><dd>${l.course}</dd><dt>City</dt><dd>${l.city}</dd></dl>
+      <div class="sect" style="margin-top:16px"><h4>Recent activity</h4>${timelineHtml(3)}</div>
+    </div></aside>`;
+}
+
+function composerHtml() {
+  return `<div class="composer"><div class="ctabs"><button class="ctab on">📞 Call</button><button class="ctab">📝 Note</button><button class="ctab">🎓 Demo class</button><button class="ctab">More ▾</button></div>
+    <div style="padding:10px;display:grid;gap:8px"><div class="chips">${OUTCOMES.map((o, i) => `<span class="opt ${i === 0 ? "on" : ""}">${o}</span>`).join("")}</div>
+    <textarea rows="2" placeholder="What happened? (optional)"></textarea>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="muted" style="font-size:12px">Next follow-up *</span>${["In 2h", "Tomorrow 10:00", "In 2 days", "Next week", "Pick…"].map((x, i) => `<span class="opt ${i === 1 ? "on" : ""}">${x}</span>`).join("")}<button class="btn primary sm" style="margin-left:auto">Log call</button></div></div></div>`;
+}
+function timelineHtml(n = 99) {
+  const T = [["📞","Call · <b>Interested</b> — Priya","Today 11:15","Wants the weekend batch; send fee details."],["↗","Stage: Counselling done → Application","Today 11:16",null],["🎓","Demo class attended — Priya","Yesterday 6:00 PM",null],["📝","Note — Rohan","Mon 4:20 PM","Parent will join the next call."],["👤","Assigned to Priya — by Rohan","Mon 10:02",null],["➕","Created from Meta ads <span class='pill' style='font-size:10px;padding:0 5px'>utm: reels-nov</span>","Mon 10:02",null]];
+  return T.slice(0, n).map(([i, a, t, b]) => `<div class="ev"><div class="ic">${i}</div><div><div class="t">${t}</div><div>${a}</div>${b ? `<div class="bubble">${b}</div>` : ""}</div></div>`).join("");
+}
+
+// ---------- record screen ----------
+function renderRecord() {
+  const l = LEADS[preview ?? 12];
+  const idx = ["New enquiry","Counselling done","Application","Enrolled"].indexOf(l.stage[0]);
+  document.getElementById("main").innerHTML = `<div class="record">
+    <div class="rhead"><div class="crumbs"><button id="back" style="color:inherit">Students</button> / ${l.name}</div>
+      <div class="rtitle"><span class="av" style="background:${l.stage[1]};width:34px;height:34px;font-size:12px">${ini(l.name)}</span><div><h2>${l.name}</h2><div class="muted num">📱 ${l.phone} · Pune · added ${rel(l.created)}</div></div>
+        <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="btn primary">📞 Call</button><button class="btn">💬 WhatsApp</button><button class="btn">✉ Email</button><button class="btn">⋯</button></div></div>
+      <div class="stepper">${["New enquiry","Counselling done","Application","Enrolled"].map((s, i) => `<div class="step ${i < idx ? "done" : i === idx ? "cur" : ""}" title="Move to ${s}">${i < idx ? "✓ " : ""}${s}</div>`).join("")}<div class="step" title="Close as lost / invalid">Close ▾</div></div>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <div class="sect"><h4>About <button class="faint">Edit</button></h4><dl class="kv"><dt>Phone</dt><dd class="num">${l.phone}</dd><dt>Email</dt><dd>—</dd><dt>Owner</dt><dd>${ownerCell(l.owner[0] ? l.owner : OWNERS[0])}</dd><dt>Source</dt><dd>${l.source}</dd><dt>Origin</dt><dd>Inbound</dd><dt>City</dt><dd>${l.city}</dd></dl></div>
+        <div class="sect"><h4>Interest</h4><dl class="kv"><dt>Course interest</dt><dd>${l.course}</dd><dt>Batch</dt><dd>DS Weekend Batch</dd></dl></div>
+        <div class="sect"><h4>Background</h4><dl class="kv"><dt>Qualification</dt><dd>Graduate</dd></dl></div>
+        <div class="sect"><h4>Attribution</h4><dl class="kv"><dt>Campaign</dt><dd>reels-nov</dd><dt>UTM source</dt><dd>instagram</dd></dl></div>
+      </div>
+      <div class="col">
+        ${composerHtml()}
+        <div class="tfilter">${["All", "Calls", "Notes", "Stage changes", "Tasks", "System"].map((x, i) => `<span class="opt ${i === 0 ? "on" : ""}">${x}</span>`).join("")}</div>
+        ${timelineHtml()}
+      </div>
+      <div class="col">
+        <div class="sect"><h4>Next follow-up</h4><div class="box ${!l.fu || l.fu < now ? "alert" : ""}"><b>${l.fu ? when(l.fu) : "Not set"}</b><div class="muted" style="font-size:12px">Call back about the weekend batch</div><div style="margin-top:8px;display:flex;gap:6px"><button class="btn sm">Reschedule</button><button class="btn sm">Done</button></div></div></div>
+        <div class="sect"><h4>Open tasks <button class="faint">+ Add</button></h4>
+          <div class="task"><input type="checkbox"><div><div>Send fee structure PDF</div><div class="late" style="font-size:11px">Overdue · yesterday</div></div></div>
+          <div class="task"><input type="checkbox"><div><div>Book demo class seat</div><div class="faint" style="font-size:11px">Fri 10:00 AM · Anita</div></div></div></div>
+        <div class="sect"><h4>Course enrolments <button class="faint">+ Add</button></h4><div class="muted" style="font-size:12px">None yet. (Deals — slice B)</div></div>
+        <div class="sect"><h4>Company</h4><div class="muted" style="font-size:12px">Not linked.</div></div>
+      </div>
+    </div></div>`;
+  document.getElementById("back").onclick = () => { screen = "leads"; render(); };
+}
+
+function render(opts = {}) {
+  if (!opts.keepPop) closePop();
+  document.querySelectorAll("[data-go]").forEach((b) => b.classList.toggle("active", b.dataset.go === (screen === "record" ? "leads" : screen)));
+  document.querySelectorAll("[data-screen]").forEach((b) => b.classList.toggle("on", b.dataset.screen === screen));
+  if (screen === "leads") renderList(leadTable, "Students", "+ Add student");
+  else if (screen === "users") { preview = null; renderList(userTable, "Users", "+ Invite users"); }
+  else renderRecord();
+}
+
+// ---------- keyboard: / search, J/K move, Enter preview, Esc close ----------
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") { if (e.key === "Escape") e.target.blur(); return; }
+  const t = screen === "users" ? userTable : leadTable;
+  if (e.key === "/") { e.preventDefault(); document.getElementById("q")?.focus(); }
+  if (screen === "record") return;
+  const rows = matches(t).slice((t.page - 1) * t.size, t.page * t.size);
+  if (e.key === "j" || e.key === "k") { t.cursor = Math.max(0, Math.min(rows.length - 1, t.cursor + (e.key === "j" ? 1 : -1))); if (preview !== null) preview = rows[t.cursor].id; render(); }
+  if (e.key === "Enter" && t.cursor >= 0 && t === leadTable) { preview = rows[t.cursor].id; render(); }
+  if (e.key === "Escape") { preview = null; render(); }
+  if (e.key === "x" && t.cursor >= 0) { const id = rows[t.cursor].id; t.selected.has(id) ? t.selected.delete(id) : t.selected.add(id); render(); }
+});
+
+document.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => { screen = b.dataset.go === "myday" ? "leads" : b.dataset.go; preview = null; render(); });
+document.querySelectorAll("[data-screen]").forEach((b) => b.onclick = () => { screen = b.dataset.screen; if (screen !== "record") preview = null; render(); });
+document.querySelectorAll("[data-w]").forEach((b) => b.onclick = () => { document.getElementById("frame").classList.toggle("phone", b.dataset.w === "phone"); document.querySelectorAll("[data-w]").forEach((x) => x.classList.toggle("on", x === b)); render(); });
+document.querySelectorAll("[data-d]").forEach((b) => b.onclick = () => { document.documentElement.dataset.density = b.dataset.d; document.querySelectorAll("[data-d]").forEach((x) => x.classList.toggle("on", x === b)); });
+document.querySelectorAll("[data-t]").forEach((b) => b.onclick = () => { document.documentElement.dataset.theme = b.dataset.t; document.querySelectorAll("[data-t]").forEach((x) => x.classList.toggle("on", x === b)); });
+document.getElementById("hidectl").onclick = (e) => { const c = document.getElementById("controls"); c.classList.toggle("min"); e.target.textContent = c.classList.contains("min") ? "show" : "hide"; };
+leadTable.view = "all";
+render();
+</script>
+</body>
+</html>
