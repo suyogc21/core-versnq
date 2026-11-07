@@ -18,6 +18,7 @@ TEST_REDIS_URL = _settings.redis_url.rsplit("/", 1)[0] + "/14"
 os.environ["REDIS_URL"] = TEST_REDIS_URL
 # Tests never inherit dev-only switches; a test that needs one turns it on itself.
 os.environ["TRUST_PROXY_HEADERS"] = "false"
+os.environ["DEMO_SKIP_2FA"] = "false"
 get_settings.cache_clear()
 
 # Imported only now: these modules create the app's database engine, which must see the

@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import skips_2fa_for_demo
 from app.core.security import (
     DUMMY_PASSWORD_HASH,
     REFRESH_TOKEN_DAYS,
@@ -112,6 +113,6 @@ def restrictions(staff: PlatformStaff) -> list[str]:
     found = []
     if staff.must_change_password:
         found.append("password_change_required")
-    if not staff.totp_enabled:
+    if not staff.totp_enabled and not skips_2fa_for_demo(staff.email):
         found.append("two_factor_setup_required")
     return found
