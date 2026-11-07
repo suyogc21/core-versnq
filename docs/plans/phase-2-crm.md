@@ -1,6 +1,6 @@
 # Phase 2 — Core CRM: plan
 
-Status: **proposed 2026-11-07, waiting for Suyog's approval.** Source of truth: the spec (§1–4, §7, §9 non-money parts, Decision log #10, #14–#18), `docs/specs/data-model.md` (approved) and the approved main-screen mockup (`docs/design/mockup-main.html`).
+Status: **approved 2026-11-07** (Decision log #21). Source of truth: the spec (§1–4, §7, §9 non-money parts, Decision log #10, #14–#18), `docs/specs/data-model.md` (approved) and the approved main-screen mockup (`docs/design/mockup-main.html`).
 
 Goal: the actual CRM. A salesperson's whole day (leads, history, follow-ups, deals) runs in Core, and Versnq can run its own pipeline in it from the end of slice B.
 
@@ -14,10 +14,11 @@ Each slice ends with something you can demo. It gets demo data, backend tests, b
 | **B. Pipelines and deals** | 2.9 | Pipelines per product/course, kanban drag, won/lost reasons, product catalogue |
 | **C. Capture and routing** | 2.2, 2.3, 2.3b, 2.4, 2.5, 2.6 | Web form/webhook capture, CSV import, duplicate check + merge, org grouping, consent, auto-assignment, leakage guard |
 | **D. Customers and documents** | 2.10 | Convert lead → customer, registration link, document checklist and upload |
-| **E. Views, scoring, automation** | 2.11, 2.11b | Tags, saved views, bulk actions, scoring rules, WHEN/IF/THEN automations |
+| **E. Views, scoring, automation** | 2.11, 2.11b | Tags, saved views, bulk actions, scoring rules, engagement score, calculated fields, WHEN/IF/THEN automations |
 | **F. Dashboards and export** | 2.12, 2.13 | Salesperson, manager and owner dashboards; CSV export |
+| **G. Deeper customization** | 2.15–2.17 | Record page layouts per company, field-level permissions, custom record types (HubSpot-style custom objects) |
 
-Suggested order A → B → (Versnq starts using it) → C → D → E → F. Slices C–F get the same detailed plan as A below, each approved before it starts.
+Order A → B → (Versnq starts using it) → C → D → E → F → G. Slices C–F get the same detailed plan as A below, each approved before it starts.
 
 ---
 
@@ -98,9 +99,9 @@ New permissions (deny by default, Owner has all):
 - `phonenumbers` (backend). Already approved in data-model DM4.
 - Nothing new for the frontend in slice A. Kanban drag-and-drop in slice B will need one library (e.g. `@dnd-kit`); I'll ask then.
 
-### A8. Open questions for Suyog
+### A8. Answers (all as recommended, Decision log #21)
 
-| # | Question | Recommendation |
+| # | Question | Decision |
 | --- | --- | --- |
 | Q1 | Should **Finance** see leads? The spec says Finance sees invoices, payments and reminders, all parked. | **No lead access** for now; Finance gets customers in slice D |
 | Q2 | Who sees **unassigned** leads (no owner yet)? | Team-scope and all-scope roles (managers, Admin, Owner); Sales Users don't |
@@ -108,3 +109,15 @@ New permissions (deny by default, Owner has all):
 | Q4 | Default **stages** | Generic: New → Contacted → Qualified → Nurturing → Won / Lost / Invalid. EdTech: New enquiry → Counselling done → Application → Enrolled / Not interested / Invalid. Editable per company |
 | Q5 | Can a **Sales User create a lead** that is then owned by them automatically? | Yes, a rep's own new lead is theirs; managers choose an owner or leave it unassigned |
 | Q6 | Is the **follow-up rule (R4)** strict for every company? | Strict by default, with a per-company setting to make it a warning instead |
+
+### A9. Gap fixes from the LeadSquared / HubSpot comparison (Decision log #21)
+
+All generic: no feature knows about any industry. Examples in packs are configuration only.
+
+| # | Feature | How it works (generic) |
+| --- | --- | --- |
+| G1 | **Required fields per stage** | A stage lists field keys (built-in or custom) that must be filled before a lead can enter it. The API refuses the move and names the missing fields |
+| G2 | **Linked dropdowns** | A select / multi-select field can depend on another select field: each parent option has its own list of child options. The API refuses a child value that does not belong to the chosen parent |
+| G3 | **Unique fields** | Any text/number/email/phone/url custom field can be marked unique within the company. Enforced by the database (a per-company unique index table), so two people saving at once cannot both win |
+| G4 | **Calling queue** | My Day can "Start working": it opens the next due lead, you log the outcome and next follow-up, and it moves on. Order: overdue first, then due today |
+| G5 | **One-step logging** | Logging a call or activity on a lead completes that lead's due follow-up task and asks for the next follow-up in the same form (no duplicate "task + call" records) |

@@ -1,6 +1,6 @@
 # Versnq Core — Data Model
 
-Status: **approved 2026-11-05** — see spec Decision log #15–#18. Tables are built phase by phase from this document; changes go through this file first.
+Status: **approved 2026-11-05; amended 2026-11-07 (Decision log #21)** — see spec Decision log #15–#18. Tables are built phase by phase from this document; changes go through this file first.
 
 ## Rules that apply to every table
 
@@ -94,10 +94,11 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 
 | Table | Purpose |
 | --- | --- |
-| `lead_stages` | Per-tenant lifecycle: name, order, `is_open`, `is_converted`, `is_unqualified`, colour. Every tenant gets a closed **Invalid** stage |
+| `lead_stages` | Per-tenant lifecycle: name, order, `is_open`, `is_converted`, `is_unqualified`, colour, **`required_fields` (field keys that must be filled to enter the stage, #21)**. Every tenant gets a closed **Invalid** stage |
 | `lead_sources` | Per-tenant sources: name, `is_active` |
 | `tags`, `lead_tags` | Tags and the many-to-many link |
-| `custom_field_definitions` | entity (`lead` / `deal` / `customer` / `activity`), **key (fixed backend ID, never changes; used by API/webhooks/automations)**, label (display name, renamable), type (text, number, date, select, multi-select, phone, email, url, file), options, required, group (e.g. KYC), order |
+| `custom_field_definitions` | entity (`lead` / `deal` / `customer` / `activity`), **key (fixed backend ID, never changes; used by API/webhooks/automations)**, label (display name, renamable), type (text, number, date, select, multi-select, phone, email, url, file), options, required, group (e.g. KYC), order, **`is_unique` (#21), `depends_on` (parent select field key; options then belong to a parent option, #21)** |
+| `custom_field_unique_values` | entity, field key, normalized value, record id — unique per tenant + entity + key + value; enforces unique custom fields in the database (#21) |
 | `consents` | lead_id, channel (`whatsapp` / `email`), status (`opted_in` / `opted_out`), source, captured_at, evidence — full history; latest row = current state |
 | `suppression_list` | channel (`whatsapp` / `email` / `sms`), value_normalized, reason (`opt_out` / `bounce` / `complaint`), created_at — **not linked to any lead**, survives lead deletion (Phase 2 creates it; Phase 3 sends check it) |
 | `lead_merges` | survivor_id, merged_id, merged_by, snapshot jsonb |

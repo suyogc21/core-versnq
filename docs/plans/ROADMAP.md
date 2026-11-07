@@ -112,6 +112,9 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts)
 - [ ] 2.13 CSV export
 - [ ] 2.14 Frontend for 2.1–2.13
+- [ ] 2.15 Record page layouts per company (slice G)
+- [ ] 2.16 Field-level permissions: view / edit / hidden / mandatory per role (slice G)
+- [ ] 2.17 Custom record types (custom objects) on the same generic engine (slice G)
 - Each item gets its own Test lines in the Phase 2 detailed plan (isolation + visibility tests on every item)
 - [ ] **Gate 2:** all tests green, Suyog approves
 
@@ -153,7 +156,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 ## Parked ⏸
 
 - ⏸ Money: invoices, installments, payment links, gateways, balances, reminders, money dashboard (any country / currency when unparked)
-- ⏸ Later items in the spec: ad lead forms, Google Workspace, Zapier/n8n, HubSpot/LeadSquared import, A/B testing, SMS, PWA, custom reports, field-level permissions
+- ⏸ Later items in the spec: ad lead forms, Google Workspace, Zapier/n8n, HubSpot/LeadSquared import, A/B testing, SMS, PWA, custom reports
 - ⏸ Not now (2026-11-07 review): single sign-on (Google / Microsoft), custom password rules
 
 ---
