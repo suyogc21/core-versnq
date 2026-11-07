@@ -83,3 +83,11 @@ test("a workspace address that does not exist shows nothing", async ({ page }) =
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByText("Workspace not found")).toBeVisible();
 });
+
+test("sign-in pages refuse to be embedded in other sites", async ({ request }) => {
+  for (const url of [`${CLIENT("anything")}/login`, `${STAFF}/login`]) {
+    const res = await request.get(url);
+    expect(res.headers()["x-frame-options"]).toBe("DENY");
+    expect(res.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+  }
+});
