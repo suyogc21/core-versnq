@@ -21,11 +21,13 @@ from app.core.config import get_settings
 from app.core.security import hash_password
 from app.core.tenancy import platform_session
 from app.modules.audit.models import AuditLog
+from app.modules.crm.models import ActivityType, CustomFieldDefinition, LeadStage
 from app.modules.roles.models import Role
 from app.modules.roles.service import _set_permissions
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team, TeamMember
 from app.modules.users.models import User
+from app.platform.demo_crm import seed_leads
 from app.platform.models import Tenant
 from app.platform.staff.models import PlatformStaff
 from app.platform.tenants.schemas import TenantCreate
@@ -87,6 +89,77 @@ BLUEWAVE_LABELS = {
     "customer": {"singular": "Buyer", "plural": "Buyers"},
     "pipeline": {"singular": "Sales pipeline", "plural": "Sales pipelines"},
 }
+
+
+# Demo leads go to people who sell; custom values are picked from each field's options.
+SELLING_ROLES = {"sales_user", "sales_manager", "team_lead"}
+ACME_FIELDS = {
+    "program_interest": "pick",
+    "batch": "pick",
+    "qualification": "pick",
+    "application_number": "unique",
+}
+BLUEWAVE_FIELDS = {"project": "pick", "unit_type": "pick", "booking_ref": "unique"}
+
+
+def _opts(*labels: str, parent: str | None = None) -> list[dict]:
+    out = []
+    for label in labels:
+        value = label.lower().replace(" ", "_").replace("-", "_")
+        out.append({"value": value, "label": label} | ({"parent": parent} if parent else {}))
+    return out
+
+
+async def _real_estate_setup(db, tenant_id: uuid.UUID) -> None:
+    """Bluewave runs on the generic pack; real-estate words and fields are just settings."""
+    fields = [
+        dict(
+            key="project",
+            label="Project",
+            type="select",
+            group_name="Property",
+            options=_opts("Marina Heights", "Palm Residences", "Creek View"),
+        ),
+        dict(
+            key="unit_type",
+            label="Unit type",
+            type="select",
+            group_name="Property",
+            depends_on="project",
+            options=_opts("1 BR", "2 BR", parent="marina_heights")
+            + [
+                o | {"value": "palm_" + o["value"]}
+                for o in _opts("Villa", "Townhouse", parent="palm_residences")
+            ]
+            + [
+                o | {"value": "creek_" + o["value"]}
+                for o in _opts("Studio", "1 BR", parent="creek_view")
+            ],
+        ),
+        dict(
+            key="booking_ref",
+            label="Booking reference",
+            type="text",
+            is_unique=True,
+            group_name="Booking",
+        ),
+        dict(key="budget_aed", label="Budget (AED)", type="number", group_name="Property"),
+    ]
+    for i, f in enumerate(fields):
+        db.add(CustomFieldDefinition(tenant_id=tenant_id, entity="lead", position=i, **f))
+    won = await db.scalar(select(LeadStage).where(LeadStage.name == "Won"))
+    won.required_fields = ["booking_ref"]
+    db.add(
+        ActivityType(
+            tenant_id=tenant_id,
+            key="site_visit",
+            label="Site visit done",
+            icon="map-pin",
+            fields=[],
+            position=50,
+        )
+    )
+    await db.flush()
 
 
 def _ago(days: float) -> datetime:
@@ -273,6 +346,10 @@ async def seed_demo(prefix: str = "") -> DemoResult:
         )
         teams = await _teams(db, tenant, owner, ACME_TEAMS, 38)
         added = await _people(db, tenant, owner, roles, teams, ACME_PEOPLE, domain, pw_hash, 36)
+        reps = [u.id for u, k in added if u.status == "active" and k in SELLING_ROLES]
+        await seed_leads(
+            db, tenant.id, count=300, country="IN", reps=reps, unassigned=8, custom=ACME_FIELDS
+        )
         result.accounts.append(Account("Acme Academy", "Owner", owner.name, owner.email))
         for user, role_key in added:
             if user.status == "active":
@@ -308,8 +385,20 @@ async def seed_demo(prefix: str = "") -> DemoResult:
             before=before,
             after={"labels": settings.labels},
         )
+        await _real_estate_setup(db, tenant.id)
         teams = await _teams(db, tenant, owner, [("Dubai Marina", None)], 19)
-        await _people(db, tenant, owner, roles, teams, BLUEWAVE_PEOPLE, domain, pw_hash, 18)
+        added = await _people(db, tenant, owner, roles, teams, BLUEWAVE_PEOPLE, domain, pw_hash, 18)
+        reps = [u.id for u, k in added if u.status == "active" and k in SELLING_ROLES]
+        await seed_leads(
+            db,
+            tenant.id,
+            count=60,
+            country="AE",
+            reps=reps,
+            unassigned=3,
+            custom=BLUEWAVE_FIELDS,
+            seed=11,
+        )
         result.accounts.append(Account("Bluewave Realty", "Owner", owner.name, owner.email))
         result.accounts.append(
             Account("Bluewave Realty", "Sales Manager", "Farah Siddiqui", f"farah@{domain}")
@@ -367,7 +456,7 @@ def main() -> None:
         return
     base = get_settings().base_domain
     print("\nDemo companies (all invented):")
-    print(f"  Acme Academy     http://acme.{base}:3000      EdTech, 14 people, 4 teams")
+    print(f"  Acme Academy     http://acme.{base}:3000      EdTech, 14 people, 300 students")
     print(
         f"  Bluewave Realty  http://bluewave.{base}:3000  generic pack relabelled for real estate"
     )
@@ -376,7 +465,10 @@ def main() -> None:
     for a in result.accounts:
         print(f"  {a.company:<24} {a.role:<14} {a.email}")
     print(f"\nEvery account above uses this password: {result.password}")
-    print("It is shown once. Owner, Admin and staff set up 2FA on first sign-in.\n")
+    print(
+        "It is shown once. Owner, Admin and staff set up 2FA on first sign-in\n"
+        "(skipped for these demo accounts while DEMO_SKIP_2FA=true).\n"
+    )
 
 
 if __name__ == "__main__":

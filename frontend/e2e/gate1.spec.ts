@@ -59,8 +59,9 @@ test("a new company goes from creation to a working, permission-limited team", a
   await expect(seller).toHaveURL(/\/login$/);
   await signIn(seller, CLIENT(SLUG), SELLER.email, SELLER.password);
   await expect(seller.getByRole("heading", { name: /Good to see you, Sam/ })).toBeVisible();
-  // EdTech pack labels reach the screen: leads are "students".
-  await expect(seller.getByText(/Your students/)).toBeVisible();
+  // EdTech pack labels reach the screen: leads are "Students".
+  await expect(seller.getByRole("link", { name: "Students", exact: true })).toBeVisible();
+  await expect(seller.getByText(/new students/)).toBeVisible();
   for (const item of ["Users", "Teams", "Roles", "Settings", "Audit log"]) {
     await expect(seller.getByRole("link", { name: item })).toHaveCount(0);
   }

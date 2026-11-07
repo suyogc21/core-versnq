@@ -24,6 +24,12 @@ import asyncio, os
 import redis
 from app.platform.cli import _create_staff
 redis.Redis.from_url(os.environ["REDIS_URL"]).flushdb()
-asyncio.run(_create_staff("e2e-staff@versnq.in", "E2E Staff", os.environ["E2E_STAFF_PASSWORD"]))
+async def main():
+    password = os.environ["E2E_STAFF_PASSWORD"]
+    await _create_staff("e2e-staff@versnq.in", "E2E Staff", password)
+    # A second staff account for tests that build their data through the API.
+    await _create_staff("e2e-api@versnq.in", "E2E API", password)
+
+asyncio.run(main())
 PY
 exec uv run uvicorn app.main:app --port 8100

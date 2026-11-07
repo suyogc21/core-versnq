@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from app.core.tenancy import platform_session, tenant_session
 from app.modules.audit.models import AuditLog
+from app.modules.crm.models import Lead, LeadStage, Task
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team
 from app.modules.users.models import User
@@ -24,8 +25,17 @@ async def test_demo_seed_creates_three_companies_and_is_idempotent():
         users = (await s.scalars(select(User))).all()
         teams = {t.name: t for t in (await s.scalars(select(Team))).all()}
         audit_count = len((await s.scalars(select(AuditLog))).all())
+        leads = (await s.scalars(select(Lead))).all()
+        open_follow_ups = {
+            t.lead_id: t.due_at
+            for t in (
+                await s.scalars(select(Task).where(Task.status == "open", Task.is_follow_up))
+            ).all()
+        }
     async with tenant_session(bluewave.id) as s:
         labels = (await s.get(TenantSettings, bluewave.id)).labels
+        blue_leads = (await s.scalars(select(Lead))).all()
+        blue_won = await s.scalar(select(LeadStage.id).where(LeadStage.name == "Won"))
 
     assert first.created and not second.created
     assert len(users) == 14
@@ -33,6 +43,14 @@ async def test_demo_seed_creates_three_companies_and_is_idempotent():
     assert teams["Pune Counsellors"].parent_team_id == teams["Admissions"].id
     assert audit_count >= 14
     assert labels["lead"]["singular"] == "Buyer enquiry"
+    # CRM demo data: every open lead's follow-up date matches its open follow-up task.
+    assert len(leads) == 300 and len(blue_leads) == 60
+    assert sum(1 for x in leads if x.owner_user_id is None) == 8
+    for lead in leads:
+        assert lead.next_follow_up_at == open_follow_ups.get(lead.id)
+        assert lead.is_open or lead.next_follow_up_at is None
+    won = [x for x in blue_leads if x.stage_id == blue_won]
+    assert won and all(x.custom_fields.get("booking_ref") for x in won)  # stage requirement met
     assert (acme.status, bluewave.status, sunrise.status) == ("active", "active", "suspended")
     assert len(first.password) >= 12
     assert {"Owner", "Admin", "Sales Manager", "Sales User", "Versnq staff"} <= {
