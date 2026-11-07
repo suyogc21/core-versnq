@@ -33,7 +33,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="min-h-screen">
-      <header className="flex h-12 items-center gap-6 border-b px-6">
+      <header className="flex min-h-12 flex-wrap items-center gap-x-6 gap-y-2 border-b px-4 py-2 sm:px-6">
         <span className="font-semibold">
           Versnq <span className="font-normal text-muted-foreground">staff</span>
         </span>
@@ -61,7 +61,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
           </Button>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl p-6">{children}</main>
+      <main className="mx-auto w-full max-w-5xl p-4 sm:p-6">{children}</main>
     </div>
   );
 }

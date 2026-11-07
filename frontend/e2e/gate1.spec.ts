@@ -36,7 +36,7 @@ test("a new company goes from creation to a working, permission-limited team", a
   await expect(owner).toHaveURL(/\/login$/);
   await signIn(owner, CLIENT(SLUG), OWNER.email, OWNER.password);
   await turnOnTwoFactor(owner);
-  await expect(owner.getByText("Northwind Learning").first()).toBeVisible();
+  await expect(owner.locator("aside").getByText("Northwind Learning")).toBeVisible();
   for (const item of ["Users", "Teams", "Roles", "Settings", "Audit log"]) {
     await expect(owner.getByRole("link", { name: item })).toBeVisible();
   }

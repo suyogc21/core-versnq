@@ -37,7 +37,7 @@ export default function CompaniesPage() {
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <h1 className="mr-auto text-base font-semibold">Companies</h1>
         <Input
           placeholder="Search name or address"

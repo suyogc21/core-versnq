@@ -76,8 +76,8 @@ export default function TeamsPage() {
       ) : tree.length === 0 ? (
         <p className="p-8 text-center text-muted-foreground">No teams yet.</p>
       ) : (
-        <div className="flex min-h-0 flex-1">
-          <nav className="w-64 shrink-0 space-y-0.5 overflow-auto border-r p-2">
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+          <nav className="max-h-56 w-full shrink-0 space-y-0.5 overflow-auto border-b p-2 md:max-h-none md:w-64 md:border-r md:border-b-0">
             {tree.map(({ team, depth }) => (
               <button
                 key={team.id}
@@ -94,8 +94,8 @@ export default function TeamsPage() {
             ))}
           </nav>
           {selected && (
-            <section className="flex-1 overflow-auto p-6">
-              <div className="flex items-center gap-2">
+            <section className="flex-1 overflow-auto p-4 md:p-6">
+              <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-semibold">{selected.name}</h2>
                 {manage && (
                   <div className="ml-auto flex gap-2">

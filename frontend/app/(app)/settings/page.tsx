@@ -88,7 +88,7 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
   });
 
   return (
-    <form onSubmit={submit} className="mx-auto w-full max-w-2xl space-y-8 p-8">
+    <form onSubmit={submit} className="mx-auto w-full max-w-2xl space-y-8 p-4 sm:p-8">
       <section className="space-y-3">
         <div>
           <h2 className="font-semibold">Names for your records</h2>
@@ -96,7 +96,7 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
             Use your business&apos;s own words. An academy might call a lead a &quot;Student&quot;.
           </p>
         </div>
-        <div className="grid grid-cols-[8rem_1fr_1fr] items-center gap-x-3 gap-y-2">
+        <div className="grid grid-cols-[5.5rem_1fr_1fr] sm:grid-cols-[8rem_1fr_1fr] items-center gap-x-3 gap-y-2">
           <span />
           <span className="text-xs text-muted-foreground">Singular</span>
           <span className="text-xs text-muted-foreground">Plural</span>
@@ -118,7 +118,7 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
 
       <section className="space-y-3">
         <h2 className="font-semibold">Region</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="timezone">Time zone</Label>
             <NativeSelect id="timezone" {...form.register("timezone")}>

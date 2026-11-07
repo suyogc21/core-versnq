@@ -63,9 +63,8 @@ export function ChangePasswordScreen() {
   );
 }
 
-/** Owner and Admin must turn on two-factor authentication before anything else. */
-export function TwoFactorSetupScreen() {
-  const { reloadMe, logout } = useAuth();
+/** QR code + code field. Used by the forced setup screen and by My account. */
+export function TwoFactorSetupForm({ onDone }: { onDone: () => Promise<void> | void }) {
   const [setup, setSetup] = useState<{ secret: string; otpauth_uri: string } | null>(null);
   const form = useForm<{ code: string }>();
   const start = useMutation({
@@ -80,39 +79,44 @@ export function TwoFactorSetupScreen() {
     try {
       unwrap(await api.POST("/api/v1/auth/2fa/enable", { body: { code: code.trim() } }));
       toast.success("Two-factor authentication is on.");
-      await reloadMe();
+      await onDone();
     } catch (e) {
       form.setError("code", { message: (e as Error).message });
     }
   });
 
+  if (!setup) return <p className="text-muted-foreground">Preparing…</p>;
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <div className="flex justify-center rounded-lg border bg-white p-3">
+        <QRCodeSVG value={setup.otpauth_uri} size={168} />
+      </div>
+      <p className="break-all text-center font-mono text-xs text-muted-foreground">{setup.secret}</p>
+      <Field
+        id="code"
+        label="6-digit code from the app"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={6}
+        error={form.formState.errors.code?.message}
+        {...form.register("code", { required: "Enter the code", pattern: { value: /^\d{6}$/, message: "6 digits" } })}
+      />
+      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        Turn on
+      </Button>
+    </form>
+  );
+}
+
+/** Owner and Admin must turn on two-factor authentication before anything else. */
+export function TwoFactorSetupScreen() {
+  const { reloadMe, logout } = useAuth();
   return (
     <AuthCard
       title="Turn on two-factor authentication"
       description="Your role protects the whole workspace, so a second step is required. Scan the code with Google Authenticator, Microsoft Authenticator or 1Password."
     >
-      {setup ? (
-        <form onSubmit={submit} className="space-y-4">
-          <div className="flex justify-center rounded-lg border bg-white p-3">
-            <QRCodeSVG value={setup.otpauth_uri} size={168} />
-          </div>
-          <p className="break-all text-center font-mono text-xs text-muted-foreground">{setup.secret}</p>
-          <Field
-            id="code"
-            label="6-digit code from the app"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            error={form.formState.errors.code?.message}
-            {...form.register("code", { required: "Enter the code", pattern: { value: /^\d{6}$/, message: "6 digits" } })}
-          />
-          <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-            Turn on
-          </Button>
-        </form>
-      ) : (
-        <p className="text-muted-foreground">Preparing…</p>
-      )}
+      <TwoFactorSetupForm onDone={reloadMe} />
       <button type="button" className="mt-3 w-full text-xs text-muted-foreground" onClick={logout}>
         Sign out
       </button>

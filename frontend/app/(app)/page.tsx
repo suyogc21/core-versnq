@@ -10,7 +10,7 @@ export default function MyDayPage() {
   return (
     <>
       <PageHeader title="My Day" />
-      <div className="mx-auto w-full max-w-2xl p-8">
+      <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
         <h2 className="text-lg font-semibold">Good to see you, {me?.name.split(" ")[0]}.</h2>
         <p className="mt-1 text-muted-foreground">
           Your {label("lead", true).toLowerCase()}, follow-ups and tasks will appear here once the CRM module

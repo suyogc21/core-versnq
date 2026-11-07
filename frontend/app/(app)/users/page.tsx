@@ -82,7 +82,7 @@ export default function UsersPage() {
           <>
             <Input
               placeholder="Search name or email"
-              className="h-7 w-56"
+              className="h-7 w-full sm:w-56"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
