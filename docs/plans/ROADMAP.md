@@ -96,20 +96,20 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ## Phase 2 — Core CRM (Milestone 2)
 
-- [ ] 2.1 Leads: create, edit, person or linked to a company/account; custom fields; source and UTM; origin tag
+- [x] 2.1 Leads: create, edit, person or linked to a company/account; custom fields; source and UTM; origin tag
 - [ ] 2.2 Lead capture: web form / webhook endpoint per source, manual quick-add, CSV import with field mapping
 - [ ] 2.3 De-duplication on phone and email + merge tool
 - [ ] 2.3b Group person leads under organisation leads by domain / company name (suggest, optional auto-link; Decision log #14)
 - [ ] 2.4 Consent capture (WhatsApp and email opt-in with timestamp)
 - [ ] 2.5 Auto-assignment: round-robin and rule-based routing
 - [ ] 2.6 Leakage guard: untouched in X hours → alert or reassign
-- [ ] 2.7 Activity timeline + custom activity types ("everything is an activity")
-- [ ] 2.8 Tasks and follow-ups, follow-up SLAs and escalation, call logging with dispositions
+- [x] 2.7 Activity timeline + custom activity types ("everything is an activity")
+- [ ] 2.8 Tasks and follow-ups, follow-up SLAs and escalation, call logging with dispositions — *tasks, follow-ups, call outcomes and the follow-up rule done in slice A; SLAs and escalation come with slice C*
 - [ ] 2.9 Pipelines, stages, deals, kanban moves, won/lost reasons, products / catalogue
 - [ ] 2.10 Convert lead → customer, registration form link, document checklist and vault (S3)
 - [ ] 2.11 Tags, lists, smart views, bulk actions, rule-based lead scoring
 - [ ] 2.11b Automation builder: WHEN event IF conditions THEN actions (task, field, owner, stage, webhook) — Decision log #16
-- [ ] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts)
+- [ ] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts) — *My Day with the calling queue done in slice A*
 - [ ] 2.13 CSV export
 - [ ] 2.14 Frontend for 2.1–2.13
 - [ ] 2.15 Record page layouts per company (slice G)
@@ -210,3 +210,4 @@ CORE/
 | 2026-11-05 | 1-D | Slice 1-D built: settings editing (labels/timezone/locale/country/branding), module switches (money and ace off by default, crm always on, 404 + no events when off), events outbox with the spec's 20-event catalogue, audit of self-service security actions, route tripwire (self-checked against the API spec), committed OpenAPI spec (`make openapi`). 184 tests green. **Phase 1 backend (1A) complete**; 1B frontend waits for the UI discussion |
 | 2026-11-07 | 1B + review | Both apps built (client admin pages, staff console), Gate 1 e2e test on its own database, demo data. Audit against the spec found 4 gaps (phones, 2FA off, framing headers, My account) — fixed. Go-live items (G.1–G.3), multi-brand (3.10) and security/DPDP items (S.1–S.5) added to the roadmap. 209 tests + 3 e2e green |
 | 2026-11-07 | Gate 1 / Phase 2 | Gate 1 approved. Email/go-live deferred until the product is built (Suyog). Phase 2 plan written (`phase-2-crm.md`): slices A–F, slice A in detail, 6 open questions |
+| 2026-11-07 | 2-A | Slice A built: stages, sources, custom fields (linked, unique, stage-required), activity types, leads (person/company, identities in E.164, visibility, assign, delete), timeline, follow-up rule (strict/warn), one-step call logging, tasks, My Day with calling queue, task.due worker, pipeline setup screens, demo data (300 + 60 leads). 249 backend tests + 4 e2e green |
