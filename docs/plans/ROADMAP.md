@@ -74,10 +74,10 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ### 1B Frontend (after the UI discussion)
 
-- [ ] 1.14 UI decisions agreed (component library, layout, theme)
-- [ ] 1.15 Next.js skeleton + typed API client generated from the OpenAPI spec
-- [ ] 1.16 Staff console: login, companies list, create / edit / suspend company, staff audit
-- [ ] 1.17 Tenant app: login, invite accept, reset password, 2FA, users, roles, teams, settings and labels
+- [x] 1.14 UI decisions agreed (component library, layout, theme)
+- [x] 1.15 Next.js skeleton + typed API client generated from the OpenAPI spec
+- [x] 1.16 Staff console: login, companies list, create / edit / suspend company, staff audit
+- [x] 1.17 Tenant app: login, invite accept, reset password, 2FA, users, roles, teams, settings and labels
   - [ ] Test: end-to-end — create company → owner accepts invite → adds a Sales User → user sees only allowed screens
 - [ ] **Gate 1:** all tests green, Suyog walks the flow end to end and approves
 
