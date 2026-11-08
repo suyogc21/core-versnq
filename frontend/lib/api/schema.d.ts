@@ -40,6 +40,59 @@ export interface paths {
         patch: operations["crm-setup-update_type"];
         trace?: never;
     };
+    "/api/v1/assignment-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assignment Rules */
+        get: operations["routing-list_assignment_rules"];
+        put?: never;
+        /** Create Assignment Rule */
+        post: operations["routing-create_assignment_rule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assignment-rules/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Assignment Rules */
+        put: operations["routing-order_assignment_rules"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assignment-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Assignment Rule */
+        delete: operations["routing-delete_assignment_rule"];
+        options?: never;
+        head?: never;
+        /** Update Assignment Rule */
+        patch: operations["routing-update_assignment_rule"];
+        trace?: never;
+    };
     "/api/v1/audit": {
         parameters: {
             query?: never;
@@ -282,6 +335,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/capture-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Capture Sources */
+        get: operations["capture-list_capture_sources"];
+        put?: never;
+        /** Create Capture Source */
+        post: operations["capture-create_capture_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/capture-sources/{src_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Capture Source */
+        delete: operations["capture-delete_capture_source"];
+        options?: never;
+        head?: never;
+        /** Update Capture Source */
+        patch: operations["capture-update_capture_source"];
+        trace?: never;
+    };
+    "/api/v1/capture-sources/{src_id}/new-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rotate Capture Key
+         * @description The old key stops working at once.
+         */
+        post: operations["capture-rotate_capture_key"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/capture/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Capture
+         * @description Public: a website sends a lead. Answers 202 when accepted (new or existing person).
+         */
+        post: operations["capture-capture"];
+        delete?: never;
+        /**
+         * Capture Preflight
+         * @description Lets browsers on any website post to the form (CORS preflight).
+         */
+        options: operations["capture-capture_preflight"];
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/custom-fields": {
         parameters: {
             query?: never;
@@ -336,6 +469,102 @@ export interface paths {
         head?: never;
         /** Update Field */
         patch: operations["crm-setup-update_field"];
+        trace?: never;
+    };
+    "/api/v1/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: operations["imports-list_imports"];
+        put?: never;
+        /** Upload */
+        post: operations["imports-upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{import_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: operations["imports-get_import"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Import
+         * @description Remove the uploaded rows (personal data) once you no longer need them. The leads stay.
+         */
+        delete: operations["imports-delete_import"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{import_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel
+         * @description Stops after the current batch; leads already imported stay.
+         */
+        post: operations["imports-cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{import_id}/problems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Problem Rows
+         * @description The failed and skipped rows as a CSV with a 'Why' column, to fix and import again.
+         */
+        get: operations["imports-problem_rows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{import_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start */
+        post: operations["imports-start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/lead-sources": {
@@ -454,7 +683,11 @@ export interface paths {
         /** List Leads */
         get: operations["leads-list_leads"];
         put?: never;
-        /** Create Lead */
+        /**
+         * Create Lead
+         * @description Quick-add. A matching phone or email is refused with the existing lead (if you can see
+         *     it) unless the company keeps duplicates (flag / create).
+         */
         post: operations["leads-create_lead"];
         delete?: never;
         options?: never;
@@ -503,6 +736,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Merge Leads */
+        post: operations["leads-merge_leads"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}": {
         parameters: {
             query?: never;
@@ -544,6 +794,115 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consent History */
+        get: operations["leads-consent_history"];
+        put?: never;
+        /** Set Consent */
+        post: operations["leads-set_consent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Duplicates
+         * @description Other leads (that you can see) sharing a phone or email with this one.
+         */
+        get: operations["leads-duplicates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/merged-into": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Merged Into
+         * @description Old links to a merged lead: where it lives now (only if you can see it).
+         */
+        get: operations["leads-merged_into"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/organisation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Organisation */
+        put: operations["leads-set_organisation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/organisation-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Organisation Suggestions */
+        get: operations["leads-organisation_suggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/organisation-suggestions/{org_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss Suggestion */
+        post: operations["leads-dismiss_suggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/owner": {
         parameters: {
             query?: never;
@@ -554,6 +913,26 @@ export interface paths {
         get?: never;
         /** Assign Lead */
         put: operations["leads-assign_lead"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Organisation People
+         * @description The people linked to an organisation (those you can see).
+         */
+        get: operations["leads-organisation_people"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -592,6 +971,40 @@ export interface paths {
         get: operations["settings-list_modules"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Notifications */
+        get: operations["notifications-list_notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["notifications-mark_read"];
         delete?: never;
         options?: never;
         head?: never;
@@ -668,6 +1081,42 @@ export interface paths {
         head?: never;
         /** Update Settings */
         patch: operations["settings-update_settings"];
+        trace?: never;
+    };
+    "/api/v1/sla-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sla Rules */
+        get: operations["routing-list_sla_rules"];
+        put?: never;
+        /** Create Sla Rule */
+        post: operations["routing-create_sla_rule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sla-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Sla Rule */
+        delete: operations["routing-delete_sla_rule"];
+        options?: never;
+        head?: never;
+        /** Update Sla Rule */
+        patch: operations["routing-update_sla_rule"];
         trace?: never;
     };
     "/api/v1/tasks": {
@@ -1284,6 +1733,77 @@ export interface components {
             /** Type Key */
             type_key: string;
         };
+        /** AssignmentRuleIn */
+        AssignmentRuleIn: {
+            /**
+             * Conditions
+             * @default []
+             */
+            conditions: components["schemas"]["Condition"][];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Strategy
+             * @enum {string}
+             */
+            strategy: "round_robin" | "user" | "unassigned";
+            /** Team Id */
+            team_id?: string | null;
+            /**
+             * User Ids
+             * @default []
+             */
+            user_ids: string[];
+        };
+        /** AssignmentRuleOut */
+        AssignmentRuleOut: {
+            /** Conditions */
+            conditions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+            /** Strategy */
+            strategy: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** User Ids */
+            user_ids: string[];
+        };
+        /** AssignmentRulePatch */
+        AssignmentRulePatch: {
+            /** Conditions */
+            conditions?: components["schemas"]["Condition"][] | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Strategy */
+            strategy?: ("round_robin" | "user" | "unassigned") | null;
+            /** Team Id */
+            team_id?: string | null;
+            /** User Ids */
+            user_ids?: string[] | null;
+        };
         /** Branding */
         Branding: {
             /** Logo Url */
@@ -1320,12 +1840,173 @@ export interface components {
             /** Skipped */
             skipped: components["schemas"]["Skipped"][];
         };
+        /** CaptureSourceIn */
+        CaptureSourceIn: {
+            /** Consent Text */
+            consent_text?: string | null;
+            /**
+             * Field Map
+             * @default {}
+             */
+            field_map: {
+                [key: string]: string;
+            };
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Stage Id */
+            stage_id?: string | null;
+        };
+        /** CaptureSourceOut */
+        CaptureSourceOut: {
+            /** Consent Text */
+            consent_text: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Field Map */
+            field_map: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Key Hint */
+            key_hint: string;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Stage Id */
+            stage_id: string | null;
+        };
+        /** CaptureSourcePatch */
+        CaptureSourcePatch: {
+            /** Consent Text */
+            consent_text?: string | null;
+            /** Field Map */
+            field_map?: {
+                [key: string]: string;
+            } | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+        };
+        /** CaptureSourceWithKey */
+        CaptureSourceWithKey: {
+            /** Consent Text */
+            consent_text: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Field Map */
+            field_map: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Key */
+            key: string;
+            /** Key Hint */
+            key_hint: string;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Stage Id */
+            stage_id: string | null;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** Condition */
+        Condition: {
+            /** Field */
+            field: string;
+            /**
+             * Op
+             * @enum {string}
+             */
+            op: "in" | "not_in" | "empty" | "not_empty";
+            /**
+             * Values
+             * @default []
+             */
+            values: string[];
+        };
+        /** ConsentIn */
+        ConsentIn: {
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "email" | "whatsapp";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "opted_in" | "opted_out";
+            /** Wording */
+            wording?: string | null;
+        };
+        /** ConsentOut */
+        ConsentOut: {
+            /** Actor User Id */
+            actor_user_id: string | null;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Channel */
+            channel: string;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Wording */
+            wording: string | null;
         };
         /** FieldIn */
         FieldIn: {
@@ -1453,6 +2134,52 @@ export interface components {
             /** Value Normalized */
             value_normalized: string;
         };
+        /** ImportOut */
+        ImportOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /** Created Count */
+            created_count: number;
+            /** Failed Count */
+            failed_count: number;
+            /** File Name */
+            file_name: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Headers */
+            headers: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mapping */
+            mapping: {
+                [key: string]: unknown;
+            };
+            /** Options */
+            options: {
+                [key: string]: unknown;
+            };
+            /** Row Count */
+            row_count: number;
+            /** Skipped Count */
+            skipped_count: number;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** Updated Count */
+            updated_count: number;
+        };
         /** InviteIn */
         InviteIn: {
             /**
@@ -1505,6 +2232,34 @@ export interface components {
             /** Singular */
             singular: string;
         };
+        /** LeadBrief */
+        LeadBrief: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display Name */
+            display_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Primary Email */
+            primary_email: string | null;
+            /** Primary Phone */
+            primary_phone: string | null;
+            /**
+             * Stage Id
+             * Format: uuid
+             */
+            stage_id: string;
+        };
         /**
          * LeadFilter
          * @description Every value list is OR within itself and AND across fields.
@@ -1541,6 +2296,11 @@ export interface components {
         };
         /** LeadIn */
         LeadIn: {
+            /**
+             * Assign By Rules
+             * @default false
+             */
+            assign_by_rules: boolean;
             /**
              * Assign To Me
              * @default true
@@ -1634,6 +2394,8 @@ export interface components {
             };
             /** Display Name */
             display_name: string;
+            /** Email Consent */
+            email_consent: string | null;
             /** Employee Range */
             employee_range: string | null;
             /** First Name */
@@ -1668,12 +2430,16 @@ export interface components {
             next_follow_up_at: string | null;
             /** Org Name */
             org_name: string | null;
+            /** Organisation Id */
+            organisation_id: string | null;
             /** Origin */
             origin: string;
             /** Owner Name */
             owner_name?: string | null;
             /** Owner User Id */
             owner_user_id: string | null;
+            /** Possible Duplicate Of Id */
+            possible_duplicate_of_id: string | null;
             /** Preferred Language */
             preferred_language: string | null;
             /** Primary Email */
@@ -1716,6 +2482,8 @@ export interface components {
             version: number;
             /** Website */
             website: string | null;
+            /** Whatsapp Consent */
+            whatsapp_consent: string | null;
         };
         /** LeadPage */
         LeadPage: {
@@ -1845,6 +2613,28 @@ export interface components {
              */
             user_id: string;
         };
+        /** MergeIn */
+        MergeIn: {
+            /**
+             * Other Id
+             * Format: uuid
+             */
+            other_id: string;
+            /** Other Version */
+            other_version: number;
+            /**
+             * Survivor Id
+             * Format: uuid
+             */
+            survivor_id: string;
+            /** Survivor Version */
+            survivor_version: number;
+            /**
+             * Take From Other
+             * @default []
+             */
+            take_from_other: string[];
+        };
         /** ModuleOut */
         ModuleOut: {
             /** Core */
@@ -1869,10 +2659,50 @@ export interface components {
             /** Upcoming */
             upcoming: components["schemas"]["TaskOut"][];
         };
-        /** OrderIn */
-        OrderIn: {
-            /** Ids */
-            ids: string[];
+        /** NotificationOut */
+        NotificationOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Read At */
+            read_at: string | null;
+            /** Title */
+            title: string;
+        };
+        /** NotificationPage */
+        NotificationPage: {
+            /** Items */
+            items: components["schemas"]["NotificationOut"][];
+            /** Unread */
+            unread: number;
+        };
+        /** OrgSuggestion */
+        OrgSuggestion: {
+            /** Display Name */
+            display_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reason */
+            reason: string;
+        };
+        /** OrganisationIn */
+        OrganisationIn: {
+            /** Organisation Id */
+            organisation_id: string | null;
         };
         /** OwnerIn */
         OwnerIn: {
@@ -1894,6 +2724,11 @@ export interface components {
             description: string;
             /** Module */
             module: string;
+        };
+        /** ReadIn */
+        ReadIn: {
+            /** Ids */
+            ids?: string[] | null;
         };
         /** ResetIn */
         ResetIn: {
@@ -1934,14 +2769,22 @@ export interface components {
             };
             /** Default Country */
             default_country: string;
+            /** Duplicate Policy */
+            duplicate_policy: string;
             /** Follow Up Required */
             follow_up_required: boolean;
             /** Labels */
             labels: {
                 [key: string]: unknown;
             };
+            /** Leakage Action */
+            leakage_action: string;
+            /** Leakage Hours */
+            leakage_hours: number | null;
             /** Locale */
             locale: string;
+            /** Org Grouping */
+            org_grouping: string;
             /** Timezone */
             timezone: string;
         };
@@ -1950,14 +2793,22 @@ export interface components {
             branding?: components["schemas"]["Branding"] | null;
             /** Default Country */
             default_country?: string | null;
+            /** Duplicate Policy */
+            duplicate_policy?: ("update" | "flag" | "create") | null;
             /** Follow Up Required */
             follow_up_required?: boolean | null;
             /** Labels */
             labels?: {
                 [key: string]: components["schemas"]["Label"];
             } | null;
+            /** Leakage Action */
+            leakage_action?: ("alert" | "reassign") | null;
+            /** Leakage Hours */
+            leakage_hours?: number | null;
             /** Locale */
             locale?: string | null;
+            /** Org Grouping */
+            org_grouping?: ("off" | "suggest" | "auto") | null;
             /** Timezone */
             timezone?: string | null;
         };
@@ -1972,6 +2823,77 @@ export interface components {
             name: string;
             /** Reason */
             reason: string;
+        };
+        /** SlaRuleIn */
+        SlaRuleIn: {
+            /**
+             * Create Task
+             * @default true
+             */
+            create_task: boolean;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /**
+             * On Breach
+             * @default alert
+             * @enum {string}
+             */
+            on_breach: "none" | "alert" | "reassign";
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Task Title */
+            task_title?: string | null;
+            /**
+             * Trigger
+             * @enum {string}
+             */
+            trigger: "lead_created" | "stage_entered";
+            /** Within Minutes */
+            within_minutes: number;
+        };
+        /** SlaRuleOut */
+        SlaRuleOut: {
+            /** Create Task */
+            create_task: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** On Breach */
+            on_breach: string;
+            /** Stage Id */
+            stage_id: string | null;
+            /** Task Title */
+            task_title: string | null;
+            /** Trigger */
+            trigger: string;
+            /** Within Minutes */
+            within_minutes: number;
+        };
+        /** SlaRulePatch */
+        SlaRulePatch: {
+            /** Create Task */
+            create_task?: boolean | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** On Breach */
+            on_breach?: ("none" | "alert" | "reassign") | null;
+            /** Task Title */
+            task_title?: string | null;
+            /** Within Minutes */
+            within_minutes?: number | null;
         };
         /** SourceIn */
         SourceIn: {
@@ -2136,6 +3058,35 @@ export interface components {
             name?: string | null;
             /** Required Fields */
             required_fields?: string[] | null;
+        };
+        /** StartIn */
+        StartIn: {
+            /**
+             * Duplicate Policy
+             * @default update
+             * @enum {string}
+             */
+            duplicate_policy: "update" | "skip" | "create" | "flag";
+            /** Mapping */
+            mapping: {
+                [key: string]: string;
+            };
+            /**
+             * Owner
+             * @default me
+             */
+            owner: string;
+            /** Source Id */
+            source_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+        };
+        /** Target */
+        Target: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
         };
         /** TaskIn */
         TaskIn: {
@@ -2405,6 +3356,67 @@ export interface components {
             /** Label */
             label?: string | null;
         };
+        /** UploadIn */
+        UploadIn: {
+            /** Content */
+            content: string;
+            /** File Name */
+            file_name: string;
+        };
+        /** UploadOut */
+        UploadOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /** Created Count */
+            created_count: number;
+            /** Failed Count */
+            failed_count: number;
+            /** File Name */
+            file_name: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Headers */
+            headers: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mapping */
+            mapping: {
+                [key: string]: unknown;
+            };
+            /** Options */
+            options: {
+                [key: string]: unknown;
+            };
+            /** Row Count */
+            row_count: number;
+            /** Sample */
+            sample: string[][];
+            /** Skipped Count */
+            skipped_count: number;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** Suggested */
+            suggested: {
+                [key: string]: string;
+            };
+            /** Targets */
+            targets: components["schemas"]["Target"][];
+            /** Updated Count */
+            updated_count: number;
+        };
         /** UserOut */
         UserOut: {
             /** Email */
@@ -2540,6 +3552,16 @@ export interface components {
             name: string;
             /** Scope */
             scope: string;
+        };
+        /** OrderIn */
+        app__modules__crm__rules_router__OrderIn: {
+            /** Ids */
+            ids: string[];
+        };
+        /** OrderIn */
+        app__modules__crm__setup_router__OrderIn: {
+            /** Ids */
+            ids: string[];
         };
         /** RoleOut */
         app__modules__roles__router__RoleOut: {
@@ -2703,6 +3725,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-list_assignment_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRuleOut"][];
+                };
+            };
+        };
+    };
+    "routing-create_assignment_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentRuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-order_assignment_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__rules_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-delete_assignment_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-update_assignment_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentRulePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRuleOut"];
                 };
             };
             /** @description Validation Error */
@@ -3123,6 +4293,216 @@ export interface operations {
             };
         };
     };
+    "capture-list_capture_sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureSourceOut"][];
+                };
+            };
+        };
+    };
+    "capture-create_capture_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptureSourceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureSourceWithKey"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-delete_capture_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                src_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-update_capture_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                src_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptureSourcePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureSourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-rotate_capture_key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                src_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureSourceWithKey"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-capture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-capture_preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "crm-setup-list_fields": {
         parameters: {
             query?: {
@@ -3198,7 +4578,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrderIn"];
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
             };
         };
         responses: {
@@ -3286,6 +4666,216 @@ export interface operations {
             };
         };
     };
+    "imports-list_imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"][];
+                };
+            };
+        };
+    };
+    "imports-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "imports-get_import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "imports-delete_import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "imports-cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "imports-problem_rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "imports-start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "crm-setup-list_sources": {
         parameters: {
             query?: never;
@@ -3348,7 +4938,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrderIn"];
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
             };
         };
         responses: {
@@ -3498,7 +5088,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrderIn"];
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
             };
         };
         responses: {
@@ -3715,6 +5305,39 @@ export interface operations {
             };
         };
     };
+    "leads-merge_leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "leads-get_lead": {
         parameters: {
             query?: never;
@@ -3879,6 +5502,232 @@ export interface operations {
             };
         };
     };
+    "leads-consent_history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-set_consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadBrief"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-merged_into": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-set_organisation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganisationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-organisation_suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgSuggestion"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-dismiss_suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+                org_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "leads-assign_lead": {
         parameters: {
             query?: never;
@@ -3901,6 +5750,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "leads-organisation_people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadBrief"][];
                 };
             };
             /** @description Validation Error */
@@ -3950,6 +5830,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModuleOut"][];
+                };
+            };
+        };
+    };
+    "notifications-list_notifications": {
+        parameters: {
+            query?: {
+                unread_only?: boolean;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "notifications-mark_read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4162,6 +6105,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-list_sla_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlaRuleOut"][];
+                };
+            };
+        };
+    };
+    "routing-create_sla_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SlaRuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlaRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-delete_sla_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-update_sla_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SlaRulePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlaRuleOut"];
                 };
             };
             /** @description Validation Error */

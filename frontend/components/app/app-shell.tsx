@@ -1,11 +1,12 @@
 "use client";
 
-import { Activity, Building2, Contact, LogOut, Menu, Moon, Settings, Shield, SlidersHorizontal, Sun, Sunrise, Users, UsersRound, X } from "lucide-react";
+import { Activity, Building2, Contact, LogOut, Menu, Moon, Route, Settings, Shield, SlidersHorizontal, Sun, Sunrise, Users, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 
+import { NotificationBell } from "@/components/app/notification-bell";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useLabels, useWorkspaceSettings } from "@/lib/settings";
@@ -21,6 +22,7 @@ const WORKSPACE: NavItem[] = [
   { href: "/teams", label: "Teams", icon: UsersRound, permission: "users.read" },
   { href: "/roles", label: "Roles", icon: Shield, permission: "roles.manage" },
   { href: "/setup", label: "Pipeline setup", icon: SlidersHorizontal, permission: "crm.configure" },
+  { href: "/routing", label: "Lead routing", icon: Route, permission: "crm.configure" },
   { href: "/settings", label: "Settings", icon: Settings, permission: "settings.manage" },
   { href: "/audit", label: "Audit log", icon: Activity, permission: "audit.read" },
 ];
@@ -84,6 +86,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Menu className="size-5" />
         </button>
         {workspaceBadge}
+        {can("leads.edit") && (
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
+        )}
       </div>
       {menuOpen && <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={close} aria-hidden />}
       <aside
@@ -94,6 +101,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div className="mb-2 flex items-center justify-between rounded-md px-2 py-1.5">
           {workspaceBadge}
+          {can("leads.edit") && (
+            <div className="hidden md:block">
+              <NotificationBell />
+            </div>
+          )}
           <button aria-label="Close menu" className="rounded p-1 hover:bg-accent md:hidden" onClick={close}>
             <X className="size-4" />
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -238,6 +238,11 @@ export default function LeadsPage() {
         actions={
           <>
             <Input data-table-search placeholder="Search name, phone, email…  ( / )" className="h-7 w-full sm:w-72" value={search} onChange={(e) => setSearch(e.target.value)} />
+            {can("leads.import") && (
+              <Button size="sm" variant="outline" onClick={() => router.push("/leads/import")}>
+                <Upload /> Import
+              </Button>
+            )}
             {can("leads.create") && (
               <Button size="sm" onClick={() => setAdding(true)}>
                 <Plus /> Add {label("lead").toLowerCase()}

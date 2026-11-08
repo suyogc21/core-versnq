@@ -8,6 +8,7 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    public body?: unknown, // the full error body (some errors carry more, e.g. the duplicate)
   ) {
     super(message);
   }
@@ -26,7 +27,7 @@ export function messageFrom(error: unknown, fallback = "Something went wrong. Pl
 /** Return data, or throw an ApiError with a readable message. */
 export function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T {
   if (!result.response.ok) {
-    throw new ApiError(result.response.status, messageFrom(result.error));
+    throw new ApiError(result.response.status, messageFrom(result.error), result.error);
   }
   return result.data as T;
 }

@@ -32,4 +32,8 @@ async def main():
 
 asyncio.run(main())
 PY
-exec uv run uvicorn app.main:app --port 8100
+# The background worker (imports, response-time checks), stopped together with the API.
+uv run arq app.workers.main.WorkerSettings > "$ROOT/frontend/e2e/.state/worker.log" 2>&1 &
+WORKER=$!
+trap 'kill $WORKER 2>/dev/null' EXIT INT TERM
+uv run uvicorn app.main:app --port 8100

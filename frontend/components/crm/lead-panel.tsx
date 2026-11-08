@@ -525,7 +525,8 @@ export function LeadTasks({ lead }: { lead: Lead }) {
   return (
     <div className="space-y-3">
       <ul className="divide-y rounded-lg border">
-        {(tasks.data ?? []).length === 0 && <li className="p-3 text-xs text-muted-foreground">No open tasks.</li>}
+        {tasks.isLoading && <li className="p-3 text-xs text-muted-foreground">Loading…</li>}
+        {tasks.data && tasks.data.length === 0 && <li className="p-3 text-xs text-muted-foreground">No open tasks.</li>}
         {(tasks.data ?? []).map((t) => (
           <li key={t.id} className="flex items-center gap-2 px-3 py-2 text-xs">
             <input type="checkbox" aria-label={`Done: ${t.title}`} className="accent-primary" onChange={() => complete(t.id)} />

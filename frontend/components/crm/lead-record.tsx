@@ -1,12 +1,15 @@
 "use client";
 
 import { Check, Mail, MessageCircle, Phone, StickyNote, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Popover, PopoverHeading, PopoverItem } from "@/components/data-table/popover";
 import { Avatar, StagePill } from "@/components/crm/bits";
+import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
 import { ActionButton, EditLead, Facts, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
 import { LogActivityForm } from "@/components/crm/log-activity";
 import { Button } from "@/components/ui/button";
@@ -199,7 +202,7 @@ export function LeadRecord({ leadId }: { leadId: string }) {
   const [filter, setFilter] = useState("All");
   const [editing, setEditing] = useState(false);
   if (lead.isLoading) return <p className="p-6 text-muted-foreground">Loading…</p>;
-  if (lead.isError || !lead.data) return <p className="p-6 text-destructive">{lead.error?.message ?? "Not found"}</p>;
+  if (lead.isError || !lead.data) return <MissingLead leadId={leadId} message={lead.error?.message ?? "Not found"} />;
   const l = lead.data;
 
   return (
@@ -224,6 +227,7 @@ export function LeadRecord({ leadId }: { leadId: string }) {
           </div>
         </div>
         <StageStepper lead={l} />
+        <DuplicateBanner key={`dupes-${l.version}`} lead={l} />
       </div>
       <div className="grid min-h-0 flex-1 lg:grid-cols-[300px_minmax(0,1fr)_300px]">
         <div className="space-y-5 border-b p-4 lg:border-r lg:border-b-0">
@@ -238,6 +242,12 @@ export function LeadRecord({ leadId }: { leadId: string }) {
             {editing ? <EditLead key={l.version} lead={l} /> : <Facts lead={l} showStage={false} />}
           </Section>
           {!editing && (fields.data ?? []).length === 0 && <p className="text-xs text-muted-foreground">No custom fields yet.</p>}
+          <Section title={l.kind === "person" ? "Company" : "People here"}>
+            <OrganisationCard lead={l} />
+          </Section>
+          <Section title="Consent">
+            <ConsentCard lead={l} />
+          </Section>
         </div>
         <div className="space-y-4 border-b p-4 lg:border-b-0">
           <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} />
@@ -268,6 +278,22 @@ export function LeadRecord({ leadId }: { leadId: string }) {
       </div>
     </div>
   );
+}
+
+/** An old link to a lead that was merged goes to the lead it was merged into. */
+function MissingLead({ leadId, message }: { leadId: string; message: string }) {
+  const router = useRouter();
+  const target = useQuery({
+    queryKey: ["merged-into", leadId],
+    retry: false,
+    queryFn: async () => unwrap(await api.GET("/api/v1/leads/{lead_id}/merged-into", { params: { path: { lead_id: leadId } } })),
+  });
+  const to = (target.data as { lead_id?: string } | undefined)?.lead_id;
+  useEffect(() => {
+    if (to) router.replace(`/leads/${to}`);
+  }, [to, router]);
+  if (target.isLoading || to) return <p className="p-6 text-muted-foreground">Loading…</p>;
+  return <p className="p-6 text-destructive">{message}</p>;
 }
 
 /** Quick look from a list: slides over it (the list keeps its full width). */

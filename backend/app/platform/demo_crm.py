@@ -292,3 +292,89 @@ async def seed_leads(
         made += 1
     await db.flush()
     return made
+
+
+# ---------- step 1: routing, a web form, response times, notifications ----------
+async def seed_routing(
+    db: AsyncSession, tenant_id: uuid.UUID, *, team_id: uuid.UUID, reps: list[uuid.UUID]
+) -> str:
+    """Rules a real admissions team would set up. Returns the demo web form's secret key."""
+    import hashlib
+    import secrets
+
+    from app.modules.crm.models import (
+        AssignmentRule,
+        CaptureSource,
+        Lead,
+        Notification,
+        SlaRule,
+    )
+    from app.modules.settings.models import TenantSettings
+
+    settings = await db.get(TenantSettings, tenant_id)
+    settings.org_grouping, settings.leakage_hours, settings.leakage_action = "suggest", 24, "alert"
+    sources = {s.name: s.id for s in (await db.scalars(select(LeadSource))).all()}
+    online = [str(sources[n]) for n in ("Website", "Meta ads", "Google ads") if n in sources]
+    db.add_all(
+        [
+            AssignmentRule(
+                tenant_id=tenant_id,
+                name="Online enquiries → Pune counsellors",
+                position=0,
+                conditions=[{"field": "source", "op": "in", "values": online}],
+                strategy="round_robin",
+                team_id=team_id,
+                user_ids=[],
+            ),
+            AssignmentRule(
+                tenant_id=tenant_id,
+                name="Everyone else takes turns",
+                position=1,
+                conditions=[],
+                strategy="round_robin",
+                user_ids=[str(r) for r in reps],
+            ),
+            SlaRule(
+                tenant_id=tenant_id,
+                name="First call",
+                trigger="lead_created",
+                within_minutes=30,
+                create_task=True,
+                task_title="Call the new enquiry",
+                on_breach="alert",
+            ),
+        ]
+    )
+    key = "vqf_" + secrets.token_urlsafe(24)
+    db.add(
+        CaptureSource(
+            tenant_id=tenant_id,
+            name="Website enquiry form",
+            source_id=sources["Website"],
+            key_hash=hashlib.sha256(key.encode()).hexdigest(),
+            key_hint=key[:8],
+            field_map={"Which course?": "cf.program_interest"},
+            consent_text="I agree to be contacted by email and WhatsApp about courses",
+        )
+    )
+    # A few unread notifications so the bell has something to show.
+    recent = (
+        await db.scalars(
+            select(Lead)
+            .where(Lead.owner_user_id.in_(reps))
+            .order_by(Lead.created_at.desc())
+            .limit(12)
+        )
+    ).all()
+    for lead in recent:
+        db.add(
+            Notification(
+                tenant_id=tenant_id,
+                user_id=lead.owner_user_id,
+                kind="lead_assigned",
+                title=f"New lead: {lead.display_name}",
+                lead_id=lead.id,
+            )
+        )
+    await db.flush()
+    return key

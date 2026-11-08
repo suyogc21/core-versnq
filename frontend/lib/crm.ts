@@ -73,7 +73,7 @@ export function useRefreshLead() {
   const qc = useQueryClient();
   return (lead?: Lead) => {
     if (lead) qc.setQueryData(["lead", lead.id], lead);
-    for (const key of ["leads", "timeline", "lead-tasks", "my-day", "lead"]) {
+    for (const key of ["leads", "timeline", "lead-tasks", "my-day", "lead", "duplicates", "consents", "org-suggestions", "org-people", "notifications"]) {
       qc.invalidateQueries({ queryKey: [key] });
     }
   };
@@ -170,3 +170,42 @@ export function useLeadCounts() {
   return useQuery({ queryKey: ["leads", "counts"], queryFn: async () => unwrap(await api.GET("/api/v1/leads/counts")) });
 }
 export type BulkResult = components["schemas"]["BulkOut"];
+
+// ---------- step 1: notifications, duplicates, consent, organisations ----------
+export type NotificationItem = components["schemas"]["NotificationOut"];
+export type LeadBrief = components["schemas"]["LeadBrief"];
+
+export function useNotifications() {
+  return useQuery({
+    queryKey: ["notifications"],
+    refetchInterval: 60_000,
+    queryFn: async () => unwrap(await api.GET("/api/v1/notifications", { params: { query: { limit: 30 } } })),
+  });
+}
+export function useDuplicates(id: string) {
+  return useQuery({
+    queryKey: ["duplicates", id],
+    queryFn: async () => unwrap(await api.GET("/api/v1/leads/{lead_id}/duplicates", { params: { path: { lead_id: id } } })),
+  });
+}
+export function useConsents(id: string) {
+  return useQuery({
+    queryKey: ["consents", id],
+    queryFn: async () => unwrap(await api.GET("/api/v1/leads/{lead_id}/consents", { params: { path: { lead_id: id } } })),
+  });
+}
+export function useOrgSuggestions(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["org-suggestions", id],
+    enabled,
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/leads/{lead_id}/organisation-suggestions", { params: { path: { lead_id: id } } })),
+  });
+}
+export function useOrgPeople(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["org-people", id],
+    enabled,
+    queryFn: async () => unwrap(await api.GET("/api/v1/leads/{lead_id}/people", { params: { path: { lead_id: id } } })),
+  });
+}

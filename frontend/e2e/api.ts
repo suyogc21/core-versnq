@@ -16,8 +16,18 @@ async function call(ctx: APIRequestContext, method: string, url: string, token?:
   return res.status() === 204 ? null : res.json();
 }
 
+const tokens = new Map<string, string>(); // one sign-in per account per test run
+
 /** Sign in, turning on 2FA the first time. Returns an access token. */
 async function signInWith2fa(ctx: APIRequestContext, base: string, prefix: string, email: string, password: string) {
+  const known = tokens.get(email);
+  if (known) return known;
+  const token = await firstSignIn(ctx, base, prefix, email, password);
+  tokens.set(email, token);
+  return token;
+}
+
+async function firstSignIn(ctx: APIRequestContext, base: string, prefix: string, email: string, password: string) {
   const login = await call(ctx, "POST", `${base}${prefix}/auth/login`, undefined, { email, password });
   if (login.access_token) {
     const me = await call(ctx, "GET", `${base}${prefix}/auth/me`, login.access_token);
@@ -29,7 +39,7 @@ async function signInWith2fa(ctx: APIRequestContext, base: string, prefix: strin
   throw new Error(`${email} already has 2FA from an earlier run; the e2e database is rebuilt per run`);
 }
 
-export type Person = { email: string; password: string; id: string; token: string };
+export type Person = { email: string; password: string; id: string };
 
 /** A company with an Owner, a manager with one rep, and a rep on another team. */
 export async function companyWithTeams(slug: string) {
@@ -60,9 +70,8 @@ export async function companyWithTeams(slug: string) {
     const email = `${name.toLowerCase()}@${slug}.example.org`;
     const password = `${name.toLowerCase()}-password-1`;
     const user = await call(ctx, "POST", `${base}/api/v1/users`, owner, { name, email, role_id: roleId(key) });
-    await join(email, password);
-    const login = await call(ctx, "POST", `${base}/api/v1/auth/login`, undefined, { email, password });
-    return { email, password, id: user.id, token: login.access_token };
+    await join(email, password); // no API sign-in: sign-ins are rate-limited per address
+    return { email, password, id: user.id };
   };
   const manager = await person("Maya", "sales_manager");
   const rep = await person("Ravi", "sales_user");
@@ -72,5 +81,5 @@ export async function companyWithTeams(slug: string) {
     { user_id: manager.id, is_manager: true },
     { user_id: rep.id, is_manager: false },
   ] as unknown as Json);
-  return { base, manager, rep, otherRep };
+  return { base, manager, rep, otherRep, ownerToken: owner, call: (method: string, path: string, data?: Json) => call(ctx, method, `${base}${path}`, owner, data) };
 }

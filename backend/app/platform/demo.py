@@ -27,7 +27,7 @@ from app.modules.roles.service import _set_permissions
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team, TeamMember
 from app.modules.users.models import User
-from app.platform.demo_crm import seed_leads
+from app.platform.demo_crm import seed_leads, seed_routing
 from app.platform.models import Tenant
 from app.platform.staff.models import PlatformStaff
 from app.platform.tenants.schemas import TenantCreate
@@ -52,6 +52,7 @@ class DemoResult:
     password: str = ""  # one shared password for every demo sign-in, shown once
     slugs: list[str] = field(default_factory=list)
     accounts: list[Account] = field(default_factory=list)
+    form_key: str = ""  # Acme's demo web form (secret; local credentials file only)
 
 
 # People at Acme Academy: (name, email local part, role key, team, is_manager, status)
@@ -409,6 +410,9 @@ async def seed_demo(prefix: str = "") -> DemoResult:
         await seed_leads(
             db, tenant.id, count=300, country="IN", reps=reps, unassigned=8, custom=ACME_FIELDS
         )
+        result.form_key = await seed_routing(
+            db, tenant.id, team_id=teams["Pune Counsellors"], reps=reps
+        )
         result.accounts.append(Account("Acme Academy", "Owner", owner.name, owner.email))
         for user, role_key in added:
             if user.status == "active":
@@ -553,6 +557,18 @@ def write_credentials_file(result: DemoResult, base: str, path: Path = CREDENTIA
         f"- Bluewave Realty (real estate setup, 60 enquiries): http://bluewave.{base}:3000/login",
         f"- Versnq staff console: http://admincore.{base}:3001/login",
         "- Sunrise Coaching is suspended (shows in the staff console only)",
+        "",
+        "## Try lead capture",
+        "",
+        "- Import: Acme → Students → Import → choose `docs/demo/sample-import.csv`",
+        "- Web form (Acme). Send a test enquiry from a terminal:",
+        "",
+        "```",
+        f"curl -X POST http://acme.{base}:8000/api/v1/capture/{result.form_key} \\",
+        "  -H 'Content-Type: application/json' \\",
+        """  -d '{"name": "Test Enquiry", "phone": "98111 22233", "email": "test@example.org", """
+        """"Which course?": "Data Science", "consent_email": "yes", "utm_source": "google"}'""",
+        "```",
         "",
         "## Accounts",
         "",

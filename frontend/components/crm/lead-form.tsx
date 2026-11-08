@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api/client";
-import { unwrap } from "@/lib/api/errors";
+import { ApiError, unwrap } from "@/lib/api/errors";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { fromLocalInput, identity, quickFollowUps, type Lead, useFields, useRefreshLead, useSources, useStages } from "@/lib/crm";
 import { useUsers } from "@/lib/directory";
@@ -34,6 +35,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
   const [followUp, setFollowUp] = useState("");
   const [custom, setCustom] = useState<Record<string, unknown>>({});
   const [error, setError] = useState<string | null>(null);
+  const [duplicate, setDuplicate] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const singular = label("lead");
 
@@ -44,6 +46,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setDuplicate(null);
     const identities = [
       v.phone ? identity("phone", v.phone, { is_whatsapp: true, is_primary: true }) : null,
       v.email ? identity("email", v.email, { is_primary: true }) : null,
@@ -65,8 +68,9 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
             identities,
             source_id: sourceId,
             stage_id: stageId || null,
-            owner_user_id: canAssign && owner && owner !== "none" ? owner : null,
-            assign_to_me: canAssign ? owner !== "none" : true,
+            owner_user_id: canAssign && owner && owner !== "none" && owner !== "rules" ? owner : null,
+            assign_to_me: canAssign ? owner !== "none" && owner !== "rules" : true,
+            assign_by_rules: canAssign && owner === "rules",
             next_follow_up_at: fromLocalInput(followUp),
             custom_fields: Object.fromEntries(Object.entries(custom).filter(([, x]) => x !== null && x !== "")),
           },
@@ -77,6 +81,8 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
       onCreated(lead);
     } catch (err) {
       setError((err as Error).message);
+      const body = err instanceof ApiError ? (err.body as { duplicate?: { id: string; name: string } | null }) : undefined;
+      if (body?.duplicate) setDuplicate(body.duplicate);
     } finally {
       setSaving(false);
     }
@@ -146,6 +152,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
                 <Label htmlFor="owner">Owner</Label>
                 <NativeSelect id="owner" value={owner} onChange={(e) => setOwner(e.target.value)}>
                   <option value={me?.id ?? ""}>Me</option>
+                  <option value="rules">By assignment rules</option>
                   <option value="none">Unassigned</option>
                   {assignable
                     .filter((u) => u.id !== me?.id)
@@ -172,7 +179,19 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
           {(fields.data ?? []).length > 0 && (
             <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />
           )}
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && (
+            <p className="text-xs text-destructive">
+              {error}
+              {duplicate && (
+                <>
+                  {" — "}
+                  <Link href={`/leads/${duplicate.id}`} className="font-medium underline" onClick={onClose}>
+                    open {duplicate.name}
+                  </Link>
+                </>
+              )}
+            </p>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

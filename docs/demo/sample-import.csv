@@ -1,0 +1,25 @@
+Full Name,Mobile,Email,City,Course interest,Qualification,Lead Source,Notes
+Aarav Patil,9786579303,aarav.patil@example.org,Pune,Data Science,Postgraduate,Education fair,Asked about weekend batches
+Ishita Deshmukh,9249827706,ishita.deshmukh@example.org,Pune,Digital Marketing,12th,Referral,Call after 6 pm
+Kunal Kulkarni,9134126396,kunal.kulkarni@example.org,Pune,Data Science,Graduate,Education fair,
+Sneha Joshi,9746412689,sneha.joshi@example.org,Pune,Digital Marketing,Graduate,Referral,
+Rahul Shinde,9550455977,rahul.shinde@example.org,Mumbai,Full-stack Development,Postgraduate,Education fair,Asked about weekend batches
+Pooja Pawar,9849621470,pooja.pawar@example.org,Nagpur,Full-stack Development,Postgraduate,Education fair,Asked about weekend batches
+Arjun Jain,9919795579,arjun.jain@example.org,Nashik,Data Science,12th,Walk-in,
+Divya Gupta,9485451171,divya.gupta@example.org,Nashik,Digital Marketing,Postgraduate,Education fair,Call after 6 pm
+Nikhil Nair,9675770529,nikhil.nair@example.org,Pune,Full-stack Development,12th,Referral,Wants fee details
+Tanvi Reddy,9990566476,tanvi.reddy@example.org,Nashik,Digital Marketing,Graduate,Referral,
+Siddharth Chopra,9149203558,siddharth.chopra@example.org,Mumbai,Full-stack Development,12th,Education fair,
+Kavya Bhatt,9508157429,kavya.bhatt@example.org,Nashik,Full-stack Development,Postgraduate,Education fair,Wants fee details
+Harsh Malhotra,9481469012,harsh.malhotra@example.org,Mumbai,Digital Marketing,Postgraduate,Referral,
+Riya Kaur,9754049436,riya.kaur@example.org,Mumbai,Digital Marketing,Graduate,Education fair,Call after 6 pm
+Aditya Sinha,9507437181,aditya.sinha@example.org,Nashik,Digital Marketing,Graduate,Referral,Wants fee details
+Meghna Das,9924970419,meghna.das@example.org,Pune,Data Science,12th,Walk-in,Call after 6 pm
+Varun Ghosh,9387484583,varun.ghosh@example.org,Pune,Data Science,Postgraduate,Education fair,Call after 6 pm
+Nisha Rao,9524806516,nisha.rao@example.org,Nagpur,Data Science,Postgraduate,Education fair,Asked about weekend batches
+Yash Verma,9899925830,yash.verma@example.org,Nashik,Digital Marketing,Working professional,Referral,Call after 6 pm
+Simran Agarwal,9488690725,simran.agarwal@example.org,Mumbai,Data Science,Working professional,Education fair,
+Aarav Patil (again),9786579303,,Pune,,,Education fair,Same phone as row 2: updates that student
+No Contact Person,,,Pune,Data Science,,Walk-in,No phone or email: will be refused
+Short Number,12345,,Pune,,,Walk-in,Invalid phone: will be refused
+Unknown Course,98220 11223,,Pune,Cooking,,Walk-in,Course not in the list: will be refused
