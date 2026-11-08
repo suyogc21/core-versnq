@@ -14,6 +14,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -172,6 +173,11 @@ class Lead(TenantScoped, TimestampMixin, Base):
     unqualified_reason: Mapped[str | None] = mapped_column(String(300))
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     version: Mapped[int] = mapped_column(Integer, default=1)
+    possible_duplicate_of_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    email_consent: Mapped[str | None] = mapped_column(String(10))  # opted_in / opted_out
+    whatsapp_consent: Mapped[str | None] = mapped_column(String(10))
+    leak_alerted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    org_suggestions_dismissed: Mapped[list] = mapped_column(JSONB, default=list)
 
 
 class LeadIdentity(TenantScoped, TimestampMixin, Base):
@@ -233,3 +239,191 @@ class Task(TenantScoped, TimestampMixin, Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     due_notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+# ---------- step 1: capture and routing (migration 0011) ----------
+class CaptureSource(TenantScoped, TimestampMixin, Base):
+    """A web form / webhook endpoint. Websites post to /api/v1/capture/<key>."""
+
+    __tablename__ = "capture_sources"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_capture_sources_tenant_id_id"),
+        _fk("source_id", "lead_sources", "fk_capture_sources_source_same_tenant"),
+        _fk("stage_id", "lead_stages", "fk_capture_sources_stage_same_tenant"),
+    )
+
+    name: Mapped[str] = mapped_column(String(80))
+    source_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    stage_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    key_hint: Mapped[str] = mapped_column(String(12))
+    field_map: Mapped[dict] = mapped_column(JSONB, default=dict)  # incoming name -> field key
+    consent_text: Mapped[str | None] = mapped_column(String(500))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class Import(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "imports"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_imports_tenant_id_id"),
+        _fk("created_by_user_id", "users", "fk_imports_creator_same_tenant"),
+    )
+
+    file_name: Mapped[str] = mapped_column(String(200))
+    headers: Mapped[list] = mapped_column(JSONB)
+    row_count: Mapped[int] = mapped_column(Integer)
+    mapping: Mapped[dict] = mapped_column(JSONB, default=dict)  # column -> field key
+    options: Mapped[dict] = mapped_column(JSONB, default=dict)
+    status: Mapped[str] = mapped_column(String(10), default="uploaded")
+    created_count: Mapped[int] = mapped_column(Integer, default=0)
+    updated_count: Mapped[int] = mapped_column(Integer, default=0)
+    skipped_count: Mapped[int] = mapped_column(Integer, default=0)
+    failed_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_by_user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ImportRow(TenantScoped, Base):
+    __tablename__ = "import_rows"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_import_rows_tenant_id_id"),
+        UniqueConstraint("import_id", "row_number", name="uq_import_rows_number"),
+        _fk("import_id", "imports", "fk_import_rows_import_same_tenant", "CASCADE"),
+    )
+
+    import_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    row_number: Mapped[int] = mapped_column(Integer)
+    data: Mapped[list] = mapped_column(JSONB)  # cell values in header order
+    status: Mapped[str] = mapped_column(String(10), default="pending")
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    message: Mapped[str | None] = mapped_column(String(500))
+
+
+class LeadMerge(TenantScoped, Base):
+    __tablename__ = "lead_merges"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_lead_merges_tenant_id_id"),
+        _fk("survivor_id", "leads", "fk_lead_merges_survivor_same_tenant", "CASCADE"),
+    )
+
+    survivor_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    merged_lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    merged_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    snapshot: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+class Consent(TenantScoped, Base):
+    """Full history; the latest row per channel is the current state (copied onto the lead)."""
+
+    __tablename__ = "consents"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_consents_tenant_id_id"),
+        _fk("lead_id", "leads", "fk_consents_lead_same_tenant", "CASCADE"),
+    )
+
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    channel: Mapped[str] = mapped_column(String(10))
+    status: Mapped[str] = mapped_column(String(10))
+    source: Mapped[str] = mapped_column(String(10))
+    wording: Mapped[str | None] = mapped_column(String(500))
+    evidence: Mapped[dict] = mapped_column(JSONB, default=dict)
+    actor_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class Suppression(TenantScoped, Base):
+    """Identifiers never to be messaged. Not linked to a lead, so it survives deletion (#18)."""
+
+    __tablename__ = "suppression_list"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_suppression_list_tenant_id_id"),
+        UniqueConstraint("tenant_id", "channel", "value_normalized", name="uq_suppression_value"),
+    )
+
+    channel: Mapped[str] = mapped_column(String(10))
+    value_normalized: Mapped[str] = mapped_column(String(320))
+    reason: Mapped[str] = mapped_column(String(10))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+class ExternalRef(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "external_refs"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_external_refs_tenant_id_id"),
+        UniqueConstraint("tenant_id", "system", "external_id", name="uq_external_ref"),
+        _fk("lead_id", "leads", "fk_external_refs_lead_same_tenant", "CASCADE"),
+    )
+
+    system: Mapped[str] = mapped_column(String(60))
+    external_id: Mapped[str] = mapped_column(String(200))
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+
+
+class AssignmentRule(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "assignment_rules"
+    __table_args__ = (UniqueConstraint("tenant_id", "id", name="uq_assignment_rules_tenant_id_id"),)
+
+    name: Mapped[str] = mapped_column(String(80))
+    position: Mapped[int] = mapped_column(Integer)
+    conditions: Mapped[list] = mapped_column(JSONB, default=list)
+    strategy: Mapped[str] = mapped_column(String(12))  # round_robin / user / unassigned
+    user_ids: Mapped[list] = mapped_column(JSONB, default=list)
+    team_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    last_assigned_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class SlaRule(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "sla_rules"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_sla_rules_tenant_id_id"),
+        _fk("stage_id", "lead_stages", "fk_sla_rules_stage_same_tenant", "CASCADE"),
+    )
+
+    name: Mapped[str] = mapped_column(String(80))
+    trigger: Mapped[str] = mapped_column(String(14))  # lead_created / stage_entered
+    stage_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    within_minutes: Mapped[int] = mapped_column(Integer)
+    create_task: Mapped[bool] = mapped_column(Boolean, default=True)
+    task_title: Mapped[str | None] = mapped_column(String(200))
+    on_breach: Mapped[str] = mapped_column(String(14), default="alert")  # none / alert / reassign
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class LeadSla(TenantScoped, Base):
+    """One running SLA clock on one lead."""
+
+    __tablename__ = "lead_slas"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_lead_slas_tenant_id_id"),
+        _fk("lead_id", "leads", "fk_lead_slas_lead_same_tenant", "CASCADE"),
+        _fk("rule_id", "sla_rules", "fk_lead_slas_rule_same_tenant", "CASCADE"),
+    )
+
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    rule_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    met_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    breached_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    task_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class Notification(TenantScoped, Base):
+    __tablename__ = "notifications"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_notifications_tenant_id_id"),
+        _fk("user_id", "users", "fk_notifications_user_same_tenant", "CASCADE"),
+        _fk("lead_id", "leads", "fk_notifications_lead_same_tenant", "CASCADE"),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    kind: Mapped[str] = mapped_column(String(30))
+    title: Mapped[str] = mapped_column(String(300))
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())

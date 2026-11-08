@@ -13,6 +13,7 @@ CATALOGUE: dict[str, str] = {
     "lead.updated": "crm",
     "lead.assigned": "crm",
     "lead.stage_changed": "crm",
+    "lead.merged": "crm",  # step 1 (Decision log #22): survivor id + merged lead id
     "lead.intent_changed": "crm",  # produced by ACE through the API (Decision log #5)
     "activity.logged": "crm",
     "call.recorded": "ace",  # call intelligence belongs to ACE (Decision log #3)

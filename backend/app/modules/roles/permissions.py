@@ -12,13 +12,22 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "leads.edit": ("crm", "Edit visible leads, log activities and manage tasks"),
     "leads.assign": ("crm", "Change a lead's owner"),
     "leads.delete": ("crm", "Permanently delete leads"),
+    "leads.import": ("crm", "Import leads from a CSV file"),
+    "leads.merge": ("crm", "Merge duplicate leads"),
     "crm.configure": ("crm", "Set up stages, sources, custom fields and activity types"),
 }
 ALL_CODES = frozenset(CATALOGUE)
 
 DEFAULT_GRANTS: dict[str, set[str]] = {
     "admin": set(ALL_CODES),
-    "sales_manager": {"users.read", "leads.create", "leads.edit", "leads.assign"},
+    "sales_manager": {
+        "users.read",
+        "leads.create",
+        "leads.edit",
+        "leads.assign",
+        "leads.import",
+        "leads.merge",
+    },
     "sales_user": {"leads.create", "leads.edit"},
     "finance": {"audit.read"},
 }

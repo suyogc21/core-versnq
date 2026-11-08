@@ -26,6 +26,31 @@ def _call_fields(dispositions: list[str]) -> list[dict]:
     ]
 
 
+# Added in step 1 (migration 0011 adds them for companies that already exist).
+STEP1_SYSTEM_TYPES = [
+    {"key": "re_enquiry", "label": "Enquired again", "icon": "repeat", "loggable": False},
+    {"key": "lead_merged", "label": "Leads merged", "icon": "merge", "loggable": False},
+    {
+        "key": "consent_changed",
+        "label": "Consent changed",
+        "icon": "shield-check",
+        "loggable": False,
+    },
+    {
+        "key": "organisation_linked",
+        "label": "Organisation linked",
+        "icon": "building",
+        "loggable": False,
+    },
+    {
+        "key": "sla_missed",
+        "label": "Response time missed",
+        "icon": "alarm-clock",
+        "loggable": False,
+    },
+]
+
+
 def system_activity_types(dispositions: list[str]) -> list[dict]:
     """Built-in types every company has. Keys are fixed; labels and call outcomes are editable."""
     return [
@@ -36,6 +61,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         {"key": "stage_changed", "label": "Stage changed", "icon": "git-commit", "loggable": False},
         {"key": "owner_changed", "label": "Owner changed", "icon": "user-round", "loggable": False},
         {"key": "task_completed", "label": "Task completed", "icon": "check", "loggable": False},
+        *STEP1_SYSTEM_TYPES,
     ]
 
 

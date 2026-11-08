@@ -10,10 +10,12 @@ from sqlalchemy import delete, func, inspect, select
 
 from app.core.errors import Conflict, Forbidden, Invalid
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
+from app.modules.crm import intake as I
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.lead_query import LeadFilter, SortKey, ordered, where_clauses
 from app.modules.crm.models import CustomFieldUniqueValue, Lead
+from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 
 router = APIRouter(prefix="/api/v1/leads", tags=["leads"], dependencies=CRM)
@@ -67,6 +69,7 @@ class LeadIn(LeadFields):
     stage_id: uuid.UUID | None = None
     owner_user_id: uuid.UUID | None = None
     assign_to_me: bool = True  # managers may untick to leave the lead unassigned
+    assign_by_rules: bool = False  # managers: let the assignment rules pick the owner
     next_follow_up_at: datetime | None = None
     custom_fields: dict = {}
     origin: Literal["inbound", "outbound_ace", "outside"] = "outside"
@@ -126,6 +129,10 @@ class LeadOut(BaseModel):
     country_code: str | None
     custom_fields: dict
     unqualified_reason: str | None
+    organisation_id: uuid.UUID | None
+    possible_duplicate_of_id: uuid.UUID | None
+    email_consent: str | None
+    whatsapp_consent: str | None
     created_at: datetime
     updated_at: datetime
     version: int
@@ -310,54 +317,48 @@ async def bulk_action(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
 
 @router.post("", response_model=LeadOut, status_code=status.HTTP_201_CREATED)
 async def create_lead(body: LeadIn, db: CrmDb, actor: Creator) -> LeadOut:
+    """Quick-add. A matching phone or email is refused with the existing lead (if you can see
+    it) unless the company keeps duplicates (flag / create)."""
     tenant_id = actor.user.tenant_id
-    if body.kind == "organisation" and not (body.org_name or "").strip():
-        raise Invalid("An organisation needs a name")
-    await L.check_source(db, body.source_id)
-    stage = await L.get_stage(db, body.stage_id) if body.stage_id else await L.default_stage(db)
-
-    # A rep's own new lead is theirs; people who can assign may pick an owner or none (#21).
+    # A rep's own new lead is theirs; people who can assign may pick an owner, leave it
+    # unassigned, or let the assignment rules decide (#21).
+    owner: uuid.UUID | str | None
     if L.can(actor, "leads.assign"):
-        owner_id = body.owner_user_id or (actor.user.id if body.assign_to_me else None)
+        if body.assign_by_rules:
+            owner = I.RULES
+        else:
+            owner = body.owner_user_id or (actor.user.id if body.assign_to_me else None)
+            await L.check_assignable(db, actor, owner)
     else:
-        if body.owner_user_id not in (None, actor.user.id):
+        if body.owner_user_id not in (None, actor.user.id) or body.assign_by_rules:
             raise Forbidden("You can only add leads for yourself")
-        owner_id = actor.user.id
-    owner = await L.check_assignable(db, actor, owner_id)
+        owner = actor.user.id
+        await L.check_assignable(db, actor, owner)
 
-    lead = Lead(
-        tenant_id=tenant_id,
-        kind=body.kind,
-        display_name="",
-        stage_id=stage.id,
-        stage_changed_at=L.now(),
-        is_open=stage.is_open,
+    setting = await db.scalar(
+        select(TenantSettings.duplicate_policy).where(TenantSettings.tenant_id == tenant_id)
+    )
+    policy = {"flag": "flag", "create": "create"}.get(setting, "refuse")
+    fields = _clean(body.model_dump(include=set(LeadFields.model_fields) | ATTRIBUTION))
+    fields.pop("unqualified_reason", None)
+    inc = I.Incoming(
+        identities=_identities(body.identities),
         source_id=body.source_id,
-        origin=body.origin,
         created_via="manual",
-        owner_user_id=owner.id if owner else None,
-        assigned_at=L.now() if owner else None,
-        team_id=await L.owner_team(db, owner.id if owner else None),
-        created_by_user_id=actor.user.id,
-        custom_fields={},
-        attribution={},
-        **_clean(body.model_dump(include=set(LeadFields.model_fields) | ATTRIBUTION)),
+        kind=body.kind,
+        fields=fields,
+        custom_fields=body.custom_fields,
+        stage_id=body.stage_id,
+        origin=body.origin,
+        owner=owner,
+        next_follow_up_at=body.next_follow_up_at,
+        created_summary=f"Added by {actor.user.name}",
     )
-    db.add(lead)
+    if body.unqualified_reason:
+        inc.fields["unqualified_reason"] = body.unqualified_reason
+    outcome = await I.intake(db, tenant_id, inc, policy=policy, actor=actor)
     await db.flush()
-    await L.set_identities(
-        db, lead, _identities(body.identities), await L.tenant_country(db, tenant_id)
-    )
-    await L.apply_custom_fields(db, lead, body.custom_fields, creating=True)
-    await L.check_stage_entry(db, lead, stage)
-    if body.next_follow_up_at and stage.is_open:
-        await L.set_follow_up(db, lead, body.next_follow_up_at, actor)
-    await db.flush()
-    await L.log(db, lead, "lead_created", f"Added by {actor.user.name}", actor)
-    await L.event(db, lead, "lead.created", {"source_id": str(lead.source_id)})
-    if owner:
-        await L.event(db, lead, "lead.assigned", {"owner_user_id": str(owner.id)})
-    return (await _out(db, [lead]))[0]
+    return (await _out(db, [outcome.lead]))[0]
 
 
 @router.get("/{lead_id}", response_model=LeadOut)

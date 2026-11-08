@@ -331,6 +331,7 @@ async def set_follow_up(
     lead.next_follow_up_at = when
     if when is None:
         return
+    lead.leak_alerted_at = None  # rescheduled: the leakage guard watches the new date
     owner = lead.owner_user_id or (actor.user.id if actor else None)
     if owner is None:
         return
@@ -405,6 +406,9 @@ async def move_stage(
     await event(
         db, lead, "lead.stage_changed", {"from": str(old.id) if old else None, "to": str(stage.id)}
     )
+    from app.modules.crm.routing import start_slas  # routing builds on this module
+
+    await start_slas(db, lead, "stage_entered", stage)
 
 
 async def change_owner(

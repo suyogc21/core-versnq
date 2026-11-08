@@ -189,22 +189,23 @@ Parked (Decision log #1). Not built until unparked.
 | `capture_sources` | One endpoint per lead source: name, source, secret key (stored hashed), field mapping, default owner rule, consent wording, active. Websites post leads here |
 | `imports` | CSV import job: uploaded by, file name, column mapping, duplicate policy, status, counts (created / updated / skipped / errors) |
 | `import_rows` | One row per CSV line: raw values, result, lead id, error message. Lets the user download the failed rows |
-| `lead_merges` | Who merged which lead into which, with a snapshot of the merged lead |
+| `lead_merges` | Who merged which lead into which, with a snapshot of the merged lead (removed with the survivor) |
 | `consents` | Lead, channel (email / WhatsApp), opted in or out, source, time, evidence. Full history; the latest row is the current state |
 | `suppression_list` | Channel + identifier + reason (opt-out, bounce, complaint). Not linked to a lead, so it survives deletion (#18) |
 | `external_refs` | System + external ID → lead. Makes repeated form posts and API calls safe to retry |
-| `assignment_rules` | Order, conditions (source, language, region, any custom field), strategy (round-robin over chosen users or a team, one user, leave unassigned), active |
-| `assignment_cursors` | Remembers whose turn is next for each round-robin rule, safe when two leads arrive together |
-| `sla_rules` | Trigger (lead created, stage entered), within N minutes/hours, action (create a task, alert the manager, reassign) |
+| `assignment_rules` | Order, conditions (source, language, region, any custom field), strategy (round-robin over chosen users or a team, one user, leave unassigned), active, whose turn was last (locked per lead, so two leads arriving together never get the same turn) |
+| `sla_rules` | Trigger (lead created, stage entered), within N minutes/hours, create a task, action when missed (alert the manager, reassign) |
+| `lead_slas` | One running response-time clock per lead and rule: deadline, met, missed |
 | `notifications` | In-app messages for a user: kind, text, link, read time |
 | Settings | `duplicate_policy` (update existing (default, DM2) / flag / always create), `org_grouping` (off / suggest / auto-link domains, #14), leakage hours |
 
-`leads` gains `merged_into_id`, `possible_duplicate_of_id`, `first_response_at`.
+`leads` gains `possible_duplicate_of_id`, current email/WhatsApp consent, `leak_alerted_at` and dismissed organisation suggestions.
 
 ### 4.2 Rules the backend enforces
 
 - **Duplicates (R5):** on every entry path (form, CSV, quick-add, API), match on cleaned phone or email within the company. Default: update the existing lead, keep its owner, add a "Re-enquiry" activity and reopen it if closed. Other per-company options: flag as a possible duplicate, or always create new.
-- **Merge:** pick the surviving lead and, field by field, which value to keep. Phones, emails, timeline, tasks and consents move over. The merged lead is hidden but kept for history, and its old links point to the survivor. Needs `leads.edit` on both leads.
+- **Merge:** pick the surviving lead and, field by field, which value to keep (blanks are always filled). Phones, emails, timeline, tasks, consents and linked people move over; an opt-out on either lead wins. The other lead is deleted, a snapshot is kept with the survivor, and old links point to the survivor. Needs `leads.merge` and both leads visible.
+- **Quick-add duplicates:** a person adding a lead by hand is told it already exists (with a link only if they may see it), unless the company keeps duplicates.
 - **Organisation suggestions (#14):** match on the email domain, then on the company name (ignoring case, "Ltd", "Pvt" and punctuation). Free email providers never match. Off by default.
 - **Consent:** forms and imports can record opt-in with time and wording. An opt-out adds the identifier to the suppression list, and that is never undone by a later import.
 - **Assignment:** rules run top to bottom and the first match wins. Round-robin skips disabled users. A lead is never given to someone outside the rule's pool. Every assignment writes an activity and the `lead.assigned` event.

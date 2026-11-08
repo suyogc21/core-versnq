@@ -163,7 +163,7 @@ async def test_linked_and_unique_custom_fields(ws):
         c, admin, src, custom_fields={"plan": "pro", "tier": "p1", "ref_no": "AB-1"}
     )
     clash = await new_lead(c, admin, src, phone="98765 43212", custom_fields={"ref_no": " ab-1 "})
-    unknown = await new_lead(c, admin, src, custom_fields={"nope": 1})
+    unknown = await new_lead(c, admin, src, phone="98765 43213", custom_fields={"nope": 1})
 
     assert (mismatch.status_code, child_without_parent.status_code) == (422, 422)
     assert first.status_code == 201 and first.json()["custom_fields"]["tier"] == "p1"

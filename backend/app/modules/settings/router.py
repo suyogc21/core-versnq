@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
@@ -30,6 +30,10 @@ class SettingsOut(BaseModel):
     default_country: str
     branding: dict
     follow_up_required: bool
+    duplicate_policy: str
+    org_grouping: str
+    leakage_hours: int | None
+    leakage_action: str
 
 
 class SettingsPatch(BaseModel):
@@ -39,6 +43,10 @@ class SettingsPatch(BaseModel):
     default_country: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
     branding: Branding | None = None
     follow_up_required: bool | None = None  # False = the follow-up rule only warns
+    duplicate_policy: Literal["update", "flag", "create"] | None = None
+    org_grouping: Literal["off", "suggest", "auto"] | None = None
+    leakage_hours: int | None = Field(default=None, ge=0, le=24 * 30)  # 0 = switch off
+    leakage_action: Literal["alert", "reassign"] | None = None
 
     _tz = field_validator("timezone")(lambda v: v if v is None else valid_timezone(v))
 
@@ -67,6 +75,10 @@ def _out(s: TenantSettings) -> SettingsOut:
         default_country=s.default_country,
         branding=s.branding,
         follow_up_required=s.follow_up_required,
+        duplicate_policy=s.duplicate_policy,
+        org_grouping=s.org_grouping,
+        leakage_hours=s.leakage_hours,
+        leakage_action=s.leakage_action,
     )
 
 
@@ -87,10 +99,20 @@ async def update_settings(
         s.labels = s.labels | {k: v.model_dump() for k, v in body.labels.items()}
     if body.branding:
         s.branding = s.branding | body.branding.model_dump(exclude_none=True)
-    for field in ("timezone", "locale", "default_country", "follow_up_required"):
+    for field in (
+        "timezone",
+        "locale",
+        "default_country",
+        "follow_up_required",
+        "duplicate_policy",
+        "org_grouping",
+        "leakage_action",
+    ):
         value = getattr(body, field)
         if value is not None:
             setattr(s, field, value)
+    if body.leakage_hours is not None:
+        s.leakage_hours = body.leakage_hours or None
     after = _out(s).model_dump()
     await record(
         db,

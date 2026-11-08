@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, ForeignKey, String, Uuid
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -21,3 +21,8 @@ class TenantSettings(TimestampMixin, Base):
     branding: Mapped[dict] = mapped_column(JSONB, default=dict)
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Duplicates on automatic capture (R5): update the existing lead / flag / always create.
+    duplicate_policy: Mapped[str] = mapped_column(String(12), default="update")
+    org_grouping: Mapped[str] = mapped_column(String(10), default="off")  # off / suggest / auto
+    leakage_hours: Mapped[int | None] = mapped_column(Integer)  # None = leakage guard off
+    leakage_action: Mapped[str] = mapped_column(String(14), default="alert")  # alert / reassign

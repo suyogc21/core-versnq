@@ -5,7 +5,10 @@ from app.core import errors
 from app.core.health import router as health_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
+from app.modules.crm.lead_tools_router import router as lead_tools_router
 from app.modules.crm.leads_router import router as leads_router
+from app.modules.crm.notifications_router import router as notifications_router
+from app.modules.crm.rules_router import router as rules_router
 from app.modules.crm.setup_router import router as crm_setup_router
 from app.modules.crm.work_router import router as work_router
 from app.modules.roles.router import router as roles_router
@@ -35,5 +38,8 @@ app.include_router(users_router)
 app.include_router(audit_router)
 app.include_router(crm_setup_router)
 app.include_router(leads_router)
+app.include_router(lead_tools_router)
+app.include_router(rules_router)
+app.include_router(notifications_router)
 app.include_router(work_router)
 app.include_router(staff_accounts_router)

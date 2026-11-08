@@ -7,9 +7,10 @@ from fastapi.responses import JSONResponse
 class DomainError(Exception):
     status_code = 400
 
-    def __init__(self, detail: str):
+    def __init__(self, detail: str, extra: dict | None = None):
         super().__init__(detail)
         self.detail = detail
+        self.extra = extra or {}  # more machine-readable facts for the client
 
 
 class Forbidden(DomainError):
@@ -31,4 +32,4 @@ class Invalid(DomainError):
 def install(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     async def _handle(_: Request, exc: DomainError) -> JSONResponse:
-        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+        return JSONResponse({"detail": exc.detail, **exc.extra}, status_code=exc.status_code)

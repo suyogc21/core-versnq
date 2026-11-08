@@ -14,6 +14,8 @@ from app.modules.auth.deps import CurrentUser
 from app.modules.crm import fields as F
 from app.modules.crm import leads as L
 from app.modules.crm.models import Activity, ActivityType, Lead, Task
+from app.modules.crm.notify import notify
+from app.modules.crm.routing import mark_contacted
 from app.modules.teams.service import visible_user_ids
 from app.platform.models import Tenant
 
@@ -101,6 +103,7 @@ async def log_activity(
     if type_key not in NOT_CONTACT:
         lead.last_contacted_at = max(filter(None, [lead.last_contacted_at, when]))
         lead.first_response_at = lead.first_response_at or when
+        await mark_contacted(db, lead)
     if disposition_label:
         lead.last_disposition = disposition_label
     lead.version += 1
@@ -199,6 +202,14 @@ async def notify_due_tasks() -> int:
             ).all()
             for task in due:
                 task.due_notified_at = L.now()
+                await notify(
+                    db,
+                    tenant_id,
+                    [task.owner_user_id],
+                    "task_due",
+                    f"Due: {task.title}",
+                    task.lead_id,
+                )
                 await emit(
                     db,
                     tenant_id,
