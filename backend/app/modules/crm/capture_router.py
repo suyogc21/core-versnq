@@ -19,9 +19,9 @@ from urllib.parse import parse_qs
 from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 
-from app.core.errors import DomainError, Invalid, NotFound
+from app.core.errors import Conflict, DomainError, Invalid, NotFound
 from app.core.ratelimit import hit
 from app.modules.auth.deps import CurrentUser, WorkspaceDep, require
 from app.modules.crm import intake as I
@@ -93,6 +93,15 @@ class CaptureSourceWithKey(CaptureSourceOut):
 
 
 async def _check(db, src: CaptureSource) -> None:
+    src.name = " ".join(src.name.split())
+    with db.no_autoflush:  # check before the new name reaches the database
+        clash = await db.scalar(
+            select(CaptureSource.id).where(
+                func.lower(CaptureSource.name) == src.name.lower(), CaptureSource.id != src.id
+            )
+        )
+    if clash:
+        raise Conflict(f"A form called '{src.name}' already exists")
     source = await db.get(LeadSource, src.source_id)
     if source is None or not source.is_active:
         raise Invalid("Choose an active source")
@@ -129,7 +138,7 @@ async def create_capture_source(
         created_by_user_id=actor.user.id,
         **body.model_dump(),
     )
-    src.name = src.name.strip()
+    src.id = uuid.uuid4()
     await _check(db, src)
     db.add(src)
     await db.flush()

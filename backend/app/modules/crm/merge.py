@@ -109,6 +109,13 @@ async def merge(
     ] + [L.IdentityInput(i.type, i.value, i.label, False, i.is_whatsapp) for i in other_ids]
     await L.set_identities(db, survivor, items, country)
 
+    # The other lead's response-time clocks end with it; their reminder tasks would only
+    # duplicate the survivor's, so they are cancelled rather than moved.
+    await db.execute(
+        update(Task)
+        .where(Task.lead_id == other.id, Task.status == "open", Task.created_from == "sla_rule")
+        .values(status="cancelled", completed_at=L.now())
+    )
     # History and work move over.
     for model in (Activity, Task, Consent, ExternalRef, Notification):
         await db.execute(update(model).where(model.lead_id == other.id).values(lead_id=survivor.id))

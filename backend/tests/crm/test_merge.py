@@ -147,3 +147,37 @@ async def test_unassigned_leads_keep_their_follow_up_date(ws):
         headers=h,
     )
     assert r.json()["next_follow_up_at"] is not None
+
+
+async def test_merge_drops_the_other_leads_response_time_tasks(ws):
+    tenant_id, c = ws
+    _, h = await login_as(tenant_id, "admin")
+    a_owner, _ = await login_as(tenant_id, "sales_user")
+    b_owner, _ = await login_as(tenant_id, "sales_user")
+    await c.post(
+        "/api/v1/sla-rules",
+        json={"name": "First call", "trigger": "lead_created", "within_minutes": 30},
+        headers=h,
+    )
+    await settings(tenant_id, duplicate_policy="flag")
+    _, a = await capture(tenant_id, phone="98765 55555", owner=a_owner)
+    _, b = await capture(tenant_id, phone="98765 55555", owner=b_owner, policy="flag")
+    la, lb = await lead(tenant_id, a), await lead(tenant_id, b)
+    r = await c.post(
+        "/api/v1/leads/merge",
+        json={
+            "survivor_id": str(a),
+            "survivor_version": la.version,
+            "other_id": str(b),
+            "other_version": lb.version,
+        },
+        headers=h,
+    )
+    assert r.status_code == 200
+    async with tenant_session(tenant_id) as db:
+        open_tasks = (
+            await db.execute(
+                select(Task.owner_user_id).where(Task.lead_id == a, Task.status == "open")
+            )
+        ).all()
+    assert [t[0] for t in open_tasks] == [a_owner]

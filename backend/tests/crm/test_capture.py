@@ -194,3 +194,21 @@ async def test_capture_settings_need_permission_and_valid_targets(ws):
     }
     closed = body | {"stage_id": stages["Lost"]}
     assert (await c.post("/api/v1/capture-sources", json=closed, headers=admin)).status_code == 422
+
+
+async def test_two_forms_cannot_share_a_name(ws):
+    tenant_id, c = ws
+    _, admin = await login_as(tenant_id, "admin")
+    first = await _form(c, admin)
+    sources = {
+        s["name"]: s["id"] for s in (await c.get("/api/v1/lead-sources", headers=admin)).json()
+    }
+    body = {"name": " contact US ", "source_id": sources["Website"]}
+    again = await c.post("/api/v1/capture-sources", json=body, headers=admin)
+    assert again.status_code == 409 and "already" in again.json()["detail"]
+    other = await c.post("/api/v1/capture-sources", json=body | {"name": "Other"}, headers=admin)
+    rename = await c.patch(
+        f"/api/v1/capture-sources/{other.json()['id']}", json={"name": "Contact us"}, headers=admin
+    )
+    assert rename.status_code == 409
+    assert first["name"] == "Contact us"
