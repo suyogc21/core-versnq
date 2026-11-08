@@ -11,6 +11,8 @@ The single checklist for building Core. Source of truth for features: the spec (
 5. Every **Test:** line is its own tick. One commit per ticked item.
 6. **Gate** = all tests green + Suyog reviews and approves. No gate, no next phase.
 
+**Current build order (2026-11-09):** `docs/plans/build-plan.md` lists every spec feature with its status and the step that builds it. It moves custom record types and links (2.17) ahead of deals, and adds in-app notifications (step 1), which were missing.
+
 Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ---
