@@ -19,6 +19,9 @@ PUBLIC = {
     ("POST", "/api/v1/auth/invite/accept"),
     ("POST", "/api/v1/auth/password/forgot"),
     ("POST", "/api/v1/auth/password/reset"),
+    # Web forms post leads here; protected by the per-form secret key + rate limits (#22).
+    ("POST", "/api/v1/capture/{key}"),
+    ("OPTIONS", "/api/v1/capture/{key}"),
 }
 
 
