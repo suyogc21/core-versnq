@@ -162,6 +162,8 @@ Parked (Decision log #1). Not built until unparked.
 
 ## 3. Build order
 
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 browser end-to-end tests, a 23-check browser walk). Next: step 2.
+
 | Step | What | Why here |
 | --- | --- | --- |
 | 1 | **Capture and routing**: CSV import, form/webhook capture, duplicates + merge, organisation suggestions, consent + suppression list, auto-assignment, SLAs and leakage guard, in-app notifications | Leads must come in clean and reach the right person |
