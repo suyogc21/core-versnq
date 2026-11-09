@@ -96,7 +96,6 @@ BLUEWAVE_LABELS = {
 SELLING_ROLES = {"sales_user", "sales_manager", "team_lead"}
 ACME_FIELDS = {
     "program_interest": "pick",
-    "batch": "pick",
     "qualification": "pick",
     "application_number": "unique",
 }

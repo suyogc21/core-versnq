@@ -15,6 +15,7 @@ from app.modules.crm import routing as R
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.leads import lead_fields
 from app.modules.crm.models import AssignmentRule, LeadSource, LeadStage, SlaRule
+from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team
 from app.modules.users.models import User
 
@@ -264,3 +265,51 @@ async def delete_sla_rule(rule_id: uuid.UUID, db: CrmDb, actor: Configurer) -> N
         raise NotFound("Rule not found")
     await db.delete(rule)
     await audit(db, actor, "sla_rule.deleted", "sla_rule", rule_id, {"name": rule.name})
+
+
+# ---------- CRM rules (one place, needs crm.configure like the rest of CRM set-up) ----------
+class CrmRules(BaseModel):
+    follow_up_required: bool  # False = the follow-up rule only warns
+    duplicate_policy: Literal["update", "flag", "create"]
+    org_grouping: Literal["off", "suggest", "auto"]
+    leakage_hours: int | None
+    leakage_action: Literal["alert", "reassign"]
+
+
+class CrmRulesPatch(BaseModel):
+    model_config = {"extra": "forbid"}
+    follow_up_required: bool | None = None
+    duplicate_policy: Literal["update", "flag", "create"] | None = None
+    org_grouping: Literal["off", "suggest", "auto"] | None = None
+    leakage_hours: int | None = Field(default=None, ge=0, le=24 * 30)  # 0 = switch off
+    leakage_action: Literal["alert", "reassign"] | None = None
+
+
+def _rules(s: TenantSettings) -> CrmRules:
+    return CrmRules(
+        follow_up_required=s.follow_up_required,
+        duplicate_policy=s.duplicate_policy,
+        org_grouping=s.org_grouping,
+        leakage_hours=s.leakage_hours,
+        leakage_action=s.leakage_action,
+    )
+
+
+@router.get("/crm-rules", response_model=CrmRules)
+async def get_crm_rules(db: CrmDb, actor: Configurer) -> CrmRules:
+    return _rules(await db.get(TenantSettings, actor.user.tenant_id))
+
+
+@router.patch("/crm-rules", response_model=CrmRules)
+async def update_crm_rules(body: CrmRulesPatch, db: CrmDb, actor: Configurer) -> CrmRules:
+    s = await db.get(TenantSettings, actor.user.tenant_id)
+    before = _rules(s).model_dump()
+    changes = body.model_dump(exclude_unset=True)
+    for key, value in changes.items():
+        if key == "leakage_hours":
+            s.leakage_hours = value or None
+        elif value is not None:
+            setattr(s, key, value)
+    after = _rules(s).model_dump()
+    await audit(db, actor, "crm.rules_updated", "settings", s.tenant_id, before, after)
+    return _rules(s)

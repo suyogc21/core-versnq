@@ -385,3 +385,27 @@ async def test_due_tasks_notify_their_owner(ws):
         )
     await notify_due_tasks()
     assert [k for k, _ in await notifications(tenant_id, rep)] == ["lead_assigned", "task_due"]
+
+
+async def test_crm_rules_live_in_one_place_with_crm_set_up_permission(ws):
+    tenant_id, c = ws
+    _, admin = await login_as(tenant_id, "admin")
+    _, mgr = await login_as(tenant_id, "sales_manager")
+    assert (await c.get("/api/v1/crm-rules", headers=mgr)).status_code == 403
+    r = await c.patch(
+        "/api/v1/crm-rules",
+        json={"duplicate_policy": "flag", "leakage_hours": 6, "org_grouping": "suggest"},
+        headers=admin,
+    )
+    assert r.json() == {
+        "follow_up_required": True,
+        "duplicate_policy": "flag",
+        "org_grouping": "suggest",
+        "leakage_hours": 6,
+        "leakage_action": "alert",
+    }
+    off = await c.patch("/api/v1/crm-rules", json={"leakage_hours": 0}, headers=admin)
+    assert off.json()["leakage_hours"] is None
+    # Company settings no longer take CRM rules (one place for each thing).
+    old = await c.patch("/api/v1/settings", json={"duplicate_policy": "create"}, headers=admin)
+    assert old.status_code == 422

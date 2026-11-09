@@ -94,40 +94,6 @@
         "group_name": "Interest"
       },
       {
-        "key": "batch",
-        "label": "Batch",
-        "type": "select",
-        "options": [
-          {
-            "value": "ds_weekend_batch",
-            "label": "DS Weekend Batch",
-            "parent": "data_science"
-          },
-          {
-            "value": "ds_weekday_batch",
-            "label": "DS Weekday Batch",
-            "parent": "data_science"
-          },
-          {
-            "value": "fs_evening_batch",
-            "label": "FS Evening Batch",
-            "parent": "full_stack_development"
-          },
-          {
-            "value": "fs_weekend_batch",
-            "label": "FS Weekend Batch",
-            "parent": "full_stack_development"
-          },
-          {
-            "value": "dm_online_batch",
-            "label": "DM Online Batch",
-            "parent": "digital_marketing"
-          }
-        ],
-        "depends_on": "program_interest",
-        "group_name": "Interest"
-      },
-      {
         "key": "qualification",
         "label": "Highest qualification",
         "type": "select",

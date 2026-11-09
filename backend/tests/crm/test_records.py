@@ -478,3 +478,14 @@ async def test_tasks_on_records(ws):
     assert done.status_code == 200
     timeline = (await c.get(f"/api/v1/records/{villa['id']}/activities", headers=h)).json()
     assert timeline[0]["summary"] == "Done: Get photos"
+
+
+async def test_built_in_names_cannot_be_record_type_keys(admin):
+    c, h = admin
+    for key in ("lead", "leads", "deal", "customer"):
+        r = await c.post(
+            "/api/v1/record-types",
+            json={"key": key, "singular": f"X{key}", "plural": f"Y{key}"},
+            headers=h,
+        )
+        assert r.status_code == 422, key

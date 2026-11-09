@@ -30,6 +30,18 @@ from app.modules.roles.models import Role
 router = APIRouter(prefix="/api/v1", tags=["record-types"], dependencies=CRM)
 Configurer = Annotated[CurrentUser, require("crm.configure")]
 TYPE_KEY = r"^[a-z][a-z0-9_]{1,39}$"
+# Built-in kinds (and the ones coming next) keep their own names.
+RESERVED_TYPE_KEYS = {
+    "lead",
+    "leads",
+    "contact",
+    "deal",
+    "deals",
+    "customer",
+    "customers",
+    "task",
+    "user",
+}
 
 
 class AccessOut(BaseModel):
@@ -111,6 +123,8 @@ async def list_record_types(
 
 @router.post("/record-types", response_model=RecordTypeOut, status_code=status.HTTP_201_CREATED)
 async def create_record_type(body: RecordTypeIn, db: CrmDb, actor: Configurer) -> RecordTypeOut:
+    if body.key in RESERVED_TYPE_KEYS:
+        raise Invalid(f"'{body.key}' is a built-in name; choose another key")
     position = await db.scalar(select(func.coalesce(func.max(RecordType.position), -1))) + 1
     rtype = RecordType(
         tenant_id=actor.user.tenant_id,

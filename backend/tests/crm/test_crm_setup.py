@@ -40,15 +40,15 @@ async def test_generic_company_gets_stages_sources_and_system_activity_types():
     assert types["stage_changed"].is_loggable is False and types["note"].is_loggable is True
 
 
-async def test_edtech_pack_brings_linked_unique_and_stage_required_fields():
+async def test_edtech_pack_brings_unique_and_stage_required_fields():
     tenant_id = await make_tenant()
     async with tenant_session(tenant_id) as s:
         await seed_crm(s, tenant_id, load_pack("edtech"))
     stages, _, fields, types = await _setup(tenant_id)
 
-    by_key = {f.key: f for f in fields}
-    assert by_key["batch"].depends_on == "program_interest"
-    assert all(o.get("parent") for o in by_key["batch"].options)
+    by_key = {f.key: f for f in fields if f.entity == "lead"}
+    # Batches are their own records now ("Enrolled in"), not a dropdown on the student.
+    assert "batch" not in by_key
     assert by_key["application_number"].is_unique is True
     assert next(s for s in stages if s.name == "Application").required_fields == [
         "program_interest"

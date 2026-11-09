@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
@@ -37,16 +37,15 @@ class SettingsOut(BaseModel):
 
 
 class SettingsPatch(BaseModel):
+    """Company settings. CRM rules (follow-up, duplicates, leakage) are /crm-rules."""
+
+    model_config = {"extra": "forbid"}
+
     labels: dict[str, Label] | None = None
     timezone: str | None = None
     locale: str | None = Field(default=None, pattern=r"^[a-z]{2}(-[A-Z]{2})?$")
     default_country: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
     branding: Branding | None = None
-    follow_up_required: bool | None = None  # False = the follow-up rule only warns
-    duplicate_policy: Literal["update", "flag", "create"] | None = None
-    org_grouping: Literal["off", "suggest", "auto"] | None = None
-    leakage_hours: int | None = Field(default=None, ge=0, le=24 * 30)  # 0 = switch off
-    leakage_action: Literal["alert", "reassign"] | None = None
 
     _tz = field_validator("timezone")(lambda v: v if v is None else valid_timezone(v))
 
@@ -99,20 +98,10 @@ async def update_settings(
         s.labels = s.labels | {k: v.model_dump() for k, v in body.labels.items()}
     if body.branding:
         s.branding = s.branding | body.branding.model_dump(exclude_none=True)
-    for field in (
-        "timezone",
-        "locale",
-        "default_country",
-        "follow_up_required",
-        "duplicate_policy",
-        "org_grouping",
-        "leakage_action",
-    ):
+    for field in ("timezone", "locale", "default_country"):
         value = getattr(body, field)
         if value is not None:
             setattr(s, field, value)
-    if body.leakage_hours is not None:
-        s.leakage_hours = body.leakage_hours or None
     after = _out(s).model_dump()
     await record(
         db,

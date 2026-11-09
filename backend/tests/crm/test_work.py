@@ -84,7 +84,7 @@ async def test_follow_up_rule_can_be_set_to_warn_only(ws):
     tenant_id, c = ws
     _, admin = await login_as(tenant_id, "admin")
     _, rep = await login_as(tenant_id, "sales_user")
-    settings = await c.patch("/api/v1/settings", json={"follow_up_required": False}, headers=admin)
+    settings = await c.patch("/api/v1/crm-rules", json={"follow_up_required": False}, headers=admin)
     lead = await _lead(c, rep)
 
     logged = await c.post(

@@ -945,6 +945,138 @@
         "title": "ConsentOut",
         "type": "object"
       },
+      "CrmRules": {
+        "properties": {
+          "duplicate_policy": {
+            "enum": [
+              "update",
+              "flag",
+              "create"
+            ],
+            "title": "Duplicate Policy",
+            "type": "string"
+          },
+          "follow_up_required": {
+            "title": "Follow Up Required",
+            "type": "boolean"
+          },
+          "leakage_action": {
+            "enum": [
+              "alert",
+              "reassign"
+            ],
+            "title": "Leakage Action",
+            "type": "string"
+          },
+          "leakage_hours": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leakage Hours"
+          },
+          "org_grouping": {
+            "enum": [
+              "off",
+              "suggest",
+              "auto"
+            ],
+            "title": "Org Grouping",
+            "type": "string"
+          }
+        },
+        "required": [
+          "follow_up_required",
+          "duplicate_policy",
+          "org_grouping",
+          "leakage_hours",
+          "leakage_action"
+        ],
+        "title": "CrmRules",
+        "type": "object"
+      },
+      "CrmRulesPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "duplicate_policy": {
+            "anyOf": [
+              {
+                "enum": [
+                  "update",
+                  "flag",
+                  "create"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Policy"
+          },
+          "follow_up_required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up Required"
+          },
+          "leakage_action": {
+            "anyOf": [
+              {
+                "enum": [
+                  "alert",
+                  "reassign"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leakage Action"
+          },
+          "leakage_hours": {
+            "anyOf": [
+              {
+                "maximum": 720.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leakage Hours"
+          },
+          "org_grouping": {
+            "anyOf": [
+              {
+                "enum": [
+                  "off",
+                  "suggest",
+                  "auto"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Grouping"
+          }
+        },
+        "title": "CrmRulesPatch",
+        "type": "object"
+      },
       "FieldIn": {
         "properties": {
           "depends_on": {
@@ -4375,6 +4507,8 @@
         "type": "object"
       },
       "SettingsPatch": {
+        "additionalProperties": false,
+        "description": "Company settings. CRM rules (follow-up, duplicates, leakage) are /crm-rules.",
         "properties": {
           "branding": {
             "anyOf": [
@@ -4398,33 +4532,6 @@
             ],
             "title": "Default Country"
           },
-          "duplicate_policy": {
-            "anyOf": [
-              {
-                "enum": [
-                  "update",
-                  "flag",
-                  "create"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Duplicate Policy"
-          },
-          "follow_up_required": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Follow Up Required"
-          },
           "labels": {
             "anyOf": [
               {
@@ -4439,34 +4546,6 @@
             ],
             "title": "Labels"
           },
-          "leakage_action": {
-            "anyOf": [
-              {
-                "enum": [
-                  "alert",
-                  "reassign"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Leakage Action"
-          },
-          "leakage_hours": {
-            "anyOf": [
-              {
-                "maximum": 720.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Leakage Hours"
-          },
           "locale": {
             "anyOf": [
               {
@@ -4478,22 +4557,6 @@
               }
             ],
             "title": "Locale"
-          },
-          "org_grouping": {
-            "anyOf": [
-              {
-                "enum": [
-                  "off",
-                  "suggest",
-                  "auto"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Org Grouping"
           },
           "timezone": {
             "anyOf": [
@@ -8222,6 +8285,76 @@
         "summary": "Capture",
         "tags": [
           "capture"
+        ]
+      }
+    },
+    "/api/v1/crm-rules": {
+      "get": {
+        "operationId": "routing-get_crm_rules",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmRules"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Crm Rules",
+        "tags": [
+          "routing"
+        ]
+      },
+      "patch": {
+        "operationId": "routing-update_crm_rules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmRulesPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmRules"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Crm Rules",
+        "tags": [
+          "routing"
         ]
       }
     },
