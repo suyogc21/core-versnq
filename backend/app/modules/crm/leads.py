@@ -152,23 +152,24 @@ async def identities_of(db: AsyncSession, lead_ids: list[uuid.UUID]) -> dict[uui
     return out
 
 
-# ---------- custom fields ----------
-async def lead_fields(db: AsyncSession) -> dict[str, CustomFieldDefinition]:
+# ---------- custom fields (shared by leads and records) ----------
+async def lead_fields(db: AsyncSession, entity: str = "lead") -> dict[str, CustomFieldDefinition]:
+    """Field definitions of one kind: "lead", or "rt:<record type key>"."""
     rows = await db.scalars(
-        select(CustomFieldDefinition).where(CustomFieldDefinition.entity == "lead")
+        select(CustomFieldDefinition).where(CustomFieldDefinition.entity == entity)
     )
     return {f.key: f for f in rows.all()}
 
 
 async def apply_custom_fields(
-    db: AsyncSession, lead: Lead, incoming: dict, *, creating: bool
+    db: AsyncSession, obj, incoming: dict, *, creating: bool, entity: str = "lead"
 ) -> list[str]:
-    """Validate and merge custom values. Returns the keys that changed."""
-    defs = await lead_fields(db)
+    """Validate and merge custom values onto a lead or record. Returns the keys that changed."""
+    defs = await lead_fields(db, entity)
     unknown = [k for k in incoming if k not in defs]
     if unknown:
         raise Invalid(f"Unknown field: {unknown[0]}")
-    merged = dict(lead.custom_fields or {})
+    merged = dict(obj.custom_fields or {})
     changed = []
     for key, raw in incoming.items():
         d = defs[key]
@@ -189,23 +190,23 @@ async def apply_custom_fields(
             if parent_value is None or any(v not in allowed for v in values):
                 parent_label = defs[d.depends_on].label if d.depends_on in defs else d.depends_on
                 raise Invalid(f"{d.label} does not match the chosen {parent_label}")
-    lead.custom_fields = merged
-    await _sync_unique(db, lead, defs, changed)
+    obj.custom_fields = merged
+    await _sync_unique(db, obj, defs, changed, entity)
     return changed
 
 
-async def _sync_unique(db, lead: Lead, defs: dict, changed: list[str]) -> None:
+async def _sync_unique(db, obj, defs: dict, changed: list[str], entity: str) -> None:
     for key in changed:
         if not defs[key].is_unique:
             continue
         await db.execute(
             delete(CustomFieldUniqueValue).where(
-                CustomFieldUniqueValue.entity == "lead",
+                CustomFieldUniqueValue.entity == entity,
                 CustomFieldUniqueValue.field_key == key,
-                CustomFieldUniqueValue.record_id == lead.id,
+                CustomFieldUniqueValue.record_id == obj.id,
             )
         )
-        value = lead.custom_fields.get(key)
+        value = obj.custom_fields.get(key)
         if value is None:
             continue
         await db.flush()  # everything else first, so only the unique row is in the savepoint
@@ -213,16 +214,19 @@ async def _sync_unique(db, lead: Lead, defs: dict, changed: list[str]) -> None:
             async with db.begin_nested():
                 db.add(
                     CustomFieldUniqueValue(
-                        tenant_id=lead.tenant_id,
-                        entity="lead",
+                        tenant_id=obj.tenant_id,
+                        entity=entity,
                         field_key=key,
                         value_normalized=F.unique_form(value),
-                        record_id=lead.id,
+                        record_id=obj.id,
                     )
                 )
                 await db.flush()
         except IntegrityError:
-            raise Conflict(f"{defs[key].label} '{value}' is already used by another lead") from None
+            what = "lead" if entity == "lead" else "record"
+            raise Conflict(
+                f"{defs[key].label} '{value}' is already used by another {what}"
+            ) from None
 
 
 # ---------- stages ----------

@@ -2,7 +2,7 @@
 (forms need them); changes need crm.configure and are audited."""
 
 import uuid
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import APIRouter, status
 from pydantic import BaseModel, Field
@@ -21,6 +21,9 @@ from app.modules.crm.models import (
     Lead,
     LeadSource,
     LeadStage,
+    Record,
+    RecordType,
+    RecordTypeStage,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["crm-setup"], dependencies=CRM)
@@ -155,12 +158,13 @@ async def _get(db, model, item_id: uuid.UUID, what: str):
     return item
 
 
-async def _next_position(db, model) -> int:
-    return (await db.scalar(select(func.coalesce(func.max(model.position), -1)))) + 1
+async def _next_position(db, model, *where) -> int:
+    q = select(func.coalesce(func.max(model.position), -1)).where(*where)
+    return (await db.scalar(q)) + 1
 
 
-async def _reorder(db, model, ids: list[uuid.UUID]) -> None:
-    current = set((await db.scalars(select(model.id))).all())
+async def _reorder(db, model, ids: list[uuid.UUID], *where) -> None:
+    current = set((await db.scalars(select(model.id).where(*where))).all())
     if set(ids) != current or len(ids) != len(current):
         raise Invalid("Send every item exactly once")
     for i, item_id in enumerate(ids):
@@ -352,21 +356,35 @@ async def _parent_options(
     return parent.options
 
 
+async def _entity(db, entity: str) -> str:
+    """'lead', or 'rt:<key>' for an existing record type."""
+    if entity == "lead":
+        return entity
+    if entity.startswith("rt:"):
+        exists_ = await db.scalar(select(RecordType.id).where(RecordType.key == entity[3:]))
+        if exists_:
+            return entity
+    raise Invalid("Unknown kind of field")
+
+
 @router.get("/custom-fields", response_model=list[FieldOut])
 async def list_fields(
-    db: CrmDb, _: ActiveUser, entity: Literal["lead"] = "lead"
+    db: CrmDb, _: ActiveUser, entity: str = "lead"
 ) -> list[CustomFieldDefinition]:
+    entity = await _entity(db, entity)
     q = select(CustomFieldDefinition).where(CustomFieldDefinition.entity == entity)
     return list((await db.scalars(q.order_by(CustomFieldDefinition.position))).all())
 
 
 @router.post("/custom-fields", response_model=FieldOut, status_code=status.HTTP_201_CREATED)
 async def create_field(
-    body: FieldIn, db: CrmDb, actor: Configurer, entity: Literal["lead"] = "lead"
+    body: FieldIn, db: CrmDb, actor: Configurer, entity: str = "lead"
 ) -> CustomFieldDefinition:
+    entity = await _entity(db, entity)
     if body.type not in F.TYPES:
         raise Invalid(f"Unknown field type: {body.type}")
-    if body.key in F.RESERVED_KEYS:
+    reserved = F.RESERVED_KEYS if entity == "lead" else F.RECORD_RESERVED_KEYS
+    if body.key in reserved:
         raise Invalid(f"'{body.key}' is a built-in field; choose another key")
     if body.is_unique and body.type not in F.UNIQUE_TYPES:
         raise Invalid("Only text, number, email, phone and link fields can be unique")
@@ -377,7 +395,9 @@ async def create_field(
     field = CustomFieldDefinition(
         tenant_id=actor.user.tenant_id,
         entity=entity,
-        position=await _next_position(db, CustomFieldDefinition),
+        position=await _next_position(
+            db, CustomFieldDefinition, CustomFieldDefinition.entity == entity
+        ),
         **(body.model_dump() | {"options": options}),
     )
     db.add(field)
@@ -430,17 +450,27 @@ async def delete_field(field_id: uuid.UUID, db: CrmDb, actor: Configurer) -> Non
     )
     if child:
         raise Conflict(f"'{child}' depends on this field; delete or unlink it first")
-    stage = await db.scalar(
-        select(LeadStage.name).where(LeadStage.required_fields.contains([field.key]))
-    )
+    if field.entity == "lead":
+        stage = await db.scalar(
+            select(LeadStage.name).where(LeadStage.required_fields.contains([field.key]))
+        )
+        holder, model = Lead, Lead
+    else:
+        rtype = await db.scalar(select(RecordType).where(RecordType.key == field.entity[3:]))
+        stage = await db.scalar(
+            select(RecordTypeStage.name).where(
+                RecordTypeStage.record_type_id == rtype.id,
+                RecordTypeStage.required_fields.contains([field.key]),
+            )
+        )
+        holder, model = Record, Record
     if stage:
         raise Conflict(f"The stage '{stage}' requires this field")
     before = _snap(field, FieldOut)
-    await db.execute(
-        update(Lead)
-        .where(Lead.custom_fields.has_key(field.key))
-        .values(custom_fields=Lead.custom_fields - field.key)
-    )
+    query = update(model).where(holder.custom_fields.has_key(field.key))
+    if model is Record:
+        query = query.where(Record.record_type_id == rtype.id)
+    await db.execute(query.values(custom_fields=holder.custom_fields - field.key))
     await db.execute(
         delete(CustomFieldUniqueValue).where(
             CustomFieldUniqueValue.entity == field.entity,
@@ -452,8 +482,11 @@ async def delete_field(field_id: uuid.UUID, db: CrmDb, actor: Configurer) -> Non
 
 
 @router.put("/custom-fields/order", response_model=list[FieldOut])
-async def order_fields(body: OrderIn, db: CrmDb, actor: Configurer) -> list[CustomFieldDefinition]:
-    await _reorder(db, CustomFieldDefinition, body.ids)
+async def order_fields(
+    body: OrderIn, db: CrmDb, actor: Configurer, entity: str = "lead"
+) -> list[CustomFieldDefinition]:
+    entity = await _entity(db, entity)
+    await _reorder(db, CustomFieldDefinition, body.ids, CustomFieldDefinition.entity == entity)
     await audit(
         db,
         actor,
@@ -462,7 +495,7 @@ async def order_fields(body: OrderIn, db: CrmDb, actor: Configurer) -> list[Cust
         None,
         after={"ids": [str(i) for i in body.ids]},
     )
-    return await list_fields(db, actor)
+    return await list_fields(db, actor, entity)
 
 
 # ---------- activity types ----------

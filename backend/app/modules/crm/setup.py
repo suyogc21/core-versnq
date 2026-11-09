@@ -6,7 +6,15 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.crm.models import ActivityType, CustomFieldDefinition, LeadSource, LeadStage
+from app.modules.crm.models import (
+    ActivityType,
+    CustomFieldDefinition,
+    LeadSource,
+    LeadStage,
+    LinkType,
+    RecordType,
+    RecordTypeStage,
+)
 from app.platform.models import Tenant
 from app.platform.packs import IndustryPack, load_pack
 
@@ -50,6 +58,13 @@ STEP1_SYSTEM_TYPES = [
     },
 ]
 
+# Added in step 2 (migration 0012 adds them for companies that already exist).
+STEP2_SYSTEM_TYPES = [
+    {"key": "record_created", "label": "Created", "icon": "plus", "loggable": False},
+    {"key": "linked", "label": "Linked", "icon": "link", "loggable": False},
+    {"key": "unlinked", "label": "Unlinked", "icon": "unlink", "loggable": False},
+]
+
 
 def system_activity_types(dispositions: list[str]) -> list[dict]:
     """Built-in types every company has. Keys are fixed; labels and call outcomes are editable."""
@@ -62,6 +77,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         {"key": "owner_changed", "label": "Owner changed", "icon": "user-round", "loggable": False},
         {"key": "task_completed", "label": "Task completed", "icon": "check", "loggable": False},
         *STEP1_SYSTEM_TYPES,
+        *STEP2_SYSTEM_TYPES,
     ]
 
 
@@ -103,6 +119,59 @@ async def seed_crm(db: AsyncSession, tenant_id: uuid.UUID, pack: IndustryPack) -
         )
     for i, t in enumerate(crm.activity_types, start=len(types)):
         db.add(ActivityType(tenant_id=tenant_id, position=i, **t.model_dump()))
+    await db.flush()
+    await seed_record_types(db, tenant_id, pack)
+
+
+async def seed_record_types(db: AsyncSession, tenant_id: uuid.UUID, pack: IndustryPack) -> None:
+    """The pack's starting record types, their fields, stages, default access and link types."""
+    from app.modules.crm.records import seed_access  # records builds on leads/setup
+
+    keys: dict[str, uuid.UUID] = {}
+    for i, rt in enumerate(pack.crm.record_types):
+        rtype = RecordType(
+            tenant_id=tenant_id,
+            key=rt.key,
+            singular=rt.singular,
+            plural=rt.plural,
+            icon=rt.icon,
+            has_owner=rt.has_owner,
+            has_stages=bool(rt.stages),
+            position=i,
+        )
+        db.add(rtype)
+        await db.flush()
+        keys[rt.key] = rtype.id
+        for j, st in enumerate(rt.stages):
+            db.add(
+                RecordTypeStage(
+                    tenant_id=tenant_id,
+                    record_type_id=rtype.id,
+                    position=j,
+                    required_fields=[],
+                    **st.model_dump(),
+                )
+            )
+        for j, f in enumerate(rt.fields):
+            db.add(
+                CustomFieldDefinition(
+                    tenant_id=tenant_id, entity=rtype.entity, position=j, **f.model_dump()
+                )
+            )
+        await seed_access(db, rtype)
+    for i, lt in enumerate(pack.crm.link_types):
+        db.add(
+            LinkType(
+                tenant_id=tenant_id,
+                from_type_id=keys[lt.from_type] if lt.from_type else None,
+                to_type_id=keys[lt.to_type] if lt.to_type else None,
+                label=lt.label,
+                inverse_label=lt.inverse_label,
+                many_to=lt.many_to,
+                many_from=lt.many_from,
+                position=i,
+            )
+        )
     await db.flush()
 
 

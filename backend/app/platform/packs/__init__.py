@@ -47,6 +47,33 @@ class PackActivityType(BaseModel):
     icon: str | None = None
 
 
+class PackRecordStage(BaseModel):
+    name: str
+    is_open: bool = True
+    colour: str | None = None
+
+
+class PackRecordType(BaseModel):
+    """A starting record type (e.g. Batch for EdTech). Companies edit or remove it."""
+
+    key: str
+    singular: str
+    plural: str
+    icon: str | None = None
+    has_owner: bool = True
+    stages: list[PackRecordStage] = []
+    fields: list[PackField] = []
+
+
+class PackLinkType(BaseModel):
+    from_type: str | None = None  # a record type key; None = leads
+    to_type: str | None = None
+    label: str
+    inverse_label: str
+    many_to: bool = True
+    many_from: bool = True
+
+
 class CrmPack(BaseModel):
     """Starting CRM setup for a new company. Configuration only; every company can edit it."""
 
@@ -55,6 +82,8 @@ class CrmPack(BaseModel):
     dispositions: list[str]
     custom_fields: list[PackField] = []
     activity_types: list[PackActivityType] = []
+    record_types: list[PackRecordType] = []
+    link_types: list[PackLinkType] = []
 
 
 class IndustryPack(BaseModel):

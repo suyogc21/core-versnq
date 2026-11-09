@@ -192,6 +192,93 @@
           }
         ]
       }
+    ],
+    "record_types": [
+      {
+        "key": "batch",
+        "singular": "Batch",
+        "plural": "Batches",
+        "icon": "calendar-days",
+        "has_owner": false,
+        "stages": [
+          {
+            "name": "Upcoming",
+            "is_open": true,
+            "colour": "#6366f1"
+          },
+          {
+            "name": "Running",
+            "is_open": true,
+            "colour": "#0ea5e9"
+          },
+          {
+            "name": "Completed",
+            "is_open": false,
+            "colour": "#22c55e"
+          }
+        ],
+        "fields": [
+          {
+            "key": "course",
+            "label": "Course",
+            "type": "select",
+            "options": [
+              {
+                "value": "data_science",
+                "label": "Data Science"
+              },
+              {
+                "value": "full_stack_development",
+                "label": "Full-stack Development"
+              },
+              {
+                "value": "digital_marketing",
+                "label": "Digital Marketing"
+              }
+            ],
+            "required": true
+          },
+          {
+            "key": "start_date",
+            "label": "Start date",
+            "type": "date"
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "type": "number"
+          },
+          {
+            "key": "mode",
+            "label": "Mode",
+            "type": "select",
+            "options": [
+              {
+                "value": "classroom",
+                "label": "Classroom"
+              },
+              {
+                "value": "online",
+                "label": "Online"
+              },
+              {
+                "value": "hybrid",
+                "label": "Hybrid"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "link_types": [
+      {
+        "from_type": null,
+        "to_type": "batch",
+        "label": "Enrolled in",
+        "inverse_label": "Students",
+        "many_to": true,
+        "many_from": true
+      }
     ]
   }
 }

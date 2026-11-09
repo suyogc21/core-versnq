@@ -40,6 +40,11 @@ RESERVED_KEYS = BUILTIN_REQUIRABLE | {
     "next_follow_up_at",
 }
 
+# Built-in parts of a record (of any company-defined type).
+RECORD_RESERVED_KEYS = {
+    "id", "name", "type", "owner", "owner_user_id", "stage", "stage_id", "custom_fields",
+}  # fmt: skip
+
 
 def check_options(field_type: str, options: list[dict]) -> list[dict]:
     if field_type not in CHOICE_TYPES:

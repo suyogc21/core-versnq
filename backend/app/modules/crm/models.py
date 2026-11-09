@@ -73,7 +73,7 @@ class CustomFieldDefinition(TenantScoped, TimestampMixin, Base):
         UniqueConstraint("tenant_id", "entity", "key", name="uq_custom_fields_tenant_entity_key"),
     )
 
-    entity: Mapped[str] = mapped_column(String(20))
+    entity: Mapped[str] = mapped_column(String(50))  # "lead" or "rt:<record type key>"
     key: Mapped[str] = mapped_column(String(60))
     label: Mapped[str] = mapped_column(String(120))
     type: Mapped[str] = mapped_column(String(20))
@@ -97,7 +97,7 @@ class CustomFieldUniqueValue(TenantScoped, Base):
         ),
     )
 
-    entity: Mapped[str] = mapped_column(String(20))
+    entity: Mapped[str] = mapped_column(String(50))
     field_key: Mapped[str] = mapped_column(String(60))
     value_normalized: Mapped[str] = mapped_column(String(500))
     record_id: Mapped[uuid.UUID] = mapped_column(Uuid, index=True)
@@ -201,6 +201,7 @@ class Activity(TenantScoped, TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint("tenant_id", "id", name="uq_activities_tenant_id_id"),
         _fk("lead_id", "leads", "fk_activities_lead_same_tenant", "CASCADE"),
+        _fk("record_id", "records", "fk_activities_record_same_tenant", "CASCADE"),
         ForeignKeyConstraint(
             ["tenant_id", "type_key"],
             ["activity_types.tenant_id", "activity_types.key"],
@@ -208,7 +209,8 @@ class Activity(TenantScoped, TimestampMixin, Base):
         ),
     )
 
-    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # a lead's or a record's timeline
+    record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     type_key: Mapped[str] = mapped_column(String(60))
     actor_type: Mapped[str] = mapped_column(String(10))  # user / system / api / ace
     actor_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
@@ -224,10 +226,12 @@ class Task(TenantScoped, TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint("tenant_id", "id", name="uq_tasks_tenant_id_id"),
         _fk("lead_id", "leads", "fk_tasks_lead_same_tenant", "CASCADE"),
+        _fk("record_id", "records", "fk_tasks_record_same_tenant", "CASCADE"),
         _fk("owner_user_id", "users", "fk_tasks_owner_same_tenant"),
     )
 
     lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, index=True)
+    record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, index=True)
     title: Mapped[str] = mapped_column(String(200))
     notes: Mapped[str | None] = mapped_column(Text)
     due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -427,3 +431,125 @@ class Notification(TenantScoped, Base):
     lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+# ---------- step 2: records and links (migration 0012) ----------
+class RecordType(TenantScoped, TimestampMixin, Base):
+    """A company-defined kind of record (Property, Batch, Vehicle...). Configuration only."""
+
+    __tablename__ = "record_types"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_record_types_tenant_id_id"),
+        UniqueConstraint("tenant_id", "key", name="uq_record_types_tenant_key"),
+        UniqueConstraint("tenant_id", "singular", name="uq_record_types_tenant_singular"),
+    )
+
+    key: Mapped[str] = mapped_column(String(40))  # fixed; fields use entity "rt:<key>"
+    singular: Mapped[str] = mapped_column(String(60))
+    plural: Mapped[str] = mapped_column(String(60))
+    icon: Mapped[str | None] = mapped_column(String(40))
+    has_owner: Mapped[bool] = mapped_column(Boolean, default=True)
+    has_stages: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+
+    @property
+    def entity(self) -> str:
+        return f"rt:{self.key}"
+
+
+class RecordTypeStage(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "record_type_stages"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_record_type_stages_tenant_id_id"),
+        UniqueConstraint("record_type_id", "name", name="uq_record_type_stages_name"),
+        _fk("record_type_id", "record_types", "fk_record_type_stages_type_same_tenant", "CASCADE"),
+    )
+
+    record_type_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    name: Mapped[str] = mapped_column(String(80))
+    position: Mapped[int] = mapped_column(Integer)
+    is_open: Mapped[bool] = mapped_column(Boolean, default=True)
+    colour: Mapped[str | None] = mapped_column(String(7))
+    required_fields: Mapped[list] = mapped_column(JSONB, default=list)
+
+
+class Record(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "records"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_records_tenant_id_id"),
+        _fk("record_type_id", "record_types", "fk_records_type_same_tenant"),
+        _fk("owner_user_id", "users", "fk_records_owner_same_tenant"),
+        _fk("stage_id", "record_type_stages", "fk_records_stage_same_tenant"),
+        _fk("created_by_user_id", "users", "fk_records_creator_same_tenant"),
+    )
+
+    record_type_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    name: Mapped[str] = mapped_column(String(300))
+    owner_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    team_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    stage_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    stage_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    custom_fields: Mapped[dict] = mapped_column(JSONB, default=dict)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class LinkType(TenantScoped, TimestampMixin, Base):
+    """An allowed link between two kinds (None = leads), named both ways."""
+
+    __tablename__ = "link_types"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_link_types_tenant_id_id"),
+        _fk("from_type_id", "record_types", "fk_link_types_from_same_tenant", "CASCADE"),
+        _fk("to_type_id", "record_types", "fk_link_types_to_same_tenant", "CASCADE"),
+    )
+
+    from_type_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    to_type_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    label: Mapped[str] = mapped_column(String(80))
+    inverse_label: Mapped[str] = mapped_column(String(80))
+    many_to: Mapped[bool] = mapped_column(Boolean, default=True)  # a "from" has many "to"s
+    many_from: Mapped[bool] = mapped_column(Boolean, default=True)  # a "to" has many "from"s
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class Link(TenantScoped, Base):
+    __tablename__ = "links"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_links_tenant_id_id"),
+        _fk("link_type_id", "link_types", "fk_links_type_same_tenant", "CASCADE"),
+        _fk("from_lead_id", "leads", "fk_links_from_lead_same_tenant", "CASCADE"),
+        _fk("from_record_id", "records", "fk_links_from_record_same_tenant", "CASCADE"),
+        _fk("to_lead_id", "leads", "fk_links_to_lead_same_tenant", "CASCADE"),
+        _fk("to_record_id", "records", "fk_links_to_record_same_tenant", "CASCADE"),
+    )
+
+    link_type_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    from_lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    from_record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    to_lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    to_record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+class RecordTypeAccess(TenantScoped, TimestampMixin, Base):
+    """What one role may do with one record type (the Owner role may always do everything)."""
+
+    __tablename__ = "record_type_access"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_record_type_access_tenant_id_id"),
+        UniqueConstraint("role_id", "record_type_id", name="uq_record_type_access"),
+        _fk("role_id", "roles", "fk_record_type_access_role_same_tenant", "CASCADE"),
+        _fk("record_type_id", "record_types", "fk_record_type_access_type_same_tenant", "CASCADE"),
+    )
+
+    role_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    record_type_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    can_view: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_create: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_edit: Mapped[bool] = mapped_column(Boolean, default=False)
+    can_delete: Mapped[bool] = mapped_column(Boolean, default=False)
+    scope: Mapped[str] = mapped_column(String(4), default="own")

@@ -65,7 +65,9 @@ async def staff_headers(two_factor: bool = True) -> dict[str, str]:
 PASSWORD = "pass-word-123"
 
 
-async def make_workspace(slug: str | None = None, status: str = "active") -> tuple[UUID, str]:
+async def make_workspace(
+    slug: str | None = None, status: str = "active", pack: str = "generic"
+) -> tuple[UUID, str]:
     """A tenant with its five system roles. Returns (tenant_id, slug)."""
     from app.modules.crm.setup import seed_crm
     from app.modules.settings.models import TenantSettings
@@ -73,21 +75,21 @@ async def make_workspace(slug: str | None = None, status: str = "active") -> tup
     from app.platform.tenants.service import _seed_roles
 
     slug = slug or f"w{uuid.uuid4().hex[:10]}"
-    tenant = Tenant(name=f"Co {slug}", slug=slug, status=status, industry_pack="generic")
+    tenant = Tenant(name=f"Co {slug}", slug=slug, status=status, industry_pack=pack)
     async with platform_session() as s:
         s.add(tenant)
     async with tenant_session(tenant.id) as s:
         s.add(
             TenantSettings(
                 tenant_id=tenant.id,
-                labels=load_pack("generic").model_dump()["labels"],
+                labels=load_pack(pack).model_dump()["labels"],
                 timezone="Asia/Kolkata",
                 default_country="IN",
                 branding={},
             )
         )
         await _seed_roles(s, tenant.id)
-        await seed_crm(s, tenant.id, load_pack("generic"))
+        await seed_crm(s, tenant.id, load_pack(pack))
     return tenant.id, slug
 
 
