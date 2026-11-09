@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
+from app.core.client_ip import client_ip
 from app.core.errors import Conflict, DomainError, Invalid, NotFound
 from app.core.ratelimit import hit
 from app.modules.auth.deps import CurrentUser, WorkspaceDep, require
@@ -195,7 +196,7 @@ async def delete_capture_source(src_id: uuid.UUID, db: CrmDb, actor: Configurer)
 
 # ---------- the public endpoint ----------
 def _client_ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+    return client_ip(request)
 
 
 async def _read(request: Request) -> dict[str, list[str]]:

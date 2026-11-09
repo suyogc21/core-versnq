@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.client_ip import client_ip
 from app.core.deps import get_platform_db
 from app.core.mailer import Email, Mailer, get_mailer
 from app.core.modules import module_states, set_module
@@ -36,8 +37,8 @@ Staff = Annotated[PlatformStaff, Depends(current_staff)]
 MailerDep = Annotated[Mailer, Depends(get_mailer)]
 
 
-def _ip(request: Request) -> str | None:
-    return request.client.host if request.client else None
+def _ip(request: Request) -> str:
+    return client_ip(request)
 
 
 async def _tenant_or_404(db: AsyncSession, tenant_id: uuid.UUID) -> Tenant:

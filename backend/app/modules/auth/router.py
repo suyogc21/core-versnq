@@ -11,6 +11,7 @@ from app.core.auth_schemas import (
     TwoFactorSetupOut,
     TwoFactorVerifyIn,
 )
+from app.core.client_ip import client_ip
 from app.core.config import get_settings
 from app.core.mailer import Email, Mailer, get_mailer
 from app.core.security import (
@@ -52,7 +53,8 @@ REFRESH_COOKIE = "user_refresh"
 _COOKIE_PATH = "/api/v1/auth"
 _GENERIC_401 = "Invalid email or password"
 _BAD_LINK = "This link is invalid or has expired"
-LOGIN_PER_IP = (10, 60)
+# Generous: a whole office may share one address. Guessing is stopped per account (below).
+LOGIN_PER_IP = (60, 60)
 FAILS_PER_ACCOUNT = (5, 15 * 60)
 FORGOT_PER_IP = (5, 3600)
 MFA_TRIES = (5, MFA_CHALLENGE_MINUTES * 60)
@@ -61,7 +63,7 @@ MailerDep = Annotated[Mailer, Depends(get_mailer)]
 
 
 def _ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+    return client_ip(request)
 
 
 def _issue(response: Response, access: str, refresh_plain: str) -> LoginOut:

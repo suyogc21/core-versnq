@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.client_ip import client_ip
 from app.core.deps import get_platform_db
 from app.core.errors import Conflict, Forbidden, NotFound
 from app.core.security import hash_password
@@ -54,8 +55,8 @@ def _snap(s: PlatformStaff) -> dict:
     return {"email": s.email, "name": s.name, "is_active": s.is_active}
 
 
-def _ip(request: Request) -> str | None:
-    return request.client.host if request.client else None
+def _ip(request: Request) -> str:
+    return client_ip(request)
 
 
 @router.get("", response_model=list[StaffAccountOut])

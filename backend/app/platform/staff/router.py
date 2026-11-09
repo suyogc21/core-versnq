@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import ratelimit
 from app.core.auth_schemas import LoginOut, TwoFactorEnableIn, TwoFactorSetupOut, TwoFactorVerifyIn
+from app.core.client_ip import client_ip
 from app.core.config import get_settings
 from app.core.deps import get_platform_db
 from app.core.security import (
@@ -75,7 +76,7 @@ AnyStaff = Annotated[PlatformStaff, Depends(current_staff_any)]
 
 
 def _ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+    return client_ip(request)
 
 
 def _issue(response: Response, access: str, refresh_plain: str) -> LoginOut:
