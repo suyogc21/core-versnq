@@ -1,0 +1,577 @@
+"use client";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { NativeSelect } from "@/components/app/native-select";
+import { PageHeader } from "@/components/app/app-shell";
+import { FieldSettings, slug } from "@/components/crm/field-settings";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { api } from "@/lib/api/client";
+import { unwrap } from "@/lib/api/errors";
+import { type LinkType, type RecordStage, type RecordType, type RoleAccess, useAllRecordTypes, useLinkTypes, useRecordFields, useRecordStages } from "@/lib/records";
+import { useLabels } from "@/lib/settings";
+import { cn } from "@/lib/utils";
+
+function useSave() {
+  const qc = useQueryClient();
+  return async (fn: () => Promise<unknown>, ok?: string) => {
+    try {
+      await fn();
+      for (const k of ["record-types", "record-stages", "record-access", "link-types", "fields"]) qc.invalidateQueries({ queryKey: [k] });
+      if (ok) toast.success(ok);
+      return true;
+    } catch (e) {
+      toast.error((e as Error).message);
+      return false;
+    }
+  };
+}
+
+/** Admins define their own kinds of records (Property, Batch, Vehicle...) and how they link. */
+export default function RecordTypesPage() {
+  const types = useAllRecordTypes();
+  const save = useSave();
+  const [creating, setCreating] = useState(false);
+  const [open, setOpen] = useState<string | null>(null);
+  const list = types.data ?? [];
+  const current = list.find((t) => t.id === open);
+  const order = (ids: string[]) => save(async () => unwrap(await api.PUT("/api/v1/record-types/order", { body: { ids } })));
+
+  return (
+    <>
+      <PageHeader title="Record types" />
+      <div className="mx-auto w-full max-w-4xl space-y-8 p-4 sm:p-8">
+        <p className="text-muted-foreground">
+          Your own kinds of records — for example Properties, Batches, Vehicles or Policies — each with its own fields, stages and access, linked to
+          leads and to each other. Each one gets its own list in the sidebar.
+        </p>
+        {current ? (
+          <TypeEditor rtype={current} onBack={() => setOpen(null)} />
+        ) : (
+          <>
+            <div className="divide-y rounded-lg border">
+              {list.length === 0 && <p className="p-4 text-sm text-muted-foreground">No record types yet.</p>}
+              {list.map((t, i) => (
+                <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 text-sm">
+                  <div className="flex flex-col">
+                    <button aria-label={`Move ${t.plural} up`} disabled={i === 0} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, -1))}>
+                      <ArrowUp className="size-3" />
+                    </button>
+                    <button aria-label={`Move ${t.plural} down`} disabled={i === list.length - 1} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, 1))}>
+                      <ArrowDown className="size-3" />
+                    </button>
+                  </div>
+                  <button className="font-medium hover:underline" onClick={() => setOpen(t.id)}>
+                    {t.plural}
+                  </button>
+                  <span className="text-xs text-muted-foreground">
+                    <span className="font-mono">{t.key}</span> · {t.has_owner ? "has owners" : "shared"} · {t.has_stages ? "has stages" : "no stages"}
+                    {!t.is_active && " · switched off"}
+                  </span>
+                  <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setOpen(t.id)}>
+                    Set up
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus /> Add a record type
+            </Button>
+            <LinkTypes types={list} />
+          </>
+        )}
+      </div>
+      {creating && <CreateType onClose={() => setCreating(false)} onCreated={(t) => (setCreating(false), setOpen(t.id))} />}
+    </>
+  );
+}
+
+function swap<T extends { id: string }>(items: T[], i: number, dir: -1 | 1): string[] {
+  const ids = items.map((x) => x.id);
+  [ids[i], ids[i + dir]] = [ids[i + dir], ids[i]];
+  return ids;
+}
+
+function CreateType({ onClose, onCreated }: { onClose: () => void; onCreated: (t: RecordType) => void }) {
+  const save = useSave();
+  const [singular, setSingular] = useState("");
+  const [plural, setPlural] = useState("");
+  const [key, setKey] = useState("");
+  const [keyTouched, setKeyTouched] = useState(false);
+  const [hasOwner, setHasOwner] = useState(true);
+  const [hasStages, setHasStages] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    let made: RecordType | null = null;
+    const ok = await save(async () => {
+      made = unwrap(
+        await api.POST("/api/v1/record-types", {
+          body: { key, singular, plural: plural || `${singular}s`, has_owner: hasOwner, has_stages: hasStages },
+        }),
+      );
+    }, "Record type added");
+    if (ok && made) onCreated(made);
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add a record type</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4 text-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="t-singular">Name (one)</Label>
+              <Input
+                id="t-singular"
+                autoFocus
+                placeholder="Property"
+                value={singular}
+                onChange={(e) => {
+                  setSingular(e.target.value);
+                  if (!keyTouched) setKey(slug(e.target.value).slice(0, 40));
+                }}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="t-plural">Name (many)</Label>
+              <Input id="t-plural" placeholder={singular ? `${singular}s` : "Properties"} value={plural} onChange={(e) => setPlural(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="t-key">Key</Label>
+            <Input id="t-key" className="font-mono text-xs" value={key} onChange={(e) => (setKeyTouched(true), setKey(e.target.value))} />
+            <p className="text-xs text-muted-foreground">Used by imports, the API and automations. It cannot change later; the names can.</p>
+          </div>
+          <label className="flex items-start gap-2">
+            <Switch checked={hasOwner} onCheckedChange={setHasOwner} aria-label="Has owners" />
+            <span>
+              Each one has an owner
+              <span className="block text-xs text-muted-foreground">Off = shared: everyone allowed to view sees all of them (e.g. a course batch).</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2">
+            <Switch checked={hasStages} onCheckedChange={setHasStages} aria-label="Has stages" />
+            <span>
+              Moves through stages
+              <span className="block text-xs text-muted-foreground">e.g. Available → Reserved → Sold.</span>
+            </span>
+          </label>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!singular.trim() || !/^[a-z][a-z0-9_]{1,39}$/.test(key)}>
+              Add
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type Tab = "details" | "fields" | "stages" | "access";
+
+function TypeEditor({ rtype, onBack }: { rtype: RecordType; onBack: () => void }) {
+  const [tab, setTab] = useState<Tab>("fields");
+  const tabs: [Tab, string][] = [
+    ["fields", "Fields"],
+    ...(rtype.has_stages ? ([["stages", "Stages"]] as [Tab, string][]) : []),
+    ["access", "Who can do what"],
+    ["details", "Details"],
+  ];
+  return (
+    <div className="space-y-4">
+      <button className="text-xs text-muted-foreground hover:underline" onClick={onBack}>
+        ← All record types
+      </button>
+      <h2 className="text-lg font-semibold">{rtype.plural}</h2>
+      <div className="flex gap-4 overflow-x-auto border-b text-sm">
+        {tabs.map(([key, name]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={cn("-mb-px border-b-2 border-transparent pb-2 whitespace-nowrap text-muted-foreground", tab === key && "border-primary font-medium text-foreground")}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      {tab === "fields" && <FieldSettings entity={`rt:${rtype.key}`} />}
+      {tab === "stages" && <Stages rtype={rtype} />}
+      {tab === "access" && <Access rtype={rtype} />}
+      {tab === "details" && <Details rtype={rtype} onDeleted={onBack} />}
+    </div>
+  );
+}
+
+function Details({ rtype, onDeleted }: { rtype: RecordType; onDeleted: () => void }) {
+  const save = useSave();
+  const [singular, setSingular] = useState(rtype.singular);
+  const [plural, setPlural] = useState(rtype.plural);
+  const patch = (body: Record<string, unknown>, ok = "Saved") =>
+    save(async () => unwrap(await api.PATCH("/api/v1/record-types/{type_id}", { params: { path: { type_id: rtype.id } }, body })), ok);
+  return (
+    <div className="space-y-6 text-sm">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="d-s">Name (one)</Label>
+          <Input id="d-s" value={singular} onChange={(e) => setSingular(e.target.value)} onBlur={() => singular !== rtype.singular && patch({ singular })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="d-p">Name (many)</Label>
+          <Input id="d-p" value={plural} onChange={(e) => setPlural(e.target.value)} onBlur={() => plural !== rtype.plural && patch({ plural })} />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Key <span className="font-mono">{rtype.key}</span> (fixed).
+      </p>
+      {(
+        [
+          ["has_owner", "Each one has an owner", "Off = shared with everyone allowed to view."],
+          ["has_stages", "Moves through stages", "Adds a Stages tab and a stage bar on each record."],
+          ["is_active", "Switched on", "Off hides the list for everyone; nothing is deleted."],
+        ] as const
+      ).map(([k, title, hint]) => (
+        <label key={k} className="flex items-start gap-2">
+          <Switch checked={rtype[k]} aria-label={title} onCheckedChange={(on) => patch({ [k]: on })} />
+          <span>
+            {title}
+            <span className="block text-xs text-muted-foreground">{hint}</span>
+          </span>
+        </label>
+      ))}
+      <div className="border-t pt-4">
+        <Button
+          variant="ghost"
+          className="text-destructive"
+          onClick={async () => {
+            if (!confirm(`Delete the record type ${rtype.plural}? Only possible while there are none of them.`)) return;
+            if (await save(async () => unwrap(await api.DELETE("/api/v1/record-types/{type_id}", { params: { path: { type_id: rtype.id } } })), "Deleted")) onDeleted();
+          }}
+        >
+          <Trash2 /> Delete this record type
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Stages({ rtype }: { rtype: RecordType }) {
+  const stages = useRecordStages(rtype.id);
+  const fields = useRecordFields(rtype.key);
+  const save = useSave();
+  const [name, setName] = useState("");
+  const [editing, setEditing] = useState<RecordStage | null>(null);
+  const list = stages.data ?? [];
+  const order = (ids: string[]) => save(async () => unwrap(await api.PUT("/api/v1/record-types/{type_id}/stages/order", { params: { path: { type_id: rtype.id } }, body: { ids } })));
+  const requirable: [string, string][] = [...(rtype.has_owner ? ([["owner", "Owner"]] as [string, string][]) : []), ...(fields.data ?? []).map((f) => [f.key, f.label] as [string, string])];
+
+  return (
+    <div className="space-y-4 text-sm">
+      <div className="divide-y rounded-lg border">
+        {list.map((s, i) => (
+          <div key={s.id} className="flex items-center gap-3 px-3 py-2">
+            <div className="flex flex-col">
+              <button aria-label={`Move ${s.name} up`} disabled={i === 0} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, -1))}>
+                <ArrowUp className="size-3" />
+              </button>
+              <button aria-label={`Move ${s.name} down`} disabled={i === list.length - 1} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, 1))}>
+                <ArrowDown className="size-3" />
+              </button>
+            </div>
+            <span className="size-2.5 rounded-full" style={{ background: s.colour ?? "#94a3b8" }} />
+            <button className="font-medium hover:underline" onClick={() => setEditing(s)}>
+              {s.name}
+            </button>
+            <span className="text-xs text-muted-foreground">
+              {s.is_open ? "open" : "closed"}
+              {s.required_fields.length > 0 && ` · needs ${s.required_fields.map((k) => requirable.find(([r]) => r === k)?.[1] ?? k).join(", ")}`}
+            </span>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="ml-auto"
+              aria-label={`Delete ${s.name}`}
+              onClick={() => save(async () => unwrap(await api.DELETE("/api/v1/record-types/{type_id}/stages/{stage_id}", { params: { path: { type_id: rtype.id, stage_id: s.id } } })), "Deleted")}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <form
+        className="flex gap-2"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (await save(async () => unwrap(await api.POST("/api/v1/record-types/{type_id}/stages", { params: { path: { type_id: rtype.id } }, body: { name, is_open: true, required_fields: [] } })), "Stage added")) setName("");
+        }}
+      >
+        <Input aria-label="New stage" placeholder="Add a stage" value={name} onChange={(e) => setName(e.target.value)} />
+        <Button type="submit" variant="outline" disabled={!name.trim()}>
+          Add
+        </Button>
+      </form>
+      {editing && <StageDialog rtype={rtype} stage={editing} requirable={requirable} onClose={() => setEditing(null)} />}
+    </div>
+  );
+}
+
+function StageDialog({ rtype, stage, requirable, onClose }: { rtype: RecordType; stage: RecordStage; requirable: [string, string][]; onClose: () => void }) {
+  const save = useSave();
+  const [name, setName] = useState(stage.name);
+  const [isOpen, setIsOpen] = useState(stage.is_open);
+  const [colour, setColour] = useState(stage.colour ?? "#94a3b8");
+  const [required, setRequired] = useState<string[]>(stage.required_fields);
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit {stage.name}</DialogTitle>
+        </DialogHeader>
+        <form
+          className="space-y-4 text-sm"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const ok = await save(
+              async () =>
+                unwrap(
+                  await api.PATCH("/api/v1/record-types/{type_id}/stages/{stage_id}", {
+                    params: { path: { type_id: rtype.id, stage_id: stage.id } },
+                    body: { name, is_open: isOpen, colour, required_fields: required },
+                  }),
+                ),
+              "Saved",
+            );
+            if (ok) onClose();
+          }}
+        >
+          <div className="flex gap-2">
+            <Input aria-label="Stage name" value={name} onChange={(e) => setName(e.target.value)} />
+            <input type="color" aria-label="Colour" className="h-8 w-10 rounded border" value={colour} onChange={(e) => setColour(e.target.value)} />
+          </div>
+          <label className="flex items-center gap-2">
+            <Switch checked={isOpen} onCheckedChange={setIsOpen} aria-label="Open stage" /> Open (still in progress)
+          </label>
+          {requirable.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>Must be filled in before moving here</Label>
+              {requirable.map(([k, l]) => (
+                <label key={k} className="flex items-center gap-2 text-xs">
+                  <input type="checkbox" className="accent-primary" checked={required.includes(k)} onChange={(e) => setRequired(e.target.checked ? [...required, k] : required.filter((x) => x !== k))} />
+                  {l}
+                </label>
+              ))}
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!name.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Access({ rtype }: { rtype: RecordType }) {
+  const save = useSave();
+  const qc = useQueryClient();
+  const access = useQuery({
+    queryKey: ["record-access", rtype.id],
+    queryFn: async () => unwrap(await api.GET("/api/v1/record-types/{type_id}/access", { params: { path: { type_id: rtype.id } } })),
+  });
+  const rows = access.data ?? [];
+  async function update(row: RoleAccess, patch: Partial<RoleAccess>) {
+    const next = { ...row, ...patch };
+    if (patch.view === false) Object.assign(next, { create: false, edit: false, delete: false });
+    if (patch.create || patch.edit || patch.delete) next.view = true;
+    await save(async () => unwrap(await api.PUT("/api/v1/record-types/{type_id}/access", { params: { path: { type_id: rtype.id } }, body: [next] })));
+    qc.invalidateQueries({ queryKey: ["record-access", rtype.id] });
+  }
+  return (
+    <div className="space-y-3 text-sm">
+      <p className="text-xs text-muted-foreground">The Owner can always do everything. {rtype.has_owner ? "“Sees” works like leads: their own, their team's, or all." : "This type is shared: anyone who can view sees all of them."}</p>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 font-medium">Role</th>
+              {["View", "Add", "Edit", "Delete"].map((h) => (
+                <th key={h} className="px-3 py-2 text-center font-medium">
+                  {h}
+                </th>
+              ))}
+              {rtype.has_owner && <th className="px-3 py-2 font-medium">Sees</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.role_id} className="border-t">
+                <td className="px-3 py-2 font-medium">{r.role_name}</td>
+                {(["view", "create", "edit", "delete"] as const).map((k) => (
+                  <td key={k} className="px-3 py-2 text-center">
+                    <input type="checkbox" aria-label={`${r.role_name} ${k}`} className="accent-primary" checked={r[k]} onChange={(e) => update(r, { [k]: e.target.checked })} />
+                  </td>
+                ))}
+                {rtype.has_owner && (
+                  <td className="px-3 py-2">
+                    <NativeSelect aria-label={`${r.role_name} sees`} className="w-auto" value={r.scope} onChange={(e) => update(r, { scope: e.target.value as RoleAccess["scope"] })}>
+                      <option value="own">Their own</option>
+                      <option value="team">Their team&apos;s</option>
+                      <option value="all">All</option>
+                    </NativeSelect>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ---------- link types ----------
+function LinkTypes({ types }: { types: RecordType[] }) {
+  const label = useLabels();
+  const linkTypes = useLinkTypes();
+  const save = useSave();
+  const [adding, setAdding] = useState(false);
+  const kind = (id: string | null) => (id ? (types.find((t) => t.id === id)?.plural ?? "?") : label("lead", true));
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-medium">How things link</h3>
+      <p className="text-xs text-muted-foreground">
+        For example: a {label("lead").toLowerCase()} is <i>interested in</i> a property, and a property has <i>interested buyers</i>. Links show on
+        both records.
+      </p>
+      <div className="divide-y rounded-lg border text-sm">
+        {(linkTypes.data ?? []).length === 0 && <p className="p-4 text-muted-foreground">No links set up yet.</p>}
+        {(linkTypes.data ?? []).map((lt: LinkType) => (
+          <div key={lt.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5">
+            <Switch
+              aria-label={`${lt.label} on`}
+              checked={lt.is_active}
+              onCheckedChange={(on) => save(async () => unwrap(await api.PATCH("/api/v1/link-types/{link_type_id}", { params: { path: { link_type_id: lt.id } }, body: { is_active: on } })))}
+            />
+            <span>
+              {kind(lt.from_type_id)} <b>{lt.label}</b> {kind(lt.to_type_id)}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              · back: <b>{lt.inverse_label}</b> · {lt.many_to ? "many" : "one"} per {kind(lt.from_type_id).toLowerCase()}, {lt.many_from ? "many" : "one"} per{" "}
+              {kind(lt.to_type_id).toLowerCase()}
+            </span>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="ml-auto"
+              aria-label={`Delete ${lt.label}`}
+              onClick={() => confirm(`Delete "${lt.label}"?`) && save(async () => unwrap(await api.DELETE("/api/v1/link-types/{link_type_id}", { params: { path: { link_type_id: lt.id } } })), "Deleted")}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+        <Plus /> Add a link
+      </Button>
+      {adding && <LinkTypeDialog types={types} onClose={() => setAdding(false)} />}
+    </section>
+  );
+}
+
+function LinkTypeDialog({ types, onClose }: { types: RecordType[]; onClose: () => void }) {
+  const label = useLabels();
+  const save = useSave();
+  const [from, setFrom] = useState("lead");
+  const [to, setTo] = useState(types[0]?.id ?? "lead");
+  const [name, setName] = useState("");
+  const [back, setBack] = useState("");
+  const [manyTo, setManyTo] = useState(true);
+  const [manyFrom, setManyFrom] = useState(true);
+  const kinds: [string, string][] = [["lead", label("lead", true)], ...types.map((t) => [t.id, t.plural] as [string, string])];
+  const kindName = (k: string) => kinds.find(([v]) => v === k)?.[1] ?? "";
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add a link</DialogTitle>
+        </DialogHeader>
+        <form
+          className="space-y-4 text-sm"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const ok = await save(
+              async () =>
+                unwrap(
+                  await api.POST("/api/v1/link-types", {
+                    body: { from_type_id: from === "lead" ? null : from, to_type_id: to === "lead" ? null : to, label: name, inverse_label: back, many_to: manyTo, many_from: manyFrom },
+                  }),
+                ),
+              "Link added",
+            );
+            if (ok) onClose();
+          }}
+        >
+          <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+            <NativeSelect aria-label="From" value={from} onChange={(e) => setFrom(e.target.value)}>
+              {kinds.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </NativeSelect>
+            <span className="pb-1.5 text-muted-foreground">→</span>
+            <NativeSelect aria-label="To" value={to} onChange={(e) => setTo(e.target.value)}>
+              {kinds.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="lt-name">Seen from {kindName(from).toLowerCase()}</Label>
+              <Input id="lt-name" placeholder="Interested in" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="lt-back">Seen from {kindName(to).toLowerCase()}</Label>
+              <Input id="lt-back" placeholder="Interested buyers" value={back} onChange={(e) => setBack(e.target.value)} />
+            </div>
+          </div>
+          <label className="flex items-center gap-2">
+            <Switch checked={manyTo} onCheckedChange={setManyTo} aria-label="Many per from" /> One {kindName(from).toLowerCase()} can have several
+          </label>
+          <label className="flex items-center gap-2">
+            <Switch checked={manyFrom} onCheckedChange={setManyFrom} aria-label="Many per to" /> One {kindName(to).toLowerCase()} can have several
+          </label>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!name.trim() || !back.trim()}>
+              Add
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

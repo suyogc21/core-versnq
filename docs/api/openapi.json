@@ -5320,6 +5320,18 @@
             "title": "Priority",
             "type": "string"
           },
+          "record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Id"
+          },
           "title": {
             "maxLength": 200,
             "minLength": 1,
@@ -5415,6 +5427,29 @@
           "priority": {
             "title": "Priority",
             "type": "string"
+          },
+          "record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Id"
+          },
+          "record_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Name"
           },
           "status": {
             "title": "Status",
@@ -12534,6 +12569,23 @@
                 }
               ],
               "title": "Lead Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "record_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Record Id"
             }
           }
         ],

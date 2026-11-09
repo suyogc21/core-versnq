@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Popover, PopoverHeading, PopoverItem } from "@/components/data-table/popover";
 import { Avatar, StagePill } from "@/components/crm/bits";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
+import { LinksCard } from "@/components/crm/links-card";
 import { ActionButton, EditLead, Facts, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
 import { LogActivityForm } from "@/components/crm/log-activity";
 import { Button } from "@/components/ui/button";
@@ -195,6 +196,7 @@ function Section({ title, children, action }: { title: string; children: React.R
 
 /** The full record (mockup v2): details · timeline with logging · follow-up and tasks. */
 export function LeadRecord({ leadId }: { leadId: string }) {
+  const { can } = useAuth();
   const lead = useLead(leadId);
   const label = useLabels();
   const fields = useFields();
@@ -270,6 +272,9 @@ export function LeadRecord({ leadId }: { leadId: string }) {
           </Section>
           <Section title="Tasks">
             <LeadTasks lead={l} />
+          </Section>
+          <Section title="Linked">
+            <LinksCard end={{ kind: "lead", id: l.id, typeId: null }} editable={can("leads.edit")} />
           </Section>
           <Section title={label("deal", true)}>
             <p className="text-xs text-muted-foreground">None yet.</p>

@@ -162,7 +162,7 @@ Parked (Decision log #1). Not built until unparked.
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 browser end-to-end tests, a 23-check browser walk). Next: step 2.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Next: step 3, deals and pipelines.
 
 | Step | What | Why here |
 | --- | --- | --- |

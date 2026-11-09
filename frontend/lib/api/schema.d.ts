@@ -940,6 +940,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/link-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Link Types */
+        get: operations["record-types-list_link_types"];
+        put?: never;
+        /** Create Link Type */
+        post: operations["record-types-create_link_type"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/link-types/{link_type_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Link Type */
+        delete: operations["record-types-delete_link_type"];
+        options?: never;
+        head?: never;
+        /** Update Link Type */
+        patch: operations["record-types-update_link_type"];
+        trace?: never;
+    };
+    "/api/v1/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Links
+         * @description Everything linked to one lead or record (only what you may see).
+         */
+        get: operations["records-list_links"];
+        put?: never;
+        /** Create Link */
+        post: operations["records-create_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/links/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Link */
+        delete: operations["records-delete_link"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/day": {
         parameters: {
             query?: never;
@@ -1022,6 +1096,234 @@ export interface paths {
         get: operations["roles-list_permissions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/record-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Record Types
+         * @description The types you may view (for the sidebar). Admins (crm.configure) can ask for all,
+         *     including switched-off ones.
+         */
+        get: operations["record-types-list_record_types"];
+        put?: never;
+        /** Create Record Type */
+        post: operations["record-types-create_record_type"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/record-types/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Record Types */
+        put: operations["record-types-order_record_types"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/record-types/{type_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Record Type
+         * @description Only an unused type can be deleted; one with records can be switched off instead.
+         */
+        delete: operations["record-types-delete_record_type"];
+        options?: never;
+        head?: never;
+        /** Update Record Type */
+        patch: operations["record-types-update_record_type"];
+        trace?: never;
+    };
+    "/api/v1/record-types/{type_id}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Access
+         * @description Every role except the Owner (who can always do everything).
+         */
+        get: operations["record-types-get_access"];
+        /** Set Access */
+        put: operations["record-types-set_access"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/record-types/{type_id}/stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Record Stages */
+        get: operations["record-types-list_record_stages"];
+        put?: never;
+        /** Create Record Stage */
+        post: operations["record-types-create_record_stage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/record-types/{type_id}/stages/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Record Stages */
+        put: operations["record-types-order_record_stages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/record-types/{type_id}/stages/{stage_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Record Stage */
+        delete: operations["record-types-delete_record_stage"];
+        options?: never;
+        head?: never;
+        /** Update Record Stage */
+        patch: operations["record-types-update_record_stage"];
+        trace?: never;
+    };
+    "/api/v1/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Records */
+        get: operations["records-list_records"];
+        put?: never;
+        /** Create Record */
+        post: operations["records-create_record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/records/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bulk Records
+         * @description Same rules as one at a time; records that fail one are skipped and reported.
+         */
+        post: operations["records-bulk_records"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/records/{record_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Record */
+        get: operations["records-get_record"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Record
+         * @description Permanent (like leads, #18): the record, its timeline, tasks and links are removed.
+         */
+        delete: operations["records-delete_record"];
+        options?: never;
+        head?: never;
+        /** Update Record */
+        patch: operations["records-update_record"];
+        trace?: never;
+    };
+    "/api/v1/records/{record_id}/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Record Timeline */
+        get: operations["records-record_timeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/records/{record_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Note */
+        post: operations["records-add_note"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1679,6 +1981,19 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** AccessOut */
+        AccessOut: {
+            /** Create */
+            create: boolean;
+            /** Delete */
+            delete: boolean;
+            /** Edit */
+            edit: boolean;
+            /** Scope */
+            scope: string;
+            /** View */
+            view: boolean;
+        };
         /** ActivityIn */
         ActivityIn: {
             /** Body */
@@ -1810,28 +2125,6 @@ export interface components {
             logo_url?: string | null;
             /** Primary Color */
             primary_color?: string | null;
-        };
-        /**
-         * BulkIn
-         * @description Act on the ticked leads (ids) or on everything matching a filter.
-         */
-        BulkIn: {
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "assign" | "stage" | "follow_up" | "delete";
-            filter?: components["schemas"]["LeadFilter"] | null;
-            /** Ids */
-            ids?: string[] | null;
-            /** Next Follow Up At */
-            next_follow_up_at?: string | null;
-            /** Owner User Id */
-            owner_user_id?: string | null;
-            /** Stage Id */
-            stage_id?: string | null;
-            /** Unqualified Reason */
-            unqualified_reason?: string | null;
         };
         /** BulkOut */
         BulkOut: {
@@ -2533,6 +2826,125 @@ export interface components {
             /** Website */
             website?: string | null;
         };
+        /** LinkEnd */
+        LinkEnd: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Type Key */
+            type_key: string | null;
+        };
+        /** LinkIn */
+        LinkIn: {
+            /** From Lead Id */
+            from_lead_id?: string | null;
+            /** From Record Id */
+            from_record_id?: string | null;
+            /**
+             * Link Type Id
+             * Format: uuid
+             */
+            link_type_id: string;
+            /** To Lead Id */
+            to_lead_id?: string | null;
+            /** To Record Id */
+            to_record_id?: string | null;
+        };
+        /** LinkOut */
+        LinkOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "out" | "in";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Link Type Id
+             * Format: uuid
+             */
+            link_type_id: string;
+            other: components["schemas"]["LinkEnd"];
+        };
+        /** LinkTypeIn */
+        LinkTypeIn: {
+            /** From Type Id */
+            from_type_id?: string | null;
+            /** Inverse Label */
+            inverse_label: string;
+            /** Label */
+            label: string;
+            /**
+             * Many From
+             * @default true
+             */
+            many_from: boolean;
+            /**
+             * Many To
+             * @default true
+             */
+            many_to: boolean;
+            /** To Type Id */
+            to_type_id?: string | null;
+        };
+        /** LinkTypeOut */
+        LinkTypeOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** From Type Id */
+            from_type_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Inverse Label */
+            inverse_label: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Label */
+            label: string;
+            /** Many From */
+            many_from: boolean;
+            /** Many To */
+            many_to: boolean;
+            /** Position */
+            position: number;
+            /** To Type Id */
+            to_type_id: string | null;
+        };
+        /** LinkTypePatch */
+        LinkTypePatch: {
+            /** Inverse Label */
+            inverse_label?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Label */
+            label?: string | null;
+            /** Many From */
+            many_from?: boolean | null;
+            /** Many To */
+            many_to?: boolean | null;
+        };
         /** LoggedOut */
         LoggedOut: {
             activity: components["schemas"]["ActivityOut"];
@@ -2659,6 +3071,11 @@ export interface components {
             /** Upcoming */
             upcoming: components["schemas"]["TaskOut"][];
         };
+        /** NoteIn */
+        NoteIn: {
+            /** Body */
+            body: string;
+        };
         /** NotificationOut */
         NotificationOut: {
             /**
@@ -2730,12 +3147,255 @@ export interface components {
             /** Ids */
             ids?: string[] | null;
         };
+        /** RecordActivityOut */
+        RecordActivityOut: {
+            /** Actor Id */
+            actor_id: string | null;
+            /** Actor Name */
+            actor_name?: string | null;
+            /** Actor Type */
+            actor_type: string;
+            /** Body */
+            body: string | null;
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Summary */
+            summary: string;
+            /** Type Key */
+            type_key: string;
+        };
+        /** RecordIn */
+        RecordIn: {
+            /**
+             * Assign To Me
+             * @default true
+             */
+            assign_to_me: boolean;
+            /**
+             * Custom Fields
+             * @default {}
+             */
+            custom_fields: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Type */
+            type: string;
+        };
+        /** RecordOut */
+        RecordOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Custom Fields */
+            custom_fields: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Owner Name */
+            owner_name?: string | null;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /**
+             * Record Type Id
+             * Format: uuid
+             */
+            record_type_id: string;
+            /** Stage Changed At */
+            stage_changed_at: string | null;
+            /** Stage Id */
+            stage_id: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** RecordPage */
+        RecordPage: {
+            /** Items */
+            items: components["schemas"]["RecordOut"][];
+            /** Total */
+            total: number;
+        };
+        /** RecordPatch */
+        RecordPatch: {
+            /** Custom Fields */
+            custom_fields?: {
+                [key: string]: unknown;
+            } | null;
+            /** Name */
+            name?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Version */
+            version: number;
+        };
+        /** RecordStageIn */
+        RecordStageIn: {
+            /** Colour */
+            colour?: string | null;
+            /**
+             * Is Open
+             * @default true
+             */
+            is_open: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Required Fields
+             * @default []
+             */
+            required_fields: string[];
+        };
+        /** RecordStageOut */
+        RecordStageOut: {
+            /** Colour */
+            colour: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Open */
+            is_open: boolean;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+            /** Required Fields */
+            required_fields: string[];
+        };
+        /** RecordStagePatch */
+        RecordStagePatch: {
+            /** Colour */
+            colour?: string | null;
+            /** Is Open */
+            is_open?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Required Fields */
+            required_fields?: string[] | null;
+        };
+        /** RecordTypeIn */
+        RecordTypeIn: {
+            /**
+             * Has Owner
+             * @default true
+             */
+            has_owner: boolean;
+            /**
+             * Has Stages
+             * @default false
+             */
+            has_stages: boolean;
+            /** Icon */
+            icon?: string | null;
+            /** Key */
+            key: string;
+            /** Plural */
+            plural: string;
+            /** Singular */
+            singular: string;
+        };
+        /** RecordTypeOut */
+        RecordTypeOut: {
+            /** Has Owner */
+            has_owner: boolean;
+            /** Has Stages */
+            has_stages: boolean;
+            /** Icon */
+            icon: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Key */
+            key: string;
+            my_access?: components["schemas"]["AccessOut"] | null;
+            /** Plural */
+            plural: string;
+            /** Position */
+            position: number;
+            /** Singular */
+            singular: string;
+        };
+        /** RecordTypePatch */
+        RecordTypePatch: {
+            /** Has Owner */
+            has_owner?: boolean | null;
+            /** Has Stages */
+            has_stages?: boolean | null;
+            /** Icon */
+            icon?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Plural */
+            plural?: string | null;
+            /** Singular */
+            singular?: string | null;
+        };
         /** ResetIn */
         ResetIn: {
             /** Password */
             password: string;
             /** Token */
             token: string;
+        };
+        /** RoleAccess */
+        RoleAccess: {
+            /** Create */
+            create: boolean;
+            /** Delete */
+            delete: boolean;
+            /** Edit */
+            edit: boolean;
+            /**
+             * Role Id
+             * Format: uuid
+             */
+            role_id: string;
+            /** Role Name */
+            role_name?: string | null;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "own" | "team" | "all";
+            /** View */
+            view: boolean;
         };
         /** RoleIn */
         RoleIn: {
@@ -3107,6 +3767,8 @@ export interface components {
              * @enum {string}
              */
             priority: "low" | "normal" | "high";
+            /** Record Id */
+            record_id?: string | null;
             /** Title */
             title: string;
         };
@@ -3141,6 +3803,10 @@ export interface components {
             owner_user_id: string;
             /** Priority */
             priority: string;
+            /** Record Id */
+            record_id?: string | null;
+            /** Record Name */
+            record_name?: string | null;
             /** Status */
             status: string;
             /** Title */
@@ -3552,6 +4218,47 @@ export interface components {
             name: string;
             /** Scope */
             scope: string;
+        };
+        /**
+         * BulkIn
+         * @description Act on the ticked leads (ids) or on everything matching a filter.
+         */
+        app__modules__crm__leads_router__BulkIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "assign" | "stage" | "follow_up" | "delete";
+            filter?: components["schemas"]["LeadFilter"] | null;
+            /** Ids */
+            ids?: string[] | null;
+            /** Next Follow Up At */
+            next_follow_up_at?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Unqualified Reason */
+            unqualified_reason?: string | null;
+        };
+        /** OrderIn */
+        app__modules__crm__record_types_router__OrderIn: {
+            /** Ids */
+            ids: string[];
+        };
+        /** BulkIn */
+        app__modules__crm__records_router__BulkIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "assign" | "stage" | "delete";
+            /** Ids */
+            ids: string[];
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
         };
         /** OrderIn */
         app__modules__crm__rules_router__OrderIn: {
@@ -4506,7 +5213,7 @@ export interface operations {
     "crm-setup-list_fields": {
         parameters: {
             query?: {
-                entity?: "lead";
+                entity?: string;
             };
             header?: never;
             path?: never;
@@ -4537,7 +5244,7 @@ export interface operations {
     "crm-setup-create_field": {
         parameters: {
             query?: {
-                entity?: "lead";
+                entity?: string;
             };
             header?: never;
             path?: never;
@@ -4571,7 +5278,9 @@ export interface operations {
     };
     "crm-setup-order_fields": {
         parameters: {
-            query?: never;
+            query?: {
+                entity?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -5261,7 +5970,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BulkIn"];
+                "application/json": components["schemas"]["app__modules__crm__leads_router__BulkIn"];
             };
         };
         responses: {
@@ -5794,6 +6503,217 @@ export interface operations {
             };
         };
     };
+    "record-types-list_link_types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkTypeOut"][];
+                };
+            };
+        };
+    };
+    "record-types-create_link_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkTypeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkTypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-delete_link_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                link_type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-update_link_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                link_type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkTypePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkTypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-list_links": {
+        parameters: {
+            query?: {
+                lead_id?: string | null;
+                record_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-create_link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-delete_link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "work-my_day": {
         parameters: {
             query?: never;
@@ -5913,6 +6833,664 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PermissionOut"][];
+                };
+            };
+        };
+    };
+    "record-types-list_record_types": {
+        parameters: {
+            query?: {
+                include_hidden?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordTypeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-create_record_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordTypeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordTypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-order_record_types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__record_types_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-delete_record_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-update_record_type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordTypePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordTypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-get_access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleAccess"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-set_access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleAccess"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleAccess"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-list_record_stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordStageOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-create_record_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordStageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordStageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-order_record_stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__record_types_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-delete_record_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+                stage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "record-types-update_record_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type_id: string;
+                stage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordStagePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordStageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-list_records": {
+        parameters: {
+            query: {
+                type: string;
+                q?: string | null;
+                owner?: string[];
+                stage_id?: string[];
+                cf?: string[];
+                sort?: "name" | "created" | "updated" | "owner" | "stage";
+                dir?: "asc" | "desc";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-create_record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-bulk_records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__records_router__BulkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-get_record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-delete_record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-update_record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-record_timeline": {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordActivityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "records-add_note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -6241,6 +7819,7 @@ export interface operations {
                 scope?: "mine" | "team";
                 status?: ("open" | "done" | "cancelled") | null;
                 lead_id?: string | null;
+                record_id?: string | null;
             };
             header?: never;
             path?: never;

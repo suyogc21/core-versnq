@@ -93,7 +93,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 - [ ] G.1 Real email sending for invites and password resets (pull the transactional part of 3.2 forward; provider needs Suyog's approval)
 - [ ] G.2 Lost-phone recovery: one-time backup codes; Owner/Admin can reset a user's 2FA; staff can reset an Owner's 2FA (audited)
-- [ ] G.3 Deployment: hosting, HTTPS + HSTS at the proxy, backend reachable only through the proxy (TRUST_PROXY_HEADERS), encrypted database storage (spec §10 "encrypted at rest"), daily backups with a tested restore, error monitoring
+- [ ] G.3 Deployment: hosting, HTTPS + HSTS at the proxy, backend reachable only through the proxy (TRUST_PROXY_HEADERS; nginx must append the visitor address with `$proxy_add_x_forwarded_for`), encrypted database storage (spec §10 "encrypted at rest"), daily backups with a tested restore, error monitoring
 - [ ] **Gate G:** a real company can be created, invited and used over HTTPS; Suyog approves
 
 ## Phase 2 — Core CRM (Milestone 2)
@@ -116,7 +116,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 2.14 Frontend for 2.1–2.13
 - [ ] 2.15 Record page layouts per company (slice G)
 - [ ] 2.16 Field-level permissions: view / edit / hidden / mandatory per role (slice G)
-- [ ] 2.17 Custom record types (custom objects) on the same generic engine (slice G)
+- [x] 2.17 Custom record types (custom objects) on the same generic engine, plus labelled links between any records (step 2, moved up)
 - Each item gets its own Test lines in the Phase 2 detailed plan (isolation + visibility tests on every item)
 - [ ] **Gate 2:** all tests green, Suyog approves
 
@@ -214,3 +214,4 @@ CORE/
 | 2026-11-07 | Gate 1 / Phase 2 | Gate 1 approved. Email/go-live deferred until the product is built (Suyog). Phase 2 plan written (`phase-2-crm.md`): slices A–F, slice A in detail, 6 open questions |
 | 2026-11-07 | 2-A | Slice A built: stages, sources, custom fields (linked, unique, stage-required), activity types, leads (person/company, identities in E.164, visibility, assign, delete), timeline, follow-up rule (strict/warn), one-step call logging, tasks, My Day with calling queue, task.due worker, pipeline setup screens, demo data (300 + 60 leads). 249 backend tests + 4 e2e green |
 | 2026-11-09 | 2.2–2.6, 2.8 | Step 1 (capture and routing) built and verified: one intake path for every entry route, duplicates + merge, consent + suppression, organisation grouping, assignment rules, response-time rules, leakage guard, notifications, web forms, CSV import; 309 backend tests, 5 e2e, 23-check browser walk. Two bugs found in the walk and fixed with tests |
+| 2026-11-09 | 2.17 | Step 2 (records and links) built and verified: company-defined record types with fields, stages and access per role; labelled links between leads and records; tasks and notes on records; EdTech pack seeds Batch; 324 backend tests, 6 e2e, 20-check browser walk. Found and fixed: per-address rate limits were shared by everyone behind the proxy |
