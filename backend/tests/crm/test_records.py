@@ -455,3 +455,26 @@ async def test_records_and_links_never_cross_companies(client_for):
         r = await b.request(method, url, headers=bh, **kwargs)
         assert r.status_code == 404, (method, url, r.status_code)
     assert (await b.get("/api/v1/records?type=property", headers=bh)).json()["total"] == 0
+
+
+async def test_tasks_on_records(ws):
+    tenant_id, c = ws
+    _, h = await login_as(tenant_id, "admin")
+    _, rep = await login_as(tenant_id, "sales_user")
+    rt = await _property_type(c, h)
+    access = (await c.get(f"/api/v1/record-types/{rt['id']}/access", headers=h)).json()
+    for a in access:
+        if a["role_name"] == "Sales User":
+            a.update(view=True, create=False, edit=False, delete=False, scope="all")
+    await c.put(f"/api/v1/record-types/{rt['id']}/access", json=access, headers=h)
+    villa = (await _record(c, h, name="Villa 3")).json()
+    body = {"title": "Get photos", "due_at": "2030-01-01T10:00:00Z", "record_id": villa["id"]}
+    task = await c.post("/api/v1/tasks", json=body, headers=h)
+    assert task.status_code == 201 and task.json()["record_name"] == "Villa 3"
+    assert (await c.post("/api/v1/tasks", json=body, headers=rep)).status_code == 403  # view-only
+    listed = (await c.get(f"/api/v1/tasks?record_id={villa['id']}", headers=h)).json()
+    assert [t["title"] for t in listed] == ["Get photos"]
+    done = await c.patch(f"/api/v1/tasks/{task.json()['id']}", json={"status": "done"}, headers=h)
+    assert done.status_code == 200
+    timeline = (await c.get(f"/api/v1/records/{villa['id']}/activities", headers=h)).json()
+    assert timeline[0]["summary"] == "Done: Get photos"

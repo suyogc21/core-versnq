@@ -378,3 +378,188 @@ async def seed_routing(
         )
     await db.flush()
     return key
+
+
+# ---------- step 2: records and links ----------
+async def _new_records(db, tenant_id, rtype, rows, rng, stages) -> list:
+    from app.modules.crm.models import Record
+
+    made = []
+    for name, fields in rows:
+        stage = rng.choice(stages) if stages else None
+        r = Record(
+            tenant_id=tenant_id,
+            record_type_id=rtype.id,
+            name=name,
+            custom_fields=fields,
+            stage_id=stage.id if stage else None,
+            stage_changed_at=datetime.now(UTC) - timedelta(days=rng.randint(1, 30))
+            if stage
+            else None,
+        )
+        db.add(r)
+        made.append(r)
+    await db.flush()
+    return made
+
+
+async def _link_some(db, tenant_id, link_type, leads, records, rng, per_record: tuple[int, int]):
+    from app.modules.crm.models import Activity, Link
+
+    for rec in records:
+        for lead in rng.sample(leads, rng.randint(*per_record)):
+            db.add(
+                Link(
+                    tenant_id=tenant_id,
+                    link_type_id=link_type.id,
+                    from_lead_id=lead.id,
+                    to_record_id=rec.id,
+                )
+            )
+            when = datetime.now(UTC) - timedelta(days=rng.randint(0, 20))
+            for subject, summary in (
+                ({"lead_id": lead.id}, f"{link_type.label}: {rec.name}"),
+                ({"record_id": rec.id}, f"{link_type.inverse_label}: {lead.display_name}"),
+            ):
+                db.add(
+                    Activity(
+                        tenant_id=tenant_id,
+                        type_key="linked",
+                        actor_type="system",
+                        occurred_at=when,
+                        summary=summary,
+                        data={},
+                        **subject,
+                    )
+                )
+    await db.flush()
+
+
+async def seed_batches(db: AsyncSession, tenant_id: uuid.UUID) -> None:
+    """Acme (EdTech pack already has the Batch type): real batches with enrolled students."""
+    from app.modules.crm.models import Lead, LinkType, RecordType, RecordTypeStage
+
+    rng = random.Random(21)
+    rtype = await db.scalar(select(RecordType).where(RecordType.key == "batch"))
+    stages = (
+        await db.scalars(select(RecordTypeStage).where(RecordTypeStage.record_type_id == rtype.id))
+    ).all()
+    rows = []
+    for course, label in (
+        ("data_science", "DS"),
+        ("full_stack_development", "FS"),
+        ("digital_marketing", "DM"),
+    ):
+        for slot in ("Weekend", "Weekday"):
+            for month in ("Dec", "Jan"):
+                rows.append(
+                    (
+                        f"{label} {slot} — {month} 2026",
+                        {
+                            "course": course,
+                            "start_date": "2026-12-05" if month == "Dec" else "2027-01-09",
+                            "seats": rng.choice([25, 30, 40]),
+                            "mode": rng.choice(["classroom", "online", "hybrid"]),
+                        },
+                    )
+                )
+    batches = await _new_records(db, tenant_id, rtype, rows, rng, stages)
+    enrolled = (await db.scalars(select(Lead).where(Lead.is_open.is_(False)).limit(200))).all() or (
+        await db.scalars(select(Lead).limit(200))
+    ).all()
+    link_type = await db.scalar(select(LinkType).where(LinkType.to_type_id == rtype.id))
+    await _link_some(db, tenant_id, link_type, list(enrolled), batches, rng, (2, 8))
+
+
+async def seed_properties(db: AsyncSession, tenant_id: uuid.UUID) -> None:
+    """Bluewave (generic pack): a Property type set up as configuration, with buyers linked."""
+    from app.modules.crm.models import (
+        CustomFieldDefinition,
+        Lead,
+        LinkType,
+        RecordType,
+        RecordTypeStage,
+    )
+    from app.modules.crm.records import seed_access
+
+    rng = random.Random(33)
+    rtype = RecordType(
+        tenant_id=tenant_id,
+        key="property",
+        singular="Property",
+        plural="Properties",
+        icon="building",
+        has_owner=True,
+        has_stages=True,
+        position=0,
+    )
+    db.add(rtype)
+    await db.flush()
+    stages = []
+    for i, (name, is_open, colour) in enumerate(
+        (("Available", True, "#22c55e"), ("Reserved", True, "#f59e0b"), ("Sold", False, "#64748b"))
+    ):
+        st = RecordTypeStage(
+            tenant_id=tenant_id,
+            record_type_id=rtype.id,
+            name=name,
+            position=i,
+            is_open=is_open,
+            colour=colour,
+            required_fields=["price_aed"] if name == "Sold" else [],
+        )
+        db.add(st)
+        stages.append(st)
+    for i, f in enumerate(
+        [
+            dict(key="project", label="Project", type="select", options=[
+                {"value": "marina_heights", "label": "Marina Heights"},
+                {"value": "palm_residences", "label": "Palm Residences"},
+                {"value": "creek_view", "label": "Creek View"}], required=True),
+            dict(key="bedrooms", label="Bedrooms", type="number"),
+            dict(key="size_sqft", label="Size (sq ft)", type="number"),
+            dict(key="price_aed", label="Price (AED)", type="number"),
+            dict(key="unit_no", label="Unit number", type="text", is_unique=True),
+        ]
+    ):  # fmt: skip
+        db.add(CustomFieldDefinition(tenant_id=tenant_id, entity=rtype.entity, position=i, **f))
+    await seed_access(db, rtype)
+    link_type = LinkType(
+        tenant_id=tenant_id,
+        from_type_id=None,
+        to_type_id=rtype.id,
+        label="Interested in",
+        inverse_label="Interested buyers",
+        position=0,
+    )
+    db.add(link_type)
+    await db.flush()
+    rows = []
+    for n in range(24):
+        project = rng.choice(["marina_heights", "palm_residences", "creek_view"])
+        beds = rng.choice([1, 2, 3, 4])
+        name = {"marina_heights": "Marina Heights", "palm_residences": "Palm Residences",
+                "creek_view": "Creek View"}[project]  # fmt: skip
+        unit = f"{rng.randint(1, 40)}{rng.choice('ABCD')}{n:02d}"
+        rows.append(
+            (
+                f"{name} {unit}",
+                {
+                    "project": project,
+                    "bedrooms": beds,
+                    "size_sqft": 650 + beds * 420 + rng.randint(0, 200),
+                    "price_aed": (900_000 + beds * 650_000 + rng.randint(0, 40) * 10_000),
+                    "unit_no": unit,
+                },
+            )
+        )
+    props = await _new_records(db, tenant_id, rtype, rows, rng, stages)
+    owners = (
+        await db.scalars(
+            select(Lead.owner_user_id).where(Lead.owner_user_id.is_not(None)).distinct()
+        )
+    ).all()
+    for p in props:
+        p.owner_user_id = rng.choice(owners) if owners else None
+    leads = (await db.scalars(select(Lead).limit(60))).all()
+    await _link_some(db, tenant_id, link_type, list(leads), props, rng, (0, 4))

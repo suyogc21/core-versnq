@@ -27,7 +27,7 @@ from app.modules.roles.service import _set_permissions
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team, TeamMember
 from app.modules.users.models import User
-from app.platform.demo_crm import seed_leads, seed_routing
+from app.platform.demo_crm import seed_batches, seed_leads, seed_properties, seed_routing
 from app.platform.models import Tenant
 from app.platform.staff.models import PlatformStaff
 from app.platform.tenants.schemas import TenantCreate
@@ -413,6 +413,7 @@ async def seed_demo(prefix: str = "") -> DemoResult:
         result.form_key = await seed_routing(
             db, tenant.id, team_id=teams["Pune Counsellors"], reps=reps
         )
+        await seed_batches(db, tenant.id)
         result.accounts.append(Account("Acme Academy", "Owner", owner.name, owner.email))
         for user, role_key in added:
             if user.status == "active":
@@ -462,6 +463,7 @@ async def seed_demo(prefix: str = "") -> DemoResult:
             custom=BLUEWAVE_FIELDS,
             seed=11,
         )
+        await seed_properties(db, tenant.id)
         result.accounts.append(Account("Bluewave Realty", "Owner", owner.name, owner.email))
         result.accounts.append(
             Account("Bluewave Realty", "Sales Manager", "Farah Siddiqui", f"farah@{domain}")

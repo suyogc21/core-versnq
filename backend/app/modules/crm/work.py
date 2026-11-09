@@ -13,7 +13,7 @@ from app.core.tenancy import platform_session, tenant_session
 from app.modules.auth.deps import CurrentUser
 from app.modules.crm import fields as F
 from app.modules.crm import leads as L
-from app.modules.crm.models import Activity, ActivityType, Lead, Task
+from app.modules.crm.models import Activity, ActivityType, Lead, Record, Task
 from app.modules.crm.notify import notify
 from app.modules.crm.routing import mark_contacted
 from app.modules.teams.service import visible_user_ids
@@ -136,6 +136,18 @@ async def task_owner(db: AsyncSession, actor: CurrentUser, owner_id: uuid.UUID |
 
 async def finish_task(db: AsyncSession, actor: CurrentUser, task: Task, status: str) -> None:
     task.status, task.completed_at = status, L.now() if status != "open" else None
+    if task.record_id and status == "done":
+        from app.modules.crm import records as RC  # records builds on this module
+
+        record = await db.get(Record, task.record_id)
+        await RC.log(
+            db,
+            record,
+            "task_completed",
+            f"Done: {task.title}"[:500],
+            actor,
+            {"task_id": str(task.id)},
+        )
     if task.lead_id is None:
         return
     lead = await db.get(Lead, task.lead_id)
