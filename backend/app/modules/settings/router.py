@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
 
+from app.core import money
 from app.core.modules import MODULES, module_states
 from app.core.validators import valid_timezone
 from app.modules.audit.models import record
@@ -28,6 +29,7 @@ class SettingsOut(BaseModel):
     timezone: str
     locale: str
     default_country: str
+    default_currency: str
     branding: dict
     follow_up_required: bool
     duplicate_policy: str
@@ -45,6 +47,7 @@ class SettingsPatch(BaseModel):
     timezone: str | None = None
     locale: str | None = Field(default=None, pattern=r"^[a-z]{2}(-[A-Z]{2})?$")
     default_country: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    default_currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
     branding: Branding | None = None
 
     _tz = field_validator("timezone")(lambda v: v if v is None else valid_timezone(v))
@@ -72,6 +75,7 @@ def _out(s: TenantSettings) -> SettingsOut:
         timezone=s.timezone,
         locale=s.locale,
         default_country=s.default_country,
+        default_currency=s.default_currency,
         branding=s.branding,
         follow_up_required=s.follow_up_required,
         duplicate_policy=s.duplicate_policy,
@@ -98,7 +102,9 @@ async def update_settings(
         s.labels = s.labels | {k: v.model_dump() for k, v in body.labels.items()}
     if body.branding:
         s.branding = s.branding | body.branding.model_dump(exclude_none=True)
-    for field in ("timezone", "locale", "default_country"):
+    if body.default_currency is not None:
+        body.default_currency = money.currency(body.default_currency)
+    for field in ("timezone", "locale", "default_country", "default_currency"):
         value = getattr(body, field)
         if value is not None:
             setattr(s, field, value)

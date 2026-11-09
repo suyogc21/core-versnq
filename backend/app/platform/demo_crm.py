@@ -526,6 +526,8 @@ async def seed_properties(db: AsyncSession, tenant_id: uuid.UUID) -> None:
     await seed_access(db, rtype)
     link_type = LinkType(
         tenant_id=tenant_id,
+        from_kind="lead",
+        to_kind="record",
         from_type_id=None,
         to_type_id=rtype.id,
         label="Interested in",

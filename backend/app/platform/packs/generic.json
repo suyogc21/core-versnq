@@ -83,6 +83,52 @@
         "icon": "handshake",
         "fields": []
       }
-    ]
+    ],
+    "pipelines": [
+      {
+        "name": "Sales",
+        "stages": [
+          {
+            "name": "Qualification",
+            "kind": "open",
+            "probability": 10,
+            "colour": "#94a3b8"
+          },
+          {
+            "name": "Proposal",
+            "kind": "open",
+            "probability": 40,
+            "colour": "#60a5fa"
+          },
+          {
+            "name": "Negotiation",
+            "kind": "open",
+            "probability": 70,
+            "colour": "#f59e0b"
+          },
+          {
+            "name": "Won",
+            "kind": "won",
+            "probability": 100,
+            "colour": "#22c55e"
+          },
+          {
+            "name": "Lost",
+            "kind": "lost",
+            "probability": 0,
+            "colour": "#ef4444"
+          }
+        ]
+      }
+    ],
+    "lost_reasons": [
+      "Price too high",
+      "Chose a competitor",
+      "No budget",
+      "Not reachable",
+      "Bad timing",
+      "Other"
+    ],
+    "products": []
   }
 }

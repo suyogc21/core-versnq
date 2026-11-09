@@ -441,9 +441,14 @@ async def set_access(
 
 
 # ---------- link types ----------
+Kind = Literal["lead", "deal", "record"]
+
+
 class LinkTypeOut(BaseModel):
     model_config = {"from_attributes": True}
     id: uuid.UUID
+    from_kind: str
+    to_kind: str
     from_type_id: uuid.UUID | None
     to_type_id: uuid.UUID | None
     label: str
@@ -456,7 +461,9 @@ class LinkTypeOut(BaseModel):
 
 
 class LinkTypeIn(BaseModel):
-    from_type_id: uuid.UUID | None = None  # None = leads
+    from_kind: Kind | None = None  # default: "record" when a type is given, else "lead"
+    to_kind: Kind | None = None
+    from_type_id: uuid.UUID | None = None  # the record type, for kind "record"
     to_type_id: uuid.UUID | None = None
     label: str = Field(min_length=1, max_length=80)
     inverse_label: str = Field(min_length=1, max_length=80)
@@ -479,9 +486,14 @@ async def list_link_types(db: CrmDb, actor: ActiveUser) -> list[LinkType]:
 
 @router.post("/link-types", response_model=LinkTypeOut, status_code=status.HTTP_201_CREATED)
 async def create_link_type(body: LinkTypeIn, db: CrmDb, actor: Configurer) -> LinkType:
-    for type_id in (body.from_type_id, body.to_type_id):
+    for side in ("from", "to"):
+        type_id = getattr(body, f"{side}_type_id")
+        kind = getattr(body, f"{side}_kind") or ("record" if type_id else "lead")
+        if (kind == "record") != (type_id is not None):
+            raise Invalid("Choose a record type for record links, and only for them")
         if type_id:
             await RC.get_type(db, type_id)
+        setattr(body, f"{side}_kind", kind)
     position = await db.scalar(select(func.coalesce(func.max(LinkType.position), -1))) + 1
     lt = LinkType(
         tenant_id=actor.user.tenant_id,
@@ -520,12 +532,12 @@ async def update_link_type(
 
 
 async def _check_single(db, lt: LinkType, side: str) -> None:
-    lead_col, record_col = getattr(Link, f"{side}_lead_id"), getattr(Link, f"{side}_record_id")
+    cols = [getattr(Link, f"{side}_{k}_id") for k in RC.KINDS]
     clash = await db.scalar(
         select(func.count()).select_from(
-            select(lead_col, record_col)
+            select(*cols)
             .where(Link.link_type_id == lt.id)
-            .group_by(lead_col, record_col)
+            .group_by(*cols)
             .having(func.count() > 1)
             .subquery()
         )

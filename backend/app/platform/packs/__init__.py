@@ -74,6 +74,25 @@ class PackLinkType(BaseModel):
     many_from: bool = True
 
 
+class PackPipelineStage(BaseModel):
+    name: str
+    kind: str = "open"  # open / won / lost
+    probability: int = 0
+    colour: str | None = None
+
+
+class PackPipeline(BaseModel):
+    name: str  # currency: the company's default currency
+    stages: list[PackPipelineStage]
+
+
+class PackProduct(BaseModel):
+    name: str
+    code: str | None = None
+    description: str | None = None
+    prices: dict[str, int] = {}  # currency -> minor units; seeded only in the company's currency
+
+
 class CrmPack(BaseModel):
     """Starting CRM setup for a new company. Configuration only; every company can edit it."""
 
@@ -84,6 +103,9 @@ class CrmPack(BaseModel):
     activity_types: list[PackActivityType] = []
     record_types: list[PackRecordType] = []
     link_types: list[PackLinkType] = []
+    pipelines: list[PackPipeline] = []
+    lost_reasons: list[str] = []
+    products: list[PackProduct] = []
 
 
 class IndustryPack(BaseModel):

@@ -44,6 +44,10 @@ RESERVED_KEYS = BUILTIN_REQUIRABLE | {
 RECORD_RESERVED_KEYS = {
     "id", "name", "type", "owner", "owner_user_id", "stage", "stage_id", "custom_fields",
 }  # fmt: skip
+DEAL_RESERVED_KEYS = RECORD_RESERVED_KEYS | {
+    "lead", "lead_id", "pipeline", "pipeline_id", "status", "amount", "amount_minor",
+    "currency", "expected_close_on", "closed_at", "lost_reason", "lost_reason_id", "products",
+}  # fmt: skip
 
 
 def check_options(field_type: str, options: list[dict]) -> list[dict]:

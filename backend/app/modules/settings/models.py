@@ -18,6 +18,9 @@ class TenantSettings(TimestampMixin, Base):
     timezone: Mapped[str] = mapped_column(String(64))
     locale: Mapped[str] = mapped_column(String(10), default="en")
     default_country: Mapped[str] = mapped_column(String(2))  # ISO 3166, for phone normalization
+    default_currency: Mapped[str] = mapped_column(
+        String(3), default="USD"
+    )  # ISO 4217, new pipelines
     branding: Mapped[dict] = mapped_column(JSONB, default=dict)
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)

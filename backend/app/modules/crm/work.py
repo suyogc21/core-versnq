@@ -154,7 +154,7 @@ async def finish_task(db: AsyncSession, actor: CurrentUser, task: Task, status: 
     if task.is_follow_up and status != "open":
         lead.next_follow_up_at = None
     if status == "done":
-        await L.log(
+        activity = await L.log(
             db,
             lead,
             "task_completed",
@@ -162,6 +162,7 @@ async def finish_task(db: AsyncSession, actor: CurrentUser, task: Task, status: 
             actor,
             {"task_id": str(task.id)},
         )
+        activity.deal_id = task.deal_id  # a deal's task also shows on the deal
 
 
 async def tasks_for(

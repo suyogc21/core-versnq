@@ -2,10 +2,12 @@
 activities and tasks. Every table is company-scoped (forced RLS, migration 0010)."""
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
@@ -202,6 +204,7 @@ class Activity(TenantScoped, TimestampMixin, Base):
         UniqueConstraint("tenant_id", "id", name="uq_activities_tenant_id_id"),
         _fk("lead_id", "leads", "fk_activities_lead_same_tenant", "CASCADE"),
         _fk("record_id", "records", "fk_activities_record_same_tenant", "CASCADE"),
+        _fk("deal_id", "deals", "fk_activities_deal_same_tenant", "CASCADE"),
         ForeignKeyConstraint(
             ["tenant_id", "type_key"],
             ["activity_types.tenant_id", "activity_types.key"],
@@ -211,6 +214,7 @@ class Activity(TenantScoped, TimestampMixin, Base):
 
     lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # a lead's or a record's timeline
     record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # also on the lead's timeline
     type_key: Mapped[str] = mapped_column(String(60))
     actor_type: Mapped[str] = mapped_column(String(10))  # user / system / api / ace
     actor_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
@@ -227,11 +231,13 @@ class Task(TenantScoped, TimestampMixin, Base):
         UniqueConstraint("tenant_id", "id", name="uq_tasks_tenant_id_id"),
         _fk("lead_id", "leads", "fk_tasks_lead_same_tenant", "CASCADE"),
         _fk("record_id", "records", "fk_tasks_record_same_tenant", "CASCADE"),
+        _fk("deal_id", "deals", "fk_tasks_deal_same_tenant", "CASCADE"),
         _fk("owner_user_id", "users", "fk_tasks_owner_same_tenant"),
     )
 
     lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, index=True)
     record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, index=True)
+    deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, index=True)  # with its lead_id
     title: Mapped[str] = mapped_column(String(200))
     notes: Mapped[str | None] = mapped_column(Text)
     due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -496,7 +502,7 @@ class Record(TenantScoped, TimestampMixin, Base):
 
 
 class LinkType(TenantScoped, TimestampMixin, Base):
-    """An allowed link between two kinds (None = leads), named both ways."""
+    """An allowed link between two kinds (lead / deal / a record type), named both ways."""
 
     __tablename__ = "link_types"
     __table_args__ = (
@@ -505,7 +511,9 @@ class LinkType(TenantScoped, TimestampMixin, Base):
         _fk("to_type_id", "record_types", "fk_link_types_to_same_tenant", "CASCADE"),
     )
 
-    from_type_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    from_kind: Mapped[str] = mapped_column(String(6), default="lead")  # lead / deal / record
+    to_kind: Mapped[str] = mapped_column(String(6), default="lead")
+    from_type_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # set only for kind "record"
     to_type_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     label: Mapped[str] = mapped_column(String(80))
     inverse_label: Mapped[str] = mapped_column(String(80))
@@ -524,6 +532,8 @@ class Link(TenantScoped, Base):
         _fk("from_record_id", "records", "fk_links_from_record_same_tenant", "CASCADE"),
         _fk("to_lead_id", "leads", "fk_links_to_lead_same_tenant", "CASCADE"),
         _fk("to_record_id", "records", "fk_links_to_record_same_tenant", "CASCADE"),
+        _fk("from_deal_id", "deals", "fk_links_from_deal_same_tenant", "CASCADE"),
+        _fk("to_deal_id", "deals", "fk_links_to_deal_same_tenant", "CASCADE"),
     )
 
     link_type_id: Mapped[uuid.UUID] = mapped_column(Uuid)
@@ -531,6 +541,8 @@ class Link(TenantScoped, Base):
     from_record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     to_lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     to_record_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    from_deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    to_deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
@@ -553,3 +565,116 @@ class RecordTypeAccess(TenantScoped, TimestampMixin, Base):
     can_edit: Mapped[bool] = mapped_column(Boolean, default=False)
     can_delete: Mapped[bool] = mapped_column(Boolean, default=False)
     scope: Mapped[str] = mapped_column(String(4), default="own")
+
+
+# ---------- step 3: deals and pipelines (migration 0013) ----------
+class Pipeline(TenantScoped, TimestampMixin, Base):
+    """One per course, product or program. All its deals are in one currency (D3)."""
+
+    __tablename__ = "pipelines"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_pipelines_tenant_id_id"),
+        UniqueConstraint("tenant_id", "name", name="uq_pipelines_tenant_name"),
+    )
+
+    name: Mapped[str] = mapped_column(String(80))
+    currency: Mapped[str] = mapped_column(String(3))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class PipelineStage(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "pipeline_stages"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_pipeline_stages_tenant_id_id"),
+        UniqueConstraint("pipeline_id", "name", name="uq_pipeline_stages_name"),
+        _fk("pipeline_id", "pipelines", "fk_pipeline_stages_pipeline_same_tenant", "CASCADE"),
+    )
+
+    pipeline_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    name: Mapped[str] = mapped_column(String(80))
+    position: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(4), default="open")  # open / won / lost
+    probability: Mapped[int] = mapped_column(Integer, default=0)  # win %, for the forecast
+    colour: Mapped[str | None] = mapped_column(String(7))
+    required_fields: Mapped[list] = mapped_column(JSONB, default=list)
+
+
+class LostReason(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "lost_reasons"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_lost_reasons_tenant_id_id"),
+        UniqueConstraint("tenant_id", "name", name="uq_lost_reasons_tenant_name"),
+    )
+
+    name: Mapped[str] = mapped_column(String(120))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class Product(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "products"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_products_tenant_id_id"),
+        UniqueConstraint("tenant_id", "code", name="uq_products_tenant_code"),
+    )
+
+    name: Mapped[str] = mapped_column(String(200))
+    code: Mapped[str | None] = mapped_column(String(60))
+    description: Mapped[str | None] = mapped_column(Text)
+    price_minor: Mapped[int] = mapped_column(BigInteger)
+    currency: Mapped[str] = mapped_column(String(3))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class Deal(TenantScoped, TimestampMixin, Base):
+    """One sale to one lead (person or organisation). Amount in minor units (rule 7)."""
+
+    __tablename__ = "deals"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_deals_tenant_id_id"),
+        _fk("lead_id", "leads", "fk_deals_lead_same_tenant", "CASCADE"),
+        _fk("pipeline_id", "pipelines", "fk_deals_pipeline_same_tenant"),
+        _fk("stage_id", "pipeline_stages", "fk_deals_stage_same_tenant"),
+        _fk("owner_user_id", "users", "fk_deals_owner_same_tenant"),
+        _fk("lost_reason_id", "lost_reasons", "fk_deals_lost_reason_same_tenant"),
+        _fk("created_by_user_id", "users", "fk_deals_creator_same_tenant"),
+    )
+
+    name: Mapped[str] = mapped_column(String(300))
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    pipeline_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    stage_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    stage_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(4), default="open")  # open / won / lost
+    owner_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    team_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    amount_minor: Mapped[int] = mapped_column(BigInteger, default=0)
+    currency: Mapped[str] = mapped_column(String(3))
+    expected_close_on: Mapped[date | None] = mapped_column(Date)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lost_reason_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    close_note: Mapped[str | None] = mapped_column(String(1000))
+    custom_fields: Mapped[dict] = mapped_column(JSONB, default=dict)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class DealProduct(TenantScoped, TimestampMixin, Base):
+    """A line on a deal. total = quantity × unit price − discount (checked by the database)."""
+
+    __tablename__ = "deal_products"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_deal_products_tenant_id_id"),
+        _fk("deal_id", "deals", "fk_deal_products_deal_same_tenant", "CASCADE"),
+        _fk("product_id", "products", "fk_deal_products_product_same_tenant"),
+    )
+
+    deal_id: Mapped[uuid.UUID] = mapped_column(Uuid, index=True)
+    product_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    name: Mapped[str] = mapped_column(String(200))
+    quantity: Mapped[int] = mapped_column(Integer)
+    unit_price_minor: Mapped[int] = mapped_column(BigInteger)
+    discount_minor: Mapped[int] = mapped_column(BigInteger, default=0)
+    total_minor: Mapped[int] = mapped_column(BigInteger)
+    position: Mapped[int] = mapped_column(Integer)

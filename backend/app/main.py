@@ -7,10 +7,12 @@ from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
 from app.modules.crm.capture_router import public as capture_public_router
 from app.modules.crm.capture_router import router as capture_router
+from app.modules.crm.deals_router import router as deals_router
 from app.modules.crm.imports_router import router as imports_router
 from app.modules.crm.lead_tools_router import router as lead_tools_router
 from app.modules.crm.leads_router import router as leads_router
 from app.modules.crm.notifications_router import router as notifications_router
+from app.modules.crm.pipelines_router import router as pipelines_router
 from app.modules.crm.record_types_router import router as record_types_router
 from app.modules.crm.records_router import router as records_router
 from app.modules.crm.rules_router import router as rules_router
@@ -51,5 +53,7 @@ app.include_router(capture_public_router)
 app.include_router(imports_router)
 app.include_router(record_types_router)
 app.include_router(records_router)
+app.include_router(pipelines_router)
+app.include_router(deals_router)
 app.include_router(work_router)
 app.include_router(staff_accounts_router)

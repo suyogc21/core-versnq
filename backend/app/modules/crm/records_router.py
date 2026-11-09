@@ -416,8 +416,10 @@ class LinkIn(BaseModel):
     link_type_id: uuid.UUID
     from_lead_id: uuid.UUID | None = None
     from_record_id: uuid.UUID | None = None
+    from_deal_id: uuid.UUID | None = None
     to_lead_id: uuid.UUID | None = None
     to_record_id: uuid.UUID | None = None
+    to_deal_id: uuid.UUID | None = None
 
 
 def _link_out(view: RC.LinkView) -> LinkOut:
@@ -435,9 +437,7 @@ def _link_out(view: RC.LinkView) -> LinkOut:
 def _is_from(view: RC.LinkView) -> bool:
     """True when this end is the link's "from" side (the other end is its "to")."""
     o = view.other
-    return (o.kind == "lead" and view.link.to_lead_id == o.id) or (
-        o.kind == "record" and view.link.to_record_id == o.id
-    )
+    return getattr(view.link, f"to_{o.kind}_id") == o.id
 
 
 @router.get("/links", response_model=list[LinkOut])
@@ -446,9 +446,10 @@ async def list_links(
     actor: ActiveUser,
     lead_id: uuid.UUID | None = None,
     record_id: uuid.UUID | None = None,
+    deal_id: uuid.UUID | None = None,
 ) -> list[LinkOut]:
-    """Everything linked to one lead or record (only what you may see)."""
-    end, _ = await RC.resolve(db, actor, lead_id, record_id)
+    """Everything linked to one lead, deal or record (only what you may see)."""
+    end, _ = await RC.resolve(db, actor, lead_id, record_id, deal_id)
     return [_link_out(v) for v in await RC.links_of(db, actor, end)]
 
 
@@ -457,8 +458,10 @@ async def create_link(body: LinkIn, db: CrmDb, actor: ActiveUser) -> LinkOut:
     link_type = await db.get(LinkType, body.link_type_id)
     if link_type is None:
         raise NotFound("Link type not found")
-    src, src_edit = await RC.resolve(db, actor, body.from_lead_id, body.from_record_id)
-    dst, dst_edit = await RC.resolve(db, actor, body.to_lead_id, body.to_record_id)
+    src, src_edit = await RC.resolve(
+        db, actor, body.from_lead_id, body.from_record_id, body.from_deal_id
+    )
+    dst, dst_edit = await RC.resolve(db, actor, body.to_lead_id, body.to_record_id, body.to_deal_id)
     if not (src_edit or dst_edit):
         raise Forbidden("permission_denied")
     link = await RC.create_link(db, actor, link_type, src, dst)

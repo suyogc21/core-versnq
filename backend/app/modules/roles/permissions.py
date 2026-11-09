@@ -1,6 +1,6 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
-# code: (module, description). New codes go here and in a migration (0007, 0010, ...).
+# code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -15,6 +15,9 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "leads.import": ("crm", "Import leads from a CSV file"),
     "leads.merge": ("crm", "Merge duplicate leads"),
     "crm.configure": ("crm", "Set up stages, sources, custom fields and activity types"),
+    "deals.create": ("crm", "Add deals"),
+    "deals.edit": ("crm", "Edit visible deals, move them between stages and close them"),
+    "deals.delete": ("crm", "Permanently delete deals"),
 }
 ALL_CODES = frozenset(CATALOGUE)
 
@@ -27,7 +30,9 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "leads.assign",
         "leads.import",
         "leads.merge",
+        "deals.create",
+        "deals.edit",
     },
-    "sales_user": {"leads.create", "leads.edit"},
+    "sales_user": {"leads.create", "leads.edit", "deals.create", "deals.edit"},
     "finance": {"audit.read"},
 }

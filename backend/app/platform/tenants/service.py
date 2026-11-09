@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.mailer import Email
+from app.core.money import for_country
 from app.core.tenancy import set_tenant_context
 from app.modules.auth.service import INVITE_TTL, issue_link_token
 from app.modules.crm.setup import seed_crm
@@ -100,6 +101,7 @@ async def provision_tenant(
             labels=pack.model_dump()["labels"],
             timezone=data.timezone,
             default_country=data.default_country,
+            default_currency=for_country(data.default_country),
             branding={},
         )
     )

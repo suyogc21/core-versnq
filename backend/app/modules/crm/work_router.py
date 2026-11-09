@@ -6,17 +6,18 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from app.core.errors import Forbidden, Invalid
 from app.core.events import emit
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
+from app.modules.crm import deals as D
 from app.modules.crm import leads as L
 from app.modules.crm import records as RC
 from app.modules.crm import work as W
 from app.modules.crm.deps import CRM, CrmDb
 from app.modules.crm.leads_router import LeadOut, _out
-from app.modules.crm.models import Activity, Lead, Record, Task
+from app.modules.crm.models import Activity, Deal, Lead, Record, Task
 from app.modules.users.models import User
 
 router = APIRouter(prefix="/api/v1", tags=["work"], dependencies=CRM)
@@ -27,6 +28,7 @@ class ActivityOut(BaseModel):
     model_config = {"from_attributes": True}
     id: uuid.UUID
     lead_id: uuid.UUID
+    deal_id: uuid.UUID | None = None
     type_key: str
     actor_type: str
     actor_id: uuid.UUID | None
@@ -59,6 +61,8 @@ class TaskOut(BaseModel):
     lead_phone: str | None = None
     record_id: uuid.UUID | None = None
     record_name: str | None = None
+    deal_id: uuid.UUID | None = None
+    deal_name: str | None = None
     title: str
     notes: str | None
     due_at: datetime
@@ -74,6 +78,7 @@ class TaskIn(BaseModel):
     due_at: datetime
     lead_id: uuid.UUID | None = None
     record_id: uuid.UUID | None = None  # a task on a record instead of a lead
+    deal_id: uuid.UUID | None = None  # a task on a deal (it belongs to the deal's lead too)
     owner_user_id: uuid.UUID | None = None
     priority: Literal["low", "normal", "high"] = "normal"
     notes: str | None = Field(default=None, max_length=5000)
@@ -127,10 +132,17 @@ async def _tasks_out(db, tasks: list[Task]) -> list[TaskOut]:
                 await db.execute(select(Record.id, Record.name).where(Record.id.in_(record_ids)))
             ).all()
         )
+    deal_ids = {t.deal_id for t in tasks if t.deal_id}
+    deals = {}
+    if deal_ids:
+        deals = dict(
+            (await db.execute(select(Deal.id, Deal.name).where(Deal.id.in_(deal_ids)))).all()
+        )
     out = []
     for t in tasks:
         item = TaskOut.model_validate(t)
         item.record_name = records.get(t.record_id)
+        item.deal_name = deals.get(t.deal_id)
         if t.lead_id in leads:
             item.lead_name, item.lead_phone = (
                 leads[t.lead_id].display_name,
@@ -150,7 +162,12 @@ async def list_activities(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
 ) -> list[ActivityOut]:
     await L.get_visible(db, actor, lead_id)
-    q = select(Activity).where(Activity.lead_id == lead_id)
+    # Deal entries show here too, but only for deals this person may see.
+    visible_deals = select(Deal.id).where(await D.visibility_filter(db, actor))
+    q = select(Activity).where(
+        Activity.lead_id == lead_id,
+        or_(Activity.deal_id.is_(None), Activity.deal_id.in_(visible_deals)),
+    )
     if before:
         q = q.where(Activity.occurred_at < before)
     rows = await db.scalars(
@@ -189,10 +206,15 @@ async def list_tasks(
     status_: Annotated[Literal["open", "done", "cancelled"] | None, Query(alias="status")] = "open",
     lead_id: uuid.UUID | None = None,
     record_id: uuid.UUID | None = None,
+    deal_id: uuid.UUID | None = None,
 ) -> list[TaskOut]:
-    if record_id:  # everything on a record you may see
-        await RC.get_visible(db, actor, record_id)
-        q = select(Task).where(Task.record_id == record_id)
+    if record_id or deal_id:  # everything on a record or deal you may see
+        if record_id:
+            await RC.get_visible(db, actor, record_id)
+            q = select(Task).where(Task.record_id == record_id)
+        else:
+            await D.get_visible(db, actor, deal_id)
+            q = select(Task).where(Task.deal_id == deal_id)
         if status_:
             q = q.where(Task.status == status_)
         return await _tasks_out(db, list((await db.scalars(q.order_by(Task.due_at))).all()))
@@ -210,8 +232,13 @@ async def list_tasks(
 
 @router.post("/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 async def create_task(body: TaskIn, db: CrmDb, actor: Editor) -> TaskOut:
-    if body.lead_id and body.record_id:
-        raise Invalid("A task belongs to one lead or one record")
+    if sum(x is not None for x in (body.lead_id, body.record_id, body.deal_id)) > 1:
+        raise Invalid("A task belongs to one lead, deal or record")
+    lead_id = body.lead_id
+    if body.deal_id:
+        deal = await D.get_visible(db, actor, body.deal_id)
+        D.require(actor, "deals.edit")
+        lead_id = deal.lead_id
     if body.lead_id:
         await L.get_visible(db, actor, body.lead_id)
     if body.record_id:
@@ -220,8 +247,9 @@ async def create_task(body: TaskIn, db: CrmDb, actor: Editor) -> TaskOut:
             raise Forbidden("permission_denied")
     task = Task(
         tenant_id=actor.user.tenant_id,
-        lead_id=body.lead_id,
+        lead_id=lead_id,
         record_id=body.record_id,
+        deal_id=body.deal_id,
         title=body.title.strip(),
         notes=body.notes,
         due_at=body.due_at,

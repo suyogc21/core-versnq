@@ -28,6 +28,10 @@ CATALOGUE: dict[str, str] = {
     "task.due": "crm",
     "sequence.enrolled": "sequences",
     "sequence.replied": "sequences",
+    "deal.created": "crm",  # step 3 (Decision log #25)
+    "deal.updated": "crm",
+    "deal.stage_changed": "crm",
+    "deal.deleted": "crm",
     "deal.won": "crm",
     "deal.lost": "crm",
     "customer.created": "crm",

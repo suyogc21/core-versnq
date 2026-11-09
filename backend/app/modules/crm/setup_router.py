@@ -18,9 +18,11 @@ from app.modules.crm.models import (
     ActivityType,
     CustomFieldDefinition,
     CustomFieldUniqueValue,
+    Deal,
     Lead,
     LeadSource,
     LeadStage,
+    PipelineStage,
     Record,
     RecordType,
     RecordTypeStage,
@@ -357,8 +359,8 @@ async def _parent_options(
 
 
 async def _entity(db, entity: str) -> str:
-    """'lead', or 'rt:<key>' for an existing record type."""
-    if entity == "lead":
+    """'lead', 'deal', or 'rt:<key>' for an existing record type."""
+    if entity in ("lead", "deal"):
         return entity
     if entity.startswith("rt:"):
         exists_ = await db.scalar(select(RecordType.id).where(RecordType.key == entity[3:]))
@@ -383,7 +385,9 @@ async def create_field(
     entity = await _entity(db, entity)
     if body.type not in F.TYPES:
         raise Invalid(f"Unknown field type: {body.type}")
-    reserved = F.RESERVED_KEYS if entity == "lead" else F.RECORD_RESERVED_KEYS
+    reserved = {"lead": F.RESERVED_KEYS, "deal": F.DEAL_RESERVED_KEYS}.get(
+        entity, F.RECORD_RESERVED_KEYS
+    )
     if body.key in reserved:
         raise Invalid(f"'{body.key}' is a built-in field; choose another key")
     if body.is_unique and body.type not in F.UNIQUE_TYPES:
@@ -455,6 +459,11 @@ async def delete_field(field_id: uuid.UUID, db: CrmDb, actor: Configurer) -> Non
             select(LeadStage.name).where(LeadStage.required_fields.contains([field.key]))
         )
         holder, model = Lead, Lead
+    elif field.entity == "deal":
+        stage = await db.scalar(
+            select(PipelineStage.name).where(PipelineStage.required_fields.contains([field.key]))
+        )
+        holder, model = Deal, Deal
     else:
         rtype = await db.scalar(select(RecordType).where(RecordType.key == field.entity[3:]))
         stage = await db.scalar(

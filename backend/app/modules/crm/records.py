@@ -5,7 +5,7 @@ Access is set per role and per record type: view / create / edit / delete, plus 
 (own / team / all, like leads). The Owner role may always do everything. A role without a row
 for a type has no access. Types without owners are shared: anyone who may view sees all.
 
-Links: a link type allows links between two kinds (a lead kind or a record type) and names
+Links: a link type allows links between two kinds (leads, deals or a record type) and names
 them both ways ("Interested in" / "Interested buyers"). Either side can be limited to one.
 To link or unlink you must be able to see both ends and edit at least one of them. A link is
 written on both timelines and emits link.created / link.deleted.
@@ -23,6 +23,7 @@ from app.modules.auth.deps import CurrentUser
 from app.modules.crm import leads as L
 from app.modules.crm.models import (
     Activity,
+    Deal,
     Lead,
     Link,
     LinkType,
@@ -221,52 +222,60 @@ async def event(db: AsyncSession, record: Record, rtype: RecordType, type_: str,
 
 
 # ---------- links ----------
+KINDS = ("lead", "deal", "record")
+
+
 @dataclass
 class End:
-    """One end of a link: a lead or a record."""
+    """One end of a link: a lead, a deal or a record."""
 
-    kind: str  # lead / record
+    kind: str  # lead / deal / record
     id: uuid.UUID
     name: str
-    type_id: uuid.UUID | None  # None for leads
+    type_id: uuid.UUID | None  # records only
     type_key: str | None
-    obj: Lead | Record
+    obj: Lead | Record | Deal
 
 
-async def resolve(db: AsyncSession, actor: CurrentUser, lead_id, record_id) -> tuple[End, bool]:
+async def resolve(
+    db: AsyncSession, actor: CurrentUser, lead_id, record_id, deal_id=None
+) -> tuple[End, bool]:
     """A visible end and whether the actor may edit it."""
-    if (lead_id is None) == (record_id is None):
-        raise Invalid("Each side of a link is one lead or one record")
+    if sum(x is not None for x in (lead_id, record_id, deal_id)) != 1:
+        raise Invalid("Each side of a link is one lead, deal or record")
     if lead_id:
         lead = await L.get_visible(db, actor, lead_id)
         return End("lead", lead.id, lead.display_name, None, None, lead), L.can(actor, "leads.edit")
+    if deal_id:
+        from app.modules.crm import deals as D  # deals build on records' links
+
+        deal = await D.get_visible(db, actor, deal_id)
+        return End("deal", deal.id, deal.name, None, None, deal), L.can(actor, "deals.edit")
     v = await get_visible(db, actor, record_id)
     return End(
         "record", v.record.id, v.record.name, v.rtype.id, v.rtype.key, v.record
     ), v.access.edit
 
 
-def _side(link_kind_type: uuid.UUID | None, end: End) -> bool:
-    return (end.kind == "lead" and link_kind_type is None) or (
-        end.kind == "record" and end.type_id == link_kind_type
-    )
+def _side(kind: str, type_id: uuid.UUID | None, end: End) -> bool:
+    return end.kind == kind and (kind != "record" or end.type_id == type_id)
 
 
 def _cols(prefix: str, end: End) -> dict:
-    return {
-        f"{prefix}_lead_id": end.id if end.kind == "lead" else None,
-        f"{prefix}_record_id": end.id if end.kind == "record" else None,
-    }
+    return {f"{prefix}_{k}_id": end.id if end.kind == k else None for k in KINDS}
 
 
 def _match(prefix: str, end: End):
-    col = getattr(Link, f"{prefix}_{'lead' if end.kind == 'lead' else 'record'}_id")
-    return col == end.id
+    return getattr(Link, f"{prefix}_{end.kind}_id") == end.id
 
 
 async def _log_end(db, end: End, type_key: str, summary: str, actor, data: dict) -> None:
     if end.kind == "lead":
         await L.log(db, end.obj, type_key, summary, actor, data)
+    elif end.kind == "deal":
+        from app.modules.crm import deals as D
+
+        await D.log(db, end.obj, type_key, summary, actor, data)
     else:
         await log(db, end.obj, type_key, summary, actor, data)
 
@@ -276,7 +285,10 @@ async def create_link(
 ) -> Link:
     if not link_type.is_active:
         raise Invalid("This kind of link is switched off")
-    if not (_side(link_type.from_type_id, src) and _side(link_type.to_type_id, dst)):
+    if not (
+        _side(link_type.from_kind, link_type.from_type_id, src)
+        and _side(link_type.to_kind, link_type.to_type_id, dst)
+    ):
         raise Invalid("These two cannot be linked this way")
     if src.kind == dst.kind and src.id == dst.id:
         raise Invalid("Something cannot be linked to itself")
@@ -325,8 +337,10 @@ async def create_link(
 
 async def delete_link(db: AsyncSession, actor: CurrentUser, link: Link) -> None:
     link_type = await db.get(LinkType, link.link_type_id)
-    src, src_edit = await resolve(db, actor, link.from_lead_id, link.from_record_id)
-    dst, dst_edit = await resolve(db, actor, link.to_lead_id, link.to_record_id)
+    src, src_edit = await resolve(
+        db, actor, link.from_lead_id, link.from_record_id, link.from_deal_id
+    )
+    dst, dst_edit = await resolve(db, actor, link.to_lead_id, link.to_record_id, link.to_deal_id)
     if not (src_edit or dst_edit):
         raise Forbidden("permission_denied")
     data = {"link_id": str(link.id), "link_type_id": str(link_type.id)}
@@ -340,15 +354,19 @@ async def delete_link(db: AsyncSession, actor: CurrentUser, link: Link) -> None:
 
 
 def _payload(link: Link, link_type: LinkType) -> dict:
-    def side(lead_id, record_id):
-        return {"lead_id": str(lead_id)} if lead_id else {"record_id": str(record_id)}
+    def side(prefix: str) -> dict:
+        return {
+            f"{k}_id": str(getattr(link, f"{prefix}_{k}_id"))
+            for k in KINDS
+            if getattr(link, f"{prefix}_{k}_id")
+        }
 
     return {
         "link_id": str(link.id),
         "link_type_id": str(link_type.id),
         "label": link_type.label,
-        "from": side(link.from_lead_id, link.from_record_id),
-        "to": side(link.to_lead_id, link.to_record_id),
+        "from": side("from"),
+        "to": side("to"),
     }
 
 
@@ -373,37 +391,30 @@ async def links_of(db: AsyncSession, actor: CurrentUser, end: End) -> list[LinkV
             .limit(1000)
         )
     ).all()
-    lead_ids, record_ids = set(), set()
+    ids: dict[str, set] = {k: set() for k in KINDS}
+    others = []
     for link, _ in rows:
         outward = _match_value("from", link, end)
-        lid, rid = (
-            (link.to_lead_id, link.to_record_id)
-            if outward
-            else (link.from_lead_id, link.from_record_id)
-        )
-        (lead_ids if lid else record_ids).add(lid or rid)
-    leads = {}
-    if lead_ids:
+        kind, oid = _other(link, "to" if outward else "from")
+        ids[kind].add(oid)
+        others.append((outward, kind, oid))
+    found: dict[tuple[str, uuid.UUID], End] = {}
+    if ids["lead"]:
         visible = await L.visibility_filter(db, actor)
-        leads = {
-            x.id: x
-            for x in (await db.scalars(select(Lead).where(Lead.id.in_(lead_ids), visible))).all()
-        }
-    records = await _visible_records(db, actor, record_ids)
+        for x in (await db.scalars(select(Lead).where(Lead.id.in_(ids["lead"]), visible))).all():
+            found[("lead", x.id)] = End("lead", x.id, x.display_name, None, None, x)
+    if ids["deal"]:
+        from app.modules.crm import deals as D
+
+        visible = await D.visibility_filter(db, actor)
+        for x in (await db.scalars(select(Deal).where(Deal.id.in_(ids["deal"]), visible))).all():
+            found[("deal", x.id)] = End("deal", x.id, x.name, None, None, x)
+    for rid, (r, rt) in (await _visible_records(db, actor, ids["record"])).items():
+        found[("record", rid)] = End("record", rid, r.name, rt.id, rt.key, r)
     out = []
-    for link, link_type in rows:
-        outward = _match_value("from", link, end)
-        lid, rid = (
-            (link.to_lead_id, link.to_record_id)
-            if outward
-            else (link.from_lead_id, link.from_record_id)
-        )
-        if lid and lid in leads:
-            other = End("lead", lid, leads[lid].display_name, None, None, leads[lid])
-        elif rid and rid in records:
-            r, rt = records[rid]
-            other = End("record", rid, r.name, rt.id, rt.key, r)
-        else:
+    for (link, link_type), (outward, kind, oid) in zip(rows, others, strict=True):
+        other = found.get((kind, oid))
+        if other is None:
             continue
         out.append(
             LinkView(
@@ -413,9 +424,16 @@ async def links_of(db: AsyncSession, actor: CurrentUser, end: End) -> list[LinkV
     return out
 
 
+def _other(link: Link, prefix: str) -> tuple[str, uuid.UUID]:
+    for k in KINDS:
+        value = getattr(link, f"{prefix}_{k}_id")
+        if value:
+            return k, value
+    raise ValueError("link without an end")
+
+
 def _match_value(prefix: str, link: Link, end: End) -> bool:
-    col = f"{prefix}_{'lead' if end.kind == 'lead' else 'record'}_id"
-    return getattr(link, col) == end.id
+    return getattr(link, f"{prefix}_{end.kind}_id") == end.id
 
 
 async def _visible_records(

@@ -245,6 +245,99 @@
         "many_to": true,
         "many_from": true
       }
+    ],
+    "pipelines": [
+      {
+        "name": "Admissions",
+        "stages": [
+          {
+            "name": "Counselling done",
+            "kind": "open",
+            "probability": 20,
+            "colour": "#94a3b8"
+          },
+          {
+            "name": "Application",
+            "kind": "open",
+            "probability": 40,
+            "colour": "#60a5fa"
+          },
+          {
+            "name": "Fee discussion",
+            "kind": "open",
+            "probability": 60,
+            "colour": "#a78bfa"
+          },
+          {
+            "name": "Seat blocked",
+            "kind": "open",
+            "probability": 80,
+            "colour": "#f59e0b"
+          },
+          {
+            "name": "Enrolled",
+            "kind": "won",
+            "probability": 100,
+            "colour": "#22c55e"
+          },
+          {
+            "name": "Dropped",
+            "kind": "lost",
+            "probability": 0,
+            "colour": "#ef4444"
+          }
+        ]
+      }
+    ],
+    "lost_reasons": [
+      "Fees too high",
+      "Joined another institute",
+      "Course not suitable",
+      "Not reachable",
+      "Postponed to next intake",
+      "Other"
+    ],
+    "products": [
+      {
+        "name": "Data Science Pro",
+        "code": "DS-PRO",
+        "description": "6-month live program",
+        "prices": {
+          "INR": 6999900,
+          "AED": 299900,
+          "USD": 89900
+        }
+      },
+      {
+        "name": "Full-Stack Web Development",
+        "code": "FSWD",
+        "description": "5-month live program",
+        "prices": {
+          "INR": 5499900,
+          "AED": 249900,
+          "USD": 69900
+        }
+      },
+      {
+        "name": "UI/UX Design",
+        "code": "UIUX",
+        "description": "4-month live program",
+        "prices": {
+          "INR": 3999900,
+          "AED": 179900,
+          "USD": 49900
+        }
+      },
+      {
+        "name": "Placement support add-on",
+        "code": "PLACE",
+        "description": "Mock interviews and referrals",
+        "prices": {
+          "INR": 999900,
+          "AED": 44900,
+          "USD": 12900
+        }
+      }
     ]
   }
 }

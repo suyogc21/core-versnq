@@ -85,6 +85,7 @@ async def make_workspace(
                 labels=load_pack(pack).model_dump()["labels"],
                 timezone="Asia/Kolkata",
                 default_country="IN",
+                default_currency="INR",
                 branding={},
             )
         )
