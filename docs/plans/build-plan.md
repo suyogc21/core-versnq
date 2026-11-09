@@ -319,3 +319,74 @@ Changes to existing tables:
 | R2 | A limit on the number of record types per company? | None now (Decision log #6); revisit with pricing tiers |
 | R3 | Should packs seed a sample type? | Yes: Property (real estate), Batch (EdTech); nothing for generic |
 | R4 | Deleting a record | Permanent after a warning, like leads (#18); links and timeline removed |
+
+---
+
+## 6. Step 3 in detail: deals and pipelines
+
+A deal is one sale to one lead (person or organisation): "Riya — Data Science course", "Mehta family — Flat 1203". A lead can have several deals at once. Names come from the labels the company already has (EdTech: "Course enrolment", "Course pipeline").
+
+### 6.1 Tables (all with `tenant_id`, forced row-level security, same-company keys)
+
+| Table | Purpose |
+| --- | --- |
+| `pipelines` | Name, order, active, default currency. A company has one or more (one per course, product, program) |
+| `pipeline_stages` | Stages of one pipeline: name, order, colour, win probability %, required fields, and kind: open / won / lost. Each pipeline keeps at least one open, one won and one lost stage |
+| `deals` | Name, lead (required), pipeline, stage, status (open / won / lost), owner, team, amount in minor units + currency code (rule 7), expected close date, closed at, lost reason, close note, custom fields, created by, version |
+| `lost_reasons` | The company's list of lost reasons (editable, can be switched off, never deleted once used) |
+| `products` | Catalogue: name, code, description, price in minor units + currency, active. EdTech pack seeds sample courses |
+| `deal_products` | Lines on a deal: product, quantity, unit price (copied from the catalogue, editable), discount, line total. When a deal has lines, its amount is their sum |
+
+Changes to existing tables (all through a migration):
+
+- `activities` and `tasks` gain `deal_id`. Deal activities are written with the lead too, so they show on the lead's timeline (rule 5) and can be filtered to one deal.
+- `link_types` / `links` can have a deal at either end, so a deal links to a Property or Batch like any other record (D1).
+- `tenant_settings` gains `default_currency` (ISO 4217, set from the country: INR for India).
+- Custom fields: entity `deal`, with every existing field rule (required, unique, linked dropdowns).
+- New permissions: `deals.create`, `deals.edit`, `deals.delete`. Pipelines, stages, lost reasons and products are set up under `crm.configure`. Defaults: Admin all; Sales Manager create + edit; Sales User create + edit; Finance none (it gets read access with money in step 6).
+
+### 6.2 Rules the backend enforces
+
+- **Visibility:** the same own / team / all scope as leads. A rep sees their own deals; a manager sees the team's. Visibility follows the deal's own owner and team (not the lead's), and creating a deal needs sight of the lead.
+- **Stages:** moving to a stage checks its required fields. Moving to won needs no extra input; moving to lost needs a lost reason (spec: "mandatory on close") and allows a note. Reopening a won/lost deal clears closed-at and the reason, and is logged.
+- **Money:** amounts are integers in minor units with a currency; no floats anywhere. Each pipeline has one currency; a deal's products must be in it (no mixing currencies on one deal). Discounts and totals are computed exactly and tested.
+- **Timeline and events:** create, stage change, amount change, won, lost and reopen each write an activity on the lead and the deal; `deal.won` / `deal.lost` are already in the event catalogue, and `deal.created`, `deal.updated`, `deal.stage_changed` are added.
+- **Forecast numbers** (for the board header and later dashboards): open value and weighted value (amount × stage probability), per stage and per pipeline, computed in the database, respecting visibility.
+- **Deleting:** pipelines in use can only be switched off; a stage with deals asks where to move them first; a deal is deleted permanently after a warning (#18).
+- **Won deal → customer:** marked on the lead now ("has a won deal"); the actual customer record arrives in step 5.
+
+### 6.3 Endpoints (under `/api/v1`)
+
+- `pipelines` CRUD + order; `pipelines/{id}/stages` CRUD + order; `lost-reasons` CRUD; `products` CRUD.
+- `deals`: list (filters: pipeline, stage, status, owner, lead, expected close range, custom fields; sort; paging), create, get, patch (with version), delete, bulk (owner / stage), `deals/{id}/move` (stage + lost reason), `deals/{id}/products` lines.
+- `deals/board?pipeline=` (stages with cards and per-stage totals) and `deals/summary` (forecast numbers).
+- `deals/{id}/activities`, notes and tasks reuse the existing timeline and task endpoints.
+
+### 6.4 Screens
+
+- Sidebar: **Deals** (company label). Board view (kanban, drag between stages, per-stage count and value, pipeline switcher) and a list view with the same filters.
+- Dropping on a lost stage opens a small "Why was it lost?" box; dropping on a stage with required fields opens those fields.
+- Deal page: same 3-column layout as leads (details and products, timeline, linked lead and records, tasks).
+- Lead page: a **Deals** card with that lead's deals and "+ New deal".
+- Settings → Records and fields → Deals: pipelines and stages, lost reasons, products, deal fields, rules.
+
+### 6.5 Tests ("done" means these pass)
+
+- **Isolation:** deals, pipelines, products across companies.
+- **Visibility:** own / team / all for deals, on the board and the summary numbers too.
+- **Rules:** lost needs a reason, required fields per stage, reopen, a pipeline keeping its won/lost stages, no currency mixing.
+- **Money:** line totals, discounts, deal amount = sum of lines, weighted forecast, big amounts (no overflow), zero-decimal currencies (JPY) and three-decimal ones (KWD).
+- **Timeline and events** for every change; concurrent edits refused by version.
+- **Packs:** EdTech gets "Course pipeline" stages and sample courses; generic gets a plain sales pipeline.
+- **Browser walk:** create a deal from a lead, drag it across the board, lose one with a reason, win one; rep and manager views; phone width.
+
+### 6.6 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| D1 | Can a deal be linked to records (Property, Batch)? | Yes: deals become a third kind in the links engine (HubSpot does this), so "Mehta — Flat 1203" links to the flat |
+| D2 | Must every deal belong to a lead? | Yes, one lead (person or organisation). Other people go in as links |
+| D3 | One currency per pipeline? | Yes, set on the pipeline (default: the company's); different currencies need different pipelines. Keeps totals exact without exchange rates |
+| D4 | Products: who sees prices, and can a rep change the price on a deal? | Everyone with deal access sees prices; reps may edit the unit price and discount on their own deal lines |
+| D5 | Win probability per stage | Yes, editable per stage, used only for the weighted forecast |
+| D6 | Lead stage on a win | Untouched now; in step 5 a win offers "Make customer" |
