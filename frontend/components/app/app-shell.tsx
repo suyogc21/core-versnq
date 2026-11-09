@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, Contact, LogOut, type LucideIcon, Menu, Moon, Settings, Sun, Sunrise, X } from "lucide-react";
+import { Boxes, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -18,6 +18,7 @@ type NavItem = { href: string; label: string; icon: LucideIcon; permission?: str
 const MAIN: NavItem[] = [
   { href: "/", label: "My Day", icon: Sunrise },
   { href: "/leads", label: "lead", icon: Contact, permission: "leads.edit" }, // label from settings
+  { href: "/deals", label: "deal", icon: Handshake, permission: "deals.edit" },
 ];
 
 
@@ -54,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const recordTypes = useRecordTypes();
   if (!me) return null;
   const mainItems = [
-    ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/leads" ? { ...i, label: label("lead", true) } : i)),
+    ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/" ? i : { ...i, label: label(i.label, true) })),
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
   ];

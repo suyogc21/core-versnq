@@ -15,15 +15,16 @@ import { useAuth } from "@/lib/auth";
 import { type LinkItem, type LinkType, type RecordType, useAllRecordTypes, useLinks, useLinkTypes, useRecordTypes, useRefreshRecords } from "@/lib/records";
 import { useLabels } from "@/lib/settings";
 
-/** This end: a lead (typeId null) or a record of a type. */
-export type LinkEnd = { kind: "lead" | "record"; id: string; typeId: string | null };
+/** This end: a lead, a deal (typeId null) or a record of a type. */
+export type LinkEnd = { kind: "lead" | "deal" | "record"; id: string; typeId: string | null };
+type Kind = LinkEnd["kind"];
 
-type Option = { linkType: LinkType; outward: boolean; label: string; otherTypeId: string | null };
+type Option = { linkType: LinkType; outward: boolean; label: string; otherKind: Kind; otherTypeId: string | null };
 
 /** Everything linked to this lead or record, grouped by how it is linked, with add/remove. */
 export function LinksCard({ end, editable }: { end: LinkEnd; editable: boolean }) {
   const label = useLabels();
-  const links = useLinks(end.kind === "lead" ? { lead_id: end.id } : { record_id: end.id });
+  const links = useLinks({ [`${end.kind}_id`]: end.id });
   const linkTypes = useLinkTypes();
   const types = useRecordTypes();
   const [adding, setAdding] = useState(false);
@@ -31,19 +32,22 @@ export function LinksCard({ end, editable }: { end: LinkEnd; editable: boolean }
   const { can } = useAuth();
   const allTypes = useAllRecordTypes(can("crm.configure"));
   const typeById = new Map((types.data ?? []).map((t) => [t.id, t]));
-  const kindName = (typeId: string | null) => (typeId ? (typeById.get(typeId)?.singular ?? "record") : label("lead"));
+  const kindName = (kind: Kind, typeId: string | null) =>
+    kind === "record" ? (typeById.get(typeId ?? "")?.singular ?? "record") : label(kind);
 
   // Ways this end can be linked: as the "from" side and/or the "to" side of a link type.
   const options: Option[] = [];
+  const isMe = (kind: string, typeId: string | null) => kind === end.kind && (kind !== "record" || typeId === end.typeId);
+  const otherVisible = (kind: string, id: string | null) => kind !== "record" || (id !== null && typeById.has(id));
   for (const lt of linkTypes.data ?? []) {
     if (!lt.is_active) continue;
-    const mine = end.kind === "lead" ? null : end.typeId;
-    const otherVisible = (id: string | null) => id === null || typeById.has(id);
-    if (lt.from_type_id === mine && otherVisible(lt.to_type_id)) {
-      options.push({ linkType: lt, outward: true, label: `${lt.label} (${kindName(lt.to_type_id)})`, otherTypeId: lt.to_type_id });
+    const [fk, tk] = [lt.from_kind as Kind, lt.to_kind as Kind];
+    if (isMe(fk, lt.from_type_id) && otherVisible(tk, lt.to_type_id)) {
+      options.push({ linkType: lt, outward: true, label: `${lt.label} (${kindName(tk, lt.to_type_id)})`, otherKind: tk, otherTypeId: lt.to_type_id });
     }
-    if (lt.to_type_id === mine && otherVisible(lt.from_type_id) && !(lt.from_type_id === mine && lt.label === lt.inverse_label)) {
-      options.push({ linkType: lt, outward: false, label: `${lt.inverse_label} (${kindName(lt.from_type_id)})`, otherTypeId: lt.from_type_id });
+    const symmetric = fk === tk && lt.from_type_id === lt.to_type_id && lt.label === lt.inverse_label;
+    if (isMe(tk, lt.to_type_id) && otherVisible(fk, lt.from_type_id) && !symmetric) {
+      options.push({ linkType: lt, outward: false, label: `${lt.inverse_label} (${kindName(fk, lt.from_type_id)})`, otherKind: fk, otherTypeId: lt.from_type_id });
     }
   }
 
@@ -72,7 +76,7 @@ export function LinksCard({ end, editable }: { end: LinkEnd; editable: boolean }
           {items.map((l) => (
             <div key={l.id} className="group flex items-center gap-2 rounded-md border px-2 py-1.5">
               <Link2 className="size-3.5 shrink-0 text-muted-foreground" />
-              <Link href={l.other.kind === "lead" ? `/leads/${l.other.id}` : `/r/${l.other.type_key}/${l.other.id}`} className="min-w-0 flex-1 truncate font-medium hover:underline">
+              <Link href={l.other.kind === "lead" ? `/leads/${l.other.id}` : l.other.kind === "deal" ? `/deals/${l.other.id}` : `/r/${l.other.type_key}/${l.other.id}`} className="min-w-0 flex-1 truncate font-medium hover:underline">
                 {l.other.name}
               </Link>
               {editable && (
@@ -112,11 +116,14 @@ function AddLink({ end, options, typeById, onDone }: { end: LinkEnd; options: Op
   async function search(term: string) {
     setQ(term);
     if (term.trim().length < 2) return setResults([]);
-    if (opt.otherTypeId === null) {
+    if (opt.otherKind === "lead") {
       const page = unwrap(await api.GET("/api/v1/leads", { params: { query: { q: term, limit: 15 } } }));
       setResults(page.items.filter((x) => !(end.kind === "lead" && x.id === end.id)).map((x) => ({ id: x.id, name: x.display_name, hint: x.primary_phone ?? x.primary_email ?? undefined })));
+    } else if (opt.otherKind === "deal") {
+      const page = unwrap(await api.GET("/api/v1/deals", { params: { query: { q: term, limit: 15 } } }));
+      setResults(page.items.filter((x) => x.id !== end.id).map((x) => ({ id: x.id, name: x.name, hint: x.lead_name ?? undefined })));
     } else {
-      const key = typeById.get(opt.otherTypeId)?.key;
+      const key = typeById.get(opt.otherTypeId ?? "")?.key;
       if (!key) return setResults([]);
       const page = unwrap(await api.GET("/api/v1/records", { params: { query: { type: key, q: term, limit: 15 } } }));
       setResults(page.items.filter((x) => x.id !== end.id).map((x) => ({ id: x.id, name: x.name })));
@@ -124,8 +131,8 @@ function AddLink({ end, options, typeById, onDone }: { end: LinkEnd; options: Op
   }
 
   async function link(otherId: string) {
-    const here = end.kind === "lead" ? { lead_id: end.id } : { record_id: end.id };
-    const there = opt.otherTypeId === null ? { lead_id: otherId } : { record_id: otherId };
+    const here: Record<string, string> = { [`${end.kind}_id`]: end.id };
+    const there: Record<string, string> = { [`${opt.otherKind}_id`]: otherId };
     const [from, to] = opt.outward ? [here, there] : [there, here];
     try {
       unwrap(
@@ -134,8 +141,10 @@ function AddLink({ end, options, typeById, onDone }: { end: LinkEnd; options: Op
             link_type_id: opt.linkType.id,
             from_lead_id: from.lead_id ?? null,
             from_record_id: from.record_id ?? null,
+            from_deal_id: from.deal_id ?? null,
             to_lead_id: to.lead_id ?? null,
             to_record_id: to.record_id ?? null,
+            to_deal_id: to.deal_id ?? null,
           },
         }),
       );

@@ -60,6 +60,11 @@ export function RecordsIndex() {
             <span className="font-medium">{label("lead", true)}</span>
             <span className="text-xs text-muted-foreground">built in · stages, sources, fields, activity types, rules</span>
           </Link>
+          <Link href="/settings/records/deal" className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent">
+            <span className="w-3" />
+            <span className="font-medium">{label("deal", true)}</span>
+            <span className="text-xs text-muted-foreground">built in · pipelines, stages, lost reasons, products, fields</span>
+          </Link>
           {list.map((t, i) => (
             <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 text-sm">
               <div className="flex flex-col">
@@ -462,7 +467,7 @@ function LinkTypes({ types }: { types: RecordType[] }) {
   const linkTypes = useLinkTypes();
   const save = useSave();
   const [adding, setAdding] = useState(false);
-  const kind = (id: string | null) => (id ? (types.find((t) => t.id === id)?.plural ?? "?") : label("lead", true));
+  const kindOf = (k: string, id: string | null) => (k === "record" ? (types.find((t) => t.id === id)?.plural ?? "?") : label(k, true));
   return (
     <section className="space-y-3 border-t pt-6">
       <h3 className="font-medium">How things link</h3>
@@ -480,11 +485,11 @@ function LinkTypes({ types }: { types: RecordType[] }) {
               onCheckedChange={(on) => save(async () => unwrap(await api.PATCH("/api/v1/link-types/{link_type_id}", { params: { path: { link_type_id: lt.id } }, body: { is_active: on } })))}
             />
             <span>
-              {kind(lt.from_type_id)} <b>{lt.label}</b> {kind(lt.to_type_id)}
+              {kindOf(lt.from_kind, lt.from_type_id)} <b>{lt.label}</b> {kindOf(lt.to_kind, lt.to_type_id)}
             </span>
             <span className="text-xs text-muted-foreground">
-              · back: <b>{lt.inverse_label}</b> · {lt.many_to ? "many" : "one"} per {kind(lt.from_type_id).toLowerCase()}, {lt.many_from ? "many" : "one"} per{" "}
-              {kind(lt.to_type_id).toLowerCase()}
+              · back: <b>{lt.inverse_label}</b> · {lt.many_to ? "many" : "one"} per {kindOf(lt.from_kind, lt.from_type_id).toLowerCase()}, {lt.many_from ? "many" : "one"} per{" "}
+              {kindOf(lt.to_kind, lt.to_type_id).toLowerCase()}
             </span>
             <Button
               size="icon-sm"
@@ -515,7 +520,9 @@ export function LinkTypeDialog({ types, onClose }: { types: RecordType[]; onClos
   const [back, setBack] = useState("");
   const [manyTo, setManyTo] = useState(true);
   const [manyFrom, setManyFrom] = useState(true);
-  const kinds: [string, string][] = [["lead", label("lead", true)], ...types.map((t) => [t.id, t.plural] as [string, string])];
+  // "lead" and "deal" are built in; anything else is a record type's id.
+  const kinds: [string, string][] = [["lead", label("lead", true)], ["deal", label("deal", true)], ...types.map((t) => [t.id, t.plural] as [string, string])];
+  const side = (v: string) => (v === "lead" || v === "deal" ? { kind: v as "lead" | "deal", type: null } : { kind: "record" as const, type: v });
   const kindName = (k: string) => kinds.find(([v]) => v === k)?.[1] ?? "";
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -531,7 +538,16 @@ export function LinkTypeDialog({ types, onClose }: { types: RecordType[]; onClos
               async () =>
                 unwrap(
                   await api.POST("/api/v1/link-types", {
-                    body: { from_type_id: from === "lead" ? null : from, to_type_id: to === "lead" ? null : to, label: name, inverse_label: back, many_to: manyTo, many_from: manyFrom },
+                    body: {
+                      from_kind: side(from).kind,
+                      to_kind: side(to).kind,
+                      from_type_id: side(from).type,
+                      to_type_id: side(to).type,
+                      label: name,
+                      inverse_label: back,
+                      many_to: manyTo,
+                      many_from: manyFrom,
+                    },
                   }),
                 ),
               "Link added",

@@ -107,7 +107,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 2.6 Leakage guard: untouched in X hours → alert or reassign (step 1)
 - [x] 2.7 Activity timeline + custom activity types ("everything is an activity")
 - [x] 2.8 Tasks and follow-ups, follow-up SLAs and escalation, call logging with dispositions — *slice A + step 1 (response-time rules, escalation, in-app notifications)*
-- [ ] 2.9 Pipelines, stages, deals, kanban moves, won/lost reasons, products / catalogue
+- [x] 2.9 Pipelines, stages, deals, kanban moves, won/lost reasons, products / catalogue (step 3, Decision log #25)
 - [ ] 2.10 Convert lead → customer, registration form link, document checklist and vault (S3)
 - [ ] 2.11 Tags, lists, smart views, bulk actions, rule-based lead scoring
 - [ ] 2.11b Automation builder: WHEN event IF conditions THEN actions (task, field, owner, stage, webhook) — Decision log #16
@@ -226,3 +226,4 @@ CORE/
 | 2026-11-09 | 2.2–2.6, 2.8 | Step 1 (capture and routing) built and verified: one intake path for every entry route, duplicates + merge, consent + suppression, organisation grouping, assignment rules, response-time rules, leakage guard, notifications, web forms, CSV import; 309 backend tests, 5 e2e, 23-check browser walk. Two bugs found in the walk and fixed with tests |
 | 2026-11-09 | 2.17 | Step 2 (records and links) built and verified: company-defined record types with fields, stages and access per role; labelled links between leads and records; tasks and notes on records; EdTech pack seeds Batch; 324 backend tests, 6 e2e, 20-check browser walk. Found and fixed: per-address rate limits were shared by everyone behind the proxy |
 | 2026-11-10 | Money | Unparked by Suyog (Decision log #24): added to the lineup as step 6, after customers and before dashboards |
+| 2026-11-10 | 3 | Deals and pipelines built (Decision log #25): several pipelines (one currency each), stages with win %, deals on a lead with exact amounts, drag board with per-stage value and weighted forecast, lost needs a reason, product catalogue with deal lines, deals linked to records (Property, Batch), deal timeline/tasks, Deals card on the lead, Deals settings. 342 backend tests + 6 e2e + 26-check browser walk green |

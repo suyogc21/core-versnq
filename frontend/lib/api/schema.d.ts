@@ -489,6 +489,184 @@ export interface paths {
         patch: operations["crm-setup-update_field"];
         trace?: never;
     };
+    "/api/v1/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Deals */
+        get: operations["deals-list_deals"];
+        put?: never;
+        /** Create Deal */
+        post: operations["deals-create_deal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Board
+         * @description The pipeline's stages with their visible deals (newest move first, up to 100 each) and
+         *     exact totals: value, and weighted value = value × the stage's win %.
+         */
+        get: operations["deals-board"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bulk Deals
+         * @description Same rules as one at a time; deals that fail one are skipped and reported.
+         */
+        post: operations["deals-bulk_deals"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Summary
+         * @description Forecast per pipeline (each in its own currency; never added across currencies).
+         */
+        get: operations["deals-summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/{deal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Deal */
+        get: operations["deals-get_deal"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Deal
+         * @description Permanent (#18): the deal, its lines, tasks, links and deal timeline entries go.
+         *     The lead keeps one 'Deal deleted' entry.
+         */
+        delete: operations["deals-delete_deal"];
+        options?: never;
+        head?: never;
+        /** Update Deal */
+        patch: operations["deals-update_deal"];
+        trace?: never;
+    };
+    "/api/v1/deals/{deal_id}/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Deal Timeline */
+        get: operations["deals-deal_timeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/{deal_id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move Deal
+         * @description Drag on the board. Lost needs a reason; won/lost close the deal; open reopens it.
+         */
+        post: operations["deals-move_deal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/{deal_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Note */
+        post: operations["deals-add_note"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/{deal_id}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Lines */
+        get: operations["deals-get_lines"];
+        /**
+         * Set Lines
+         * @description Replace the lines. With lines, the deal's amount is their exact sum; with none, the
+         *     amount stays as it was and can be typed again.
+         */
+        put: operations["deals-set_lines"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/imports": {
         parameters: {
             query?: never;
@@ -1003,7 +1181,7 @@ export interface paths {
         };
         /**
          * List Links
-         * @description Everything linked to one lead or record (only what you may see).
+         * @description Everything linked to one lead, deal or record (only what you may see).
          */
         get: operations["records-list_links"];
         put?: never;
@@ -1030,6 +1208,59 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lost-reasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Lost Reasons */
+        get: operations["deal setup-list_lost_reasons"];
+        put?: never;
+        /** Create Lost Reason */
+        post: operations["deal setup-create_lost_reason"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lost-reasons/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Lost Reasons */
+        put: operations["deal setup-order_lost_reasons"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lost-reasons/{reason_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Lost Reason */
+        delete: operations["deal setup-delete_lost_reason"];
+        options?: never;
+        head?: never;
+        /** Update Lost Reason */
+        patch: operations["deal setup-update_lost_reason"];
         trace?: never;
     };
     "/api/v1/me/day": {
@@ -1118,6 +1349,153 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipeline-stages/{stage_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Stage
+         * @description Deals in the stage move to `move_to`, a stage of the same pipeline and kind.
+         */
+        delete: operations["deal setup-delete_stage"];
+        options?: never;
+        head?: never;
+        /** Update Stage */
+        patch: operations["deal setup-update_stage"];
+        trace?: never;
+    };
+    "/api/v1/pipelines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Pipelines */
+        get: operations["deal setup-list_pipelines"];
+        put?: never;
+        /** Create Pipeline */
+        post: operations["deal setup-create_pipeline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipelines/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Pipelines */
+        put: operations["deal setup-order_pipelines"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipelines/{pipeline_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Pipeline */
+        delete: operations["deal setup-delete_pipeline"];
+        options?: never;
+        head?: never;
+        /** Update Pipeline */
+        patch: operations["deal setup-update_pipeline"];
+        trace?: never;
+    };
+    "/api/v1/pipelines/{pipeline_id}/stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Stage */
+        post: operations["deal setup-add_stage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pipelines/{pipeline_id}/stages/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Stages */
+        put: operations["deal setup-order_stages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Products */
+        get: operations["deal setup-list_products"];
+        put?: never;
+        /** Create Product */
+        post: operations["deal setup-create_product"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Product */
+        delete: operations["deal setup-delete_product"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Product
+         * @description Price changes apply to new deal lines only; existing lines keep their price.
+         */
+        patch: operations["deal setup-update_product"];
         trace?: never;
     };
     "/api/v1/record-types": {
@@ -2044,6 +2422,8 @@ export interface components {
             data: {
                 [key: string]: unknown;
             };
+            /** Deal Id */
+            deal_id?: string | null;
             /** Disposition */
             disposition: string | null;
             /**
@@ -2136,6 +2516,52 @@ export interface components {
             team_id?: string | null;
             /** User Ids */
             user_ids?: string[] | null;
+        };
+        /** BoardColumn */
+        BoardColumn: {
+            /** Amount Minor */
+            amount_minor: number;
+            /** Colour */
+            colour: string | null;
+            /** Count */
+            count: number;
+            /** Deals */
+            deals: components["schemas"]["DealOut"][];
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Probability */
+            probability: number;
+            /**
+             * Stage Id
+             * Format: uuid
+             */
+            stage_id: string;
+            /** Weighted Minor */
+            weighted_minor: number;
+        };
+        /** BoardOut */
+        BoardOut: {
+            /** Columns */
+            columns: components["schemas"]["BoardColumn"][];
+            /** Currency */
+            currency: string;
+            /** Open Count */
+            open_count: number;
+            /** Open Minor */
+            open_minor: number;
+            /**
+             * Pipeline Id
+             * Format: uuid
+             */
+            pipeline_id: string;
+            /** Pipeline Name */
+            pipeline_name: string;
+            /** Weighted Minor */
+            weighted_minor: number;
+            /** Won Minor */
+            won_minor: number;
         };
         /** Branding */
         Branding: {
@@ -2353,6 +2779,184 @@ export interface components {
             leakage_hours?: number | null;
             /** Org Grouping */
             org_grouping?: ("off" | "suggest" | "auto") | null;
+        };
+        /** DealActivityOut */
+        DealActivityOut: {
+            /** Actor Id */
+            actor_id: string | null;
+            /** Actor Name */
+            actor_name?: string | null;
+            /** Actor Type */
+            actor_type: string;
+            /** Body */
+            body: string | null;
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Summary */
+            summary: string;
+            /** Type Key */
+            type_key: string;
+        };
+        /** DealIn */
+        DealIn: {
+            /**
+             * Amount Minor
+             * @default 0
+             */
+            amount_minor: number;
+            /**
+             * Assign To Me
+             * @default true
+             */
+            assign_to_me: boolean;
+            /**
+             * Custom Fields
+             * @default {}
+             */
+            custom_fields: {
+                [key: string]: unknown;
+            };
+            /** Expected Close On */
+            expected_close_on?: string | null;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /**
+             * Lines
+             * @default []
+             */
+            lines: components["schemas"]["LineIn"][];
+            /** Name */
+            name?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Pipeline Id */
+            pipeline_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+        };
+        /** DealOut */
+        DealOut: {
+            /** Amount Minor */
+            amount_minor: number;
+            /** Close Note */
+            close_note: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Custom Fields */
+            custom_fields: {
+                [key: string]: unknown;
+            };
+            /** Expected Close On */
+            expected_close_on: string | null;
+            /**
+             * Has Lines
+             * @default false
+             */
+            has_lines: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Lead Name */
+            lead_name?: string | null;
+            /** Lost Reason */
+            lost_reason?: string | null;
+            /** Lost Reason Id */
+            lost_reason_id: string | null;
+            /** Name */
+            name: string;
+            /** Owner Name */
+            owner_name?: string | null;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /**
+             * Pipeline Id
+             * Format: uuid
+             */
+            pipeline_id: string;
+            /**
+             * Stage Changed At
+             * Format: date-time
+             */
+            stage_changed_at: string;
+            /**
+             * Stage Id
+             * Format: uuid
+             */
+            stage_id: string;
+            /** Stage Name */
+            stage_name?: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** DealPage */
+        DealPage: {
+            /** Items */
+            items: components["schemas"]["DealOut"][];
+            /** Total */
+            total: number;
+        };
+        /** DealPatch */
+        DealPatch: {
+            /** Amount Minor */
+            amount_minor?: number | null;
+            /** Custom Fields */
+            custom_fields?: {
+                [key: string]: unknown;
+            } | null;
+            /** Expected Close On */
+            expected_close_on?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Pipeline Id */
+            pipeline_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+            /** Version */
+            version: number;
+        };
+        /** DealWithLines */
+        DealWithLines: {
+            deal: components["schemas"]["DealOut"];
+            /** Lines */
+            lines: components["schemas"]["LineOut"][];
         };
         /** FieldIn */
         FieldIn: {
@@ -2879,6 +3483,52 @@ export interface components {
             /** Website */
             website?: string | null;
         };
+        /** LineIn */
+        LineIn: {
+            /**
+             * Discount Minor
+             * @default 0
+             */
+            discount_minor: number;
+            /** Name */
+            name?: string | null;
+            /** Product Id */
+            product_id?: string | null;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number;
+            /** Unit Price Minor */
+            unit_price_minor?: number | null;
+        };
+        /** LineOut */
+        LineOut: {
+            /** Discount Minor */
+            discount_minor: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Product Id */
+            product_id: string | null;
+            /** Quantity */
+            quantity: number;
+            /** Total Minor */
+            total_minor: number;
+            /** Unit Price Minor */
+            unit_price_minor: number;
+        };
+        /** LinesIn */
+        LinesIn: {
+            /** Lines */
+            lines: components["schemas"]["LineIn"][];
+            /** Version */
+            version: number;
+        };
         /** LinkEnd */
         LinkEnd: {
             /**
@@ -2895,6 +3545,8 @@ export interface components {
         };
         /** LinkIn */
         LinkIn: {
+            /** From Deal Id */
+            from_deal_id?: string | null;
             /** From Lead Id */
             from_lead_id?: string | null;
             /** From Record Id */
@@ -2904,6 +3556,8 @@ export interface components {
              * Format: uuid
              */
             link_type_id: string;
+            /** To Deal Id */
+            to_deal_id?: string | null;
             /** To Lead Id */
             to_lead_id?: string | null;
             /** To Record Id */
@@ -2937,6 +3591,8 @@ export interface components {
         };
         /** LinkTypeIn */
         LinkTypeIn: {
+            /** From Kind */
+            from_kind?: ("lead" | "deal" | "record") | null;
             /** From Type Id */
             from_type_id?: string | null;
             /** Inverse Label */
@@ -2953,6 +3609,8 @@ export interface components {
              * @default true
              */
             many_to: boolean;
+            /** To Kind */
+            to_kind?: ("lead" | "deal" | "record") | null;
             /** To Type Id */
             to_type_id?: string | null;
         };
@@ -2963,6 +3621,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** From Kind */
+            from_kind: string;
             /** From Type Id */
             from_type_id: string | null;
             /**
@@ -2982,6 +3642,8 @@ export interface components {
             many_to: boolean;
             /** Position */
             position: number;
+            /** To Kind */
+            to_kind: string;
             /** To Type Id */
             to_type_id: string | null;
         };
@@ -3031,6 +3693,32 @@ export interface components {
              * @default false
              */
             two_factor_required: boolean;
+        };
+        /** LostReasonIn */
+        LostReasonIn: {
+            /** Name */
+            name: string;
+        };
+        /** LostReasonOut */
+        LostReasonOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+        };
+        /** LostReasonPatch */
+        LostReasonPatch: {
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
         };
         /** MeOut */
         MeOut: {
@@ -3110,6 +3798,20 @@ export interface components {
             key: string;
             /** Name */
             name: string;
+        };
+        /** MoveIn */
+        MoveIn: {
+            /** Lost Reason Id */
+            lost_reason_id?: string | null;
+            /** Note */
+            note?: string | null;
+            /**
+             * Stage Id
+             * Format: uuid
+             */
+            stage_id: string;
+            /** Version */
+            version: number;
         };
         /** MyDayOut */
         MyDayOut: {
@@ -3194,6 +3896,155 @@ export interface components {
             description: string;
             /** Module */
             module: string;
+        };
+        /** PipelineIn */
+        PipelineIn: {
+            /** Currency */
+            currency?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Stages
+             * @default []
+             */
+            stages: components["schemas"]["app__modules__crm__pipelines_router__StageIn"][];
+        };
+        /** PipelineOut */
+        PipelineOut: {
+            /** Currency */
+            currency: string;
+            /**
+             * Deal Count
+             * @default 0
+             */
+            deal_count: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+            /**
+             * Stages
+             * @default []
+             */
+            stages: components["schemas"]["PipelineStageOut"][];
+        };
+        /** PipelinePatch */
+        PipelinePatch: {
+            /** Currency */
+            currency?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+        };
+        /** PipelineStageOut */
+        PipelineStageOut: {
+            /** Colour */
+            colour: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /**
+             * Pipeline Id
+             * Format: uuid
+             */
+            pipeline_id: string;
+            /** Position */
+            position: number;
+            /** Probability */
+            probability: number;
+            /** Required Fields */
+            required_fields: string[];
+        };
+        /** PipelineSummary */
+        PipelineSummary: {
+            /** Currency */
+            currency: string;
+            /** Lost Count */
+            lost_count: number;
+            /** Name */
+            name: string;
+            /** Open Count */
+            open_count: number;
+            /** Open Minor */
+            open_minor: number;
+            /**
+             * Pipeline Id
+             * Format: uuid
+             */
+            pipeline_id: string;
+            /** Weighted Minor */
+            weighted_minor: number;
+            /** Won Count */
+            won_count: number;
+            /** Won Minor */
+            won_minor: number;
+        };
+        /** ProductIn */
+        ProductIn: {
+            /** Code */
+            code?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Name */
+            name: string;
+            /** Price Minor */
+            price_minor: number;
+        };
+        /** ProductOut */
+        ProductOut: {
+            /** Code */
+            code: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Description */
+            description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Price Minor */
+            price_minor: number;
+        };
+        /** ProductPatch */
+        ProductPatch: {
+            /** Code */
+            code?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Price Minor */
+            price_minor?: number | null;
         };
         /** ReadIn */
         ReadIn: {
@@ -3482,6 +4333,8 @@ export interface components {
             };
             /** Default Country */
             default_country: string;
+            /** Default Currency */
+            default_currency: string;
             /** Duplicate Policy */
             duplicate_policy: string;
             /** Follow Up Required */
@@ -3509,6 +4362,8 @@ export interface components {
             branding?: components["schemas"]["Branding"] | null;
             /** Default Country */
             default_country?: string | null;
+            /** Default Currency */
+            default_currency?: string | null;
             /** Labels */
             labels?: {
                 [key: string]: components["schemas"]["Label"];
@@ -3699,33 +4554,6 @@ export interface components {
             /** Name */
             name?: string | null;
         };
-        /** StageIn */
-        StageIn: {
-            /** Colour */
-            colour?: string | null;
-            /**
-             * Is Converted
-             * @default false
-             */
-            is_converted: boolean;
-            /**
-             * Is Open
-             * @default true
-             */
-            is_open: boolean;
-            /**
-             * Is Unqualified
-             * @default false
-             */
-            is_unqualified: boolean;
-            /** Name */
-            name: string;
-            /**
-             * Required Fields
-             * @default []
-             */
-            required_fields: string[];
-        };
         /** StageOut */
         StageOut: {
             /** Colour */
@@ -3749,21 +4577,6 @@ export interface components {
             position: number;
             /** Required Fields */
             required_fields: string[];
-        };
-        /** StagePatch */
-        StagePatch: {
-            /** Colour */
-            colour?: string | null;
-            /** Is Converted */
-            is_converted?: boolean | null;
-            /** Is Open */
-            is_open?: boolean | null;
-            /** Is Unqualified */
-            is_unqualified?: boolean | null;
-            /** Name */
-            name?: string | null;
-            /** Required Fields */
-            required_fields?: string[] | null;
         };
         /** StartIn */
         StartIn: {
@@ -3796,6 +4609,8 @@ export interface components {
         };
         /** TaskIn */
         TaskIn: {
+            /** Deal Id */
+            deal_id?: string | null;
             /**
              * Due At
              * Format: date-time
@@ -3822,6 +4637,10 @@ export interface components {
         TaskOut: {
             /** Completed At */
             completed_at: string | null;
+            /** Deal Id */
+            deal_id?: string | null;
+            /** Deal Name */
+            deal_name?: string | null;
             /**
              * Due At
              * Format: date-time
@@ -4265,6 +5084,22 @@ export interface components {
             /** Scope */
             scope: string;
         };
+        /** BulkIn */
+        app__modules__crm__deals_router__BulkIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "assign" | "stage" | "delete";
+            /** Ids */
+            ids: string[];
+            /** Lost Reason Id */
+            lost_reason_id?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+        };
         /**
          * BulkIn
          * @description Act on the ticked leads (ids) or on everything matching a filter.
@@ -4286,6 +5121,42 @@ export interface components {
             stage_id?: string | null;
             /** Unqualified Reason */
             unqualified_reason?: string | null;
+        };
+        /** StageIn */
+        app__modules__crm__pipelines_router__StageIn: {
+            /** Colour */
+            colour?: string | null;
+            /**
+             * Kind
+             * @default open
+             * @enum {string}
+             */
+            kind: "open" | "won" | "lost";
+            /** Name */
+            name: string;
+            /**
+             * Probability
+             * @default 0
+             */
+            probability: number;
+            /**
+             * Required Fields
+             * @default []
+             */
+            required_fields: string[];
+        };
+        /** StagePatch */
+        app__modules__crm__pipelines_router__StagePatch: {
+            /** Colour */
+            colour?: string | null;
+            /** Kind */
+            kind?: ("open" | "won" | "lost") | null;
+            /** Name */
+            name?: string | null;
+            /** Probability */
+            probability?: number | null;
+            /** Required Fields */
+            required_fields?: string[] | null;
         };
         /** OrderIn */
         app__modules__crm__record_types_router__OrderIn: {
@@ -4315,6 +5186,48 @@ export interface components {
         app__modules__crm__setup_router__OrderIn: {
             /** Ids */
             ids: string[];
+        };
+        /** StageIn */
+        app__modules__crm__setup_router__StageIn: {
+            /** Colour */
+            colour?: string | null;
+            /**
+             * Is Converted
+             * @default false
+             */
+            is_converted: boolean;
+            /**
+             * Is Open
+             * @default true
+             */
+            is_open: boolean;
+            /**
+             * Is Unqualified
+             * @default false
+             */
+            is_unqualified: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Required Fields
+             * @default []
+             */
+            required_fields: string[];
+        };
+        /** StagePatch */
+        app__modules__crm__setup_router__StagePatch: {
+            /** Colour */
+            colour?: string | null;
+            /** Is Converted */
+            is_converted?: boolean | null;
+            /** Is Open */
+            is_open?: boolean | null;
+            /** Is Unqualified */
+            is_unqualified?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Required Fields */
+            required_fields?: string[] | null;
         };
         /** RoleOut */
         app__modules__roles__router__RoleOut: {
@@ -5474,6 +6387,443 @@ export interface operations {
             };
         };
     };
+    "deals-list_deals": {
+        parameters: {
+            query?: {
+                pipeline_id?: string | null;
+                stage_id?: string[];
+                status?: ("open" | "won" | "lost") | null;
+                owner?: string[];
+                lead_id?: string | null;
+                close_from?: string | null;
+                close_to?: string | null;
+                q?: string | null;
+                cf?: string[];
+                sort?: "created" | "updated" | "name" | "amount" | "close" | "stage" | "owner";
+                dir?: "asc" | "desc";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-create_deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-board": {
+        parameters: {
+            query?: {
+                pipeline_id?: string | null;
+                owner?: string[];
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-bulk_deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__deals_router__BulkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-summary": {
+        parameters: {
+            query?: {
+                owner?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-get_deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-delete_deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-update_deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-deal_timeline": {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealActivityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-move_deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-add_note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-get_lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LineOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deals-set_lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealWithLines"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "imports-list_imports": {
         parameters: {
             query?: never;
@@ -5863,7 +7213,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StageIn"];
+                "application/json": components["schemas"]["app__modules__crm__setup_router__StageIn"];
             };
         };
         responses: {
@@ -5960,7 +7310,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StagePatch"];
+                "application/json": components["schemas"]["app__modules__crm__setup_router__StagePatch"];
             };
         };
         responses: {
@@ -6724,6 +8074,7 @@ export interface operations {
             query?: {
                 lead_id?: string | null;
                 record_id?: string | null;
+                deal_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -6801,6 +8152,156 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-list_lost_reasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LostReasonOut"][];
+                };
+            };
+        };
+    };
+    "deal setup-create_lost_reason": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LostReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LostReasonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-order_lost_reasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LostReasonOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-delete_lost_reason": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reason_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-update_lost_reason": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reason_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LostReasonPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LostReasonOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -6932,6 +8433,423 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PermissionOut"][];
+                };
+            };
+        };
+    };
+    "deal setup-delete_stage": {
+        parameters: {
+            query?: {
+                move_to?: string | null;
+            };
+            header?: never;
+            path: {
+                stage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-update_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                stage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__pipelines_router__StagePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-list_pipelines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"][];
+                };
+            };
+        };
+    };
+    "deal setup-create_pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-order_pipelines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-delete_pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pipeline_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-update_pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pipeline_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelinePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-add_stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pipeline_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__pipelines_router__StageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-order_stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pipeline_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-list_products": {
+        parameters: {
+            query?: {
+                active?: boolean | null;
+                currency?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-create_product": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-delete_product": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "deal setup-update_product": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -7919,6 +9837,7 @@ export interface operations {
                 status?: ("open" | "done" | "cancelled") | null;
                 lead_id?: string | null;
                 record_id?: string | null;
+                deal_id?: string | null;
             };
             header?: never;
             path?: never;

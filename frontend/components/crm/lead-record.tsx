@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { Popover, PopoverHeading, PopoverItem } from "@/components/data-table/popover";
 import { Avatar, StagePill } from "@/components/crm/bits";
+import { DealsCard } from "@/components/crm/deals";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
 import { LinksCard } from "@/components/crm/links-card";
 import { ActionButton, EditLead, Facts, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
@@ -267,6 +268,11 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
           <Section title="Next follow-up">
             <FollowUpCard lead={l} />
           </Section>
+          {can("deals.edit") && (
+            <Section title={label("deal", true)}>
+              <DealsCard leadId={l.id} leadName={l.display_name} />
+            </Section>
+          )}
           <Section title="Tasks">
             <LeadTasks lead={l} />
           </Section>

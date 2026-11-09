@@ -81,11 +81,11 @@ Principles for every step (no shortcuts to hit a date):
 
 | Feature | Status |
 | --- | --- |
-| Several pipelines (per product, course, program) | Planned — step 3 |
-| Kanban board with drag | Planned — step 3 (needs `@dnd-kit`, to approve) |
-| Deal value and expected close | Planned — step 3 (integer minor units + currency, rule 7) |
-| Won/lost reasons, mandatory and reportable | Planned — step 3 |
-| Product / course catalogue with price list | Planned — step 3 |
+| Several pipelines (per product, course, program) | Built — step 3 |
+| Kanban board with drag | Built — step 3 |
+| Deal value and expected close | Built — step 3 |
+| Won/lost reasons, mandatory and reportable | Built — step 3 |
+| Product / course catalogue with price list | Built — step 3 |
 
 ### Automation (Decision log #16) and extras from #21
 
@@ -178,7 +178,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Next: step 3, deals and pipelines.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Next: step 4, tags, saved views, scoring and automation.
 
 | Step | What | Why here |
 | --- | --- | --- |

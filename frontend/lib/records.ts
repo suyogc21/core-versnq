@@ -66,7 +66,7 @@ export function useRecordTasks(id: string) {
 export function useLinkTypes() {
   return useQuery({ queryKey: ["link-types"], staleTime: 60_000, queryFn: async () => unwrap(await api.GET("/api/v1/link-types")) });
 }
-export function useLinks(end: { lead_id?: string; record_id?: string }) {
+export function useLinks(end: { lead_id?: string; record_id?: string; deal_id?: string }) {
   return useQuery({
     queryKey: ["links", end],
     queryFn: async () => unwrap(await api.GET("/api/v1/links", { params: { query: end } })),
@@ -77,7 +77,7 @@ export function useLinks(end: { lead_id?: string; record_id?: string }) {
 export function useRefreshRecords() {
   const qc = useQueryClient();
   return () => {
-    for (const key of ["records", "record", "record-timeline", "record-tasks", "links", "timeline", "lead"]) {
+    for (const key of ["records", "record", "record-timeline", "record-tasks", "links", "timeline", "lead", "deal-timeline"]) {
       qc.invalidateQueries({ queryKey: [key] });
     }
   };
