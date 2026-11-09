@@ -390,3 +390,81 @@ Changes to existing tables (all through a migration):
 | D4 | Products: who sees prices, and can a rep change the price on a deal? | Everyone with deal access sees prices; reps may edit the unit price and discount on their own deal lines |
 | D5 | Win probability per stage | Yes, editable per stage, used only for the weighted forecast |
 | D6 | Lead stage on a win | Untouched now; in step 5 a win offers "Make customer" |
+
+---
+
+## 7. Step 4 in detail: tags, saved views, scoring, calculated fields, automation
+
+Goal: the CRM runs the routine work itself. Leads sort themselves (tags, views, scores), numbers fill themselves in (calculated fields), and "when this happens, do that" needs no developer (automation, Decision log #16). Everything is company configuration; nothing is tied to an industry.
+
+### 7.1 Tables (all with `tenant_id`, forced row-level security, same-company keys)
+
+| Table | Purpose |
+| --- | --- |
+| `tags` | The company's tags: name, colour. Unique per company |
+| `taggings` | One tag on one lead or one deal (database checks exactly one; no duplicates) |
+| `saved_views` | A saved filter: what it lists (leads / deals), name, filters, sort, columns, who sees it (just me / my team / everyone), owner, order |
+| `score_rules` | Points rules. **Fit:** "source is Website +10", "city is Pune +5", any field incl. custom. **Engagement:** "each Call with outcome Interested +15", "each note +2", counted over the last N days |
+| `automations` | Name, on/off, what it watches (leads or deals), WHEN (trigger), IF (conditions), THEN (ordered actions), order |
+| `automation_runs` | One row per run: automation, the event, the lead/deal, result (done / skipped / failed), what each action did, error text |
+
+Changes to existing tables (through a migration):
+
+- `leads`: `fit_score`, `engagement_score` (the existing `score` becomes their sum) and `score_band` (Hot / Warm / Cold).
+- `tenant_settings`: engagement window in days (default 30) and the Hot / Warm thresholds.
+- `custom_field_definitions`: new field type **Calculated**, with its formula. Works for leads, deals and every record type.
+- `events`: `automation_handled_at`, so the worker processes each event once.
+
+### 7.2 Rules the backend enforces
+
+- **Tags:** anyone who may edit a lead or deal can tag it, and can create a new tag while doing so. Renaming, recolouring, merging and deleting tags is `crm.configure`. Tagging writes a timeline entry and `lead.updated` / `deal.updated` with `fields: ["tags"]`. Bulk tag and untag on lists, with the same skip-and-report rule as other bulk actions.
+- **Saved views:** a view is filters plus sort plus columns, run live (so it is always up to date, a "smart list"). Everyone sees only what their role allows: a shared view never shows a rep someone else's leads. "Just me" for anyone; "my team" for team managers; "everyone" for `crm.configure`. Views appear as tabs on the Leads and Deals lists, with counts.
+- **Scoring:** fit score recalculates whenever the lead changes; engagement score recalculates on every activity and nightly (so old activity drops out of the window). Score bands come from the company's thresholds. The lead page shows the breakdown ("+10 source Website, +15 call Interested"). ACE intent (hot/warm from conversations) stays a separate field.
+- **Calculated fields:** formulas on numbers and dates only: `+ − × ÷`, brackets, `round()`, `days_between()`, `today()`, and a default when a field is empty. Read-only; recalculated on every save and nightly (for `today()`). Parsed by our own small safe parser, never `eval`. Money fields stay exact (integer arithmetic, rounded half up once at the end). Cycles (A uses B uses A) are refused when the field is saved.
+- **Automation (WHEN / IF / THEN):**
+  - **WHEN:** lead created, lead stage changed, a field changed (pick the field), activity logged (pick the type and outcome), task overdue, no response within X hours, deal created, deal stage changed, deal won, deal lost.
+  - **IF:** any field, built-in or custom, with is / is not / is any of / contains / is empty / is not empty / more than / less than; tags (has / has not); owner; score band. All conditions must match.
+  - **THEN (in order):** create a task (title, due in X hours, for the owner or a named person), update a field, add or remove a tag, change owner (a person, or "by assignment rules"), change stage, send an in-app notification, send a webhook (signed POST, 3 retries).
+  - **How it runs:** the worker reads new events within seconds, runs matching automations in the company's own session, and writes `automation_runs`. Time-based triggers (overdue, no response) are checked every minute. Actions are done by "Automation: <name>" on the timeline, follow every normal rule (required fields, stage rules, lost needs a reason), and a failed action stops that run and is shown in the run history.
+  - **Loop guard:** an automation's own changes can trigger other automations up to 3 levels deep; the same automation never runs twice for the same lead from one chain. A broken automation that keeps failing is switched off after 20 failures in a row, with a notification to admins.
+- **Permissions:** automations, scoring rules and calculated fields are set up under `crm.configure`. No new permission codes.
+- **Events:** no new event types; tags and score changes use the existing `lead.updated` / `deal.updated`.
+
+### 7.3 Endpoints (under `/api/v1`)
+
+- `tags` CRUD + merge; `leads/{id}/tags`, `deals/{id}/tags` (set); bulk tag/untag in `/leads/bulk` and `/deals/bulk`; `tag` filter on lead and deal lists.
+- `views` CRUD + order (`?entity=leads|deals`), with counts.
+- `score-rules` CRUD; `crm-rules` gains the scoring window and thresholds; `leads/{id}/score` (breakdown); recalculate-all after rules change (worker job).
+- Custom fields accept type `calculated` with a `formula`; a `formula/check` endpoint validates and previews a formula.
+- `automations` CRUD + order + on/off; `automations/{id}/runs`; `automations/{id}/test` (shows which conditions match a chosen lead, changes nothing).
+
+### 7.4 Screens
+
+- **Leads and Deals lists:** view tabs (Mine, Overdue… plus saved views), "Save view" after filtering, tag column and tag filter, bulk Tag.
+- **Lead and deal pages:** tags in the header (add / remove inline); score and band on the lead with a breakdown on click.
+- **Settings → Records and fields → Leads:** a new **Scoring** tab (rules + thresholds). **Tags** gets its own small page under Records and fields.
+- **Field dialog:** new type "Calculated" with a formula box, live preview and the list of fields you can use.
+- **Settings → Automation** (new group): list with on/off and last run; builder with WHEN / IF / THEN in plain sentences; run history per automation; "Test on a lead".
+
+### 7.5 Tests ("done" means these pass)
+
+- **Isolation:** tags, views, rules, automations and runs across companies; an automation never touches another company.
+- **Visibility:** a shared view shows each person only what they may see; automation-made changes respect the record's rules.
+- **Scoring:** fit and engagement rules, window drop-off, bands, recalculation after a rule change.
+- **Formulas:** parser (precedence, brackets, division by zero, empty fields, dates), cycle refusal, money stays exact, malicious input refused.
+- **Automation:** each trigger, each condition operator, each action; order of actions; a failing action; loop guard and depth; auto switch-off; time-based triggers; webhook signature and retries.
+- **Browser walk:** tag leads in bulk, save and share a view, set scoring and watch a score change, build "When a lead is created from Website, assign by rules and create a call task in 1 hour", see it run.
+
+### 7.6 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| A1 | Separate static lists, or tags + saved views? | Tags + saved views cover it (a "list" = a tag, or a saved view). Revisit in step 9 if sequence enrolment needs fixed lists |
+| A2 | What can be tagged? | Leads and deals now; records later if asked |
+| A3 | Who creates tags? | Anyone who edits leads/deals creates them while tagging; admins tidy (rename, merge, delete) |
+| A4 | Who can share views? | Anyone: just me. Team managers: my team. `crm.configure`: everyone |
+| A5 | Score shape | Fit + engagement (last 30 days, editable), bands Hot / Warm / Cold with editable thresholds; ACE intent stays separate |
+| A6 | Formula scope | Numbers and dates only for now (no text formulas) |
+| A7 | Automations on records (Property, Batch)? | Leads and deals now; record triggers later if asked |
+| A8 | "Wait 2 days, then…" delays in automations | Not now (not in #16); comes with sequences in step 9 |
+| A9 | Webhook action before step 11 | Yes, a simple signed POST with retries now; full webhook management (logs, secrets per endpoint) in step 11 |
