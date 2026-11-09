@@ -57,7 +57,7 @@ Enforce visibility in the backend, not only in the UI.
 5. **MCP layer:** design only when asked; do not build yet
 6. **ACE integration:** only when asked
 
-**Parked (do not build):** Money — invoices, installment plans, payment links, gateway webhooks, balances, reminders, money dashboard. Rule 7 still applies when it is unparked.
+**Money** (invoices, installment plans, payment links, gateway webhooks, balances, reminders, money dashboard) was parked and is now in the lineup (Decision log #24): it is built after customers and documents, before dashboards. Rule 7 applies.
 
 Do not start a milestone until the previous one runs and is approved.
 

@@ -1,6 +1,6 @@
 # Versnq Core — what is built, what is left, and the order
 
-Written 2026-11-09. Every row of the spec's feature catalogue, its "How people use it" section and the Decision log is listed here exactly once, so nothing is missed. Status: **Done**, **Part** (what is missing is named), **Planned** (step number), **Parked** (Decision log #1), **Later** (spec says later), **ACE** (belongs to ACE).
+Written 2026-11-09. Every row of the spec's feature catalogue, its "How people use it" section and the Decision log is listed here exactly once, so nothing is missed. Status: **Done**, **Part** (what is missing is named), **Planned** (step number), **Parked**, **Later** (spec says later), **ACE** (belongs to ACE).
 
 Principles for every step (no shortcuts to hit a date):
 
@@ -47,7 +47,7 @@ Principles for every step (no shortcuts to hit a date):
 
 | Feature | Status |
 | --- | --- |
-| 360° lead view | Part — profile, timeline, tasks done; deals step 3, documents step 5, invoices Parked |
+| 360° lead view | Part — profile, timeline, tasks, links done; deals step 3, documents step 5, invoices step 6 |
 | Activity timeline | Done for calls, notes, stage, owner, custom; email/WhatsApp in steps 8–9 |
 | Configurable stages | Done |
 | Custom fields + grouped field sets | Done for leads; for any record type in step 2 |
@@ -113,8 +113,8 @@ Principles for every step (no shortcuts to hit a date):
 | --- | --- |
 | Salesperson: today, follow-ups, my pipeline, conversions, end-of-day summary | Part — My Day done; the rest step 6 |
 | Sales Manager: team funnel, sources, leaderboard, leakage, SLA breaches | Planned — step 6 |
-| Owner/Admin (non-money parts): sequence performance, channel health | Planned — step 6 (+ steps 8–9 data) |
-| Finance dashboard, collections | Parked |
+| Owner/Admin: revenue, collections, overdue, sequence performance, channel health | Planned — step 7 (+ steps 9–10 data) |
+| Finance dashboard: invoices, dues, aging, entity-wise collections | Planned — step 7 |
 | Custom reports | Later |
 
 ### Sequences, inbox, channels (§5, §6)
@@ -151,18 +151,34 @@ Principles for every step (no shortcuts to hit a date):
 | REST API with keys and rate limits | Planned — step 10 |
 | Outbound signed webhooks with retries, logs, payload viewer | Planned — step 10 |
 | ACE endpoints (lead upsert, conversation append, intent, call analysed) | Planned — step 10 |
-| Payment gateways | Parked |
+| Payment gateways (Razorpay, Stripe) | Planned — step 6 |
 | Google Workspace, Zapier/N8n, HubSpot/LeadSquared import | Later |
 
 ### Money (§8)
 
-Parked (Decision log #1). Not built until unparked.
+Unparked 2026-11-10 (Decision log #24) — **step 6**, after customers. Every row of spec §8:
+
+| Feature | Status |
+| --- | --- |
+| Invoices: line items, tax fields (GST), PDF, numbering per entity | Planned — step 6 (PDF storage needs the step 5 file-storage decision) |
+| Installment plans: amount and due date per installment | Planned — step 6 |
+| Payment links: Razorpay (India), Stripe (UAE/US) | Planned — step 6 |
+| Payment status sync from gateway webhooks | Planned — step 6 |
+| Manual payment entry with proof upload | Planned — step 6 |
+| Balance tracking: paid, due, overdue per customer | Planned — step 6 |
+| Auto reminders before due, on due, overdue | Planned — step 6 (in-app at first; email from step 9, WhatsApp from step 10) |
+| Multi-entity, any currency (Decision log #2) | Planned — step 6 |
+| Receipts sent on payment | Planned — step 6 (by email from step 9) |
+| Collections aging report 0–30 / 30–60 / 60+ | Planned — step 6 report, step 7 dashboard |
+| Bank statement import | Later |
+
+Rule 7 applies throughout: amounts are integers in minor units with a currency code; never floats.
 
 ---
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Next: step 3, deals and pipelines.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Next: step 3, deals and pipelines.
 
 | Step | What | Why here |
 | --- | --- | --- |
@@ -171,12 +187,13 @@ Parked (Decision log #1). Not built until unparked.
 | 3 | **Deals and pipelines** | First real use of the engine |
 | 4 | **Tags, saved views, live lists, scoring, calculated fields, automation builder** | Runs the business without manual work |
 | 5 | **Customers and documents** | Needs a file-storage decision |
-| 6 | **Dashboards and CSV export** | Needs data from steps 1–5 |
-| 7 | **Page layouts and field-level permissions** | |
-| 8 | **Sequences, email, inbox, multi-brand** | Needs an email provider decision |
-| 9 | **WhatsApp connector** | After Meta registration |
-| 10 | **Public API, outbound webhooks, ACE endpoints, security S.1–S.5** | |
-| 11 | **Go-live G.1–G.3** | Before the first paying client |
+| 6 | **Money**: invoices (tax, PDF, numbering per entity), installment plans, payment links (Razorpay, Stripe), gateway webhooks, manual payments with proof, balances, receipts, reminders, collections aging, any entity and currency | Unparked 2026-11-10 (Decision log #24). Invoices hang off a deal or customer, so it follows step 5 |
+| 7 | **Dashboards and CSV export**, including the Finance dashboard and money on the owner's | Needs data from steps 1–6 |
+| 8 | **Page layouts and field-level permissions** | |
+| 9 | **Sequences, email, inbox, multi-brand** | Needs an email provider decision. Payment reminders and receipts also go by email from here |
+| 10 | **WhatsApp connector** | After Meta registration. Payment reminders by WhatsApp from here |
+| 11 | **Public API, outbound webhooks, ACE endpoints, security S.1–S.5** | |
+| 12 | **Go-live G.1–G.3** | Before the first paying client |
 
 **Demo:** Wednesday 2026-11-11 shows what is built today plus steps 1 and 2, but only parts that have passed every test. Anything not fully tested by Wednesday morning is left out of the demo, not rushed in.
 

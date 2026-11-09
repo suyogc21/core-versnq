@@ -143,6 +143,17 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] 4.5 Frontend for API keys, webhooks and logs
 - [ ] **Gate 4:** all tests green, Suyog approves
 
+## Money (unparked 2026-11-10, Decision log #24; build step 6, after customers)
+
+- [ ] M.1 Billing entities (legal company, country, tax ids, invoice numbering) and currencies (any ISO 4217, Decision log #2)
+- [ ] M.2 Invoices: line items from the deal's products, tax fields (GST), totals in minor units, numbering per entity, PDF
+- [ ] M.3 Installment plans: schedule of amounts and due dates per customer or deal
+- [ ] M.4 Payment links and gateway webhooks: Razorpay (India), Stripe (UAE/US); paid automatically on webhook; duplicate webhooks safe
+- [ ] M.5 Manual payments (bank transfer) with proof upload; balances paid / due / overdue
+- [ ] M.6 Receipts, reminders (before due, on due, overdue), collections aging; events invoice.created, payment.due, payment.received, payment.overdue
+- [ ] M.7 Finance role: sees invoices, payments, reminders (spec Roles); every money calculation tested
+- [ ] **Gate M:** all tests green (every money calculation), Suyog approves
+
 ## Security and data protection (after Phase 2)
 
 - [ ] S.1 Login history (who, when, IP, device) and admin "sign out everyone"
@@ -157,7 +168,6 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ## Parked ⏸
 
-- ⏸ Money: invoices, installments, payment links, gateways, balances, reminders, money dashboard (any country / currency when unparked)
 - ⏸ Later items in the spec: ad lead forms, Google Workspace, Zapier/n8n, HubSpot/LeadSquared import, A/B testing, SMS, PWA, custom reports
 - ⏸ Not now (2026-11-07 review): single sign-on (Google / Microsoft), custom password rules
 
@@ -215,3 +225,4 @@ CORE/
 | 2026-11-07 | 2-A | Slice A built: stages, sources, custom fields (linked, unique, stage-required), activity types, leads (person/company, identities in E.164, visibility, assign, delete), timeline, follow-up rule (strict/warn), one-step call logging, tasks, My Day with calling queue, task.due worker, pipeline setup screens, demo data (300 + 60 leads). 249 backend tests + 4 e2e green |
 | 2026-11-09 | 2.2–2.6, 2.8 | Step 1 (capture and routing) built and verified: one intake path for every entry route, duplicates + merge, consent + suppression, organisation grouping, assignment rules, response-time rules, leakage guard, notifications, web forms, CSV import; 309 backend tests, 5 e2e, 23-check browser walk. Two bugs found in the walk and fixed with tests |
 | 2026-11-09 | 2.17 | Step 2 (records and links) built and verified: company-defined record types with fields, stages and access per role; labelled links between leads and records; tasks and notes on records; EdTech pack seeds Batch; 324 backend tests, 6 e2e, 20-check browser walk. Found and fixed: per-address rate limits were shared by everyone behind the proxy |
+| 2026-11-10 | Money | Unparked by Suyog (Decision log #24): added to the lineup as step 6, after customers and before dashboards |
