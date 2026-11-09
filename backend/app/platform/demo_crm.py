@@ -565,3 +565,142 @@ async def seed_properties(db: AsyncSession, tenant_id: uuid.UUID) -> None:
         p.owner_user_id = rng.choice(owners) if owners else None
     leads = (await db.scalars(select(Lead).limit(60))).all()
     await _link_some(db, tenant_id, link_type, list(leads), props, rng, (0, 4))
+
+
+async def seed_deals(
+    db: AsyncSession, tenant_id: uuid.UUID, *, count: int, seed: int, link_property: bool = False
+) -> None:
+    """Deals across the first pipeline: open ones spread over the stages, some won, some lost
+    with a reason. EdTech deals carry course lines; with link_property each deal is linked
+    to a property and priced from it. Amounts are exact minor units (rule 7)."""
+    from app.core import money
+    from app.modules.crm.leads import owner_team
+    from app.modules.crm.models import (
+        Deal,
+        DealProduct,
+        Link,
+        LinkType,
+        LostReason,
+        Pipeline,
+        PipelineStage,
+        Product,
+        Record,
+        RecordType,
+    )
+
+    rng = random.Random(seed)
+    pipeline = await db.scalar(select(Pipeline).order_by(Pipeline.position).limit(1))
+    stages = list(
+        (
+            await db.scalars(
+                select(PipelineStage)
+                .where(PipelineStage.pipeline_id == pipeline.id)
+                .order_by(PipelineStage.position)
+            )
+        ).all()
+    )
+    open_stages = [s for s in stages if s.kind == "open"]
+    won = next(s for s in stages if s.kind == "won")
+    lost = next(s for s in stages if s.kind == "lost")
+    reasons = list((await db.scalars(select(LostReason))).all())
+    products = list(
+        (await db.scalars(select(Product).where(Product.currency == pipeline.currency))).all()
+    )
+    leads = list(
+        (
+            await db.scalars(
+                select(Lead).where(Lead.owner_user_id.is_not(None)).order_by(Lead.created_at)
+            )
+        ).all()
+    )
+    props, link_type = [], None
+    if link_property:
+        ptype = await db.scalar(select(RecordType).where(RecordType.key == "property"))
+        props = list(
+            (await db.scalars(select(Record).where(Record.record_type_id == ptype.id))).all()
+        )
+        link_type = LinkType(
+            tenant_id=tenant_id,
+            from_kind="deal",
+            to_kind="record",
+            to_type_id=ptype.id,
+            label="For property",
+            inverse_label="Deals",
+            many_to=False,
+            position=1,
+        )
+        db.add(link_type)
+        await db.flush()
+    today = datetime.now(UTC).date()
+    for lead in rng.sample(leads, min(count, len(leads))):
+        roll = rng.random()
+        stage = won if roll < 0.15 else lost if roll < 0.27 else rng.choice(open_stages)
+        moved = _ago(rng.uniform(0.5, 25))
+        created = moved - timedelta(days=rng.uniform(0, 20))
+        prop = rng.choice(props) if props else None
+        name = f"{lead.display_name} — {prop.name}" if prop else lead.display_name
+        deal = Deal(
+            tenant_id=tenant_id,
+            name=name[:300],
+            lead_id=lead.id,
+            pipeline_id=pipeline.id,
+            stage_id=stage.id,
+            stage_changed_at=moved,
+            status=stage.kind,
+            owner_user_id=lead.owner_user_id,
+            team_id=await owner_team(db, lead.owner_user_id),
+            amount_minor=0,
+            currency=pipeline.currency,
+            expected_close_on=(today + timedelta(days=rng.randint(-5, 60)))
+            if stage.kind == "open"
+            else None,
+            closed_at=moved if stage.kind != "open" else None,
+            lost_reason_id=rng.choice(reasons).id if stage.kind == "lost" else None,
+            custom_fields={},
+            created_at=created,
+        )
+        db.add(deal)
+        await db.flush()
+        if products:
+            total = 0
+            for i, p in enumerate(rng.sample(products, rng.choice([1, 1, 2]))):
+                discount = rng.choice([0, 0, 500_000]) if p.price_minor > 1_000_000 else 0
+                line = money.line_total(1, p.price_minor, discount)
+                total += line
+                db.add(
+                    DealProduct(
+                        tenant_id=tenant_id, deal_id=deal.id, product_id=p.id, name=p.name,
+                        quantity=1, unit_price_minor=p.price_minor, discount_minor=discount,
+                        total_minor=line, position=i,
+                    )
+                )  # fmt: skip
+            deal.amount_minor = total
+        elif prop:
+            deal.amount_minor = int(prop.custom_fields.get("price_aed", 0)) * 100
+            db.add(
+                Link(
+                    tenant_id=tenant_id, link_type_id=link_type.id,
+                    from_deal_id=deal.id, to_record_id=prop.id,
+                )
+            )  # fmt: skip
+        else:
+            deal.amount_minor = rng.randint(50, 900) * 100_000
+        entries = [(created, "deal_created", f"Deal added: {deal.name}")]
+        if stage.id != open_stages[0].id:
+            entries.append(
+                (moved, "deal_stage_changed", f"{deal.name}: {open_stages[0].name} → {stage.name}")
+            )
+        if stage.kind == "won":
+            entries.append((moved, "deal_won", f"Won: {deal.name}"))
+        if stage.kind == "lost":
+            reason = next(r for r in reasons if r.id == deal.lost_reason_id)
+            entries.append((moved, "deal_lost", f"Lost: {deal.name} — {reason.name}"))
+        for when, key, summary in entries:
+            db.add(
+                Activity(
+                    tenant_id=tenant_id, lead_id=lead.id, deal_id=deal.id, type_key=key,
+                    actor_type="user", actor_id=lead.owner_user_id, occurred_at=when,
+                    summary=summary[:500], data={"deal_name": deal.name},
+                )
+            )  # fmt: skip
+    await db.flush()
