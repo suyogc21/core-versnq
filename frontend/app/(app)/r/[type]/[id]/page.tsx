@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { CustomFieldsEditor } from "@/components/crm/bits";
+import { AddFieldButton } from "@/components/crm/field-settings";
 import { LinksCard } from "@/components/crm/links-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,6 +242,11 @@ function EditRecord({ rtype, record, onDone }: { rtype: RecordType; record: Reco
         </div>
       )}
       <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />
+      {can("crm.configure") && (
+        <div>
+          <AddFieldButton entity={`rt:${rtype.key}`} />
+        </div>
+      )}
       <Button size="sm" type="submit" disabled={!name.trim()}>
         Save
       </Button>

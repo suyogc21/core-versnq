@@ -55,7 +55,7 @@ export default function AuditPage() {
 
   return (
     <>
-      <PageHeader title="Audit log" />
+      <PageHeader back={{ href: "/settings", label: "Settings" }} title="Audit log" />
       <div className="p-4">
         {log.isLoading ? (
           <p className="text-muted-foreground">Loading…</p>

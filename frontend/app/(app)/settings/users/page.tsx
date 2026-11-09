@@ -207,7 +207,7 @@ export default function UsersPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader
+      <PageHeader back={{ href: "/settings", label: "Settings" }}
         title="Users"
         count={counts.all}
         actions={

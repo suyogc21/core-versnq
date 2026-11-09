@@ -2,6 +2,8 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -34,61 +36,73 @@ function useSave() {
   };
 }
 
-/** Admins define their own kinds of records (Property, Batch, Vehicle...) and how they link. */
-export default function RecordTypesPage() {
+/** Settings → Records and fields: every kind of record (leads first), and how they link. */
+export function RecordsIndex() {
+  const label = useLabels();
   const types = useAllRecordTypes();
   const save = useSave();
+  const router = useRouter();
   const [creating, setCreating] = useState(false);
-  const [open, setOpen] = useState<string | null>(null);
   const list = types.data ?? [];
-  const current = list.find((t) => t.id === open);
   const order = (ids: string[]) => save(async () => unwrap(await api.PUT("/api/v1/record-types/order", { body: { ids } })));
 
   return (
     <>
-      <PageHeader title="Record types" />
+      <PageHeader back={{ href: "/settings", label: "Settings" }} title="Records and fields" />
       <div className="mx-auto w-full max-w-4xl space-y-8 p-4 sm:p-8">
         <p className="text-muted-foreground">
-          Your own kinds of records — for example Properties, Batches, Vehicles or Policies — each with its own fields, stages and access, linked to
-          leads and to each other. Each one gets its own list in the sidebar.
+          Each kind of record has its own fields and stages. Add your own kinds (Properties, Batches, Vehicles, Policies…): each gets its own
+          list in the sidebar, and they can be linked to {label("lead", true).toLowerCase()} and to each other.
         </p>
-        {current ? (
-          <TypeEditor rtype={current} onBack={() => setOpen(null)} />
-        ) : (
-          <>
-            <div className="divide-y rounded-lg border">
-              {list.length === 0 && <p className="p-4 text-sm text-muted-foreground">No record types yet.</p>}
-              {list.map((t, i) => (
-                <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 text-sm">
-                  <div className="flex flex-col">
-                    <button aria-label={`Move ${t.plural} up`} disabled={i === 0} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, -1))}>
-                      <ArrowUp className="size-3" />
-                    </button>
-                    <button aria-label={`Move ${t.plural} down`} disabled={i === list.length - 1} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, 1))}>
-                      <ArrowDown className="size-3" />
-                    </button>
-                  </div>
-                  <button className="font-medium hover:underline" onClick={() => setOpen(t.id)}>
-                    {t.plural}
-                  </button>
-                  <span className="text-xs text-muted-foreground">
-                    <span className="font-mono">{t.key}</span> · {t.has_owner ? "has owners" : "shared"} · {t.has_stages ? "has stages" : "no stages"}
-                    {!t.is_active && " · switched off"}
-                  </span>
-                  <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setOpen(t.id)}>
-                    Set up
-                  </Button>
-                </div>
-              ))}
+        <div className="divide-y rounded-lg border">
+          <Link href="/settings/records/lead" className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent">
+            <span className="w-3" />
+            <span className="font-medium">{label("lead", true)}</span>
+            <span className="text-xs text-muted-foreground">built in · stages, sources, fields, activity types, rules</span>
+          </Link>
+          {list.map((t, i) => (
+            <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 text-sm">
+              <div className="flex flex-col">
+                <button aria-label={`Move ${t.plural} up`} disabled={i === 0} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, -1))}>
+                  <ArrowUp className="size-3" />
+                </button>
+                <button aria-label={`Move ${t.plural} down`} disabled={i === list.length - 1} className="text-muted-foreground disabled:opacity-30" onClick={() => order(swap(list, i, 1))}>
+                  <ArrowDown className="size-3" />
+                </button>
+              </div>
+              <Link href={`/settings/records/${t.key}`} className="font-medium hover:underline">
+                {t.plural}
+              </Link>
+              <span className="text-xs text-muted-foreground">
+                {t.has_owner ? "has owners" : "shared"} · {t.has_stages ? "has stages" : "no stages"}
+                {!t.is_active && " · switched off"}
+              </span>
             </div>
-            <Button size="sm" onClick={() => setCreating(true)}>
-              <Plus /> Add a record type
-            </Button>
-            <LinkTypes types={list} />
-          </>
-        )}
+          ))}
+        </div>
+        <Button size="sm" onClick={() => setCreating(true)}>
+          <Plus /> Add a kind of record
+        </Button>
+        <LinkTypes types={list} />
       </div>
-      {creating && <CreateType onClose={() => setCreating(false)} onCreated={(t) => (setCreating(false), setOpen(t.id))} />}
+      {creating && <CreateType onClose={() => setCreating(false)} onCreated={(t) => (setCreating(false), router.push(`/settings/records/${t.key}`))} />}
+    </>
+  );
+}
+
+/** Settings → Records and fields → one record type. */
+export function RecordTypeSettings({ typeKey }: { typeKey: string }) {
+  const types = useAllRecordTypes();
+  const router = useRouter();
+  const rtype = types.data?.find((t) => t.key === typeKey);
+  if (types.isLoading) return <p className="p-6 text-muted-foreground">Loading…</p>;
+  if (!rtype) return <p className="p-6 text-destructive">Not found</p>;
+  return (
+    <>
+      <PageHeader back={{ href: "/settings/records", label: "Records and fields" }} title={rtype.plural} />
+      <div className="mx-auto w-full max-w-4xl p-4 sm:p-8">
+        <TypeEditor rtype={rtype} onDeleted={() => router.push("/settings/records")} />
+      </div>
     </>
   );
 }
@@ -182,7 +196,7 @@ function CreateType({ onClose, onCreated }: { onClose: () => void; onCreated: (t
 
 type Tab = "details" | "fields" | "stages" | "access";
 
-function TypeEditor({ rtype, onBack }: { rtype: RecordType; onBack: () => void }) {
+function TypeEditor({ rtype, onDeleted }: { rtype: RecordType; onDeleted: () => void }) {
   const [tab, setTab] = useState<Tab>("fields");
   const tabs: [Tab, string][] = [
     ["fields", "Fields"],
@@ -192,10 +206,6 @@ function TypeEditor({ rtype, onBack }: { rtype: RecordType; onBack: () => void }
   ];
   return (
     <div className="space-y-4">
-      <button className="text-xs text-muted-foreground hover:underline" onClick={onBack}>
-        ← All record types
-      </button>
-      <h2 className="text-lg font-semibold">{rtype.plural}</h2>
       <div className="flex gap-4 overflow-x-auto border-b text-sm">
         {tabs.map(([key, name]) => (
           <button
@@ -210,7 +220,7 @@ function TypeEditor({ rtype, onBack }: { rtype: RecordType; onBack: () => void }
       {tab === "fields" && <FieldSettings entity={`rt:${rtype.key}`} />}
       {tab === "stages" && <Stages rtype={rtype} />}
       {tab === "access" && <Access rtype={rtype} />}
-      {tab === "details" && <Details rtype={rtype} onDeleted={onBack} />}
+      {tab === "details" && <Details rtype={rtype} onDeleted={onDeleted} />}
     </div>
   );
 }
@@ -496,7 +506,7 @@ function LinkTypes({ types }: { types: RecordType[] }) {
   );
 }
 
-function LinkTypeDialog({ types, onClose }: { types: RecordType[]; onClose: () => void }) {
+export function LinkTypeDialog({ types, onClose }: { types: RecordType[]; onClose: () => void }) {
   const label = useLabels();
   const save = useSave();
   const [from, setFrom] = useState("lead");

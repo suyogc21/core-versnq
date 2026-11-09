@@ -37,12 +37,14 @@ test("a new company goes from creation to a working, permission-limited team", a
   await signIn(owner, CLIENT(SLUG), OWNER.email, OWNER.password);
   await turnOnTwoFactor(owner);
   await expect(owner.locator("aside").getByText("Northwind Learning")).toBeVisible();
-  for (const item of ["Users", "Teams", "Roles", "Settings", "Audit log"]) {
-    await expect(owner.getByRole("link", { name: item })).toBeVisible();
+  // Everything set up once lives under one Settings entry, grouped on its home page.
+  await owner.getByRole("complementary").getByRole("link", { name: "Settings", exact: true }).click();
+  for (const item of ["Company", "Users", "Teams", "Roles", "Records and fields", "Lead capture", "Audit log"]) {
+    await expect(owner.getByRole("link", { name: new RegExp(`^${item}`) })).toBeVisible();
   }
 
   // 3. The Owner invites a Sales User.
-  await owner.getByRole("link", { name: "Users" }).click();
+  await owner.getByRole("link", { name: /^Users/ }).click();
   await owner.getByRole("button", { name: "Invite user" }).click();
   await owner.getByLabel("Name").fill(SELLER.name);
   await owner.getByLabel("Work email").fill(SELLER.email);
@@ -62,18 +64,17 @@ test("a new company goes from creation to a working, permission-limited team", a
   // EdTech pack labels reach the screen: leads are "Students".
   await expect(seller.getByRole("link", { name: "Students", exact: true })).toBeVisible();
   await expect(seller.getByText(/new students/)).toBeVisible();
-  for (const item of ["Users", "Teams", "Roles", "Settings", "Audit log"]) {
-    await expect(seller.getByRole("link", { name: item })).toHaveCount(0);
-  }
+  await expect(seller.getByRole("link", { name: "Settings", exact: true })).toHaveCount(0);
   // Typing an admin address directly gets a refusal, not an empty admin page.
-  for (const page of ["users", "roles", "settings"]) {
+  for (const page of ["settings", "settings/users", "settings/roles", "settings/company", "settings/records"]) {
     await seller.goto(`${CLIENT(SLUG)}/${page}`);
     await expect(seller.getByText("You don't have permission to do that.")).toBeVisible();
     await expect(seller.getByRole("button", { name: /Invite user|New role|Save settings/ })).toHaveCount(0);
   }
 
   // 5. The Owner's audit log recorded the invite.
-  await owner.getByRole("link", { name: "Audit log" }).click();
+  await owner.getByRole("complementary").getByRole("link", { name: "Settings", exact: true }).click();
+  await owner.getByRole("link", { name: /^Audit log/ }).click();
   await expect(owner.getByText("user.invited")).toBeVisible();
 });
 

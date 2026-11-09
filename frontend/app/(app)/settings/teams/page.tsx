@@ -60,7 +60,7 @@ export default function TeamsPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/settings", label: "Settings" }}
         title="Teams"
         count={teams.data?.length}
         actions={

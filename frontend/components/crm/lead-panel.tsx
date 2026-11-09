@@ -1,14 +1,14 @@
 "use client";
 
-import { AlarmClock, Mail, MessageCircle, Phone, StickyNote, Trash2, X } from "lucide-react";
+import { Phone, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { CustomFieldsEditor, StagePill } from "@/components/crm/bits";
+import { AddFieldButton } from "@/components/crm/field-settings";
 import { LabeledInput } from "@/components/crm/lead-form";
-import { LogActivityForm } from "@/components/crm/log-activity";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api/client";
@@ -21,12 +21,10 @@ import {
   identity,
   isOverdue,
   type Lead,
-  phone as formatPhone,
   relative,
   toLocalInput,
   useActivityTypes,
   useFields,
-  useLead,
   useLeadTasks,
   useRefreshLead,
   useSources,
@@ -37,116 +35,6 @@ import {
 import { useUsers } from "@/lib/directory";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
-
-type Tab = "timeline" | "details" | "tasks";
-
-/** The whole lead in one place (mockup "lead 360"): header, follow-up, details, timeline. */
-export function LeadPanel({ leadId, onClose, onLogged }: { leadId: string; onClose?: () => void; onLogged?: (lead: Lead) => void }) {
-  const lead = useLead(leadId);
-  const stages = useStages();
-  const label = useLabels();
-  const [tab, setTab] = useState<Tab>("timeline");
-  const [logType, setLogType] = useState("call");
-
-  if (lead.isLoading) return <p className="p-6 text-muted-foreground">Loading…</p>;
-  if (lead.isError || !lead.data) return <p className="p-6 text-destructive">{lead.error?.message ?? "Not found"}</p>;
-  const l = lead.data;
-  const stage = stages.data?.find((s) => s.id === l.stage_id);
-  const phone = l.primary_phone;
-  const waNumber = l.identities.find((i) => i.type === "phone" && i.is_whatsapp)?.value_normalized ?? phone;
-  const noFollowUp = l.is_open && !l.next_follow_up_at;
-  const late = l.is_open && isOverdue(l.next_follow_up_at);
-
-  return (
-    <div className="flex flex-col">
-      <div className="space-y-3 border-b p-4">
-        <div className="flex items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <StagePill stage={stage} />
-              {l.kind === "organisation" && <span className="rounded border px-1.5 text-[11px] text-muted-foreground">Company</span>}
-            </div>
-            <h2 className="mt-1.5 truncate text-lg font-semibold">{l.display_name}</h2>
-            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-              {l.identities.map((i) => (
-                <span key={`${i.type}-${i.value_normalized}`} className="break-all">
-                  {i.type === "phone" ? "📱" : i.type === "email" ? "✉" : "in"} {i.type === "phone" ? formatPhone(i.value_normalized) : i.value}
-                  {i.is_whatsapp && <span className="ml-1 rounded border px-1 text-[10px]">WhatsApp</span>}
-                </span>
-              ))}
-            </div>
-          </div>
-          {onClose && (
-            <button aria-label="Close" className="rounded p-1 text-muted-foreground hover:bg-accent" onClick={onClose}>
-              <X className="size-4" />
-            </button>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          <ActionButton
-            icon={Phone}
-            label="Call"
-            primary
-            href={phone ? `tel:${phone}` : undefined}
-            onClick={() => {
-              setTab("timeline");
-              setLogType("call");
-            }}
-          />
-          {waNumber && <ActionButton icon={MessageCircle} label="WhatsApp" href={`https://wa.me/${waNumber.replace("+", "")}`} external />}
-          {l.primary_email && <ActionButton icon={Mail} label="Email" href={`mailto:${l.primary_email}`} />}
-          <ActionButton
-            icon={StickyNote}
-            label="Note"
-            onClick={() => {
-              setTab("timeline");
-              setLogType("note");
-            }}
-          />
-        </div>
-      </div>
-
-      {l.is_open && (
-        <div className={cn("mx-4 mt-3 flex items-center gap-2.5 rounded-lg border px-3 py-2", (late || noFollowUp) && "border-destructive/40 bg-destructive/5")}>
-          <AlarmClock className={cn("size-4 shrink-0", (late || noFollowUp) && "text-destructive")} />
-          <div className="text-xs">
-            <div className="font-medium">
-              {noFollowUp ? "No follow-up set" : `Next follow-up: ${when(l.next_follow_up_at)}`}
-              {late && <span className="text-destructive"> · overdue</span>}
-            </div>
-            <div className="text-muted-foreground">
-              {noFollowUp ? `Every open ${label("lead").toLowerCase()} needs one — log what happened and set it.` : relative(l.next_follow_up_at)}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Facts lead={l} />
-
-      <div className="flex gap-4 border-b px-4 text-xs">
-        {(["timeline", "details", "tasks"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn("-mb-px border-b-2 border-transparent py-2 capitalize text-muted-foreground", tab === t && "border-primary font-medium text-foreground")}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <div className="p-4">
-        {tab === "timeline" && (
-          <div className="space-y-4">
-            <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} onLogged={onLogged} />
-            <Timeline leadId={l.id} />
-          </div>
-        )}
-        {tab === "details" && <EditLead key={l.version} lead={l} onDeleted={onClose} />}
-        {tab === "tasks" && <LeadTasks lead={l} />}
-      </div>
-    </div>
-  );
-}
 
 export function ActionButton({
   icon: Icon,
@@ -480,6 +368,7 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
           </div>
         </div>
         {(fields.data ?? []).length > 0 && <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />}
+        {can("crm.configure") && <AddFieldButton entity="lead" />}
       </fieldset>
       <div className="flex items-center gap-2">
         {editable && (

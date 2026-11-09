@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Boxes, Building2, Contact, LogOut, Menu, Moon, Route, Settings, Shapes, Shield, SlidersHorizontal, Sun, Sunrise, Users, UsersRound, X } from "lucide-react";
+import { Boxes, Contact, LogOut, type LucideIcon, Menu, Moon, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -10,24 +10,16 @@ import { NotificationBell } from "@/components/app/notification-bell";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useRecordTypes } from "@/lib/records";
+import { SETTINGS_PAGES, settingsPageFor } from "@/lib/settings-nav";
 import { useLabels, useWorkspaceSettings } from "@/lib/settings";
 
-type NavItem = { href: string; label: string; icon: typeof Users; permission?: string };
+type NavItem = { href: string; label: string; icon: LucideIcon; permission?: string };
 
 const MAIN: NavItem[] = [
   { href: "/", label: "My Day", icon: Sunrise },
   { href: "/leads", label: "lead", icon: Contact, permission: "leads.edit" }, // label from settings
 ];
-const WORKSPACE: NavItem[] = [
-  { href: "/users", label: "Users", icon: Users, permission: "users.read" },
-  { href: "/teams", label: "Teams", icon: UsersRound, permission: "users.read" },
-  { href: "/roles", label: "Roles", icon: Shield, permission: "roles.manage" },
-  { href: "/setup", label: "Pipeline setup", icon: SlidersHorizontal, permission: "crm.configure" },
-  { href: "/routing", label: "Lead routing", icon: Route, permission: "crm.configure" },
-  { href: "/record-types", label: "Record types", icon: Shapes, permission: "crm.configure" },
-  { href: "/settings", label: "Settings", icon: Settings, permission: "settings.manage" },
-  { href: "/audit", label: "Audit log", icon: Activity, permission: "audit.read" },
-];
+
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -66,9 +58,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
   ];
-  const workspaceItems = WORKSPACE.filter((i) => !i.permission || can(i.permission));
+  // One Settings entry for everything set up once; shown when any settings page is allowed.
+  const workspaceItems: NavItem[] = SETTINGS_PAGES.some((p) => can(p.permission))
+    ? [{ href: "/settings", label: "Settings", icon: Settings }]
+    : [];
   // Typing an admin address directly gets a clear refusal (the backend refuses the data too).
-  const locked = WORKSPACE.find((i) => path.startsWith(i.href) && i.permission && !can(i.permission));
+  const settingsPage = settingsPageFor(path);
+  const locked =
+    (settingsPage && !can(settingsPage.permission)) || (path === "/settings" && workspaceItems.length === 0)
+      ? { label: settingsPage?.title ?? "Settings" }
+      : null;
   const close = () => setMenuOpen(false);
 
   const workspaceBadge = (
@@ -120,9 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ))}
         {workspaceItems.length > 0 && (
           <>
-            <div className="flex items-center gap-1.5 px-2 pt-3 pb-1 text-[11px] text-muted-foreground">
-              <Building2 className="size-3" /> Workspace
-            </div>
+            <div className="mt-2 border-t pt-2" />
             {workspaceItems.map((i) => (
               <NavLink key={i.href} item={i} onNavigate={close} />
             ))}
@@ -171,9 +168,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 /** Page title bar, matching the mockup's top bar. */
-export function PageHeader({ title, count, actions }: { title: string; count?: number; actions?: React.ReactNode }) {
+export function PageHeader({
+  title,
+  count,
+  actions,
+  back,
+}: {
+  title: string;
+  count?: number;
+  actions?: React.ReactNode;
+  back?: { href: string; label: string };
+}) {
   return (
     <div className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-2.5 gap-y-2 border-b px-4 py-2">
+      {back && (
+        <>
+          <Link href={back.href} className="text-sm text-muted-foreground hover:text-foreground">
+            {back.label}
+          </Link>
+          <span className="text-muted-foreground">/</span>
+        </>
+      )}
       <h1 className="text-sm font-semibold">{title}</h1>
       {count !== undefined ? <span className="text-muted-foreground">{count}</span> : null}
       {actions ? <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">{actions}</div> : null}

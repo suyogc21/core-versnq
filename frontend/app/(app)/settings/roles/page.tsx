@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { Lock, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -16,7 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
+import { useAuth } from "@/lib/auth";
 import { type Permission, type Role, SCOPE_LABEL, usePermissions, useRoles } from "@/lib/directory";
+import { type RoleAccess, useAllRecordTypes } from "@/lib/records";
 
 type Form = { name: string; scope: "own" | "team" | "all"; permissions: string[] };
 
@@ -39,7 +41,7 @@ export default function RolesPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/settings", label: "Settings" }}
         title="Roles"
         count={roles.data?.length}
         actions={
@@ -142,7 +144,7 @@ function RoleDialog({ role, permissions, onClose }: { role: Role | null; permiss
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{role ? `Edit ${role.name}` : "New role"}</DialogTitle>
         </DialogHeader>
@@ -188,6 +190,7 @@ function RoleDialog({ role, permissions, onClose }: { role: Role | null; permiss
             ))}
             <p className="text-xs text-muted-foreground">You can only grant permissions you have yourself.</p>
           </fieldset>
+          {role && role.key !== "owner" && <RecordAccess roleId={role.id} />}
           {errors.root && <p className="text-xs text-destructive">{errors.root.message}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -200,5 +203,83 @@ function RoleDialog({ role, permissions, onClose }: { role: Role | null; permiss
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** This role's access to each of the company's own record types (saved as you change it).
+ * The same table is on each record type's settings page; this is the role's view of it. */
+function RecordAccess({ roleId }: { roleId: string }) {
+  const { can } = useAuth();
+  const types = useAllRecordTypes(can("crm.configure"));
+  const qc = useQueryClient();
+  const list = types.data ?? [];
+  const access = useQueries({
+    queries: list.map((t) => ({
+      queryKey: ["record-access", t.id],
+      queryFn: async () => unwrap(await api.GET("/api/v1/record-types/{type_id}/access", { params: { path: { type_id: t.id } } })),
+    })),
+  });
+  if (!can("crm.configure") || list.length === 0) return null;
+
+  async function update(typeId: string, row: RoleAccess, patch: Partial<RoleAccess>) {
+    const next = { ...row, ...patch };
+    if (patch.view === false) Object.assign(next, { create: false, edit: false, delete: false });
+    if (patch.create || patch.edit || patch.delete) next.view = true;
+    try {
+      unwrap(await api.PUT("/api/v1/record-types/{type_id}/access", { params: { path: { type_id: typeId } }, body: [next] }));
+      qc.invalidateQueries({ queryKey: ["record-access", typeId] });
+      qc.invalidateQueries({ queryKey: ["record-types"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  return (
+    <fieldset className="space-y-2">
+      <legend className="mb-1.5 text-sm font-medium">Your own record types</legend>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-xs">
+          <thead className="bg-muted/50 text-left text-muted-foreground">
+            <tr>
+              <th className="px-2 py-1.5 font-medium">Type</th>
+              {["View", "Add", "Edit", "Delete"].map((h) => (
+                <th key={h} className="px-2 py-1.5 text-center font-medium">
+                  {h}
+                </th>
+              ))}
+              <th className="px-2 py-1.5 font-medium">Sees</th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((t, i) => {
+              const row = access[i]?.data?.find((a) => a.role_id === roleId);
+              if (!row) return null;
+              return (
+                <tr key={t.id} className="border-t">
+                  <td className="px-2 py-1.5 font-medium">{t.plural}</td>
+                  {(["view", "create", "edit", "delete"] as const).map((k) => (
+                    <td key={k} className="px-2 py-1.5 text-center">
+                      <input type="checkbox" aria-label={`${t.plural} ${k}`} className="accent-primary" checked={row[k]} onChange={(e) => update(t.id, row, { [k]: e.target.checked })} />
+                    </td>
+                  ))}
+                  <td className="px-2 py-1.5">
+                    {t.has_owner ? (
+                      <NativeSelect aria-label={`${t.plural} sees`} className="h-7 w-auto" value={row.scope} onChange={(e) => update(t.id, row, { scope: e.target.value as RoleAccess["scope"] })}>
+                        <option value="own">Own</option>
+                        <option value="team">Team&apos;s</option>
+                        <option value="all">All</option>
+                      </NativeSelect>
+                    ) : (
+                      <span className="text-muted-foreground">All (shared)</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">Saved as you change it.</p>
+    </fieldset>
   );
 }

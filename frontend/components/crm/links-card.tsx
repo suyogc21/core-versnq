@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
-import { type LinkItem, type LinkType, type RecordType, useLinks, useLinkTypes, useRecordTypes, useRefreshRecords } from "@/lib/records";
+import { LinkTypeDialog } from "@/components/crm/record-settings";
+import { useAuth } from "@/lib/auth";
+import { type LinkItem, type LinkType, type RecordType, useAllRecordTypes, useLinks, useLinkTypes, useRecordTypes, useRefreshRecords } from "@/lib/records";
 import { useLabels } from "@/lib/settings";
 
 /** This end: a lead (typeId null) or a record of a type. */
@@ -25,6 +27,9 @@ export function LinksCard({ end, editable }: { end: LinkEnd; editable: boolean }
   const linkTypes = useLinkTypes();
   const types = useRecordTypes();
   const [adding, setAdding] = useState(false);
+  const [newKind, setNewKind] = useState(false);
+  const { can } = useAuth();
+  const allTypes = useAllRecordTypes(can("crm.configure"));
   const typeById = new Map((types.data ?? []).map((t) => [t.id, t]));
   const kindName = (typeId: string | null) => (typeId ? (typeById.get(typeId)?.singular ?? "record") : label("lead"));
 
@@ -79,11 +84,19 @@ export function LinksCard({ end, editable }: { end: LinkEnd; editable: boolean }
           ))}
         </div>
       ))}
-      {editable && options.length > 0 && !adding && (
-        <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
-          <Plus /> Link
-        </Button>
-      )}
+      <div className="flex flex-wrap items-center gap-2">
+        {editable && options.length > 0 && !adding && (
+          <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+            <Plus /> Link
+          </Button>
+        )}
+        {can("crm.configure") && !adding && (
+          <button className="text-primary hover:underline" onClick={() => setNewKind(true)}>
+            + New kind of link
+          </button>
+        )}
+      </div>
+      {newKind && <LinkTypeDialog types={allTypes.data ?? []} onClose={() => setNewKind(false)} />}
       {adding && <AddLink end={end} options={options} typeById={typeById} onDone={() => setAdding(false)} />}
     </div>
   );

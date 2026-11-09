@@ -15,10 +15,9 @@ import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import type { components } from "@/lib/api/schema";
-import { useAuth } from "@/lib/auth";
-import { relative, useFields, useSources, useStages } from "@/lib/crm";
+import { relative, useCrmRules, useFields, useSources, useStages } from "@/lib/crm";
 import { useTeams, useUsers } from "@/lib/directory";
-import { useLabels, useWorkspaceSettings } from "@/lib/settings";
+import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 type Tab = "forms" | "assignment" | "sla" | "safety";
@@ -33,7 +32,7 @@ function useSave() {
   return async (fn: () => Promise<unknown>, ok?: string) => {
     try {
       await fn();
-      for (const k of ["capture-sources", "assignment-rules", "sla-rules", "settings"]) qc.invalidateQueries({ queryKey: [k] });
+      for (const k of ["capture-sources", "assignment-rules", "sla-rules", "settings", "crm-rules"]) qc.invalidateQueries({ queryKey: [k] });
       if (ok) toast.success(ok);
       return true;
     } catch (e) {
@@ -46,16 +45,15 @@ function useSave() {
 export default function RoutingPage() {
   const [tab, setTab] = useState<Tab>("forms");
   const label = useLabels();
-  const { can } = useAuth();
   const tabs: [Tab, string][] = [
     ["forms", "Web forms"],
     ["assignment", "Who gets new leads"],
     ["sla", "Response times"],
-    ...(can("settings.manage") ? ([["safety", "Duplicates & safety"]] as [Tab, string][]) : []),
+    ["safety", "Duplicates & safety"],
   ];
   return (
     <>
-      <PageHeader title="Lead routing" />
+      <PageHeader back={{ href: "/settings", label: "Settings" }} title="Lead capture" />
       <div className="mx-auto w-full max-w-3xl p-4 sm:p-8">
         <p className="mb-4 text-muted-foreground">
           How new {label("lead", true).toLowerCase()} arrive, who gets them, and how fast they must be contacted.
@@ -804,12 +802,12 @@ function SlaDialog({ rule, onClose }: { rule: SlaRule | null; onClose: () => voi
 
 // ---------- duplicates & safety ----------
 function Safety() {
-  const settings = useWorkspaceSettings();
+  const rules = useCrmRules();
   const save = useSave();
-  const s = settings.data;
+  const s = rules.data;
   const [hours, setHours] = useState<string | null>(null);
   if (!s) return <p className="text-muted-foreground">Loading…</p>;
-  const patch = (body: Record<string, unknown>) => save(async () => unwrap(await api.PATCH("/api/v1/settings", { body })), "Saved");
+  const patch = (body: Record<string, unknown>) => save(async () => unwrap(await api.PATCH("/api/v1/crm-rules", { body })), "Saved");
   const leakOn = Boolean(s.leakage_hours);
 
   return (

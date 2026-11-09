@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/app/app-shell";
-import { LeadPanel } from "@/components/crm/lead-panel";
+import { LeadRecord } from "@/components/crm/lead-record";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { phone, type TaskItem, useMyDay, when } from "@/lib/crm";
@@ -53,13 +53,11 @@ export default function MyDayPage() {
             </>
           }
         />
-        <div className="mx-auto w-full max-w-3xl">
-          <LeadPanel
-            key={item.id}
-            leadId={item.lead_id!}
-            onLogged={() => setPosition(position + 1)} // logging the outcome moves to the next one
-          />
-        </div>
+        <LeadRecord
+          key={item.id}
+          leadId={item.lead_id!}
+          onLogged={() => setPosition(position + 1)} // logging the outcome moves to the next one
+        />
       </>
     );
   }

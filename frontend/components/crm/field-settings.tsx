@@ -172,6 +172,7 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    e.stopPropagation(); // opened from inside a record's edit form: don't submit that too
     const ok = await save(
       async () =>
         field
@@ -304,3 +305,17 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
   );
 }
 
+
+/** For admins, right where they work: add a field without going to Settings. */
+export function AddFieldButton({ entity }: { entity: string }) {
+  const fields = useFieldsOf(entity);
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="text-xs text-primary hover:underline" onClick={() => setOpen(true)}>
+        + Add a field
+      </button>
+      {open && <FieldDialog entity={entity} field={null} all={fields.data ?? []} onClose={() => setOpen(false)} />}
+    </>
+  );
+}

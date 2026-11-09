@@ -16,21 +16,21 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
-import { useAuth } from "@/lib/auth";
 import {
   type ActivityType,
   type FieldDef,
   type FieldOption,
   type Stage,
   useActivityTypes,
+  useCrmRules,
   useFields,
   useSources,
   useStages,
 } from "@/lib/crm";
-import { useLabels, useWorkspaceSettings } from "@/lib/settings";
+import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type Tab = "stages" | "sources" | "fields" | "activities";
+type Tab = "stages" | "sources" | "fields" | "activities" | "rules";
 const TYPES: [string, string][] = [
   ["text", "Text"],
   ["number", "Number"],
@@ -83,10 +83,11 @@ export default function SetupPage() {
     ["sources", "Sources"],
     ["fields", "Custom fields"],
     ["activities", "Activity types"],
+    ["rules", "Rules"],
   ];
   return (
     <>
-      <PageHeader title="Pipeline setup" />
+      <PageHeader back={{ href: "/settings/records", label: "Records and fields" }} title={label("lead", true)} />
       <div className="mx-auto w-full max-w-3xl p-4 sm:p-8">
         <p className="mb-4 text-muted-foreground">
           How your team works {label("lead", true).toLowerCase()}. Changes apply to everyone in your workspace.
@@ -106,6 +107,7 @@ export default function SetupPage() {
         {tab === "sources" && <Sources />}
         {tab === "fields" && <FieldSettings entity="lead" />}
         {tab === "activities" && <ActivityTypes />}
+        {tab === "rules" && <Rules />}
       </div>
     </>
   );
@@ -119,33 +121,51 @@ function move<T extends { id: string }>(items: T[], index: number, dir: -1 | 1):
   return ids;
 }
 
+// ---------- rules ----------
+function Rules() {
+  const label = useLabels();
+  const rules = useCrmRules();
+  const qc = useQueryClient();
+  const save = useSave();
+  const r = rules.data;
+  if (!r) return <p className="text-muted-foreground">Loading…</p>;
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-3 rounded-lg border p-3">
+        <Switch
+          aria-label="Follow-up rule"
+          checked={r.follow_up_required}
+          onCheckedChange={(on) =>
+            save(async () => {
+              unwrap(await api.PATCH("/api/v1/crm-rules", { body: { follow_up_required: on } }));
+              qc.invalidateQueries({ queryKey: ["crm-rules"] });
+            }, on ? "Follow-up rule: strict" : "Follow-up rule: warn only")
+          }
+        />
+        <div>
+          <div className="font-medium">Every open {label("lead").toLowerCase()} needs a next follow-up</div>
+          <p className="text-xs text-muted-foreground">
+            On: logging a call or note on an open {label("lead").toLowerCase()} requires the next follow-up date. Off: it is suggested but not
+            required.
+          </p>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Duplicates, company grouping and the leakage guard are under Settings → Lead capture, with the other rules for incoming{" "}
+        {label("lead", true).toLowerCase()}.
+      </p>
+    </div>
+  );
+}
+
 // ---------- stages ----------
 function Stages() {
-  const { can } = useAuth();
   const stages = useStages();
-  const settings = useWorkspaceSettings();
   const save = useSave();
   const [editing, setEditing] = useState<Stage | "new" | null>(null);
   const list = stages.data ?? [];
   return (
     <div className="space-y-6">
-      {can("settings.manage") && settings.data && (
-        <div className="flex items-start gap-3 rounded-lg border p-3">
-          <Switch
-            aria-label="Follow-up rule"
-            checked={settings.data.follow_up_required}
-            onCheckedChange={(on) =>
-              save(async () => unwrap(await api.PATCH("/api/v1/settings", { body: { follow_up_required: on } })), on ? "Follow-up rule: strict" : "Follow-up rule: warn only")
-            }
-          />
-          <div>
-            <div className="font-medium">Every open lead needs a next follow-up</div>
-            <p className="text-xs text-muted-foreground">
-              On: logging a call or note on an open lead requires the next follow-up date. Off: it is suggested but not required.
-            </p>
-          </div>
-        </div>
-      )}
       <ul className="divide-y rounded-lg border">
         {list.map((s, i) => (
           <li key={s.id} className="flex items-center gap-2 px-3 py-2">

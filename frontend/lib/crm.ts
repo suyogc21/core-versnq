@@ -209,3 +209,8 @@ export function useOrgPeople(id: string, enabled: boolean) {
     queryFn: async () => unwrap(await api.GET("/api/v1/leads/{lead_id}/people", { params: { path: { lead_id: id } } })),
   });
 }
+
+/** Follow-up rule, duplicates, company grouping, leakage guard (needs crm.configure). */
+export function useCrmRules(enabled = true) {
+  return useQuery({ queryKey: ["crm-rules"], enabled, queryFn: async () => unwrap(await api.GET("/api/v1/crm-rules")) });
+}

@@ -195,7 +195,7 @@ function Section({ title, children, action }: { title: string; children: React.R
 }
 
 /** The full record (mockup v2): details · timeline with logging · follow-up and tasks. */
-export function LeadRecord({ leadId }: { leadId: string }) {
+export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (lead: Lead) => void }) {
   const { can } = useAuth();
   const lead = useLead(leadId);
   const label = useLabels();
@@ -244,15 +244,12 @@ export function LeadRecord({ leadId }: { leadId: string }) {
             {editing ? <EditLead key={l.version} lead={l} /> : <Facts lead={l} showStage={false} />}
           </Section>
           {!editing && (fields.data ?? []).length === 0 && <p className="text-xs text-muted-foreground">No custom fields yet.</p>}
-          <Section title={l.kind === "person" ? "Company" : "People here"}>
-            <OrganisationCard lead={l} />
-          </Section>
           <Section title="Consent">
             <ConsentCard lead={l} />
           </Section>
         </div>
         <div className="space-y-4 border-b p-4 lg:border-b-0">
-          <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} />
+          <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} onLogged={onLogged} />
           <div className="flex flex-wrap gap-1.5">
             {Object.keys(TIMELINE_FILTERS).map((f) => (
               <button
@@ -274,10 +271,11 @@ export function LeadRecord({ leadId }: { leadId: string }) {
             <LeadTasks lead={l} />
           </Section>
           <Section title="Linked">
+            <div className="space-y-1">
+              <div className="text-[11px] text-muted-foreground">{l.kind === "person" ? "Company" : "People here"}</div>
+              <OrganisationCard lead={l} />
+            </div>
             <LinksCard end={{ kind: "lead", id: l.id, typeId: null }} editable={can("leads.edit")} />
-          </Section>
-          <Section title={label("deal", true)}>
-            <p className="text-xs text-muted-foreground">None yet.</p>
           </Section>
         </div>
       </div>

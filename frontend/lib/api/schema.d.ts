@@ -415,6 +415,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/crm-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Crm Rules */
+        get: operations["routing-get_crm_rules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Crm Rules */
+        patch: operations["routing-update_crm_rules"];
+        trace?: never;
+    };
     "/api/v1/custom-fields": {
         parameters: {
             query?: never;
@@ -2301,6 +2319,41 @@ export interface components {
             /** Wording */
             wording: string | null;
         };
+        /** CrmRules */
+        CrmRules: {
+            /**
+             * Duplicate Policy
+             * @enum {string}
+             */
+            duplicate_policy: "update" | "flag" | "create";
+            /** Follow Up Required */
+            follow_up_required: boolean;
+            /**
+             * Leakage Action
+             * @enum {string}
+             */
+            leakage_action: "alert" | "reassign";
+            /** Leakage Hours */
+            leakage_hours: number | null;
+            /**
+             * Org Grouping
+             * @enum {string}
+             */
+            org_grouping: "off" | "suggest" | "auto";
+        };
+        /** CrmRulesPatch */
+        CrmRulesPatch: {
+            /** Duplicate Policy */
+            duplicate_policy?: ("update" | "flag" | "create") | null;
+            /** Follow Up Required */
+            follow_up_required?: boolean | null;
+            /** Leakage Action */
+            leakage_action?: ("alert" | "reassign") | null;
+            /** Leakage Hours */
+            leakage_hours?: number | null;
+            /** Org Grouping */
+            org_grouping?: ("off" | "suggest" | "auto") | null;
+        };
         /** FieldIn */
         FieldIn: {
             /** Depends On */
@@ -3448,27 +3501,20 @@ export interface components {
             /** Timezone */
             timezone: string;
         };
-        /** SettingsPatch */
+        /**
+         * SettingsPatch
+         * @description Company settings. CRM rules (follow-up, duplicates, leakage) are /crm-rules.
+         */
         SettingsPatch: {
             branding?: components["schemas"]["Branding"] | null;
             /** Default Country */
             default_country?: string | null;
-            /** Duplicate Policy */
-            duplicate_policy?: ("update" | "flag" | "create") | null;
-            /** Follow Up Required */
-            follow_up_required?: boolean | null;
             /** Labels */
             labels?: {
                 [key: string]: components["schemas"]["Label"];
             } | null;
-            /** Leakage Action */
-            leakage_action?: ("alert" | "reassign") | null;
-            /** Leakage Hours */
-            leakage_hours?: number | null;
             /** Locale */
             locale?: string | null;
-            /** Org Grouping */
-            org_grouping?: ("off" | "suggest" | "auto") | null;
             /** Timezone */
             timezone?: string | null;
         };
@@ -5197,6 +5243,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "routing-get_crm_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmRules"];
+                };
+            };
+        };
+    };
+    "routing-update_crm_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrmRulesPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmRules"];
                 };
             };
             /** @description Validation Error */

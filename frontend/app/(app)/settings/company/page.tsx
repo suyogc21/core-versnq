@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const settings = useWorkspaceSettings();
   return (
     <>
-      <PageHeader title="Settings" />
+      <PageHeader back={{ href: "/settings", label: "Settings" }} title="Company" />
       {settings.data ? (
         <SettingsForm settings={settings.data} />
       ) : (
