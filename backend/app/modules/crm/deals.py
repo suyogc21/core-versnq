@@ -154,12 +154,12 @@ async def log(
         lead_id=deal.lead_id,
         deal_id=deal.id,
         type_key=type_key,
-        actor_type="user" if actor else "system",
+        actor_type=L.actor_type(actor),
         actor_id=actor.user.id if actor else None,
         occurred_at=L.now(),
         summary=summary[:500],
         body=body,
-        data={"deal_name": deal.name} | (data or {}),
+        data=L.automation_note({"deal_name": deal.name} | (data or {})),
     )
     db.add(activity)
     await db.flush()

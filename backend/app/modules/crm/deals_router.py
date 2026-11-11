@@ -14,7 +14,9 @@ from app.core.errors import Conflict, Forbidden, Invalid, NotFound
 from app.modules.auth.deps import ActiveUser
 from app.modules.crm import deals as D
 from app.modules.crm import leads as L
+from app.modules.crm import tags as T
 from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.leads_router import TagRef
 from app.modules.crm.models import (
     Activity,
     CustomFieldUniqueValue,
@@ -52,6 +54,7 @@ class DealOut(BaseModel):
     lost_reason: str | None = None
     close_note: str | None
     custom_fields: dict
+    tags: list[TagRef] = []
     has_lines: bool = False
     created_at: datetime
     updated_at: datetime
@@ -141,6 +144,7 @@ async def _out(db, deals: list[Deal]) -> list[DealOut]:
     owners = await names(User, User.name, [d.owner_user_id for d in deals])
     stages = await names(PipelineStage, PipelineStage.name, [d.stage_id for d in deals])
     reasons = await names(LostReason, LostReason.name, [d.lost_reason_id for d in deals])
+    tags = await T.of(db, deal_ids=[d.id for d in deals])
     with_lines = set(
         (
             await db.scalars(
@@ -158,6 +162,7 @@ async def _out(db, deals: list[Deal]) -> list[DealOut]:
         item.stage_name = stages.get(d.stage_id)
         item.lost_reason = reasons.get(d.lost_reason_id)
         item.has_lines = d.id in with_lines
+        item.tags = [TagRef.model_validate(t) for t in tags.get(d.id, [])]
         out.append(item)
     return out
 
@@ -225,6 +230,7 @@ async def list_deals(
     close_to: date | None = None,
     q: str | None = None,
     cf: Annotated[list[str], Query()] = [],  # noqa: B006 — "key:value"
+    tag: Annotated[list[uuid.UUID], Query()] = [],  # noqa: B006 — has any of these tags
     sort: SortKey = "created",
     direction: Annotated[Literal["asc", "desc"], Query(alias="dir")] = "desc",
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
@@ -256,6 +262,8 @@ async def list_deals(
             )
         )
     where += _cf_filters(cf)
+    if tag:
+        where.append(T.has_any(Deal.id, tag))
     total = await db.scalar(select(func.count()).select_from(Deal).where(*where)) or 0
     order = {
         "created": Deal.created_at,
@@ -464,6 +472,7 @@ async def create_deal(body: DealIn, db: CrmDb, actor: ActiveUser) -> DealOut:
     await L.apply_custom_fields(db, deal, body.custom_fields, creating=True, entity=D.ENTITY)
     if body.lines:
         await D.set_lines(db, deal, _lines(body.lines))
+        await L.refresh_calculated(db, deal, D.ENTITY)
     await D.check_stage_entry(db, deal, stage)
     await D.log(db, deal, "deal_created", f"Deal added: {deal.name}", actor)
     await D.event(db, deal, "deal.created")
@@ -514,6 +523,7 @@ async def update_deal(deal_id: uuid.UUID, body: DealPatch, db: CrmDb, actor: Act
             db, deal, "deal_updated", f"{deal.name}: changed {', '.join(details)}", actor,
             {"fields": details},
         )  # fmt: skip
+    changed += await L.refresh_calculated(db, deal, D.ENTITY)
     if changed:
         await D.event(db, deal, "deal.updated", {"fields": changed})
     deal.version += 1
@@ -603,6 +613,7 @@ async def set_lines(deal_id: uuid.UUID, body: LinesIn, db: CrmDb, actor: ActiveU
     summary = f"{deal.name}: products updated ({len(rows)} line{'s' if len(rows) != 1 else ''})"
     await D.log(db, deal, "deal_updated", summary, actor, {"fields": ["products"]})
     fields = ["products"] + (["amount"] if deal.amount_minor != before else [])
+    fields += await L.refresh_calculated(db, deal, D.ENTITY)
     await D.event(db, deal, "deal.updated", {"fields": fields})
     deal.version += 1
     return DealWithLines(
@@ -613,7 +624,9 @@ async def set_lines(deal_id: uuid.UUID, body: LinesIn, db: CrmDb, actor: ActiveU
 
 # ---------- bulk ----------
 class BulkIn(BaseModel):
-    action: Literal["assign", "stage", "delete"]
+    action: Literal["assign", "stage", "delete", "tag", "untag"]
+    tag_ids: list[uuid.UUID] = Field(default=[], max_length=20)
+    new_tags: list[str] = Field(default=[], max_length=10)
     ids: list[uuid.UUID] = Field(min_length=1, max_length=1000)
     owner_user_id: uuid.UUID | None = None
     stage_id: uuid.UUID | None = None
@@ -634,6 +647,13 @@ class BulkOut(BaseModel):
 @router.post("/deals/bulk", response_model=BulkOut)
 async def bulk_deals(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
     """Same rules as one at a time; deals that fail one are skipped and reported."""
+    tags: list = []
+    if body.action in ("tag", "untag"):
+        tags = await T.resolve(
+            db, actor.user.tenant_id, body.tag_ids, body.new_tags if body.action == "tag" else []
+        )
+        if not tags:
+            raise Invalid("Choose a tag")
     done, skipped = 0, []
     for did in body.ids:
         try:
@@ -645,6 +665,12 @@ async def bulk_deals(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
                 if body.action == "delete":
                     D.require(actor, "deals.delete")
                     await _delete(db, actor, deal)
+                elif body.action in ("tag", "untag"):
+                    D.require(actor, "deals.edit")
+                    if body.action == "tag":
+                        await T.change(db, actor, deal, add=tags)
+                    else:
+                        await T.change(db, actor, deal, remove=[t.id for t in tags])
                 elif body.action == "assign":
                     patch = DealPatch(version=deal.version, owner_user_id=body.owner_user_id)
                     await update_deal(did, patch, db, actor)

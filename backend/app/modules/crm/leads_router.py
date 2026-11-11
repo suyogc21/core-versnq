@@ -12,6 +12,7 @@ from app.core.errors import Conflict, Forbidden, Invalid
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
 from app.modules.crm import intake as I
 from app.modules.crm import leads as L
+from app.modules.crm import tags as T
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.lead_query import LeadFilter, SortKey, ordered, where_clauses
 from app.modules.crm.models import CustomFieldUniqueValue, Lead
@@ -91,6 +92,13 @@ class LeadPatch(LeadFields):
     custom_fields: dict | None = None
 
 
+class TagRef(BaseModel):
+    model_config = {"from_attributes": True}
+    id: uuid.UUID
+    name: str
+    colour: str | None
+
+
 class LeadOut(BaseModel):
     model_config = {"from_attributes": True}
     id: uuid.UUID
@@ -115,6 +123,10 @@ class LeadOut(BaseModel):
     last_contacted_at: datetime | None
     last_disposition: str | None
     score: int
+    fit_score: int = 0
+    engagement_score: int = 0
+    score_band: str | None = None
+    tags: list[TagRef] = []
     intent: str | None
     origin: str
     source_id: uuid.UUID
@@ -159,9 +171,11 @@ async def _out(db, leads: list[Lead]) -> list[LeadOut]:
         names = dict(
             (await db.execute(select(User.id, User.name).where(User.id.in_(owner_ids)))).all()
         )
+    tags = await T.of(db, lead_ids=ids)
     out = []
     for lead in leads:
         item = LeadOut.model_validate(lead)
+        item.tags = [TagRef.model_validate(t) for t in tags.get(lead.id, [])]
         item.identities = [IdentityOut.model_validate(i) for i in identities[lead.id]]
         item.owner_name = names.get(lead.owner_user_id)
         out.append(item)
@@ -226,14 +240,18 @@ BULK_PERMISSION = {
     "stage": "leads.edit",
     "follow_up": "leads.edit",
     "delete": "leads.delete",
+    "tag": "leads.edit",
+    "untag": "leads.edit",
 }
 
 
 class BulkIn(BaseModel):
     """Act on the ticked leads (ids) or on everything matching a filter."""
 
-    action: Literal["assign", "stage", "follow_up", "delete"]
+    action: Literal["assign", "stage", "follow_up", "delete", "tag", "untag"]
     ids: list[uuid.UUID] | None = Field(default=None, max_length=BULK_CAP)
+    tag_ids: list[uuid.UUID] = Field(default=[], max_length=20)
+    new_tags: list[str] = Field(default=[], max_length=10)  # tag: create these too
     filter: LeadFilter | None = None
     owner_user_id: uuid.UUID | None = None
     stage_id: uuid.UUID | None = None
@@ -281,6 +299,13 @@ async def bulk_action(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
         body.next_follow_up_at is None or body.next_follow_up_at <= L.now()
     ):
         raise Invalid("Choose a follow-up time in the future")
+    tags: list = []
+    if body.action in ("tag", "untag"):
+        tags = await T.resolve(
+            db, actor.user.tenant_id, body.tag_ids, body.new_tags if body.action == "tag" else []
+        )
+        if not tags:
+            raise Invalid("Choose a tag")
 
     done, skipped = 0, []
     for lead in leads:
@@ -295,6 +320,10 @@ async def bulk_action(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
                 if not lead.is_open:
                     raise Invalid("Closed leads have no follow-up")
                 await L.set_follow_up(db, lead, body.next_follow_up_at, actor)
+            elif body.action == "tag":
+                await T.change(db, actor, lead, add=tags)
+            elif body.action == "untag":
+                await T.change(db, actor, lead, remove=[t.id for t in tags])
             else:
                 lead_id = lead.id
                 await db.execute(

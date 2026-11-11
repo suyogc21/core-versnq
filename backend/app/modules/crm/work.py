@@ -111,8 +111,16 @@ async def log_activity(
         db,
         lead.tenant_id,
         "activity.logged",
-        {"lead_id": str(lead.id), "activity_id": str(activity.id), "type": type_key},
+        {
+            "lead_id": str(lead.id),
+            "activity_id": str(activity.id),
+            "type": type_key,
+            "disposition": clean.get("disposition"),
+        },
     )
+    from app.modules.crm import scoring  # scoring builds on leads, as this module does
+
+    await scoring.refresh(db, lead)
     return activity
 
 

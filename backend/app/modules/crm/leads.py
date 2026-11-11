@@ -11,8 +11,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Conflict, Forbidden, Invalid, NotFound
-from app.core.events import emit
+from app.core.events import automation_context, emit
 from app.modules.auth.deps import CurrentUser, has_permission
+from app.modules.crm import calc
 from app.modules.crm import fields as F
 from app.modules.crm.identities import normalize
 from app.modules.crm.models import (
@@ -169,6 +170,7 @@ async def apply_custom_fields(
     unknown = [k for k in incoming if k not in defs]
     if unknown:
         raise Invalid(f"Unknown field: {unknown[0]}")
+    calc.refuse_input(defs, incoming)
     merged = dict(obj.custom_fields or {})
     changed = []
     for key, raw in incoming.items():
@@ -190,8 +192,19 @@ async def apply_custom_fields(
             if parent_value is None or any(v not in allowed for v in values):
                 parent_label = defs[d.depends_on].label if d.depends_on in defs else d.depends_on
                 raise Invalid(f"{d.label} does not match the chosen {parent_label}")
+    changed += calc.fill(defs, entity, obj, merged)
     obj.custom_fields = merged
     await _sync_unique(db, obj, defs, changed, entity)
+    return changed
+
+
+async def refresh_calculated(db: AsyncSession, obj, entity: str = "lead") -> list[str]:
+    """Recompute calculated fields after a built-in input (score, amount...) changed."""
+    defs = await lead_fields(db, entity)
+    merged = dict(obj.custom_fields or {})
+    changed = calc.fill(defs, entity, obj, merged)
+    if changed:
+        obj.custom_fields = merged
     return changed
 
 
@@ -285,6 +298,18 @@ async def check_source(db: AsyncSession, source_id: uuid.UUID) -> LeadSource:
 
 
 # ---------- timeline + events ----------
+def actor_type(actor: CurrentUser | None) -> str:
+    """user / automation (an automation acting) / system."""
+    if actor:
+        return "user"
+    return "automation" if automation_context.get() else "system"
+
+
+def automation_note(data: dict | None) -> dict:
+    via = automation_context.get()
+    return (data or {}) | ({"automation": via["name"]} if via else {})
+
+
 async def log(
     db: AsyncSession,
     lead: Lead,
@@ -301,12 +326,12 @@ async def log(
         tenant_id=lead.tenant_id,
         lead_id=lead.id,
         type_key=type_key,
-        actor_type="user" if actor else "system",
+        actor_type=actor_type(actor),
         actor_id=actor.user.id if actor else None,
         occurred_at=occurred_at or now(),
         summary=summary[:500],
         body=body,
-        data=data or {},
+        data=automation_note(data),
         disposition=disposition,
     )
     db.add(activity)
@@ -316,6 +341,9 @@ async def log(
 
 async def event(db: AsyncSession, lead: Lead, type_: str, extra: dict | None = None) -> None:
     await emit(db, lead.tenant_id, type_, {"lead_id": str(lead.id)} | (extra or {}))
+    from app.modules.crm import scoring  # scoring builds on this module
+
+    await scoring.refresh(db, lead)  # any change can move the fit score
 
 
 # ---------- follow-ups ----------

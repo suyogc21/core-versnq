@@ -29,3 +29,7 @@ class TenantSettings(TimestampMixin, Base):
     org_grouping: Mapped[str] = mapped_column(String(10), default="off")  # off / suggest / auto
     leakage_hours: Mapped[int | None] = mapped_column(Integer)  # None = leakage guard off
     leakage_action: Mapped[str] = mapped_column(String(14), default="alert")  # alert / reassign
+    # Lead scoring (step 4): engagement counts activities of the last N days; bands by score.
+    engagement_days: Mapped[int] = mapped_column(Integer, default=30)
+    hot_score: Mapped[int] = mapped_column(Integer, default=50)
+    warm_score: Mapped[int] = mapped_column(Integer, default=20)

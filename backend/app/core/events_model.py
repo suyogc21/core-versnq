@@ -21,3 +21,4 @@ class Event(IdMixin, Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    automation_handled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

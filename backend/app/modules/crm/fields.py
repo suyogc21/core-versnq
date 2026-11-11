@@ -8,6 +8,7 @@ from app.core.errors import Invalid
 
 KEY = re.compile(r"^[a-z][a-z0-9_]{1,59}$")
 TYPES = {"text", "number", "date", "select", "multi_select", "phone", "email", "url"}
+CUSTOM_FIELD_TYPES = TYPES | {"calculated"}  # calculated: custom fields only, not activities
 CHOICE_TYPES = {"select", "multi_select"}
 UNIQUE_TYPES = {"text", "number", "email", "phone", "url"}
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")

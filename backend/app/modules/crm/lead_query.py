@@ -11,11 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import Invalid
 from app.modules.auth.deps import CurrentUser
 from app.modules.crm import leads as L
+from app.modules.crm import tags as T
 from app.modules.crm.models import Lead, LeadIdentity, LeadSource, LeadStage
 from app.modules.users.models import User
 
 SortKey = Literal[
-    "name", "stage", "follow_up", "owner", "last_activity", "source", "created", "city"
+    "name", "stage", "follow_up", "owner", "last_activity", "source", "created", "city", "score"
 ]
 
 
@@ -29,6 +30,8 @@ class LeadFilter(BaseModel):
     status: Literal["open", "closed"] | None = None
     follow_up: Literal["overdue", "today", "none"] | None = None
     cf: list[str] = Field(default=[], description="custom field filters as key:value")
+    tag: list[uuid.UUID] = Field(default=[], description="has any of these tags")
+    band: list[Literal["hot", "warm", "cold"]] = []
 
 
 async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> list:
@@ -81,6 +84,10 @@ async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> 
                 "none": Lead.next_follow_up_at.is_(None),
             }[f.follow_up]
         )
+    if f.tag:
+        where.append(T.has_any(Lead.id, f.tag))
+    if f.band:
+        where.append(Lead.score_band.in_(f.band))
     by_key: dict[str, list[str]] = {}
     for item in f.cf:
         key, sep, value = item.partition(":")
@@ -121,6 +128,7 @@ def ordered(query, sort: SortKey, direction: Literal["asc", "desc"]):
             "last_activity": Lead.last_activity_at,
             "created": Lead.created_at,
             "city": Lead.city,
+            "score": Lead.score,
         }[sort]
         key = by(column)
     return query.order_by(key, Lead.created_at.desc(), Lead.id)

@@ -1,6 +1,7 @@
 """Event catalogue (from the spec) and emit(). Every important change calls emit()."""
 
 import uuid
+from contextvars import ContextVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,6 +48,11 @@ class UnknownEvent(ValueError):
     pass
 
 
+# Set while an automation runs its actions: {"id", "name", "chain": [ids], "depth"}. Events
+# written meanwhile carry it as "_via", so automations can stop loops (Decision log #27).
+automation_context: ContextVar[dict | None] = ContextVar("automation_context", default=None)
+
+
 async def emit(db: AsyncSession, tenant_id: uuid.UUID, type_: str, payload: dict) -> bool:
     """Write the event in the caller's transaction. Returns False when the owning module
     is switched off for this tenant (nothing is written)."""
@@ -55,6 +61,9 @@ async def emit(db: AsyncSession, tenant_id: uuid.UUID, type_: str, payload: dict
         raise UnknownEvent(f"Unknown event type: {type_}")
     if not await is_enabled(db, tenant_id, module):
         return False
+    via = automation_context.get()
+    if via:
+        payload = payload | {"_via": {k: via[k] for k in ("chain", "depth")}}
     db.add(Event(tenant_id=tenant_id, type=type_, payload=payload))
     await db.flush()
     return True

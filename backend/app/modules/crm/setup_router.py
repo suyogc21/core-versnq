@@ -11,7 +11,9 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.errors import Conflict, Invalid, NotFound
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
+from app.modules.crm import calc
 from app.modules.crm import fields as F
+from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.models import (
     Activity,
@@ -94,6 +96,7 @@ class FieldOut(BaseModel):
     is_unique: bool
     depends_on: str | None
     group_name: str | None
+    formula: str | None = None
     position: int
 
 
@@ -106,6 +109,7 @@ class FieldIn(BaseModel):
     is_unique: bool = False
     depends_on: str | None = None
     group_name: str | None = Field(default=None, max_length=80)
+    formula: str | None = Field(default=None, max_length=500)  # type "calculated" only
 
 
 class FieldPatch(BaseModel):
@@ -115,6 +119,7 @@ class FieldPatch(BaseModel):
     options: list[dict] | None = None
     required: bool | None = None
     group_name: str | None = Field(default=None, max_length=80)
+    formula: str | None = Field(default=None, max_length=500)
 
 
 class TypeOut(BaseModel):
@@ -383,8 +388,15 @@ async def create_field(
     body: FieldIn, db: CrmDb, actor: Configurer, entity: str = "lead"
 ) -> CustomFieldDefinition:
     entity = await _entity(db, entity)
-    if body.type not in F.TYPES:
+    if body.type not in F.CUSTOM_FIELD_TYPES:
         raise Invalid(f"Unknown field type: {body.type}")
+    calc.ensure_valid_field(body.type, body.formula)
+    if body.type == "calculated":
+        if body.required or body.is_unique or body.depends_on:
+            raise Invalid("A calculated field cannot be required, unique or linked")
+        body.formula = calc.check_formula(
+            await L.lead_fields(db, entity), entity, body.key, body.formula
+        )
     reserved = {"lead": F.RESERVED_KEYS, "deal": F.DEAL_RESERVED_KEYS}.get(
         entity, F.RECORD_RESERVED_KEYS
     )
@@ -419,6 +431,13 @@ async def update_field(
     field = await _get(db, CustomFieldDefinition, field_id, "Field")
     before = _snap(field, FieldOut)
     changes = body.model_dump(exclude_unset=True)
+    if "formula" in changes:
+        calc.ensure_valid_field(field.type, changes["formula"])
+        changes["formula"] = calc.check_formula(
+            await L.lead_fields(db, field.entity), field.entity, field.key, changes["formula"]
+        )
+    if changes.get("required") and field.type == "calculated":
+        raise Invalid("A calculated field cannot be required")
     if "options" in changes:
         options = F.check_options(field.type, changes["options"])
         F.check_dependency(
@@ -454,6 +473,9 @@ async def delete_field(field_id: uuid.UUID, db: CrmDb, actor: Configurer) -> Non
     )
     if child:
         raise Conflict(f"'{child}' depends on this field; delete or unlink it first")
+    readers = calc.users_of(await L.lead_fields(db, field.entity), field.key)
+    if readers:
+        raise Conflict(f"The calculated field '{readers[0]}' uses this field; change it first")
     if field.entity == "lead":
         stage = await db.scalar(
             select(LeadStage.name).where(LeadStage.required_fields.contains([field.key]))

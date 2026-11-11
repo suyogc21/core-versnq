@@ -86,6 +86,7 @@ class CustomFieldDefinition(TenantScoped, TimestampMixin, Base):
     depends_on: Mapped[str | None] = mapped_column(String(60))
     group_name: Mapped[str | None] = mapped_column(String(80))
     position: Mapped[int] = mapped_column(Integer)
+    formula: Mapped[str | None] = mapped_column(String(500))  # type "calculated" only
 
 
 class CustomFieldUniqueValue(TenantScoped, Base):
@@ -154,7 +155,10 @@ class Lead(TenantScoped, TimestampMixin, Base):
     last_contacted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     first_response_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_disposition: Mapped[str | None] = mapped_column(String(80))
-    score: Mapped[int] = mapped_column(Integer, default=0)
+    score: Mapped[int] = mapped_column(Integer, default=0)  # fit_score + engagement_score
+    fit_score: Mapped[int] = mapped_column(Integer, default=0)
+    engagement_score: Mapped[int] = mapped_column(Integer, default=0)
+    score_band: Mapped[str | None] = mapped_column(String(4))  # hot / warm / cold
     intent: Mapped[str | None] = mapped_column(String(20))
     intent_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     origin: Mapped[str] = mapped_column(String(20))
@@ -678,3 +682,101 @@ class DealProduct(TenantScoped, TimestampMixin, Base):
     discount_minor: Mapped[int] = mapped_column(BigInteger, default=0)
     total_minor: Mapped[int] = mapped_column(BigInteger)
     position: Mapped[int] = mapped_column(Integer)
+
+
+# ---------- step 4: tags, views, scoring, automation (migration 0014) ----------
+class Tag(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "tags"
+    __table_args__ = (UniqueConstraint("tenant_id", "id", name="uq_tags_tenant_id_id"),)
+
+    name: Mapped[str] = mapped_column(String(60))
+    colour: Mapped[str | None] = mapped_column(String(7))
+
+
+class Tagging(TenantScoped, Base):
+    __tablename__ = "taggings"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_taggings_tenant_id_id"),
+        _fk("tag_id", "tags", "fk_taggings_tag_same_tenant", "CASCADE"),
+        _fk("lead_id", "leads", "fk_taggings_lead_same_tenant", "CASCADE"),
+        _fk("deal_id", "deals", "fk_taggings_deal_same_tenant", "CASCADE"),
+    )
+
+    tag_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+class SavedView(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "saved_views"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_saved_views_tenant_id_id"),
+        _fk("owner_user_id", "users", "fk_saved_views_owner_same_tenant", "CASCADE"),
+        _fk("team_id", "teams", "fk_saved_views_team_same_tenant", "CASCADE"),
+    )
+
+    entity: Mapped[str] = mapped_column(String(10))  # leads / deals
+    name: Mapped[str] = mapped_column(String(80))
+    filters: Mapped[dict] = mapped_column(JSONB, default=dict)
+    sort: Mapped[str | None] = mapped_column(String(30))
+    direction: Mapped[str | None] = mapped_column(String(4))
+    columns: Mapped[list | None] = mapped_column(JSONB)
+    sharing: Mapped[str] = mapped_column(String(10), default="private")  # private/team/everyone
+    team_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class ScoreRule(TenantScoped, TimestampMixin, Base):
+    """Fit: points when a condition holds. Engagement: points per matching activity."""
+
+    __tablename__ = "score_rules"
+    __table_args__ = (UniqueConstraint("tenant_id", "id", name="uq_score_rules_tenant_id_id"),)
+
+    kind: Mapped[str] = mapped_column(String(10))  # fit / engagement
+    condition: Mapped[dict | None] = mapped_column(JSONB(none_as_null=True))
+    activity_type_key: Mapped[str | None] = mapped_column(String(60))
+    disposition: Mapped[str | None] = mapped_column(String(100))
+    points: Mapped[int] = mapped_column(Integer)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class Automation(TenantScoped, TimestampMixin, Base):
+    """WHEN trigger IF conditions THEN actions (Decision log #16)."""
+
+    __tablename__ = "automations"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_automations_tenant_id_id"),
+        _fk("created_by_user_id", "users", "fk_automations_creator_same_tenant"),
+    )
+
+    name: Mapped[str] = mapped_column(String(120))
+    subject: Mapped[str] = mapped_column(String(5))  # lead / deal
+    trigger: Mapped[dict] = mapped_column(JSONB)
+    conditions: Mapped[list] = mapped_column(JSONB, default=list)
+    actions: Mapped[list] = mapped_column(JSONB)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+    failures_in_row: Mapped[int] = mapped_column(Integer, default=0)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class AutomationRun(TenantScoped, Base):
+    __tablename__ = "automation_runs"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_automation_runs_tenant_id_id"),
+        _fk("automation_id", "automations", "fk_runs_automation_same_tenant", "CASCADE"),
+    )
+
+    automation_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    event_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    status: Mapped[str] = mapped_column(String(8))  # done / skipped / failed
+    detail: Mapped[list] = mapped_column(JSONB, default=list)
+    error: Mapped[str | None] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())

@@ -83,6 +83,10 @@ STEP3_SYSTEM_TYPES = [
 ]
 
 
+# Added in step 4 (migration 0014 adds it for companies that already exist).
+STEP4_SYSTEM_TYPES = [{"key": "tagged", "label": "Tags changed", "icon": "tag", "loggable": False}]
+
+
 def system_activity_types(dispositions: list[str]) -> list[dict]:
     """Built-in types every company has. Keys are fixed; labels and call outcomes are editable."""
     return [
@@ -96,6 +100,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP1_SYSTEM_TYPES,
         *STEP2_SYSTEM_TYPES,
         *STEP3_SYSTEM_TYPES,
+        *STEP4_SYSTEM_TYPES,
     ]
 
 

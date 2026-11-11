@@ -200,12 +200,12 @@ async def log(
         tenant_id=record.tenant_id,
         record_id=record.id,
         type_key=type_key,
-        actor_type="user" if actor else "system",
+        actor_type=L.actor_type(actor),
         actor_id=actor.user.id if actor else None,
         occurred_at=L.now(),
         summary=summary[:500],
         body=body,
-        data=data or {},
+        data=L.automation_note(data),
     )
     db.add(activity)
     await db.flush()
