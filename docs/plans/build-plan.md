@@ -121,16 +121,18 @@ Principles for every step (no shortcuts to hit a date):
 
 | Feature | Status |
 | --- | --- |
-| Sequence builder: steps, delays, conditions, branches | Planned — step 8 |
-| Auto-enrol triggers, stop rules, quiet hours, throttling | Planned — step 8 |
-| Email steps, templates with variables, per-domain sender | Planned — step 8 |
-| Unsubscribe and suppression list | Planned — suppression list created in step 1, used in step 8 |
-| Open/click tracking | Planned — step 8 |
-| Unified inbox, assignment and handoff, canned replies | Planned — step 8 (email), step 9 (WhatsApp) |
-| Multi-domain email (SPF/DKIM/DMARC), multi-brand | Planned — step 8 |
-| WhatsApp connector: own number, templates, 24-hour window, opt-out, health | Planned — step 9 (after Meta registration) |
-| LinkedIn steps as rep tasks | Planned — step 8 |
-| Sequence analytics per step | Planned — step 8 |
+| Sequence builder: steps, delays, conditions, branches | Planned — step 9 |
+| Auto-enrol triggers, stop rules, quiet hours, throttling | Planned — step 9 |
+| Email steps, templates with variables, per-domain sender | Planned — step 9 |
+| Unsubscribe and suppression list | Planned — suppression list created in step 1, used in step 9 |
+| Email tracking per message, sequence and campaign: sent, delivered, bounced (hard/soft), spam complaints, unsubscribes, clicks, replies, opens (labelled "estimated": Apple/Gmail image loading inflates them). Hard bounces and complaints go on the suppression list automatically | Planned — step 9 (Decision log #28) |
+| WhatsApp tracking: sent, delivered, read, failed, replies (from Meta's status webhooks) | Planned — step 10 (Decision log #28) |
+| Smartlead connector (optional add-on): cold campaigns run in Smartlead; interested replies arrive in Core as leads with the conversation, like ACE | Planned — after step 10, decide then (Decision log #28) |
+| Unified inbox, assignment and handoff, canned replies | Planned — step 9 (email), step 10 (WhatsApp) |
+| Multi-domain email (SPF/DKIM/DMARC), multi-brand | Planned — step 9 |
+| WhatsApp connector: own number, templates, 24-hour window, opt-out, health | Planned — step 10 (after Meta registration) |
+| LinkedIn steps as rep tasks | Planned — step 9 |
+| Sequence analytics per step | Planned — step 9 |
 | A/B tests, SMS, LinkedIn automation | Later |
 
 ### Admin, security (§10) and go-live
@@ -178,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Next: step 4, tags, saved views, scoring and automation.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 plan approved 2026-11-11 (Decision log #27); building.
 
 | Step | What | Why here |
 | --- | --- | --- |
