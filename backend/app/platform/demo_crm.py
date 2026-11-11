@@ -704,3 +704,111 @@ async def seed_deals(
                 )
             )  # fmt: skip
     await db.flush()
+
+
+async def seed_organise(
+    db: AsyncSession, tenant_id: uuid.UUID, *, owner_id: uuid.UUID, tags: list[str], seed: int
+) -> None:
+    """Step 4 demo: tags on some leads, scoring rules, a shared 'Hot' view, two automations.
+    Scores are filled in afterwards by scoring.rescore_tenant (run after commit)."""
+    from app.modules.crm.models import (
+        Automation,
+        LeadSource,
+        SavedView,
+        ScoreRule,
+        Tag,
+        Tagging,
+    )
+
+    rng = random.Random(seed)
+    made = []
+    colours = ["#6366f1", "#10b981", "#f59e0b", "#ec4899"]
+    for i, name in enumerate(tags):
+        tag = Tag(tenant_id=tenant_id, name=name, colour=colours[i % len(colours)])
+        db.add(tag)
+        made.append(tag)
+    await db.flush()
+    from app.modules.settings.models import TenantSettings
+
+    settings = await db.get(TenantSettings, tenant_id)
+    settings.hot_score, settings.warm_score = 30, 15
+    leads = list((await db.scalars(select(Lead).order_by(Lead.created_at))).all())
+    for lead in rng.sample(leads, min(len(leads), max(10, len(leads) // 6))):
+        for tag in rng.sample(made, rng.choice([1, 1, 2])):
+            db.add(Tagging(tenant_id=tenant_id, tag_id=tag.id, lead_id=lead.id))
+    sources = {s.name: s.id for s in (await db.scalars(select(LeadSource))).all()}
+    position = 0
+    for name, points in (("Website", 10), ("Referral", 20)):
+        if name in sources:
+            db.add(
+                ScoreRule(
+                    tenant_id=tenant_id,
+                    kind="fit",
+                    points=points,
+                    position=position,
+                    condition={"field": "source_id", "op": "is", "value": str(sources[name])},
+                )
+            )
+            position += 1
+    for disposition, points in (
+        ("interested", 15),
+        ("call_back_later", 5),
+        ("not_interested", -10),
+    ):
+        db.add(
+            ScoreRule(
+                tenant_id=tenant_id,
+                kind="engagement",
+                activity_type_key="call",
+                disposition=disposition,
+                points=points,
+                position=position,
+            )
+        )
+        position += 1
+    db.add(
+        SavedView(
+            tenant_id=tenant_id,
+            entity="leads",
+            name="Hot right now",
+            filters={"band": ["hot"], "status": "open"},
+            sort="score",
+            direction="desc",
+            sharing="everyone",
+            owner_user_id=owner_id,
+            position=0,
+        )
+    )
+    if "Website" in sources:
+        db.add(
+            Automation(
+                tenant_id=tenant_id,
+                name="Call new website enquiries within the hour",
+                subject="lead",
+                trigger={"type": "lead.created"},
+                conditions=[{"field": "source_id", "op": "is", "value": str(sources["Website"])}],
+                actions=[
+                    {
+                        "type": "create_task",
+                        "title": "Call the new website enquiry",
+                        "due_hours": 1,
+                        "assign_to": "owner",
+                    }
+                ],
+                position=0,
+                created_by_user_id=owner_id,
+            )
+        )
+    db.add(
+        Automation(
+            tenant_id=tenant_id,
+            name="Tell managers about every win",
+            subject="deal",
+            trigger={"type": "deal.won"},
+            conditions=[],
+            actions=[{"type": "notify", "to": "managers", "message": "A deal was won"}],
+            position=1,
+            created_by_user_id=owner_id,
+        )
+    )
+    await db.flush()

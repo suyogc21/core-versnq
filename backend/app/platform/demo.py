@@ -31,6 +31,7 @@ from app.platform.demo_crm import (
     seed_batches,
     seed_deals,
     seed_leads,
+    seed_organise,
     seed_properties,
     seed_routing,
 )
@@ -363,6 +364,7 @@ async def seed_demo(prefix: str = "") -> DemoResult:
     password = secrets.token_urlsafe(9)  # 12 characters, shared by every demo account
     pw_hash = hash_password(password)
     result = DemoResult(created=True, password=password, slugs=[acme_slug, blue_slug, sun_slug])
+    scored: list[uuid.UUID] = []  # companies whose lead scores are filled in at the end
 
     async with platform_session() as db:
         staff = PlatformStaff(
@@ -420,6 +422,14 @@ async def seed_demo(prefix: str = "") -> DemoResult:
         )
         await seed_batches(db, tenant.id)
         await seed_deals(db, tenant.id, count=60, seed=21)
+        await seed_organise(
+            db,
+            tenant.id,
+            owner_id=owner.id,
+            seed=31,
+            tags=["Scholarship", "Weekend batch", "Parent involved", "EMI"],
+        )
+        scored.append(tenant.id)
         result.accounts.append(Account("Acme Academy", "Owner", owner.name, owner.email))
         for user, role_key in added:
             if user.status == "active":
@@ -471,10 +481,23 @@ async def seed_demo(prefix: str = "") -> DemoResult:
         )
         await seed_properties(db, tenant.id)
         await seed_deals(db, tenant.id, count=22, seed=23, link_property=True)
+        await seed_organise(
+            db,
+            tenant.id,
+            owner_id=owner.id,
+            seed=37,
+            tags=["Cash buyer", "Investor", "Golden visa"],
+        )
+        scored.append(tenant.id)
         result.accounts.append(Account("Bluewave Realty", "Owner", owner.name, owner.email))
         result.accounts.append(
             Account("Bluewave Realty", "Sales Manager", "Farah Siddiqui", f"farah@{domain}")
         )
+
+    from app.modules.crm.scoring import rescore_tenant  # scores need the saved activities
+
+    for tenant_id in scored:
+        await rescore_tenant(tenant_id)
 
     # Sunrise Coaching: the Owner never accepted the invite, and the company is suspended.
     async with platform_session() as db:
