@@ -2,12 +2,15 @@
 
 import { Plus, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { Avatar, StagePill } from "@/components/crm/bits";
 import { AddLeadDialog } from "@/components/crm/lead-form";
+import { BandPill, TagList, TagPicker } from "@/components/crm/tags";
+import { SaveViewDialog } from "@/components/crm/save-view";
 import { LeadPreview } from "@/components/crm/lead-record";
 import {
   BulkButton,
@@ -46,11 +49,12 @@ import {
   when,
 } from "@/lib/crm";
 import { useUsers } from "@/lib/directory";
+import { useTags, useViews } from "@/lib/organise";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type Filters = { stage_id: string[]; source_id: string[]; owner: string[]; cf: Record<string, string[]> };
-const NO_FILTERS: Filters = { stage_id: [], source_id: [], owner: [], cf: {} };
+type Filters = { stage_id: string[]; source_id: string[]; owner: string[]; tag: string[]; band: string[]; cf: Record<string, string[]> };
+const NO_FILTERS: Filters = { stage_id: [], source_id: [], owner: [], tag: [], band: [], cf: {} };
 
 const VIEW_QUERY: Record<string, LeadQuery> = {
   mine: { owner: ["me"], status: "open" },
@@ -88,6 +92,15 @@ export default function LeadsPage() {
   const [selection, setSelection] = useState<Selection>(emptySelection);
   const [preview, setPreview] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [savingView, setSavingView] = useState(false);
+  const tags = useTags();
+  const savedViews = useViews("leads");
+  const savedCounts = useQueries({
+    queries: (savedViews.data ?? []).map((v) => ({
+      queryKey: ["leads", "count", v.id, v.filters],
+      queryFn: async () => unwrap(await api.GET("/api/v1/leads", { params: { query: { ...(v.filters as LeadQuery), limit: 1 } } })).total,
+    })),
+  });
 
   // Any change to what is listed goes back to page 1 and clears the selection.
   const reset = () => {
@@ -103,14 +116,20 @@ export default function LeadsPage() {
     }, 250);
     return () => clearTimeout(t);
   }, [search, q]);
-  const viewOwns = Boolean(VIEW_QUERY[view].owner);
+  const saved = view.startsWith("sv:") ? savedViews.data?.find((v) => `sv:${v.id}` === view) : undefined;
+  const base: LeadQuery = saved ? (saved.filters as LeadQuery) : (VIEW_QUERY[view] ?? {});
+  const viewOwns = Boolean(base.owner);
   const filter: LeadQuery = {
-    ...VIEW_QUERY[view],
-    q: q || undefined,
-    stage_id: filters.stage_id.length ? filters.stage_id : undefined,
-    source_id: filters.source_id.length ? filters.source_id : undefined,
+    ...base,
+    ...(q ? { q } : {}),
+    ...(filters.stage_id.length ? { stage_id: filters.stage_id } : {}),
+    ...(filters.source_id.length ? { source_id: filters.source_id } : {}),
     ...(!viewOwns && filters.owner.length ? { owner: filters.owner } : {}),
-    cf: Object.entries(filters.cf).flatMap(([k, vs]) => vs.map((v) => `${k}:${v}`)),
+    ...(filters.tag.length ? { tag: filters.tag } : {}),
+    ...(filters.band.length ? { band: filters.band as LeadQuery["band"] } : {}),
+    ...(Object.keys(filters.cf).some((k) => filters.cf[k].length)
+      ? { cf: Object.entries(filters.cf).flatMap(([k, vs]) => vs.map((v) => `${k}:${v}`)) }
+      : {}),
   };
   const leads = useLeads({ ...filter, sort: paging.sort as LeadQuery["sort"], dir: paging.dir, limit: paging.size, offset: (paging.page - 1) * paging.size });
 
@@ -160,6 +179,8 @@ export default function LeadsPage() {
       ),
     },
     { key: "source", label: "Source", sort: "source", cell: (l) => <span className="text-muted-foreground">{sourceById.get(l.source_id)}</span> },
+    { key: "score", label: "Score", sort: "score", cell: (l) => <BandPill band={l.score_band} score={l.score} /> },
+    { key: "tags", label: "Tags", cell: (l) => <TagList tags={l.tags ?? []} /> },
     ...selectFields.map(
       (f, i): Column<Lead> => ({
         key: `cf.${f.key}`,
@@ -181,6 +202,7 @@ export default function LeadsPage() {
     { key: "none", label: "No follow-up", count: c?.none, alert: true },
     ...(isManager ? [{ key: "unassigned", label: "Unassigned", count: c?.unassigned, alert: true }] : []),
     { key: "all", label: "All", count: c?.all },
+    ...(savedViews.data ?? []).map((v, i) => ({ key: `sv:${v.id}`, label: v.name, count: savedCounts[i]?.data })),
   ];
 
   const rows = useMemo(() => leads.data?.items ?? [], [leads.data]);
@@ -228,7 +250,18 @@ export default function LeadsPage() {
     { value: "unassigned", label: "Unassigned" },
     ...(users.data ?? []).filter((u) => u.id !== me?.id && u.status === "active").map((u) => ({ value: u.id, label: u.name })),
   ];
-  const anyFilter = q || filters.stage_id.length || filters.source_id.length || filters.owner.length || Object.values(filters.cf).some((v) => v.length);
+  const anyFilter =
+    q || filters.stage_id.length || filters.source_id.length || filters.owner.length || filters.tag.length || filters.band.length || Object.values(filters.cf).some((v) => v.length);
+  async function deleteView() {
+    if (!saved || !window.confirm(`Delete the view "${saved.name}"?`)) return;
+    try {
+      unwrap(await api.DELETE("/api/v1/views/{view_id}", { params: { path: { view_id: saved.id } } }));
+      savedViews.refetch();
+      setView(isManager ? "all" : "mine");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -301,6 +334,38 @@ export default function LeadsPage() {
             }}
           />
         ))}
+        <FilterChip
+          label="Tag"
+          options={(tags.data ?? []).map((t) => ({ value: t.id, label: t.name }))}
+          values={filters.tag}
+          onChange={(v) => {
+            setFilters({ ...filters, tag: v });
+            reset();
+          }}
+        />
+        <FilterChip
+          label="Score"
+          options={[
+            { value: "hot", label: "Hot" },
+            { value: "warm", label: "Warm" },
+            { value: "cold", label: "Cold" },
+          ]}
+          values={filters.band}
+          onChange={(v) => {
+            setFilters({ ...filters, band: v });
+            reset();
+          }}
+        />
+        {anyFilter ? (
+          <Button size="sm" variant="outline" onClick={() => setSavingView(true)}>
+            Save view
+          </Button>
+        ) : null}
+        {saved?.mine ? (
+          <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={deleteView}>
+            Delete view
+          </Button>
+        ) : null}
         {anyFilter ? (
           <Button
             size="sm"
@@ -394,6 +459,28 @@ export default function LeadsPage() {
                 )}
               </BulkMenu>
             )}
+            {can("leads.edit") && (
+              <BulkMenu label="Tag">
+                {(close) => (
+                  <TagPicker
+                    chosen={[]}
+                    onPick={(id) => (close(), runBulk({ action: "tag", tag_ids: [id] }, "Tagged"))}
+                    onCreate={(name) => (close(), runBulk({ action: "tag", new_tags: [name] }, "Tagged"))}
+                  />
+                )}
+              </BulkMenu>
+            )}
+            {can("leads.edit") && (tags.data ?? []).length > 0 && (
+              <BulkMenu label="Remove tag">
+                {(close) =>
+                  (tags.data ?? []).map((t) => (
+                    <PopoverItem key={t.id} onClick={() => (close(), runBulk({ action: "untag", tag_ids: [t.id] }, "Untagged"))}>
+                      {t.name}
+                    </PopoverItem>
+                  ))
+                }
+              </BulkMenu>
+            )}
             {can("leads.delete") && (
               <BulkButton
                 danger
@@ -408,6 +495,23 @@ export default function LeadsPage() {
           </>
         )}
       />
+      {savingView && (
+        <SaveViewDialog
+          entity="leads"
+          filters={filter as Record<string, unknown>}
+          sort={paging.sort}
+          dir={paging.dir}
+          onClose={() => setSavingView(false)}
+          onSaved={(id) => {
+            setSavingView(false);
+            setFilters(NO_FILTERS);
+            setSearch("");
+            setQ("");
+            setView(`sv:${id}`);
+            reset();
+          }}
+        />
+      )}
       {preview && <LeadPreview key={preview} leadId={preview} onClose={() => setPreview(null)} />}
       {adding && (
         <AddLeadDialog

@@ -1,4 +1,4 @@
-import { Activity, Boxes, Building2, Inbox, Shield, Users, UsersRound } from "lucide-react";
+import { Activity, Boxes, Building2, Inbox, Shield, Users, UsersRound, Workflow } from "lucide-react";
 
 /** Every settings page, its group and who may open it. The sidebar shows one "Settings"
  * entry when any of these is allowed; typing an address you may not use is refused. */
@@ -6,7 +6,7 @@ export type SettingsPage = {
   href: string;
   title: string;
   hint: string;
-  group: "Company" | "People" | "Your records" | "Getting leads in" | "Security";
+  group: "Company" | "People" | "Your records" | "Getting leads in" | "Automation" | "Security";
   permission: string;
   icon: typeof Users;
 };
@@ -18,6 +18,7 @@ export const SETTINGS_PAGES: SettingsPage[] = [
   { href: "/settings/roles", title: "Roles", hint: "What each role may do and see, including every record type", group: "People", permission: "roles.manage", icon: Shield },
   { href: "/settings/records", title: "Records and fields", hint: "Fields, stages and rules for each kind of record, and how they link", group: "Your records", permission: "crm.configure", icon: Boxes },
   { href: "/settings/lead-capture", title: "Lead capture", hint: "Web forms, who gets new leads, response times, duplicates", group: "Getting leads in", permission: "crm.configure", icon: Inbox },
+  { href: "/settings/automations", title: "Automations", hint: "When something happens, do something: tasks, tags, owners, stages, alerts, webhooks", group: "Automation", permission: "crm.configure", icon: Workflow },
   { href: "/settings/audit", title: "Audit log", hint: "Who changed what, and when", group: "Security", permission: "audit.read", icon: Activity },
 ];
 

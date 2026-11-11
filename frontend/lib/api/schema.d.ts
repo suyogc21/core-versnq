@@ -335,6 +335,97 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/automations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Automations */
+        get: operations["automations-list_automations"];
+        put?: never;
+        /** Create Automation */
+        post: operations["automations-create_automation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/automations/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Automations */
+        put: operations["automations-order_automations"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/automations/{auto_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Automation */
+        get: operations["automations-get_automation"];
+        put?: never;
+        post?: never;
+        /** Delete Automation */
+        delete: operations["automations-delete_automation"];
+        options?: never;
+        head?: never;
+        /** Update Automation */
+        patch: operations["automations-update_automation"];
+        trace?: never;
+    };
+    "/api/v1/automations/{auto_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Runs */
+        get: operations["automations-list_runs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/automations/{auto_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Automation
+         * @description Would the conditions match this lead or deal? Changes nothing.
+         */
+        post: operations["automations-test_automation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/capture-sources": {
         parameters: {
             query?: never;
@@ -661,6 +752,43 @@ export interface paths {
          */
         put: operations["deals-set_lines"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/{deal_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Deal Tags */
+        put: operations["organise-set_deal_tags"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/formula/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Formula
+         * @description Is this formula valid here? Lists the fields a formula may use.
+         */
+        post: operations["organise-check_formula"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1129,6 +1257,40 @@ export interface paths {
          */
         get: operations["leads-organisation_people"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/score": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lead Score */
+        get: operations["organise-lead_score"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Lead Tags */
+        put: operations["organise-set_lead_tags"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1763,6 +1925,77 @@ export interface paths {
         patch: operations["roles-update_role"];
         trace?: never;
     };
+    "/api/v1/score-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Score Rules */
+        get: operations["organise-list_score_rules"];
+        put?: never;
+        /** Create Score Rule */
+        post: operations["organise-create_score_rule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/score-rules/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Order Score Rules */
+        put: operations["organise-order_score_rules"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/score-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Score Rule */
+        delete: operations["organise-delete_score_rule"];
+        options?: never;
+        head?: never;
+        /** Update Score Rule */
+        patch: operations["organise-update_score_rule"];
+        trace?: never;
+    };
+    "/api/v1/score-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Score Settings */
+        get: operations["organise-get_score_settings"];
+        /** Set Score Settings */
+        put: operations["organise-set_score_settings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/settings": {
         parameters: {
             query?: never;
@@ -1815,6 +2048,65 @@ export interface paths {
         head?: never;
         /** Update Sla Rule */
         patch: operations["routing-update_sla_rule"];
+        trace?: never;
+    };
+    "/api/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tags */
+        get: operations["organise-list_tags"];
+        put?: never;
+        /** Create Tag */
+        post: operations["organise-create_tag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Tag
+         * @description Removes the tag from every lead and deal.
+         */
+        delete: operations["organise-delete_tag"];
+        options?: never;
+        head?: never;
+        /** Update Tag */
+        patch: operations["organise-update_tag"];
+        trace?: never;
+    };
+    "/api/v1/tags/{tag_id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Merge Tag
+         * @description Everything tagged with this tag gets `into` instead; this tag is deleted.
+         */
+        post: operations["organise-merge_tag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/tasks": {
@@ -2028,6 +2320,62 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Views */
+        get: operations["organise-list_views"];
+        put?: never;
+        /** Create View */
+        post: operations["organise-create_view"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/views/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Order Views
+         * @description Order your own views (shared ones keep their place).
+         */
+        put: operations["organise-order_views"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/views/{view_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete View */
+        delete: operations["organise-delete_view"];
+        options?: never;
+        head?: never;
+        /** Update View */
+        patch: operations["organise-update_view"];
         trace?: never;
     };
     "/health": {
@@ -2517,6 +2865,97 @@ export interface components {
             /** User Ids */
             user_ids?: string[] | null;
         };
+        /** AutomationIn */
+        AutomationIn: {
+            /** Actions */
+            actions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Conditions
+             * @default []
+             */
+            conditions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Trigger */
+            trigger: {
+                [key: string]: unknown;
+            };
+        };
+        /** AutomationOut */
+        AutomationOut: {
+            /** Actions */
+            actions: {
+                [key: string]: unknown;
+            }[];
+            /** Conditions */
+            conditions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Failed 7D
+             * @default 0
+             */
+            failed_7d: number;
+            /** Failures In Row */
+            failures_in_row: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Run At */
+            last_run_at: string | null;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
+            /**
+             * Runs 7D
+             * @default 0
+             */
+            runs_7d: number;
+            /** Subject */
+            subject: string;
+            /** Trigger */
+            trigger: {
+                [key: string]: unknown;
+            };
+        };
+        /** AutomationPatch */
+        AutomationPatch: {
+            /** Actions */
+            actions?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Conditions */
+            conditions?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Trigger */
+            trigger?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** BoardColumn */
         BoardColumn: {
             /** Amount Minor */
@@ -2917,6 +3356,11 @@ export interface components {
             /** Status */
             status: string;
             /**
+             * Tags
+             * @default []
+             */
+            tags: components["schemas"]["TagRef"][];
+            /**
              * Updated At
              * Format: date-time
              */
@@ -2962,6 +3406,8 @@ export interface components {
         FieldIn: {
             /** Depends On */
             depends_on?: string | null;
+            /** Formula */
+            formula?: string | null;
             /** Group Name */
             group_name?: string | null;
             /**
@@ -2994,6 +3440,8 @@ export interface components {
             depends_on: string | null;
             /** Entity */
             entity: string;
+            /** Formula */
+            formula?: string | null;
             /** Group Name */
             group_name: string | null;
             /**
@@ -3023,6 +3471,8 @@ export interface components {
          * @description key, type and is_unique are fixed once created.
          */
         FieldPatch: {
+            /** Formula */
+            formula?: string | null;
             /** Group Name */
             group_name?: string | null;
             /** Label */
@@ -3041,6 +3491,29 @@ export interface components {
              * Format: email
              */
             email: string;
+        };
+        /** FormulaIn */
+        FormulaIn: {
+            /** Entity */
+            entity: string;
+            /** Formula */
+            formula: string;
+            /**
+             * Key
+             * @default new_field
+             */
+            key: string;
+        };
+        /** FormulaOut */
+        FormulaOut: {
+            /** Error */
+            error?: string | null;
+            /** Fields */
+            fields: {
+                [key: string]: string;
+            };
+            /** Ok */
+            ok: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -3216,6 +3689,11 @@ export interface components {
          */
         LeadFilter: {
             /**
+             * Band
+             * @default []
+             */
+            band: ("hot" | "warm" | "cold")[];
+            /**
              * Cf
              * @description custom field filters as key:value
              * @default []
@@ -3243,6 +3721,12 @@ export interface components {
             stage_id: string[];
             /** Status */
             status?: ("open" | "closed") | null;
+            /**
+             * Tag
+             * @description has any of these tags
+             * @default []
+             */
+            tag: string[];
         };
         /** LeadIn */
         LeadIn: {
@@ -3348,8 +3832,18 @@ export interface components {
             email_consent: string | null;
             /** Employee Range */
             employee_range: string | null;
+            /**
+             * Engagement Score
+             * @default 0
+             */
+            engagement_score: number;
             /** First Name */
             first_name: string | null;
+            /**
+             * Fit Score
+             * @default 0
+             */
+            fit_score: number;
             /**
              * Id
              * Format: uuid
@@ -3400,6 +3894,8 @@ export interface components {
             region: string | null;
             /** Score */
             score: number;
+            /** Score Band */
+            score_band?: string | null;
             /**
              * Source Id
              * Format: uuid
@@ -3415,6 +3911,11 @@ export interface components {
              * Format: uuid
              */
             stage_id: string;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: components["schemas"]["TagRef"][];
             /** Unqualified Reason */
             unqualified_reason: string | null;
             /**
@@ -4325,6 +4826,138 @@ export interface components {
             /** Scope */
             scope?: ("own" | "team" | "all") | null;
         };
+        /** RunOut */
+        RunOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Deal Id */
+            deal_id: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            }[];
+            /** Error */
+            error: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Status */
+            status: string;
+            /** Subject Name */
+            subject_name?: string | null;
+        };
+        /** ScoreLine */
+        ScoreLine: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Points */
+            points: number;
+            /** Rule Id */
+            rule_id: string;
+            /** Times */
+            times: number;
+        };
+        /** ScoreOut */
+        ScoreOut: {
+            /** Band */
+            band: string;
+            /** Engagement */
+            engagement: number;
+            /** Fit */
+            fit: number;
+            /** Lines */
+            lines: components["schemas"]["ScoreLine"][];
+            /** Score */
+            score: number;
+        };
+        /** ScoreRuleIn */
+        ScoreRuleIn: {
+            /** Activity Type Key */
+            activity_type_key?: string | null;
+            /** Condition */
+            condition?: {
+                [key: string]: unknown;
+            } | null;
+            /** Disposition */
+            disposition?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "fit" | "engagement";
+            /** Points */
+            points: number;
+        };
+        /** ScoreRuleOut */
+        ScoreRuleOut: {
+            /** Activity Type Key */
+            activity_type_key: string | null;
+            /** Condition */
+            condition: {
+                [key: string]: unknown;
+            } | null;
+            /** Disposition */
+            disposition: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Kind */
+            kind: string;
+            /** Points */
+            points: number;
+            /** Position */
+            position: number;
+        };
+        /** ScoreRulePatch */
+        ScoreRulePatch: {
+            /** Activity Type Key */
+            activity_type_key?: string | null;
+            /** Condition */
+            condition?: {
+                [key: string]: unknown;
+            } | null;
+            /** Disposition */
+            disposition?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Points */
+            points?: number | null;
+        };
+        /** ScoreSettings */
+        ScoreSettings: {
+            /** Engagement Days */
+            engagement_days: number;
+            /** Hot Score */
+            hot_score: number;
+            /** Warm Score */
+            warm_score: number;
+        };
+        /** SetTags */
+        SetTags: {
+            /**
+             * New
+             * @default []
+             */
+            new: string[];
+            /**
+             * Tag Ids
+             * @default []
+             */
+            tag_ids: string[];
+        };
         /** SettingsOut */
         SettingsOut: {
             /** Branding */
@@ -4600,6 +5233,49 @@ export interface components {
             /** Stage Id */
             stage_id?: string | null;
         };
+        /** TagIn */
+        TagIn: {
+            /** Colour */
+            colour?: string | null;
+            /** Name */
+            name: string;
+        };
+        /** TagOut */
+        TagOut: {
+            /** Colour */
+            colour: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Uses
+             * @default 0
+             */
+            uses: number;
+        };
+        /** TagPatch */
+        TagPatch: {
+            /** Colour */
+            colour?: string | null;
+            /** Name */
+            name?: string | null;
+        };
+        /** TagRef */
+        TagRef: {
+            /** Colour */
+            colour: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
         /** Target */
         Target: {
             /** Key */
@@ -4805,6 +5481,15 @@ export interface components {
         TenantUpdate: {
             /** Name */
             name: string;
+        };
+        /** TestOut */
+        TestOut: {
+            /** Conditions */
+            conditions: {
+                [key: string]: unknown;
+            }[];
+            /** Matches */
+            matches: boolean;
         };
         /** TwoFactorDisableIn */
         TwoFactorDisableIn: {
@@ -5044,6 +5729,94 @@ export interface components {
             /** Unassigned */
             unassigned: number;
         };
+        /** ViewIn */
+        ViewIn: {
+            /** Columns */
+            columns?: string[] | null;
+            /** Direction */
+            direction?: ("asc" | "desc") | null;
+            /**
+             * Entity
+             * @enum {string}
+             */
+            entity: "leads" | "deals";
+            /**
+             * Filters
+             * @default {}
+             */
+            filters: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /**
+             * Sharing
+             * @default private
+             * @enum {string}
+             */
+            sharing: "private" | "team" | "everyone";
+            /** Sort */
+            sort?: string | null;
+            /** Team Id */
+            team_id?: string | null;
+        };
+        /** ViewOut */
+        ViewOut: {
+            /** Columns */
+            columns: unknown[] | null;
+            /** Direction */
+            direction: string | null;
+            /** Entity */
+            entity: string;
+            /** Filters */
+            filters: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Mine
+             * @default false
+             */
+            mine: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Owner User Id
+             * Format: uuid
+             */
+            owner_user_id: string;
+            /** Position */
+            position: number;
+            /** Sharing */
+            sharing: string;
+            /** Sort */
+            sort: string | null;
+            /** Team Id */
+            team_id: string | null;
+        };
+        /** ViewPatch */
+        ViewPatch: {
+            /** Columns */
+            columns?: string[] | null;
+            /** Direction */
+            direction?: ("asc" | "desc") | null;
+            /** Filters */
+            filters?: {
+                [key: string]: unknown;
+            } | null;
+            /** Name */
+            name?: string | null;
+            /** Sharing */
+            sharing?: ("private" | "team" | "everyone") | null;
+            /** Sort */
+            sort?: string | null;
+            /** Team Id */
+            team_id?: string | null;
+        };
         /** AuditOut */
         app__modules__audit__router__AuditOut: {
             /** Action */
@@ -5090,15 +5863,25 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "assign" | "stage" | "delete";
+            action: "assign" | "stage" | "delete" | "tag" | "untag";
             /** Ids */
             ids: string[];
             /** Lost Reason Id */
             lost_reason_id?: string | null;
+            /**
+             * New Tags
+             * @default []
+             */
+            new_tags: string[];
             /** Owner User Id */
             owner_user_id?: string | null;
             /** Stage Id */
             stage_id?: string | null;
+            /**
+             * Tag Ids
+             * @default []
+             */
+            tag_ids: string[];
         };
         /**
          * BulkIn
@@ -5109,16 +5892,26 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "assign" | "stage" | "follow_up" | "delete";
+            action: "assign" | "stage" | "follow_up" | "delete" | "tag" | "untag";
             filter?: components["schemas"]["LeadFilter"] | null;
             /** Ids */
             ids?: string[] | null;
+            /**
+             * New Tags
+             * @default []
+             */
+            new_tags: string[];
             /** Next Follow Up At */
             next_follow_up_at?: string | null;
             /** Owner User Id */
             owner_user_id?: string | null;
             /** Stage Id */
             stage_id?: string | null;
+            /**
+             * Tag Ids
+             * @default []
+             */
+            tag_ids: string[];
             /** Unqualified Reason */
             unqualified_reason?: string | null;
         };
@@ -5959,6 +6752,254 @@ export interface operations {
             };
         };
     };
+    "automations-list_automations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationOut"][];
+                };
+            };
+        };
+    };
+    "automations-create_automation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "automations-order_automations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "automations-get_automation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                auto_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "automations-delete_automation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                auto_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "automations-update_automation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                auto_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "automations-list_runs": {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                auto_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "automations-test_automation": {
+        parameters: {
+            query?: {
+                lead_id?: string | null;
+                deal_id?: string | null;
+            };
+            header?: never;
+            path: {
+                auto_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "capture-list_capture_sources": {
         parameters: {
             query?: never;
@@ -6399,6 +7440,7 @@ export interface operations {
                 close_to?: string | null;
                 q?: string | null;
                 cf?: string[];
+                tag?: string[];
                 sort?: "created" | "updated" | "name" | "amount" | "close" | "stage" | "owner";
                 dir?: "asc" | "desc";
                 limit?: number;
@@ -6811,6 +7853,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DealWithLines"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-set_deal_tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetTags"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-check_formula": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FormulaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormulaOut"];
                 };
             };
             /** @description Validation Error */
@@ -7346,7 +8456,10 @@ export interface operations {
                 follow_up?: ("overdue" | "today" | "none") | null;
                 /** @description custom field filters as key:value */
                 cf?: string[];
-                sort?: "name" | "stage" | "follow_up" | "owner" | "last_activity" | "source" | "created" | "city";
+                /** @description has any of these tags */
+                tag?: string[];
+                band?: ("hot" | "warm" | "cold")[];
+                sort?: "name" | "stage" | "follow_up" | "owner" | "last_activity" | "source" | "created" | "city" | "score";
                 dir?: "asc" | "desc";
                 limit?: number;
                 offset?: number;
@@ -7939,6 +9052,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LeadBrief"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-lead_score": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-set_lead_tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetTags"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"][];
                 };
             };
             /** @description Validation Error */
@@ -9660,6 +10839,209 @@ export interface operations {
             };
         };
     };
+    "organise-list_score_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreRuleOut"][];
+                };
+            };
+        };
+    };
+    "organise-create_score_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScoreRuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-order_score_rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreRuleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-delete_score_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-update_score_rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScoreRulePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-get_score_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreSettings"];
+                };
+            };
+        };
+    };
+    "organise-set_score_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScoreSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoreSettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "settings-get_settings_": {
         parameters: {
             query?: never;
@@ -9817,6 +11199,156 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SlaRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-list_tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"][];
+                };
+            };
+        };
+    };
+    "organise-create_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-delete_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-update_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-merge_tag": {
+        parameters: {
+            query: {
+                into: string;
+            };
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"];
                 };
             };
             /** @description Validation Error */
@@ -10382,6 +11914,169 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TemporaryPasswordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-list_views": {
+        parameters: {
+            query: {
+                entity: "leads" | "deals";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-create_view": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-order_views": {
+        parameters: {
+            query: {
+                entity: "leads" | "deals";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__crm__setup_router__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-delete_view": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "organise-update_view": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewOut"];
                 };
             };
             /** @description Validation Error */

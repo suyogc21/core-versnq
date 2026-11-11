@@ -51,10 +51,10 @@ Principles for every step (no shortcuts to hit a date):
 | Activity timeline | Done for calls, notes, stage, owner, custom; email/WhatsApp in steps 8–9 |
 | Configurable stages | Done |
 | Custom fields + grouped field sets | Done for leads; for any record type in step 2 |
-| Tags, lists, smart views (per user and team) | Planned — step 4 |
-| Rule-based lead scoring | Planned — step 4 |
+| Tags, lists, smart views (per user and team) | Built — step 4 |
+| Rule-based lead scoring | Built — step 4 |
 | Bulk actions: assign, update | Done |
-| Bulk actions: tag, enrol | Planned — tag step 4, enrol step 8 |
+| Bulk actions: tag, enrol | Tag built — step 4; enrol step 9 |
 | AI scoring and red flags | ACE |
 
 ### Tasks & activities (§3)
@@ -91,8 +91,8 @@ Principles for every step (no shortcuts to hit a date):
 
 | Feature | Status |
 | --- | --- |
-| WHEN event IF conditions THEN actions | Planned — step 4 |
-| Calculated fields, engagement score | Planned — step 4 |
+| WHEN event IF conditions THEN actions | Built — step 4 |
+| Calculated fields, engagement score | Built — step 4 |
 | Record page layouts per company | Planned — step 7 |
 | Field-level permissions (view/edit/hidden/mandatory) | Planned — step 7 |
 
@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 plan approved 2026-11-11 (Decision log #27); building.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). Next: step 5, customers and documents (needs the file-storage decision).
 
 | Step | What | Why here |
 | --- | --- | --- |

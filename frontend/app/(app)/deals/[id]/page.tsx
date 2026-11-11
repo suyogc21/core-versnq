@@ -10,6 +10,7 @@ import { NativeSelect } from "@/components/app/native-select";
 import { CustomFieldsEditor } from "@/components/crm/bits";
 import { LostDialog, MoneyInput, StatusBadge, moveDeal } from "@/components/crm/deals";
 import { AddFieldButton } from "@/components/crm/field-settings";
+import { TagEditor } from "@/components/crm/tags";
 import { LinksCard } from "@/components/crm/links-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,7 @@ function DealView({ deal }: { deal: Deal }) {
           <StatusBadge status={deal.status} />
           <span className="text-lg font-semibold tabular-nums">{formatMoney(deal.amount_minor, deal.currency)}</span>
           <span className="text-xs text-muted-foreground">added {relative(deal.created_at)}</span>
+          <TagEditor kind="deal" id={deal.id} tags={deal.tags ?? []} editable={editable} />
           {can("deals.delete") && (
             <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={remove}>
               Delete
@@ -485,6 +487,7 @@ function Timeline({ dealId }: { dealId: string }) {
           <div className="text-muted-foreground">
             {when(a.occurred_at)}
             {a.actor_name ? ` · ${a.actor_name}` : ""}
+            {a.actor_type === "automation" ? ` · Automation: ${(a.data as { automation?: string }).automation ?? ""}` : ""}
           </div>
           <div className="font-medium">{a.summary}</div>
           {a.body && a.body !== a.summary && <div className="mt-1 rounded-md bg-muted px-2 py-1 whitespace-pre-wrap">{a.body}</div>}

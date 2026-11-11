@@ -170,7 +170,8 @@ async def apply_custom_fields(
     unknown = [k for k in incoming if k not in defs]
     if unknown:
         raise Invalid(f"Unknown field: {unknown[0]}")
-    calc.refuse_input(defs, incoming)
+    incoming = dict(incoming)
+    calc.refuse_input(defs, incoming, obj.custom_fields or {})
     merged = dict(obj.custom_fields or {})
     changed = []
     for key, raw in incoming.items():

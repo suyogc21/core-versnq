@@ -9,6 +9,7 @@ import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
 import { StagePill } from "@/components/crm/bits";
 import { FieldSettings, OptionsEditor } from "@/components/crm/field-settings";
+import { ScoringSettings } from "@/components/crm/scoring-settings";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,7 @@ import {
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type Tab = "stages" | "sources" | "fields" | "activities" | "rules";
+type Tab = "stages" | "sources" | "fields" | "activities" | "scoring" | "rules";
 const TYPES: [string, string][] = [
   ["text", "Text"],
   ["number", "Number"],
@@ -83,6 +84,7 @@ export default function SetupPage() {
     ["sources", "Sources"],
     ["fields", "Custom fields"],
     ["activities", "Activity types"],
+    ["scoring", "Scoring"],
     ["rules", "Rules"],
   ];
   return (
@@ -107,6 +109,7 @@ export default function SetupPage() {
         {tab === "sources" && <Sources />}
         {tab === "fields" && <FieldSettings entity="lead" />}
         {tab === "activities" && <ActivityTypes />}
+        {tab === "scoring" && <ScoringSettings />}
         {tab === "rules" && <Rules />}
       </div>
     </>

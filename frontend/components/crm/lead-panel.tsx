@@ -249,6 +249,7 @@ export function Timeline({ leadId, filter = "All" }: { leadId: string; filter?: 
             <div className="text-muted-foreground">
               {when(a.occurred_at)}
               {a.actor_name && ` · ${a.actor_name}`}
+              {a.actor_type === "automation" && ` · Automation: ${(a.data as { automation?: string }).automation ?? ""}`}
             </div>
             <div className="font-medium">{a.summary}</div>
             {a.body && a.type_key !== "note" && <div className="mt-1 rounded-md bg-muted px-2 py-1 whitespace-pre-wrap">{a.body}</div>}

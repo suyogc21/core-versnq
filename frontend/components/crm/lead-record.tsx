@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Popover, PopoverHeading, PopoverItem } from "@/components/data-table/popover";
 import { Avatar, StagePill } from "@/components/crm/bits";
 import { DealsCard } from "@/components/crm/deals";
+import { ScoreBadge, TagEditor } from "@/components/crm/tags";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
 import { LinksCard } from "@/components/crm/links-card";
 import { ActionButton, EditLead, Facts, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
@@ -224,7 +225,11 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
             <div className="text-xs text-muted-foreground">
               {[l.primary_phone && formatPhone(l.primary_phone), l.primary_email, l.city, `added ${relative(l.created_at)}`].filter(Boolean).join(" · ")}
             </div>
+            <div className="mt-1">
+              <TagEditor kind="lead" id={l.id} tags={l.tags ?? []} editable={can("leads.edit")} />
+            </div>
           </div>
+          <ScoreBadge leadId={l.id} band={l.score_band} score={l.score} />
           <div className="ml-auto">
             <ContactActions lead={l} onLog={setLogType} />
           </div>

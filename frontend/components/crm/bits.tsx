@@ -103,7 +103,8 @@ export function CustomFieldsEditor({
   onChange: (values: Record<string, unknown>) => void;
 }) {
   const groups = new Map<string, FieldDef[]>();
-  for (const f of fields) groups.set(f.group_name ?? "", [...(groups.get(f.group_name ?? "") ?? []), f]);
+  // Calculated fields fill themselves in; they are shown on the record, not edited.
+  for (const f of fields.filter((x) => x.type !== "calculated")) groups.set(f.group_name ?? "", [...(groups.get(f.group_name ?? "") ?? []), f]);
   const set = (key: string, value: unknown) => {
     const next = { ...values, [key]: value };
     for (const child of fields.filter((f) => f.depends_on === key)) next[child.key] = null; // parent changed

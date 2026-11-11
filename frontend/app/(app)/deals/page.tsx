@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/app/app-shell";
 import { NativeSelect } from "@/components/app/native-select";
 import { LostDialog, NewDealDialog, StatusBadge, moveDeal } from "@/components/crm/deals";
+import { TagList } from "@/components/crm/tags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
@@ -262,6 +263,7 @@ function Card({ deal, overlay }: { deal: Deal; overlay?: boolean }) {
         <StatusBadge status={deal.status} />
       </div>
       {deal.lead_name !== deal.name && <div className="truncate text-muted-foreground">{deal.lead_name}</div>}
+      {(deal.tags ?? []).length > 0 && <TagList tags={deal.tags ?? []} max={2} />}
       <div className="flex items-center gap-2">
         <span className="font-semibold tabular-nums">{formatMoney(deal.amount_minor, deal.currency)}</span>
         {deal.expected_close_on && deal.status === "open" && (

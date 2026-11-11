@@ -509,22 +509,68 @@ async def lead_score(lead_id: uuid.UUID, db: CrmDb, actor: ActiveUser) -> ScoreO
     s = await db.get(TenantSettings, actor.user.tenant_id)
     b = await S.compute(db, lead, settings=s)
     rules = {str(r.id): r for r in await list_score_rules(db, actor)}
-    types = dict((await db.execute(select(ActivityType.key, ActivityType.label))).all())
+    kinds = {t.key: t for t in (await db.scalars(select(ActivityType))).all()}
+    types = {k: t.label for k, t in kinds.items()}
+
+    def outcome(type_key: str, value: str) -> str:
+        for f in kinds[type_key].fields if type_key in kinds else []:
+            if f.get("key") == "disposition":
+                return next(
+                    (o["label"] for o in f.get("options", []) if o["value"] == value), value
+                )
+        return value
+
     lines = []
     for line in b.lines:
         r = rules[line["rule_id"]]
         if r.kind == "fit":
-            c = r.condition
-            label = f"{c['field']} {c['op'].replace('_', ' ')} {c.get('value', '')}".strip()
+            label = await _describe(db, r.condition)
         else:
             label = types.get(r.activity_type_key, r.activity_type_key)
             if r.disposition:
-                label += f" ({r.disposition})"
+                label += f": {outcome(r.activity_type_key, r.disposition)}"
             label += f" × {line['times']}"
         lines.append(ScoreLine(**line, label=label))
     return ScoreOut(
         score=b.total, fit=b.fit, engagement=b.engagement, band=S.band(b.total, s), lines=lines
     )
+
+
+FIELD_NAMES = {
+    "source_id": "Source", "stage_id": "Stage", "owner_user_id": "Owner", "tags": "Tags",
+    "city": "City", "region": "Region", "country_code": "Country", "kind": "Type",
+    "preferred_language": "Language", "campaign": "Campaign", "utm_source": "UTM source",
+}  # fmt: skip
+OP_WORDS = {
+    "is": "is", "is_not": "is not", "any_of": "is any of", "none_of": "is none of",
+    "contains": "contains", "empty": "is empty", "not_empty": "is not empty",
+    "gt": "is more than", "lt": "is less than",
+}  # fmt: skip
+
+
+async def _describe(db, cond: dict) -> str:
+    """'Source is Website' rather than ids."""
+    from app.modules.crm.models import LeadSource, LeadStage
+    from app.modules.users.models import User
+
+    field, value = cond["field"], cond.get("value")
+    defs = await L.lead_fields(db, "lead")
+    name = defs[field].label if field in defs else FIELD_NAMES.get(field, field.replace("_", " "))
+    model = {"source_id": LeadSource, "stage_id": LeadStage, "owner_user_id": User, "tags": Tag}
+    values = value if isinstance(value, list) else ([value] if value is not None else [])
+    shown = []
+    for v in values:
+        text = str(v)
+        if field in model:
+            try:
+                row = await db.get(model[field], uuid.UUID(text))
+                text = getattr(row, "name", text) if row else text
+            except ValueError:
+                pass
+        elif field in defs and defs[field].options:
+            text = next((o["label"] for o in defs[field].options if o["value"] == text), text)
+        shown.append(text)
+    return f"{name} {OP_WORDS.get(cond['op'], cond['op'])} {', '.join(shown)}".strip()
 
 
 # ---------- formulas ----------

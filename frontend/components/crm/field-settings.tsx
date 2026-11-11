@@ -24,6 +24,7 @@ export const TYPES: [string, string][] = [
   ["phone", "Phone"],
   ["email", "Email"],
   ["url", "Link"],
+  ["calculated", "Calculated"],
 ];
 
 export const slug = (s: string) =>
@@ -164,7 +165,9 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
     is_unique: field?.is_unique ?? false,
     depends_on: field?.depends_on ?? "",
     group_name: field?.group_name ?? "",
+    formula: field?.formula ?? "",
   });
+  const isCalc = v.type === "calculated";
   const [keyTouched, setKeyTouched] = useState(false);
   const isChoice = v.type === "select" || v.type === "multi_select";
   const parents = all.filter((f) => f.type === "select" && f.key !== v.key);
@@ -179,7 +182,12 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
           ? unwrap(
               await api.PATCH("/api/v1/custom-fields/{field_id}", {
                 params: { path: { field_id: field.id } },
-                body: { label: v.label, required: v.required, group_name: v.group_name || null, ...(isChoice ? { options: v.options } : {}) },
+                body: {
+                  label: v.label,
+                  group_name: v.group_name || null,
+                  ...(isCalc ? { formula: v.formula } : { required: v.required }),
+                  ...(isChoice ? { options: v.options } : {}),
+                },
               }),
             )
           : unwrap(
@@ -194,6 +202,7 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
                   is_unique: v.is_unique,
                   depends_on: v.depends_on || null,
                   group_name: v.group_name || null,
+                  formula: isCalc ? v.formula : null,
                 },
               }),
             ),
@@ -274,14 +283,17 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
               </div>
             </>
           )}
+          {isCalc && <FormulaBox entity={entity} fieldKey={v.key || "new_field"} value={v.formula} onChange={(formula) => setV({ ...v, formula })} />}
           <div className="space-y-1.5">
             <Label htmlFor="f-group">Group (optional)</Label>
             <Input id="f-group" placeholder="e.g. Interest, KYC" value={v.group_name} onChange={(e) => setV({ ...v, group_name: e.target.value })} />
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="accent-primary" checked={v.required} onChange={(e) => setV({ ...v, required: e.target.checked })} />
-            Required
-          </label>
+          {!isCalc && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="accent-primary" checked={v.required} onChange={(e) => setV({ ...v, required: e.target.checked })} />
+              Required
+            </label>
+          )}
           {!field && ["text", "number", "email", "phone", "url"].includes(v.type) && (
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" className="accent-primary" checked={v.is_unique} onChange={(e) => setV({ ...v, is_unique: e.target.checked })} />
@@ -317,5 +329,36 @@ export function AddFieldButton({ entity }: { entity: string }) {
       </button>
       {open && <FieldDialog entity={entity} field={null} all={fields.data ?? []} onClose={() => setOpen(false)} />}
     </>
+  );
+}
+
+
+/** Formula with a live check and the fields it may use. */
+function FormulaBox({ entity, fieldKey, value, onChange }: { entity: string; fieldKey: string; value: string; onChange: (v: string) => void }) {
+  const check = useQuery({
+    queryKey: ["formula-check", entity, fieldKey, value],
+    queryFn: async () => unwrap(await api.POST("/api/v1/formula/check", { body: { entity, key: fieldKey, formula: value || "0" } })),
+  });
+  const fields = Object.entries(check.data?.fields ?? {});
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="f-formula">Formula</Label>
+      <Input id="f-formula" className="font-mono text-xs" placeholder="fee - ifempty(scholarship, 0)" value={value} onChange={(e) => onChange(e.target.value)} />
+      {value && check.data && (
+        <p className={check.data.ok ? "text-xs text-emerald-600" : "text-xs text-destructive"}>{check.data.ok ? "Looks good" : check.data.error}</p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Use + − × ÷ and brackets, round(x, 2), days_between(date1, date2), today(), ifempty(field, 0), min, max, abs.
+      </p>
+      {fields.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {fields.map(([k, t]) => (
+            <button key={k} type="button" className="rounded border px-1.5 py-0.5 font-mono text-[11px] hover:bg-accent" title={t} onClick={() => onChange(`${value}${value && !value.endsWith(" ") ? " " : ""}${k}`)}>
+              {k}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

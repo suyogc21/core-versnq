@@ -80,10 +80,14 @@ def fill(defs: dict, entity: str, obj, merged: dict) -> list[str]:
     return changed
 
 
-def refuse_input(defs: dict, incoming: dict) -> None:
-    for key in incoming:
+def refuse_input(defs: dict, incoming: dict, current: dict) -> None:
+    """Typing into a calculated field is refused; a form sending back the value it was
+    shown (unchanged) is fine, and that key is then ignored."""
+    for key in list(incoming):
         if key in defs and defs[key].type == "calculated":
-            raise Invalid(f"{defs[key].label} is calculated and cannot be typed in")
+            if incoming[key] != current.get(key):
+                raise Invalid(f"{defs[key].label} is calculated and cannot be typed in")
+            del incoming[key]
 
 
 def users_of(defs: dict, key: str) -> list[str]:
