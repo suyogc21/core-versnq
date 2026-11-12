@@ -13,7 +13,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { CalendarDays, Columns3, List, Plus } from "lucide-react";
+import { CalendarDays, Columns3, Download, List, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { relative } from "@/lib/crm";
 import { type Board, type Deal, type PipelineStage, formatMoney, useBoard, useDeals, usePipelines, useRefreshDeals } from "@/lib/deals";
+import { exportCsv } from "@/lib/reports";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +93,17 @@ export default function DealsPage() {
             <Button size="sm" variant={mine ? "default" : "outline"} onClick={() => setMine(!mine)}>
               Mine
             </Button>
+            {can("deals.export") && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  exportCsv("/api/v1/deals/export", { pipeline_id: pipeline?.id, owner, q: q || undefined }, label("deal", true).toLowerCase()).catch((e) => toast.error(e.message))
+                }
+              >
+                <Download /> Export
+              </Button>
+            )}
             <div className="flex rounded-md border">
               {(["board", "list"] as const).map((v) => (
                 <button

@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { phone, type TaskItem, useMyDay, when } from "@/lib/crm";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+import { amounts, useMyDashboard } from "@/lib/reports";
 
 export default function MyDayPage() {
   const { me, can } = useAuth();
@@ -92,6 +93,7 @@ export default function MyDayPage() {
             <Stat label={`New ${leadsWord}`} value={day.data.new_leads.length} />
           </div>
         )}
+        {can("leads.edit") && <MonthStrip />}
         {day.data?.unassigned_count ? (
           <Link href="/leads" className="surface flex items-center gap-2.5 px-4 py-3 text-[13px] hover:shadow-float">
             <span className="size-2 shrink-0 rounded-full bg-amber-500" />
@@ -159,5 +161,30 @@ function Stat({ label, value, danger }: { label: string; value: number; danger?:
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className={cn("mt-1 text-3xl font-semibold tracking-tight tabular-nums", danger && "text-destructive")}>{value}</div>
     </div>
+  );
+}
+
+/** This month at a glance; the full view is Dashboards → My numbers. */
+function MonthStrip() {
+  const d = useMyDashboard({ period: "month" });
+  if (!d.data) return null;
+  const c = d.data.current;
+  return (
+    <Link href="/dashboards" className="surface flex flex-wrap items-center gap-x-5 gap-y-1 px-4 py-2.5 text-[13px] hover:shadow-float" data-month-strip>
+      <span className="font-medium">This month</span>
+      <span>
+        <b className="tabular-nums">{c.calls}</b> calls
+      </span>
+      <span>
+        <b className="tabular-nums">{c.deals_won}</b> won
+      </span>
+      <span>
+        Booked <b className="tabular-nums">{amounts(c.booked)}</b>
+      </span>
+      <span>
+        Collected <b className="tabular-nums">{amounts(c.collected)}</b>
+      </span>
+      <span className="ml-auto text-xs text-muted-foreground">My numbers →</span>
+    </Link>
   );
 }

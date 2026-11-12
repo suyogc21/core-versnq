@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -60,6 +60,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const mainItems = [
     ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/" ? i : { ...i, label: label(i.label, true) })),
     ...(moneyOn && can("invoices.read") ? [{ href: "/money", label: "Money", icon: ReceiptText }] : []),
+    ...(["leads.edit", "dashboards.team", "dashboards.business", "dashboards.money"].some((c) => can(c))
+      ? [{ href: "/dashboards", label: "Dashboards", icon: ChartColumn }]
+      : []),
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
   ];

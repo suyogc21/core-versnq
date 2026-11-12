@@ -111,8 +111,8 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 2.10 Convert lead → customer, document checklist and vault (files on our server, #29; step 5, #32). No customer upload link: staff upload only (#33)
 - [x] 2.11 Tags, lists, smart views, bulk actions, rule-based lead scoring (step 4, Decision log #27; lists = tags + saved views)
 - [x] 2.11b Automation builder: WHEN event IF conditions THEN actions (task, field, owner, stage, webhook) — Decision log #16
-- [ ] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts) — *My Day with the calling queue done in slice A*
-- [ ] 2.13 CSV export
+- [x] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts) — *My Day with the calling queue done in slice A*
+- [x] 2.13 CSV export
 - [ ] 2.14 Frontend for 2.1–2.13
 - [ ] 2.15 Record page layouts per company (slice G)
 - [ ] 2.16 Field-level permissions: view / edit / hidden / mandatory per role (slice G)
@@ -237,3 +237,4 @@ CORE/
 | 2026-11-12 | UI | New look (Decision log #30): grey page with white panels, soft shadows, Inter, big titles and numbers; lead, deal and record pages as cards; My Day with number tiles; frosted top bar; dark mode matched; lists and board stay compact. Files on our server (#29); Key accounts in the lineup (#31). 6 e2e + 26-check walk green |
 | 2026-11-12 | 5 | Customers and documents: make customer (won deal or lead), numbered per company, same record and timeline; Customers list; checklist per company or per product (packs ship one); upload, preview, verify / reject with reason; staff-only uploads (customer link removed, #33); photos shrunk in the browser; files on our server with 2 GB quota; Finance reads all customers; nightly reminders and file clean-up. Also fixed: merging leads deleted the other lead's deals, tags and links. 376 backend tests + 6 e2e + 30-check walk (step 4 walk still green) |
 | 2026-11-12 | 6 | Money (Decision log #34): billing entities with gapless numbering (yearly reset), tax rates with parts from the pack, invoices draft → issued → paid / void, exact installments, payments oldest first with proof, reversals, balances per currency, aging; Razorpay / Stripe links with signed webhooks and a nightly check; pay directly with bank details and a UPI QR; invoice, receipt, reminder and cancellation emails from the company's own mailbox; reminders, overdue tasks, repeat invoices. 406 backend tests + 6 e2e + 30-check walk green |
+| 2026-11-12 | 7 | Dashboards (Decision log #35): My numbers, Team (funnel, sources, leaderboard, leakage, slow responses, lost reasons), Business (booked vs collected, forecast, 6-month trend), Money (invoiced, collected, due, overdue, aging, by method and entity, who owes most); periods in the company's time zone with the change vs before; numbers open their lists. CSV export of leads, deals, customers, invoices and payments, one permission per list (Owner / Admin by default), formula-safe, audited, admins alerted. 417 backend tests + 6 e2e + 24-check walk green |

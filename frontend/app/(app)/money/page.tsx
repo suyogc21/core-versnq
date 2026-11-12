@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Download } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/deals";
 import { type InvoiceQuery, METHOD_LABEL, day, openPdf, useAging, useInvoices, useMoneyOn, usePayments } from "@/lib/money";
+import { exportCsv } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -24,9 +26,18 @@ type Tab = (typeof TABS)[number]["key"];
 const STATUSES = ["draft", "issued", "partly_paid", "paid", "void"] as const;
 
 export default function MoneyPage() {
+  return (
+    <Suspense>
+      <MoneyTabs />
+    </Suspense>
+  );
+}
+
+function MoneyTabs() {
   const { can } = useAuth();
   const on = useMoneyOn();
-  const [tab, setTab] = useState<Tab>("invoices");
+  const asked = useSearchParams().get("tab");
+  const [tab, setTab] = useState<Tab>(() => (TABS.some((t) => t.key === asked) ? (asked as Tab) : "invoices"));
   if (!can("invoices.read")) return <p className="p-8 text-center text-muted-foreground">You don&apos;t have access to money.</p>;
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -59,6 +70,7 @@ export default function MoneyPage() {
 }
 
 function Invoices({ overdue = false }: { overdue?: boolean }) {
+  const { can } = useAuth();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
@@ -93,6 +105,11 @@ function Invoices({ overdue = false }: { overdue?: boolean }) {
           </div>
         )}
         <span className="ml-auto text-xs text-muted-foreground">{total} invoices</span>
+        {can("invoices.export") && (
+          <Button size="sm" variant="ghost" onClick={() => exportCsv("/api/v1/invoices/export", { q: query.q, status: query.status, overdue: query.overdue }, overdue ? "overdue-invoices" : "invoices").catch((e) => toast.error(e.message))}>
+            <Download /> Export
+          </Button>
+        )}
       </div>
       <div className="surface overflow-x-auto">
         <table className="w-full text-[13px]">
@@ -153,9 +170,18 @@ function Invoices({ overdue = false }: { overdue?: boolean }) {
 }
 
 function Payments() {
+  const { can } = useAuth();
   const list = usePayments();
   const rows = list.data ?? [];
   return (
+    <div className="space-y-3">
+      {can("invoices.export") && (
+        <div className="flex justify-end">
+          <Button size="sm" variant="ghost" onClick={() => exportCsv("/api/v1/payments/export", {}, "payments").catch((e) => toast.error(e.message))}>
+            <Download /> Export
+          </Button>
+        </div>
+      )}
     <div className="surface overflow-x-auto">
       <table className="w-full text-[13px]">
         <thead className="text-left text-xs text-muted-foreground">
@@ -196,6 +222,7 @@ function Payments() {
           )}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

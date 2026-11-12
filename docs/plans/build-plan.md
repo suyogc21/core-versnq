@@ -111,10 +111,10 @@ Principles for every step (no shortcuts to hit a date):
 
 | Feature | Status |
 | --- | --- |
-| Salesperson: today, follow-ups, my pipeline, conversions, end-of-day summary | Part — My Day done; the rest step 6 |
-| Sales Manager: team funnel, sources, leaderboard, leakage, SLA breaches | Planned — step 6 |
-| Owner/Admin: revenue, collections, overdue, sequence performance, channel health | Planned — step 7 (+ steps 9–10 data) |
-| Finance dashboard: invoices, dues, aging, entity-wise collections | Planned — step 7 |
+| Salesperson: today, follow-ups, my pipeline, conversions, end-of-day summary | Done — My Day + Dashboards → My numbers (step 7) |
+| Sales Manager: team funnel, sources, leaderboard, leakage, SLA breaches | Done — Dashboards → Team (step 7) |
+| Owner/Admin: revenue, collections, overdue, sequence performance, channel health | Done — Dashboards → Business (step 7); sequence and channel figures with steps 9–10 |
+| Finance dashboard: invoices, dues, aging, entity-wise collections | Done — Dashboards → Money (step 7) |
 | Custom reports | Later |
 
 ### Sequences, inbox, channels (§5, §6)
@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, staff uploads, review; customer link removed (#33) (376 backend tests, 6 e2e, 30-check walk). Step 6 done 2026-11-12 (Decision log #34): invoices, installments, payments, Razorpay / Stripe links, pay-directly with UPI QR, emails from the company's mailbox, reminders, repeat invoices, aging (406 backend tests, 6 e2e, 30-check walk). Next: step 7, dashboards.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, staff uploads, review; customer link removed (#33) (376 backend tests, 6 e2e, 30-check walk). Step 6 done 2026-11-12 (Decision log #34): invoices, installments, payments, Razorpay / Stripe links, pay-directly with UPI QR, emails from the company's mailbox, reminders, repeat invoices, aging (406 backend tests, 6 e2e, 30-check walk). Step 7 done 2026-11-12 (Decision log #35): Dashboards with My numbers / Team / Business / Money tabs and CSV export per list, admin-controlled (417 backend tests, 6 e2e, 24-check walk). Next: step 7b key accounts add-on (to plan) or step 8.
 
 | Step | What | Why here |
 | --- | --- | --- |

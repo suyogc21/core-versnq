@@ -615,6 +615,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customers/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Customers */
+        get: operations["reports-export_customers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/customers/{customer_id}": {
         parameters: {
             query?: never;
@@ -740,6 +757,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboards/business": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Business Dashboard */
+        get: operations["reports-business_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Dashboard */
+        get: operations["reports-my_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/money": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Money Dashboard */
+        get: operations["reports-money_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Team Dashboard */
+        get: operations["reports-team_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/deals": {
         parameters: {
             query?: never;
@@ -793,6 +878,23 @@ export interface paths {
          * @description Same rules as one at a time; deals that fail one are skipped and reported.
          */
         post: operations["deals-bulk_deals"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/deals/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Deals */
+        get: operations["reports-export_deals"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1119,6 +1221,23 @@ export interface paths {
         put?: never;
         /** Create Invoice */
         post: operations["money-create_invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Invoices */
+        get: operations["reports-export_invoices"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1464,6 +1583,23 @@ export interface paths {
          * @description Numbers on the view tabs (within what this person may see).
          */
         get: operations["leads-view_counts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Leads */
+        get: operations["reports-export_leads"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2132,6 +2268,23 @@ export interface paths {
         };
         /** List Payments */
         get: operations["money-list_payments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Payments */
+        get: operations["reports-export_payments"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3527,6 +3680,21 @@ export interface components {
             /** Type Key */
             type_key: string;
         };
+        /** AgingOut */
+        AgingOut: {
+            /** Buckets */
+            buckets: {
+                [key: string]: number;
+            };
+            /** Currency */
+            currency: string;
+            /** Entity Id */
+            entity_id: string;
+            /** Entity Name */
+            entity_name: string;
+            /** Total Minor */
+            total_minor: number;
+        };
         /** AgingRow */
         AgingRow: {
             /** Buckets */
@@ -3546,6 +3714,13 @@ export interface components {
             entity_name: string;
             /** Total Minor */
             total_minor: number;
+        };
+        /** Amount */
+        Amount: {
+            /** Currency */
+            currency: string;
+            /** Minor */
+            minor: number;
         };
         /** AssignmentRuleIn */
         AssignmentRuleIn: {
@@ -3781,6 +3956,15 @@ export interface components {
             done: number;
             /** Skipped */
             skipped: components["schemas"]["Skipped"][];
+        };
+        /** BusinessDashboard */
+        BusinessDashboard: {
+            current: components["schemas"]["Headline"];
+            now: components["schemas"]["RightNow"];
+            period: components["schemas"]["PeriodOut"];
+            previous: components["schemas"]["Headline"];
+            /** Trend */
+            trend: components["schemas"]["TrendMonth"][];
         };
         /** CaptureSourceIn */
         CaptureSourceIn: {
@@ -4259,6 +4443,21 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["LineOut"][];
         };
+        /** Debtor */
+        Debtor: {
+            /** Currency */
+            currency: string;
+            /** Customer Id */
+            customer_id: string;
+            /** Lead Id */
+            lead_id: string;
+            /** Minor */
+            minor: number;
+            /** Name */
+            name: string;
+            /** Number */
+            number: string;
+        };
         /** DocumentOut */
         DocumentOut: {
             /** Allow Office */
@@ -4288,6 +4487,17 @@ export interface components {
             reviewed_by_name: string | null;
             /** Status */
             status: string;
+        };
+        /** EntityAmount */
+        EntityAmount: {
+            /** Currency */
+            currency: string;
+            /** Entity Id */
+            entity_id: string;
+            /** Entity Name */
+            entity_name: string;
+            /** Minor */
+            minor: number;
         };
         /** EntityIn */
         EntityIn: {
@@ -4592,6 +4802,15 @@ export interface components {
             /** Ok */
             ok: boolean;
         };
+        /** FunnelStep */
+        FunnelStep: {
+            /** Count */
+            count: number;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
         /** GatewayIn */
         GatewayIn: {
             /**
@@ -4650,6 +4869,23 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** Headline */
+        Headline: {
+            /** Booked */
+            booked: components["schemas"]["Amount"][];
+            /** Calls */
+            calls: number;
+            /** Collected */
+            collected: components["schemas"]["Amount"][];
+            /** Converted */
+            converted: number;
+            /** Deals Won */
+            deals_won: number;
+            /** Follow Ups Done */
+            follow_ups_done: number;
+            /** New Leads */
+            new_leads: number;
         };
         /** IdentityIn */
         IdentityIn: {
@@ -5093,6 +5329,16 @@ export interface components {
              * @default []
              */
             cf: string[];
+            /**
+             * Created From
+             * @description created on or after (company day)
+             */
+            created_from?: string | null;
+            /**
+             * Created To
+             * @description created on or before (company day)
+             */
+            created_to?: string | null;
             /** Follow Up */
             follow_up?: ("overdue" | "today" | "none") | null;
             /**
@@ -5377,6 +5623,27 @@ export interface components {
             version: number;
             /** Website */
             website?: string | null;
+        };
+        /** LeaderRow */
+        LeaderRow: {
+            /** Booked */
+            booked: components["schemas"]["Amount"][];
+            /** Calls */
+            calls: number;
+            /** Collected */
+            collected: components["schemas"]["Amount"][];
+            /** Deals Won */
+            deals_won: number;
+            /** Follow Ups Done */
+            follow_ups_done: number;
+            /** Name */
+            name: string;
+            /** New Leads */
+            new_leads: number;
+            /** Sla Missed */
+            sla_missed: number;
+            /** User Id */
+            user_id: string;
         };
         /** LineBody */
         LineBody: {
@@ -5781,6 +6048,15 @@ export interface components {
             /** To Address */
             to_address: string;
         };
+        /** MethodAmount */
+        MethodAmount: {
+            /** Currency */
+            currency: string;
+            /** Method */
+            method: string;
+            /** Minor */
+            minor: number;
+        };
         /** ModuleOut */
         ModuleOut: {
             /** Core */
@@ -5791,6 +6067,40 @@ export interface components {
             key: string;
             /** Name */
             name: string;
+        };
+        /** MoneyDashboard */
+        MoneyDashboard: {
+            current: components["schemas"]["MoneyNumbers"];
+            period: components["schemas"]["PeriodOut"];
+            /** Previous Collected */
+            previous_collected: components["schemas"]["Amount"][];
+            /** Previous Invoiced */
+            previous_invoiced: components["schemas"]["Amount"][];
+        };
+        /** MoneyNumbers */
+        MoneyNumbers: {
+            /** Aging */
+            aging: components["schemas"]["AgingOut"][];
+            /** By Entity */
+            by_entity: components["schemas"]["EntityAmount"][];
+            /** By Method */
+            by_method: components["schemas"]["MethodAmount"][];
+            /** Collected */
+            collected: components["schemas"]["Amount"][];
+            /** Due */
+            due: components["schemas"]["Amount"][];
+            /** Due Next 30 Days */
+            due_next_30_days: components["schemas"]["Amount"][];
+            /** Installments Next 30 Days */
+            installments_next_30_days: number;
+            /** Invoiced */
+            invoiced: components["schemas"]["Amount"][];
+            /** Invoices Issued */
+            invoices_issued: number;
+            /** Overdue */
+            overdue: components["schemas"]["Amount"][];
+            /** Top Overdue */
+            top_overdue: components["schemas"]["Debtor"][];
         };
         /** MoneySettings */
         MoneySettings: {
@@ -5822,6 +6132,13 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** MyDashboard */
+        MyDashboard: {
+            current: components["schemas"]["Headline"];
+            now: components["schemas"]["RightNow"];
+            period: components["schemas"]["PeriodOut"];
+            previous: components["schemas"]["Headline"];
+        };
         /** MyDayOut */
         MyDayOut: {
             /** New Leads */
@@ -5834,6 +6151,13 @@ export interface components {
             unassigned_count: number | null;
             /** Upcoming */
             upcoming: components["schemas"]["TaskOut"][];
+        };
+        /** Named */
+        Named: {
+            /** Count */
+            count: number;
+            /** Name */
+            name: string;
         };
         /** NewInvoice */
         NewInvoice: {
@@ -5991,6 +6315,31 @@ export interface components {
             reverse_reason: string | null;
             /** Status */
             status: string;
+        };
+        /** PeriodOut */
+        PeriodOut: {
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Previous End
+             * Format: date
+             */
+            previous_end: string;
+            /**
+             * Previous Start
+             * Format: date
+             */
+            previous_start: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
         };
         /** PermissionOut */
         PermissionOut: {
@@ -6458,6 +6807,23 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** RightNow */
+        RightNow: {
+            /** Leaking */
+            leaking: number;
+            /** Open Deals */
+            open_deals: number;
+            /** Overdue Money */
+            overdue_money: components["schemas"]["Amount"][];
+            /** Pipeline */
+            pipeline: components["schemas"]["Amount"][];
+            /** Tasks Due Today */
+            tasks_due_today: number;
+            /** Tasks Overdue */
+            tasks_overdue: number;
+            /** Weighted */
+            weighted: components["schemas"]["Amount"][];
+        };
         /** RoleAccess */
         RoleAccess: {
             /** Create */
@@ -6834,6 +7200,21 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** SourceRow */
+        SourceRow: {
+            /** Contacted */
+            contacted: number;
+            /** Conversion Bp */
+            conversion_bp: number;
+            /** Converted */
+            converted: number;
+            /** Leads */
+            leads: number;
+            /** Name */
+            name: string;
+            /** Source Id */
+            source_id: string;
+        };
         /** StaffAccountOut */
         StaffAccountOut: {
             /** Email */
@@ -7133,6 +7514,25 @@ export interface components {
             /** Parts */
             parts?: components["schemas"]["TaxPart"][] | null;
         };
+        /** TeamDashboard */
+        TeamDashboard: {
+            current: components["schemas"]["Headline"];
+            /** Everyone */
+            everyone: boolean;
+            /** Funnel */
+            funnel: components["schemas"]["FunnelStep"][];
+            /** Leaderboard */
+            leaderboard: components["schemas"]["LeaderRow"][];
+            /** Lost Reasons */
+            lost_reasons: components["schemas"]["Named"][];
+            now: components["schemas"]["RightNow"];
+            period: components["schemas"]["PeriodOut"];
+            previous: components["schemas"]["Headline"];
+            /** Sla Breaches */
+            sla_breaches: number;
+            /** Sources */
+            sources: components["schemas"]["SourceRow"][];
+        };
         /** TeamIn */
         TeamIn: {
             /** Name */
@@ -7255,6 +7655,19 @@ export interface components {
             }[];
             /** Matches */
             matches: boolean;
+        };
+        /** TrendMonth */
+        TrendMonth: {
+            /** Booked */
+            booked: components["schemas"]["Amount"][];
+            /** Collected */
+            collected: components["schemas"]["Amount"][];
+            /** Converted */
+            converted: number;
+            /** Month */
+            month: string;
+            /** New Leads */
+            new_leads: number;
         };
         /** TwoFactorDisableIn */
         TwoFactorDisableIn: {
@@ -9283,6 +9696,40 @@ export interface operations {
             };
         };
     };
+    "reports-export_customers": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: ("active" | "inactive") | null;
+                owner?: string[];
+                documents?: ("missing" | "complete") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "customers-get_customer": {
         parameters: {
             query?: never;
@@ -9616,6 +10063,138 @@ export interface operations {
             };
         };
     };
+    "reports-business_dashboard": {
+        parameters: {
+            query?: {
+                period?: "today" | "week" | "month" | "last_month" | "quarter" | "year" | "custom";
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "reports-my_dashboard": {
+        parameters: {
+            query?: {
+                period?: "today" | "week" | "month" | "last_month" | "quarter" | "year" | "custom";
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "reports-money_dashboard": {
+        parameters: {
+            query?: {
+                period?: "today" | "week" | "month" | "last_month" | "quarter" | "year" | "custom";
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoneyDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "reports-team_dashboard": {
+        parameters: {
+            query?: {
+                period?: "today" | "week" | "month" | "last_month" | "quarter" | "year" | "custom";
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "deals-list_deals": {
         parameters: {
             query?: {
@@ -9746,6 +10325,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BulkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "reports-export_deals": {
+        parameters: {
+            query?: {
+                pipeline_id?: string | null;
+                stage_id?: string[];
+                status?: ("open" | "won" | "lost") | null;
+                owner?: string[];
+                close_from?: string | null;
+                close_to?: string | null;
+                q?: string | null;
+                cf?: string[];
+                tag?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
                 };
             };
             /** @description Validation Error */
@@ -10554,6 +11172,42 @@ export interface operations {
             };
         };
     };
+    "reports-export_invoices": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: ("draft" | "issued" | "partly_paid" | "paid" | "void")[];
+                entity_id?: string | null;
+                customer_id?: string | null;
+                owner?: string[];
+                overdue?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "money-get_invoice": {
         parameters: {
             query?: never;
@@ -11277,6 +11931,10 @@ export interface operations {
                 /** @description has any of these tags */
                 tag?: string[];
                 band?: ("hot" | "warm" | "cold")[];
+                /** @description created on or after (company day) */
+                created_from?: string | null;
+                /** @description created on or before (company day) */
+                created_to?: string | null;
                 sort?: "name" | "stage" | "follow_up" | "owner" | "last_activity" | "source" | "created" | "city" | "score";
                 dir?: "asc" | "desc";
                 limit?: number;
@@ -11390,6 +12048,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ViewCounts"];
+                };
+            };
+        };
+    };
+    "reports-export_leads": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                stage_id?: string[];
+                source_id?: string[];
+                /** @description 'me', 'unassigned' or user ids */
+                owner?: string[];
+                status?: ("open" | "closed") | null;
+                follow_up?: ("overdue" | "today" | "none") | null;
+                /** @description custom field filters as key:value */
+                cf?: string[];
+                /** @description has any of these tags */
+                tag?: string[];
+                band?: ("hot" | "warm" | "cold")[];
+                /** @description created on or after (company day) */
+                created_from?: string | null;
+                /** @description created on or before (company day) */
+                created_to?: string | null;
+                sort?: "name" | "stage" | "follow_up" | "owner" | "last_activity" | "source" | "created" | "city" | "score";
+                dir?: "asc" | "desc";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -12963,6 +13669,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaymentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "reports-export_payments": {
+        parameters: {
+            query?: {
+                entity_id?: string | null;
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
                 };
             };
             /** @description Validation Error */

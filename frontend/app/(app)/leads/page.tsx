@@ -1,9 +1,9 @@
 "use client";
 
-import { Plus, Upload } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Download, Plus, Upload } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueries } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
@@ -50,6 +50,7 @@ import {
 } from "@/lib/crm";
 import { useUsers } from "@/lib/directory";
 import { useTags, useViews } from "@/lib/organise";
+import { exportCsv } from "@/lib/reports";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +73,22 @@ function FollowUp({ lead }: { lead: Lead }) {
 }
 
 export default function LeadsPage() {
+  return (
+    <Suspense>
+      <LeadsList />
+    </Suspense>
+  );
+}
+
+/** Dashboards open this list with filters in the address: ?source_id=…&owner=…&created_from=… */
+function fromAddress(params: URLSearchParams): { filters: Filters; created: { from?: string; to?: string } } {
+  return {
+    filters: { ...NO_FILTERS, source_id: params.getAll("source_id"), owner: params.getAll("owner") },
+    created: { from: params.get("created_from") ?? undefined, to: params.get("created_to") ?? undefined },
+  };
+}
+
+function LeadsList() {
   const { me, can } = useAuth();
   const label = useLabels();
   const router = useRouter();
@@ -84,10 +101,14 @@ export default function LeadsPage() {
   const plural = label("lead", true);
   const isManager = me?.role.scope !== "own";
 
-  const [view, setView] = useState(isManager ? "all" : "mine");
+  const params = useSearchParams();
+  const [initial] = useState(() => fromAddress(params));
+  const fromDashboard = params.size > 0;
+  const [view, setView] = useState(fromDashboard || isManager ? "all" : "mine");
+  const [created, setCreated] = useState(initial.created);
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [filters, setFilters] = useState<Filters>(initial.filters);
   const [paging, setPaging] = useState<Paging>({ page: 1, size: 50, sort: "follow_up", dir: "asc" });
   const [selection, setSelection] = useState<Selection>(emptySelection);
   const [preview, setPreview] = useState<string | null>(null);
@@ -126,6 +147,8 @@ export default function LeadsPage() {
     ...(filters.source_id.length ? { source_id: filters.source_id } : {}),
     ...(!viewOwns && filters.owner.length ? { owner: filters.owner } : {}),
     ...(filters.tag.length ? { tag: filters.tag } : {}),
+    ...(created.from ? { created_from: created.from } : {}),
+    ...(created.to ? { created_to: created.to } : {}),
     ...(filters.band.length ? { band: filters.band as LeadQuery["band"] } : {}),
     ...(Object.keys(filters.cf).some((k) => filters.cf[k].length)
       ? { cf: Object.entries(filters.cf).flatMap(([k, vs]) => vs.map((v) => `${k}:${v}`)) }
@@ -251,7 +274,7 @@ export default function LeadsPage() {
     ...(users.data ?? []).filter((u) => u.id !== me?.id && u.status === "active").map((u) => ({ value: u.id, label: u.name })),
   ];
   const anyFilter =
-    q || filters.stage_id.length || filters.source_id.length || filters.owner.length || filters.tag.length || filters.band.length || Object.values(filters.cf).some((v) => v.length);
+    q || created.from || created.to || filters.stage_id.length || filters.source_id.length || filters.owner.length || filters.tag.length || filters.band.length || Object.values(filters.cf).some((v) => v.length);
   async function deleteView() {
     if (!saved || !window.confirm(`Delete the view "${saved.name}"?`)) return;
     try {
@@ -372,6 +395,7 @@ export default function LeadsPage() {
             variant="ghost"
             onClick={() => {
               setFilters(NO_FILTERS);
+              setCreated({});
               setSearch("");
               reset();
             }}
@@ -379,7 +403,23 @@ export default function LeadsPage() {
             Clear all
           </Button>
         ) : null}
-        <div className="ml-auto hidden md:block">
+        {created.from || created.to ? (
+          <span className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground">
+            Created {created.from ?? "…"} to {created.to ?? "…"}
+          </span>
+        ) : null}
+        <div className="ml-auto hidden items-center gap-1 md:flex">
+          {can("leads.export") && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() =>
+                exportCsv("/api/v1/leads/export", { ...filter, sort: paging.sort, dir: paging.dir }, plural.toLowerCase()).catch((e) => toast.error(e.message))
+              }
+            >
+              <Download /> Export
+            </Button>
+          )}
           <TableTools columns={columns} prefs={prefs} />
         </div>
       </div>

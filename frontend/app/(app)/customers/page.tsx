@@ -1,7 +1,9 @@
 "use client";
 
+import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { Avatar } from "@/components/crm/bits";
@@ -13,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { phone, relative, when } from "@/lib/crm";
 import { type Customer, type CustomerQuery, useCustomers } from "@/lib/customers";
 import { useUsers } from "@/lib/directory";
+import { exportCsv } from "@/lib/reports";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -134,7 +137,12 @@ export default function CustomersPage() {
             Clear all
           </Button>
         ) : null}
-        <div className="ml-auto hidden md:block">
+        <div className="ml-auto hidden items-center gap-1 md:flex">
+          {can("customers.export") && (
+            <Button size="sm" variant="ghost" onClick={() => exportCsv("/api/v1/customers/export", { q: query.q, status: query.status, documents: query.documents, owner: query.owner }, plural.toLowerCase()).catch((e) => toast.error(e.message))}>
+              <Download /> Export
+            </Button>
+          )}
           <TableTools columns={columns} prefs={prefs} />
         </div>
       </div>
