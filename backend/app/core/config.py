@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     environment: Literal["dev", "test", "prod"]
     database_url: str  # runtime role (versnq_app): cannot bypass RLS
     migration_database_url: str  # owner role (versnq_owner): migrations only
+    # Connections each app or worker process keeps open (pool) and may add at peaks (overflow).
+    # Keep processes x (pool + overflow) under Postgres max_connections (default 100).
+    db_pool_size: int = 10
+    db_max_overflow: int = 10
     test_database_url: str
     test_migration_database_url: str
     redis_url: str
