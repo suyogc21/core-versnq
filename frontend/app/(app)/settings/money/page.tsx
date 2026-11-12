@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { NativeSelect } from "@/components/app/native-select";
+import { PasswordInput } from "@/components/app/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -399,11 +400,11 @@ function Gateways() {
           )}
           <div className="space-y-1">
             <Label className="text-xs">{form.gateway === "razorpay" ? "Key secret" : "Secret key"}</Label>
-            <Input type="password" autoComplete="off" value={form.secret} onChange={(e) => setForm({ ...form, secret: e.target.value })} placeholder={form.gateway === "stripe" ? "sk_test_…" : ""} />
+            <PasswordInput autoComplete="off" value={form.secret} onChange={(e) => setForm({ ...form, secret: e.target.value })} placeholder={form.gateway === "stripe" ? "sk_test_…" : ""} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Webhook secret</Label>
-            <Input type="password" autoComplete="off" value={form.webhook_secret} onChange={(e) => setForm({ ...form, webhook_secret: e.target.value })} />
+            <PasswordInput autoComplete="off" value={form.webhook_secret} onChange={(e) => setForm({ ...form, webhook_secret: e.target.value })} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Mode</Label>
@@ -482,7 +483,7 @@ function MailboxForm() {
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Password {m && "(empty: keep the saved one)"}</Label>
-            <Input type="password" autoComplete="off" value={form.password} onChange={(e) => set({ password: e.target.value })} aria-label="Password" />
+            <PasswordInput autoComplete="off" value={form.password} onChange={(e) => set({ password: e.target.value })} aria-label="Password" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">From name</Label>

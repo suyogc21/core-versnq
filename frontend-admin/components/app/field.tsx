@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/app/password-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -12,7 +13,11 @@ export function Field({
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
-      <Input id={id} aria-invalid={Boolean(error)} {...input} />
+      {input.type === "password" ? (
+        <PasswordInput id={id} aria-invalid={Boolean(error)} {...input} />
+      ) : (
+        <Input id={id} aria-invalid={Boolean(error)} {...input} />
+      )}
       {error ? (
         <p className="text-xs text-destructive">{error}</p>
       ) : hint ? (
