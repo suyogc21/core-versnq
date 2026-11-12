@@ -1806,6 +1806,27 @@
         "title": "Branding",
         "type": "object"
       },
+      "BulkOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "skipped"
+        ],
+        "title": "BulkOut",
+        "type": "object"
+      },
       "BusinessDashboard": {
         "properties": {
           "current": {
@@ -4190,7 +4211,7 @@
           },
           "skipped": {
             "items": {
-              "$ref": "#/components/schemas/app__modules__engage__router__Skipped"
+              "$ref": "#/components/schemas/EnrolSkipped"
             },
             "title": "Skipped",
             "type": "array"
@@ -4201,6 +4222,37 @@
           "skipped"
         ],
         "title": "EnrolOut",
+        "type": "object"
+      },
+      "EnrolSkipped": {
+        "properties": {
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id",
+          "name",
+          "reason"
+        ],
+        "title": "EnrolSkipped",
         "type": "object"
       },
       "EnrolmentOut": {
@@ -13240,6 +13292,30 @@
         "title": "SharedIn",
         "type": "object"
       },
+      "Skipped": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "reason"
+        ],
+        "title": "Skipped",
+        "type": "object"
+      },
       "SlaRuleIn": {
         "properties": {
           "create_task": {
@@ -16823,51 +16899,6 @@
         "title": "BulkIn",
         "type": "object"
       },
-      "app__modules__crm__deals_router__BulkOut": {
-        "properties": {
-          "done": {
-            "title": "Done",
-            "type": "integer"
-          },
-          "skipped": {
-            "items": {
-              "$ref": "#/components/schemas/app__modules__crm__deals_router__Skipped"
-            },
-            "title": "Skipped",
-            "type": "array"
-          }
-        },
-        "required": [
-          "done",
-          "skipped"
-        ],
-        "title": "BulkOut",
-        "type": "object"
-      },
-      "app__modules__crm__deals_router__Skipped": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "reason": {
-            "title": "Reason",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "reason"
-        ],
-        "title": "Skipped",
-        "type": "object"
-      },
       "app__modules__crm__layouts_router__AccessOut": {
         "properties": {
           "entity": {
@@ -17010,51 +17041,6 @@
           "action"
         ],
         "title": "BulkIn",
-        "type": "object"
-      },
-      "app__modules__crm__leads_router__BulkOut": {
-        "properties": {
-          "done": {
-            "title": "Done",
-            "type": "integer"
-          },
-          "skipped": {
-            "items": {
-              "$ref": "#/components/schemas/app__modules__crm__leads_router__Skipped"
-            },
-            "title": "Skipped",
-            "type": "array"
-          }
-        },
-        "required": [
-          "done",
-          "skipped"
-        ],
-        "title": "BulkOut",
-        "type": "object"
-      },
-      "app__modules__crm__leads_router__Skipped": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "reason": {
-            "title": "Reason",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "reason"
-        ],
-        "title": "Skipped",
         "type": "object"
       },
       "app__modules__crm__pipelines_router__StageIn": {
@@ -17288,51 +17274,6 @@
         "title": "BulkIn",
         "type": "object"
       },
-      "app__modules__crm__records_router__BulkOut": {
-        "properties": {
-          "done": {
-            "title": "Done",
-            "type": "integer"
-          },
-          "skipped": {
-            "items": {
-              "$ref": "#/components/schemas/app__modules__crm__records_router__Skipped"
-            },
-            "title": "Skipped",
-            "type": "array"
-          }
-        },
-        "required": [
-          "done",
-          "skipped"
-        ],
-        "title": "BulkOut",
-        "type": "object"
-      },
-      "app__modules__crm__records_router__Skipped": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "reason": {
-            "title": "Reason",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "reason"
-        ],
-        "title": "Skipped",
-        "type": "object"
-      },
       "app__modules__crm__rules_router__OrderIn": {
         "properties": {
           "ids": {
@@ -17495,37 +17436,6 @@
           }
         },
         "title": "StagePatch",
-        "type": "object"
-      },
-      "app__modules__engage__router__Skipped": {
-        "properties": {
-          "lead_id": {
-            "format": "uuid",
-            "title": "Lead Id",
-            "type": "string"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "reason": {
-            "title": "Reason",
-            "type": "string"
-          }
-        },
-        "required": [
-          "lead_id",
-          "name",
-          "reason"
-        ],
-        "title": "Skipped",
         "type": "object"
       },
       "app__modules__roles__router__RoleOut": {
@@ -21465,7 +21375,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__crm__deals_router__BulkOut"
+                  "$ref": "#/components/schemas/BulkOut"
                 }
               }
             },
@@ -26991,7 +26901,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__crm__leads_router__BulkOut"
+                  "$ref": "#/components/schemas/BulkOut"
                 }
               }
             },
@@ -31907,7 +31817,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__crm__records_router__BulkOut"
+                  "$ref": "#/components/schemas/BulkOut"
                 }
               }
             },

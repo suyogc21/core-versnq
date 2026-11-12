@@ -388,7 +388,7 @@ class EnrolIn(BaseModel):
     lead_ids: list[uuid.UUID] = Field(min_length=1, max_length=MAX_ENROL)
 
 
-class Skipped(BaseModel):
+class EnrolSkipped(BaseModel):
     lead_id: uuid.UUID
     name: str | None
     reason: str
@@ -396,7 +396,7 @@ class Skipped(BaseModel):
 
 class EnrolOut(BaseModel):
     enrolled: int
-    skipped: list[Skipped]
+    skipped: list[EnrolSkipped]
 
 
 class EnrolmentOut(BaseModel):
@@ -483,11 +483,11 @@ async def enrol(s_id: uuid.UUID, body: EnrolIn, db: CrmDb, actor: Editor) -> Enr
     for lead_id in dict.fromkeys(body.lead_ids):
         lead = leads.get(lead_id)
         if lead is None:
-            skipped.append(Skipped(lead_id=lead_id, name=None, reason="not found"))
+            skipped.append(EnrolSkipped(lead_id=lead_id, name=None, reason="not found"))
             continue
         out = await E.enrol(db, actor, s, lead)
         if isinstance(out, str):
-            skipped.append(Skipped(lead_id=lead.id, name=lead.display_name, reason=out))
+            skipped.append(EnrolSkipped(lead_id=lead.id, name=lead.display_name, reason=out))
         else:
             done += 1
     await db.flush()

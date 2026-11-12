@@ -5133,6 +5133,13 @@ export interface components {
             /** Primary Color */
             primary_color?: string | null;
         };
+        /** BulkOut */
+        BulkOut: {
+            /** Done */
+            done: number;
+            /** Skipped */
+            skipped: components["schemas"]["Skipped"][];
+        };
         /** BusinessDashboard */
         BusinessDashboard: {
             current: components["schemas"]["Headline"];
@@ -5931,7 +5938,19 @@ export interface components {
             /** Enrolled */
             enrolled: number;
             /** Skipped */
-            skipped: components["schemas"]["app__modules__engage__router__Skipped"][];
+            skipped: components["schemas"]["EnrolSkipped"][];
+        };
+        /** EnrolSkipped */
+        EnrolSkipped: {
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Name */
+            name: string | null;
+            /** Reason */
+            reason: string;
         };
         /** EnrolmentOut */
         EnrolmentOut: {
@@ -8933,6 +8952,18 @@ export interface components {
              */
             channel: "whatsapp" | "copy";
         };
+        /** Skipped */
+        Skipped: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
+        };
         /** SlaRuleIn */
         SlaRuleIn: {
             /**
@@ -10172,25 +10203,6 @@ export interface components {
              */
             tag_ids: string[];
         };
-        /** BulkOut */
-        app__modules__crm__deals_router__BulkOut: {
-            /** Done */
-            done: number;
-            /** Skipped */
-            skipped: components["schemas"]["app__modules__crm__deals_router__Skipped"][];
-        };
-        /** Skipped */
-        app__modules__crm__deals_router__Skipped: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Name */
-            name: string;
-            /** Reason */
-            reason: string;
-        };
         /** AccessOut */
         app__modules__crm__layouts_router__AccessOut: {
             /** Entity */
@@ -10231,25 +10243,6 @@ export interface components {
             tag_ids: string[];
             /** Unqualified Reason */
             unqualified_reason?: string | null;
-        };
-        /** BulkOut */
-        app__modules__crm__leads_router__BulkOut: {
-            /** Done */
-            done: number;
-            /** Skipped */
-            skipped: components["schemas"]["app__modules__crm__leads_router__Skipped"][];
-        };
-        /** Skipped */
-        app__modules__crm__leads_router__Skipped: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Name */
-            name: string;
-            /** Reason */
-            reason: string;
         };
         /** StageIn */
         app__modules__crm__pipelines_router__StageIn: {
@@ -10319,25 +10312,6 @@ export interface components {
             /** Stage Id */
             stage_id?: string | null;
         };
-        /** BulkOut */
-        app__modules__crm__records_router__BulkOut: {
-            /** Done */
-            done: number;
-            /** Skipped */
-            skipped: components["schemas"]["app__modules__crm__records_router__Skipped"][];
-        };
-        /** Skipped */
-        app__modules__crm__records_router__Skipped: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Name */
-            name: string;
-            /** Reason */
-            reason: string;
-        };
         /** OrderIn */
         app__modules__crm__rules_router__OrderIn: {
             /** Ids */
@@ -10389,18 +10363,6 @@ export interface components {
             name?: string | null;
             /** Required Fields */
             required_fields?: string[] | null;
-        };
-        /** Skipped */
-        app__modules__engage__router__Skipped: {
-            /**
-             * Lead Id
-             * Format: uuid
-             */
-            lead_id: string;
-            /** Name */
-            name: string | null;
-            /** Reason */
-            reason: string;
         };
         /** RoleOut */
         app__modules__roles__router__RoleOut: {
@@ -12614,7 +12576,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__deals_router__BulkOut"];
+                    "application/json": components["schemas"]["BulkOut"];
                 };
             };
             /** @description Validation Error */
@@ -15653,7 +15615,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__leads_router__BulkOut"];
+                    "application/json": components["schemas"]["BulkOut"];
                 };
             };
             /** @description Validation Error */
@@ -18534,7 +18496,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__records_router__BulkOut"];
+                    "application/json": components["schemas"]["BulkOut"];
                 };
             };
             /** @description Validation Error */
