@@ -99,6 +99,15 @@ STEP5_SYSTEM_TYPES = [
         ("document_deleted", "Document file deleted", "trash"),
     )
 ]
+# Key accounts add-on (step 7b, Decision log #36); frozen copy in migration 0019.
+STEP7B_SYSTEM_TYPES = [
+    {
+        "key": "key_account_updated",
+        "label": "Key account changed",
+        "icon": "star",
+        "loggable": False,
+    }
+]
 # Money (step 6, Decision log #34); frozen copy in migration 0017.
 STEP6_SYSTEM_TYPES = [
     {"key": key, "label": label, "icon": icon, "loggable": False}
@@ -129,6 +138,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP4_SYSTEM_TYPES,
         *STEP5_SYSTEM_TYPES,
         *STEP6_SYSTEM_TYPES,
+        *STEP7B_SYSTEM_TYPES,
     ]
 
 

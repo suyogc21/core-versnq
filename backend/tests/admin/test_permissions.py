@@ -50,6 +50,7 @@ async def test_me_lists_the_users_permissions(ws):
         "documents.verify",
         "invoices.create",
         "invoices.read",
+        "key_accounts.manage",
         "leads.assign",
         "leads.create",
         "leads.edit",

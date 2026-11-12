@@ -662,6 +662,7 @@ class Deal(TenantScoped, TimestampMixin, Base):
     custom_fields: Mapped[dict] = mapped_column(JSONB, default=dict)
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     version: Mapped[int] = mapped_column(Integer, default=1)
+    account_unit_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # key accounts (step 7b)
 
 
 class DealProduct(TenantScoped, TimestampMixin, Base):

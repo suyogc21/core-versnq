@@ -36,6 +36,7 @@ CATALOGUE: dict[str, str] = {
     "deal.won": "crm",
     "deal.lost": "crm",
     "customer.created": "crm",
+    "account.updated": "key_accounts",  # step 7b (Decision log #36)
     "document.received": "crm",  # step 5 (Decision log #32)
     "document.verified": "crm",
     "document.rejected": "crm",

@@ -3,6 +3,7 @@ from fastapi.routing import APIRoute
 
 from app.core import errors
 from app.core.health import router as health_router
+from app.modules.accounts.router import router as accounts_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
 from app.modules.crm.automations_router import router as automations_router
@@ -51,6 +52,7 @@ app.include_router(users_router)
 app.include_router(audit_router)
 app.include_router(reports_router)  # before the CRM routers: /leads/export is not a lead id
 app.include_router(crm_setup_router)
+app.include_router(accounts_router)
 app.include_router(leads_router)
 app.include_router(lead_tools_router)
 app.include_router(rules_router)

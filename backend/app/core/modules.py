@@ -29,6 +29,7 @@ MODULES: dict[str, Module] = {
     "inbox": Module("Unified inbox", core=False, default=True),
     "api": Module("Public API and webhooks", core=False, default=True),
     "money": Module("Invoices and payments", core=False, default=False),
+    "key_accounts": Module("Key accounts add-on", core=False, default=False),
     "ace": Module("Versnq ACE add-on", core=False, default=False),
 }
 
