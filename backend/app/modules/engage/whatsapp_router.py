@@ -33,14 +33,14 @@ Replier = Annotated[CurrentUser, require("inbox.reply")]
 
 
 # ---------- shapes ----------
-class AccountIn(BaseModel):
+class WaAccountIn(BaseModel):
     phone_number_id: str = Field(pattern=r"^\d{5,30}$")
     waba_id: str = Field(pattern=r"^\d{5,30}$")
     access_token: str | None = Field(default=None, max_length=1000)  # needed to connect
     app_secret: str | None = Field(default=None, max_length=200)
 
 
-class AccountOut(BaseModel):
+class WaAccountOut(BaseModel):
     connected: bool
     test_mode: bool
     phone_number_id: str | None = None
@@ -56,21 +56,21 @@ class AccountOut(BaseModel):
     verify_token: str | None = None
 
 
-class Toggle(BaseModel):
+class WaToggle(BaseModel):
     on: bool = False
     text: str = Field(default="", max_length=1000)
 
 
-class SettingsIO(BaseModel):
+class WaSettingsIO(BaseModel):
     create_leads: bool = True
     source_id: uuid.UUID | None = None
     stop_words: list[str] = Field(default_factory=list, max_length=30)
-    welcome: Toggle = Toggle()
-    away: Toggle = Toggle()
+    welcome: WaToggle = WaToggle()
+    away: WaToggle = WaToggle()
     reminder_template_id: uuid.UUID | None = None  # payment reminders on WhatsApp (utility)
 
 
-class TemplateIn(BaseModel):
+class WaTemplateIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     language: str = Field(default="en", pattern=r"^[a-z]{2,3}(_[A-Z]{2})?$")
     category: Literal["marketing", "utility"]
@@ -78,7 +78,7 @@ class TemplateIn(BaseModel):
     footer: str | None = Field(default=None, max_length=60)
 
 
-class TemplateOut(BaseModel):
+class WaTemplateOut(BaseModel):
     id: uuid.UUID
     name: str
     language: str
@@ -90,18 +90,18 @@ class TemplateOut(BaseModel):
     created_at: datetime
 
 
-class SendIn(BaseModel):
+class WaSendIn(BaseModel):
     template_id: uuid.UUID | None = None
     text: str | None = Field(default=None, max_length=4096)
 
 
-class SentOut(BaseModel):
+class WaSentOut(BaseModel):
     conversation_id: uuid.UUID
     message_id: uuid.UUID
     status: str
 
 
-class WebhookResult(BaseModel):
+class WaWebhookResult(BaseModel):
     kept: int
 
 
@@ -111,10 +111,10 @@ def _base(request: Request) -> str:
     return f"{scheme}://{host}"
 
 
-def _account_out(acct: WhatsAppAccount | None, request: Request) -> AccountOut:
+def _account_out(acct: WhatsAppAccount | None, request: Request) -> WaAccountOut:
     if acct is None:
-        return AccountOut(connected=False, test_mode=WA.test_mode())
-    return AccountOut(
+        return WaAccountOut(connected=False, test_mode=WA.test_mode())
+    return WaAccountOut(
         connected=True,
         test_mode=WA.test_mode(),
         phone_number_id=acct.phone_number_id,
@@ -131,8 +131,8 @@ def _account_out(acct: WhatsAppAccount | None, request: Request) -> AccountOut:
     )
 
 
-def _tpl_out(t: WhatsAppTemplate) -> TemplateOut:
-    return TemplateOut(
+def _tpl_out(t: WhatsAppTemplate) -> WaTemplateOut:
+    return WaTemplateOut(
         id=t.id,
         name=t.name,
         language=t.language,
@@ -146,13 +146,13 @@ def _tpl_out(t: WhatsAppTemplate) -> TemplateOut:
 
 
 # ---------- the number ----------
-@router.get("/whatsapp/account", response_model=AccountOut)
-async def get_account(request: Request, db: CrmDb, actor: Manager) -> AccountOut:
+@router.get("/whatsapp/account", response_model=WaAccountOut)
+async def get_account(request: Request, db: CrmDb, actor: Manager) -> WaAccountOut:
     return _account_out(await WA.account(db), request)
 
 
-@router.put("/whatsapp/account", response_model=AccountOut)
-async def connect(request: Request, body: AccountIn, db: CrmDb, actor: Manager) -> AccountOut:
+@router.put("/whatsapp/account", response_model=WaAccountOut)
+async def connect(request: Request, body: WaAccountIn, db: CrmDb, actor: Manager) -> WaAccountOut:
     """Connect (or update) the company's number with its Meta keys. Checked with Meta first."""
     acct = await WA.account(db)
     if acct is None and not (body.access_token and body.app_secret):
@@ -181,8 +181,8 @@ async def connect(request: Request, body: AccountIn, db: CrmDb, actor: Manager) 
     return _account_out(acct, request)
 
 
-@router.post("/whatsapp/account/check", response_model=AccountOut)
-async def check(request: Request, db: CrmDb, actor: Manager) -> AccountOut:
+@router.post("/whatsapp/account/check", response_model=WaAccountOut)
+async def check(request: Request, db: CrmDb, actor: Manager) -> WaAccountOut:
     """Quality rating and daily limit, fresh from Meta."""
     acct = await WA.require_account(db)
     await WA.refresh_health(db, acct)
@@ -190,13 +190,13 @@ async def check(request: Request, db: CrmDb, actor: Manager) -> AccountOut:
 
 
 # ---------- settings ----------
-@router.get("/whatsapp/settings", response_model=SettingsIO)
-async def get_settings_(db: CrmDb, actor: Manager) -> SettingsIO:
-    return SettingsIO(**WA.settings_of(await db.get(TenantSettings, actor.user.tenant_id)))
+@router.get("/whatsapp/settings", response_model=WaSettingsIO)
+async def get_settings_(db: CrmDb, actor: Manager) -> WaSettingsIO:
+    return WaSettingsIO(**WA.settings_of(await db.get(TenantSettings, actor.user.tenant_id)))
 
 
-@router.put("/whatsapp/settings", response_model=SettingsIO)
-async def put_settings(body: SettingsIO, db: CrmDb, actor: Manager) -> SettingsIO:
+@router.put("/whatsapp/settings", response_model=WaSettingsIO)
+async def put_settings(body: WaSettingsIO, db: CrmDb, actor: Manager) -> WaSettingsIO:
     if body.source_id:
         src = await db.get(LeadSource, body.source_id)
         if src is None or not src.is_active:
@@ -228,18 +228,20 @@ async def put_settings(body: SettingsIO, db: CrmDb, actor: Manager) -> SettingsI
     ts.whatsapp = json.loads(body.model_copy(update={"stop_words": words}).model_dump_json())
     await db.flush()
     await audit(db, actor, "whatsapp.settings", "settings", None, before, ts.whatsapp)
-    return SettingsIO(**WA.settings_of(ts))
+    return WaSettingsIO(**WA.settings_of(ts))
 
 
 # ---------- templates ----------
-@router.get("/whatsapp/templates", response_model=list[TemplateOut])
-async def list_templates(db: CrmDb, actor: Replier) -> list[TemplateOut]:
+@router.get("/whatsapp/templates", response_model=list[WaTemplateOut])
+async def list_templates(db: CrmDb, actor: Replier) -> list[WaTemplateOut]:
     rows = (await db.scalars(select(WhatsAppTemplate).order_by(WhatsAppTemplate.name))).all()
     return [_tpl_out(t) for t in rows]
 
 
-@router.post("/whatsapp/templates", response_model=TemplateOut, status_code=status.HTTP_201_CREATED)
-async def create_template(body: TemplateIn, db: CrmDb, actor: Manager) -> TemplateOut:
+@router.post(
+    "/whatsapp/templates", response_model=WaTemplateOut, status_code=status.HTTP_201_CREATED
+)
+async def create_template(body: WaTemplateIn, db: CrmDb, actor: Manager) -> WaTemplateOut:
     """Written with our variables; sent to Meta for approval straight away."""
     acct = await WA.require_account(db)
     name = re.sub(r"[^a-z0-9]+", "_", body.name.strip().lower()).strip("_")
@@ -282,8 +284,8 @@ async def create_template(body: TemplateIn, db: CrmDb, actor: Manager) -> Templa
     return _tpl_out(tpl)
 
 
-@router.post("/whatsapp/templates/{tpl_id}/refresh", response_model=TemplateOut)
-async def refresh_template(tpl_id: uuid.UUID, db: CrmDb, actor: Manager) -> TemplateOut:
+@router.post("/whatsapp/templates/{tpl_id}/refresh", response_model=WaTemplateOut)
+async def refresh_template(tpl_id: uuid.UUID, db: CrmDb, actor: Manager) -> WaTemplateOut:
     tpl = await db.get(WhatsAppTemplate, tpl_id)
     if tpl is None:
         raise NotFound("Template not found")
@@ -306,9 +308,9 @@ async def delete_template(tpl_id: uuid.UUID, db: CrmDb, actor: Manager) -> None:
 
 # ---------- sending ----------
 @router.post(
-    "/leads/{lead_id}/whatsapp", response_model=SentOut, status_code=status.HTTP_201_CREATED
+    "/leads/{lead_id}/whatsapp", response_model=WaSentOut, status_code=status.HTTP_201_CREATED
 )
-async def send_to_lead(lead_id: uuid.UUID, body: SendIn, db: CrmDb, actor: Replier) -> SentOut:
+async def send_to_lead(lead_id: uuid.UUID, body: WaSendIn, db: CrmDb, actor: Replier) -> WaSentOut:
     """From the company number: a template (always allowed if approved and the person may get
     it) or free text (only inside the 24-hour window)."""
     lead = await L.get_visible(db, actor, lead_id)
@@ -320,7 +322,7 @@ async def send_to_lead(lead_id: uuid.UUID, body: SendIn, db: CrmDb, actor: Repli
     elif not (body.text or "").strip():
         raise Invalid("Choose a template or write a message")
     msg = await WA.send(db, lead, text=body.text, template=tpl, actor=actor)
-    return SentOut(conversation_id=msg.conversation_id, message_id=msg.id, status=msg.status)
+    return WaSentOut(conversation_id=msg.conversation_id, message_id=msg.id, status=msg.status)
 
 
 # ---------- Meta's webhook ----------
@@ -346,8 +348,8 @@ async def verify(
     return challenge or ""
 
 
-@public.post("/whatsapp/webhook", response_model=WebhookResult)
-async def webhook(request: Request, db: TenantDb, ws: WorkspaceDep) -> WebhookResult:
+@public.post("/whatsapp/webhook", response_model=WaWebhookResult)
+async def webhook(request: Request, db: TenantDb, ws: WorkspaceDep) -> WaWebhookResult:
     """Messages, delivery receipts and template decisions from Meta, signed with the company's
     app secret. Anything unsigned or wrongly signed is refused."""
     acct = await _acct_for(db)
@@ -360,13 +362,13 @@ async def webhook(request: Request, db: TenantDb, ws: WorkspaceDep) -> WebhookRe
         payload = json.loads(raw)
     except ValueError:
         raise Invalid("Not JSON") from None
-    return WebhookResult(kept=await WA.handle(db, acct, payload))
+    return WaWebhookResult(kept=await WA.handle(db, acct, payload))
 
 
-@router.post("/whatsapp/test-webhook", response_model=WebhookResult)
+@router.post("/whatsapp/test-webhook", response_model=WaWebhookResult)
 async def test_webhook(
     request: Request, db: CrmDb, actor: Annotated[CurrentUser, require("settings.manage")]
-) -> WebhookResult:
+) -> WaWebhookResult:
     """Outside production only: deliver a webhook body as if Meta had sent it (no signature),
     so incoming WhatsApp can be tried before the number is live."""
     if get_settings().environment == "prod":
@@ -376,4 +378,4 @@ async def test_webhook(
         payload = json.loads(await request.body())
     except ValueError:
         raise Invalid("Send Meta's webhook JSON") from None
-    return WebhookResult(kept=await WA.handle(db, acct, payload))
+    return WaWebhookResult(kept=await WA.handle(db, acct, payload))

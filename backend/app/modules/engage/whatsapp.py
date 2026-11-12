@@ -566,7 +566,7 @@ async def _incoming(
     if lead is None:
         return None  # unknown number and the company keeps leads off (W3)
     conv = await conversation(db, acct, lead)
-    first_ever = conv.last_inbound_at is None
+    first_ever = conv.last_message_at is None  # they wrote first: the welcome is for them
     answered = await db.scalar(
         select(Message)
         .where(Message.conversation_id == conv.id, Message.direction == "out")

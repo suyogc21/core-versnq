@@ -8,7 +8,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Query, Request, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, delete, or_, select
+from sqlalchemy import and_, delete, func, or_, select
 from sqlalchemy.dialects.postgresql import distinct_on, insert
 
 from app.core import storage
@@ -215,7 +215,11 @@ async def _rows(db, actor: CurrentUser, rows: list[Conversation]) -> list[Conver
             select(Message)
             .ext(distinct_on(Message.conversation_id))
             .where(Message.conversation_id.in_(ids))
-            .order_by(Message.conversation_id, Message.created_at.desc())
+            .order_by(
+                Message.conversation_id,
+                func.coalesce(Message.sent_at, Message.created_at).desc(),
+                Message.created_at.desc(),
+            )
         )
     ).all():
         last[m.conversation_id] = m
@@ -270,7 +274,9 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
     lead = await db.get(Lead, conv.lead_id)
     msgs = (
         await db.scalars(
-            select(Message).where(Message.conversation_id == conv.id).order_by(Message.created_at)
+            select(Message)
+            .where(Message.conversation_id == conv.id)
+            .order_by(func.coalesce(Message.sent_at, Message.created_at), Message.created_at)
         )
     ).all()
     files: dict[uuid.UUID, list[AttachmentOut]] = {}

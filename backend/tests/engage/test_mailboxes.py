@@ -224,7 +224,17 @@ async def test_a_private_thread_stays_private_when_the_reply_syncs(ws, dirs):
     ).status_code == 200
     header = (await _messages(tenant_id))[0].message_id_header
     _put(
-        dirs, box, "INBOX", 1, _mail("asha@client.example", box, "Re: Your offer", reply_to=header)
+        dirs,
+        box,
+        "INBOX",
+        1,
+        _mail(
+            "asha@client.example",
+            box,
+            "Re: Your offer",
+            reply_to=header,
+            when=L.now() + timedelta(minutes=1),
+        ),
     )
     await MS.run_due(tenant_id)
     detail = (await c.get(f"/api/v1/conversations/{conv_id}", headers=rep)).json()
