@@ -684,7 +684,7 @@ Goal: everyone opens Core and sees how they, their team or the business is doing
 
 ### 10.1 The dashboards (spec §9)
 
-One **Dashboards** page in the sidebar with a tab per view; each person sees only the tabs their role allows.
+One **Dashboards** page in the sidebar with a tab per view; each person sees only the tabs their role allows. Team, Business and Money are permissions (`dashboards.team`, `dashboards.business`, `dashboards.money`) the admin can give or take per role (Decision log #35).
 
 | Tab | Who | Shows |
 | --- | --- | --- |
@@ -703,7 +703,7 @@ One **Dashboards** page in the sidebar with a tab per view; each person sees onl
 
 - An **Export** button on the Leads, Deals, Customers, Invoices and Payments lists: it exports exactly what the list shows (same filters, search and saved view) with the columns shown, plus custom fields.
 - Only records the person may see; amounts as plain numbers with a currency column; dates in the company's time zone.
-- New permission **`data.export`** (default: Owner, Admin, Sales Manager, Finance). Every export is in the audit log (who, which list, how many rows).
+- One permission per list, **`leads.export`, `deals.export`, `customers.export`, `invoices.export`** (invoices and payments). Default: Owner and Admin only; the admin grants them to any role in Roles (Decision log #35). Every export is in the audit log (who, which list, how many rows) and Owners / Admins get an in-app alert.
 - Safe to open in Excel: a cell starting with `=`, `+`, `-` or `@` is written so it can never run as a formula.
 - Up to 50,000 rows downloaded straight away; bigger exports later through the worker.
 
@@ -734,12 +734,15 @@ One **Dashboards** page in the sidebar with a tab per view; each person sees onl
 
 ### 10.7 Open questions
 
+Answered 2026-11-12 (Decision log #35): all as recommended, except R4 (export per list, admin decides, default Owner / Admin only).
+
+
 | # | Question | Recommendation |
 | --- | --- | --- |
 | R1 | Charts need a chart library? | **No new library:** simple bars and lines drawn by Core itself (enough for these views, nothing to install). A library (e.g. Recharts) only if you later want rich interactive charts |
 | R2 | Where do dashboards live? | One **Dashboards** page with role tabs; My Day stays the rep's home with a small numbers strip |
 | R3 | Default period and week start | This month; weeks start on Monday; company time zone |
-| R4 | Who may export? | New `data.export`: Owner, Admin, Sales Manager, Finance. Sales Users not by default (client data protection); a company can turn it on in Roles |
+| R4 | Who may export? | ~~One `data.export`~~ **Decision log #35:** one permission per list (`leads.export`, `deals.export`, `customers.export`, `invoices.export`); default Owner and Admin only; the admin grants it to any role in Roles; every export is audited and Owners / Admins get an in-app alert |
 | R5 | "Revenue" means? | Show both: **booked** (won deal value) and **collected** (payments received), side by side |
 | R6 | Build-your-own reports, scheduled email of dashboards | Later (spec: custom reports "Later"); email of reports once email exists (step 9) |
 | R7 | Different dashboards per industry | Same dashboards for everyone, in each company's own words (Student / Buyer / Client); per-industry dashboard layouts later if needed |
