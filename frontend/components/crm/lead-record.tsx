@@ -14,6 +14,7 @@ import { KeyAccountBadge } from "@/components/crm/key-accounts";
 import { DealsCard } from "@/components/crm/deals";
 import { ScoreBadge, TagEditor } from "@/components/crm/tags";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
+import { LeadSequences } from "@/components/crm/lead-sequences";
 import { LinksCard } from "@/components/crm/links-card";
 import { ActionButton, EditLead, Facts, Highlights, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
 import { LogActivityForm } from "@/components/crm/log-activity";
@@ -287,6 +288,9 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
             </Section>
           )}
           <CustomerSection leadId={l.id} />
+          <Section title="Sequences">
+            <LeadSequences leadId={l.id} />
+          </Section>
           <Section title="Tasks">
             <LeadTasks lead={l} />
           </Section>

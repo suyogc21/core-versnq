@@ -21,6 +21,7 @@ import { useUsers } from "@/lib/directory";
 import { type Automation, type Condition, useAutomationRuns, useAutomations, useTags } from "@/lib/organise";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+import { useSequences } from "@/lib/sequences";
 
 type Action = Record<string, unknown> & { type: string };
 type Draft = { id?: string; name: string; trigger: Record<string, unknown> & { type: string }; conditions: Condition[]; actions: Action[]; is_active: boolean };
@@ -49,6 +50,7 @@ const ACTIONS: [string, string][] = [
   ["change_stage", "Move to a stage"],
   ["notify", "Send a notification"],
   ["webhook", "Send a webhook"],
+  ["enrol", "Put into a sequence"],
 ];
 const subjectOf = (t: string) => TRIGGERS.find(([k]) => k === t)?.[2] ?? "lead";
 const triggerLabel = (t: string) => TRIGGERS.find(([k]) => k === t)?.[1] ?? t;
@@ -359,6 +361,7 @@ function ActionEditor({ subject, value, onChange, onRemove }: { subject: "lead" 
   const people = (users.data ?? []).filter((u) => u.status === "active");
   const fields = (subject === "lead" ? leadFields.data : dealFields.data)?.filter((f) => f.type !== "calculated") ?? [];
   const set = (patch: Record<string, unknown>) => onChange({ ...value, ...patch });
+  const sequences = useSequences(value.type === "enrol");
   const dealStages = (pipelines.data ?? []).flatMap((p) => (p.stages ?? []).map((s) => ({ ...s, label: `${p.name} · ${s.name}` })));
   const chosenLeadStage = (stages.data ?? []).find((s) => s.id === value.stage_id);
   const chosenDealStage = dealStages.find((s) => s.id === value.stage_id);
@@ -507,6 +510,17 @@ function ActionEditor({ subject, value, onChange, onRemove }: { subject: "lead" 
           </NativeSelect>
           <Input aria-label="Message" placeholder={`e.g. New ${label("lead").toLowerCase()} waiting`} className="h-8 w-64" value={String(value.message ?? "")} onChange={(e) => set({ message: e.target.value })} />
         </>
+      )}
+      {value.type === "enrol" && (
+        <NativeSelect aria-label="Sequence" className="h-8 w-56" value={String(value.sequence_id ?? "")} onChange={(e) => set({ sequence_id: e.target.value })}>
+          <option value="">Choose a sequence…</option>
+          {(sequences.data ?? []).map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+              {s.is_active ? "" : " (off)"}
+            </option>
+          ))}
+        </NativeSelect>
       )}
       {value.type === "webhook" && (
         <>

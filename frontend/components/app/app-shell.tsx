@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, LogOut, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, LogOut, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -66,6 +66,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ...(["leads.edit", "dashboards.team", "dashboards.business", "dashboards.money"].some((c) => can(c))
       ? [{ href: "/dashboards", label: "Dashboards", icon: ChartColumn }]
       : []),
+    ...(can("sequences.manage") ? [{ href: "/sequences", label: "Sequences", icon: Send }] : []),
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
   ];

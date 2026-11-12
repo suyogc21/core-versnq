@@ -54,6 +54,7 @@ import { exportCsv } from "@/lib/reports";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 import { accessOf, useLayout } from "@/lib/layouts";
+import { enrolLeads, useSequences } from "@/lib/sequences";
 
 type Filters = { stage_id: string[]; source_id: string[]; owner: string[]; tag: string[]; band: string[]; cf: Record<string, string[]> };
 const NO_FILTERS: Filters = { stage_id: [], source_id: [], owner: [], tag: [], band: [], cf: {} };
@@ -251,6 +252,7 @@ function LeadsList() {
     return () => document.removeEventListener("keydown", onKey);
   }, [preview, rows]);
 
+  const sequences = useSequences(can("leads.edit"));
   async function runBulk(body: Record<string, unknown>, verb: string) {
     try {
       const result: BulkResult = unwrap(
@@ -511,6 +513,33 @@ function LeadsList() {
                     onCreate={(name) => (close(), runBulk({ action: "tag", new_tags: [name] }, "Tagged"))}
                   />
                 )}
+              </BulkMenu>
+            )}
+            {can("leads.edit") && (sequences.data ?? []).some((s) => s.is_active) && (
+              <BulkMenu label="Add to sequence">
+                {(close) =>
+                  (sequences.data ?? [])
+                    .filter((s) => s.is_active)
+                    .map((s) => (
+                      <PopoverItem
+                        key={s.id}
+                        onClick={async () => {
+                          close();
+                          if (selection.allMatching || selection.ids.size > 500) return toast.error("Tick up to 500 people by hand to add them to a sequence");
+                          try {
+                            const r = await enrolLeads(s.id, [...selection.ids]);
+                            (r.ok ? toast.success : toast.error)(r.text);
+                            setSelection(emptySelection());
+                            refresh();
+                          } catch (e) {
+                            toast.error((e as Error).message);
+                          }
+                        }}
+                      >
+                        {s.name}
+                      </PopoverItem>
+                    ))
+                }
               </BulkMenu>
             )}
             {can("leads.edit") && (tags.data ?? []).length > 0 && (

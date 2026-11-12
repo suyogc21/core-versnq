@@ -122,14 +122,14 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ## Phase 3 — Sequences + Inbox (Milestone 3)
 
-- [ ] 3.1 Sequence engine: steps, delays, conditions, branches, auto-enroll triggers, stop rules, quiet hours, throttling
+- [x] 3.1 Sequence engine: steps, delays, conditions, branches, auto-enroll triggers, stop rules, quiet hours, throttling
 - [ ] 3.2 Email: ESP integration, multi-domain (SPF/DKIM/DMARC), templates with variables, open/click tracking, unsubscribe and suppression
 - [ ] 3.3 Unified inbox (email first): threads per lead, assignment and handoff, canned replies
 - [ ] 3.4 WhatsApp Cloud API: tenant's own number, template management, 24-hour window, opt-out, quality rating and tier display
 - [ ] 3.5 Inbound WhatsApp from unknown number creates a lead
 - [ ] 3.6 WhatsApp in sequences and the unified inbox
 - [ ] 3.7 LinkedIn steps as rep tasks
-- [ ] 3.8 Sequence analytics per step
+- [x] 3.8 Sequence analytics per step
 - [ ] 3.9 Frontend for 3.1–3.8
 - [ ] 3.10 Multi-brand: several brands and sending domains in one company (spec §10, v1 — was missing from the roadmap)
 - [ ] **Gate 3:** all tests green, Suyog approves
