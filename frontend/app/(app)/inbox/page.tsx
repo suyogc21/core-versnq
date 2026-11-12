@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Users } from "lucide-react";
+import { Lock, MessageCircle, Users } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -72,6 +72,7 @@ function Inbox() {
               >
                 <div className="flex items-center gap-1.5">
                   {r.unread && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
+                  {r.channel === "whatsapp" && <MessageCircle className="size-3 shrink-0 text-emerald-600" aria-label="WhatsApp" />}
                   <span className={cn("truncate text-sm", r.unread && "font-semibold")}>{r.lead_name}</span>
                   {r.shared && <Users className="size-3 text-muted-foreground" aria-label="Shared with you" />}
                   {r.is_private && <Lock className="size-3 text-muted-foreground" aria-label="Private" />}

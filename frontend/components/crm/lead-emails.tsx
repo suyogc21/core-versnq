@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,7 +16,8 @@ import { useAuth } from "@/lib/auth";
 import { relative } from "@/lib/crm";
 import { useLeadConversations, useRefreshInbox } from "@/lib/inbox";
 
-/** The lead's email conversations, and a new email from the CRM (step 9b). */
+/** The lead's conversations (email, and WhatsApp logged by the extension, step 10a) and a new
+ * email from the CRM (step 9b). WhatsApp itself opens from the header's WhatsApp button. */
 export function LeadEmails({ leadId, email, name }: { leadId: string; email: string | null; name: string }) {
   const { can } = useAuth();
   const list = useLeadConversations(leadId);
@@ -24,10 +25,11 @@ export function LeadEmails({ leadId, email, name }: { leadId: string; email: str
   if (!can("inbox.reply")) return null;
   return (
     <div className="space-y-2 text-xs" data-lead-emails>
-      {(list.data ?? []).length === 0 && <p className="text-muted-foreground">No emails yet.</p>}
+      {(list.data ?? []).length === 0 && <p className="text-muted-foreground">No emails or WhatsApp messages yet.</p>}
       {(list.data ?? []).slice(0, 5).map((r) => (
         <Link key={r.id} href={`/inbox?c=${r.id}`} className="block rounded-md px-1 py-1 hover:bg-muted/50">
           <div className="flex items-center gap-1.5">
+            {r.channel === "whatsapp" ? <MessageCircle className="size-3 shrink-0 text-emerald-600" aria-label="WhatsApp" /> : <Mail className="size-3 shrink-0 text-muted-foreground" aria-label="Email" />}
             <span className="min-w-0 flex-1 truncate font-medium">{r.subject || "(no subject)"}</span>
             {r.waiting && <span className="shrink-0 text-amber-700 dark:text-amber-300">waiting</span>}
           </div>

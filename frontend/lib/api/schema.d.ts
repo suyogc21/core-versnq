@@ -1386,6 +1386,236 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/extension/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connect
+         * @description Exchanges a one-time code (made in My account) for the extension's own token. Tries are
+         *     limited per address and per company, so codes can't be guessed.
+         */
+        post: operations["extension-connect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Lead
+         * @description Create a lead from the open chat (source "WhatsApp" if the company has one). Same
+         *     duplicate rules as quick-add: an existing lead with this number is refused.
+         */
+        post: operations["extension-create_lead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/leads/{lead_id}/follow-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Follow Up */
+        put: operations["extension-follow_up"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/leads/{lead_id}/note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Note */
+        post: operations["extension-add_note"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Link */
+        post: operations["extension-link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup
+         * @description Is the open chat a lead this rep may see? The number is not stored.
+         */
+        get: operations["extension-lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Who is signed in, for the panel's header.
+         */
+        get: operations["extension-me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Log Messages
+         * @description Messages from the open chat with this lead, in order. Already-logged ones are skipped.
+         */
+        post: operations["extension-log_messages"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Replies
+         * @description Saved replies (the rep's own and shared ones), to put into the WhatsApp message box.
+         */
+        get: operations["extension-replies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extension/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search
+         * @description For "Link to lead" when WhatsApp Web shows no number.
+         */
+        get: operations["extension-search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All Extensions */
+        get: operations["extension-all_extensions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/extensions/{ext_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke
+         * @description The rep revokes their own; an admin (mailboxes.manage) anyone's.
+         */
+        post: operations["extension-revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/field-access/{entity}": {
         parameters: {
             query?: never;
@@ -3153,6 +3383,43 @@ export interface paths {
          * @description Overdue first, then today: the order the calling queue works through (#21).
          */
         get: operations["work-my_day"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/extension/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make Code
+         * @description A one-time code to connect the WhatsApp extension in one browser (10 minutes).
+         */
+        post: operations["extension-make_code"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/extensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Extensions */
+        get: operations["extension-my_extensions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5870,6 +6137,16 @@ export interface components {
             /** Required */
             required: number;
         };
+        /** CodeOut */
+        CodeOut: {
+            /** Code */
+            code: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
         /** CompanyCopyInOut */
         CompanyCopyInOut: {
             /** Address */
@@ -5925,6 +6202,22 @@ export interface components {
              */
             values: string[];
         };
+        /** ConnectIn */
+        ConnectIn: {
+            /** Code */
+            code: string;
+            /** Device */
+            device?: string | null;
+        };
+        /** ConnectOut */
+        ConnectOut: {
+            /** Token */
+            token: string;
+            /** User Name */
+            user_name: string;
+            /** Workspace */
+            workspace: string;
+        };
         /** ConsentIn */
         ConsentIn: {
             /**
@@ -5975,6 +6268,8 @@ export interface components {
             can_manage: boolean;
             /** Can Reply */
             can_reply: boolean;
+            /** Channel */
+            channel: string;
             /**
              * Id
              * Format: uuid
@@ -6027,6 +6322,8 @@ export interface components {
             assignee_id: string | null;
             /** Assignee Name */
             assignee_name: string | null;
+            /** Channel */
+            channel: string;
             /**
              * Id
              * Format: uuid
@@ -6855,6 +7152,43 @@ export interface components {
             /** Items */
             items: string[];
         };
+        /** ExtensionMeOut */
+        ExtensionMeOut: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+        };
+        /** ExtensionOut */
+        ExtensionOut: {
+            /** Connected */
+            connected: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Device */
+            device: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Revoked At */
+            revoked_at: string | null;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name: string;
+            /** Version */
+            version: string | null;
+        };
         /** FieldIn */
         FieldIn: {
             /** Depends On */
@@ -6969,6 +7303,11 @@ export interface components {
             size_bytes: number;
             /** Uploaded By User Id */
             uploaded_by_user_id: string | null;
+        };
+        /** FollowUpIn */
+        FollowUpIn: {
+            /** At */
+            at: string | null;
         };
         /** ForgotIn */
         ForgotIn: {
@@ -7667,6 +8006,38 @@ export interface components {
              */
             stage_id: string;
         };
+        /** LeadCard */
+        LeadCard: {
+            /** Balance Due */
+            balance_due: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Yours */
+            is_yours: boolean;
+            /** Name */
+            name: string;
+            /** Next Follow Up At */
+            next_follow_up_at: string | null;
+            /** Open Deal Value */
+            open_deal_value: {
+                [key: string]: unknown;
+            }[];
+            /** Open Deals */
+            open_deals: number;
+            /** Org Name */
+            org_name: string | null;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Stage */
+            stage: string;
+            /** Url */
+            url: string;
+        };
         /**
          * LeadFilter
          * @description Every value list is OR within itself and AND across fields.
@@ -8077,26 +8448,6 @@ export interface components {
             /** Type Key */
             type_key: string | null;
         };
-        /** LinkIn */
-        LinkIn: {
-            /** From Deal Id */
-            from_deal_id?: string | null;
-            /** From Lead Id */
-            from_lead_id?: string | null;
-            /** From Record Id */
-            from_record_id?: string | null;
-            /**
-             * Link Type Id
-             * Format: uuid
-             */
-            link_type_id: string;
-            /** To Deal Id */
-            to_deal_id?: string | null;
-            /** To Lead Id */
-            to_lead_id?: string | null;
-            /** To Record Id */
-            to_record_id?: string | null;
-        };
         /** LinkOut */
         LinkOut: {
             /**
@@ -8194,6 +8545,23 @@ export interface components {
             /** Many To */
             many_to?: boolean | null;
         };
+        /** LogIn */
+        LogIn: {
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Messages */
+            messages: components["schemas"]["WaMessageIn"][];
+        };
+        /** LogOut */
+        LogOut: {
+            /** Logged */
+            logged: number;
+            /** Skipped */
+            skipped: number;
+        };
         /** LoggedOut */
         LoggedOut: {
             activity: components["schemas"]["ActivityOut"];
@@ -8227,6 +8595,12 @@ export interface components {
              * @default false
              */
             two_factor_required: boolean;
+        };
+        /** LookupOut */
+        LookupOut: {
+            lead: components["schemas"]["LeadCard"] | null;
+            /** Phone */
+            phone: string | null;
         };
         /** LostReasonIn */
         LostReasonIn: {
@@ -8594,6 +8968,15 @@ export interface components {
             deal_id?: string | null;
             /** Entity Id */
             entity_id?: string | null;
+        };
+        /** NewLeadIn */
+        NewLeadIn: {
+            /** Chat Key */
+            chat_key?: string | null;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone?: string | null;
         };
         /** NoteOut */
         NoteOut: {
@@ -9279,6 +9662,18 @@ export interface components {
              */
             cc: string[];
         };
+        /** ReplyOut */
+        ReplyOut: {
+            /** Body */
+            body: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
         /** RequirementIn */
         RequirementIn: {
             /**
@@ -9578,6 +9973,18 @@ export interface components {
             hot_score: number;
             /** Warm Score */
             warm_score: number;
+        };
+        /** SearchHit */
+        SearchHit: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string | null;
         };
         /** SecretOut */
         SecretOut: {
@@ -10955,6 +11362,26 @@ export interface components {
             /** Team Id */
             team_id?: string | null;
         };
+        /** WaMessageIn */
+        WaMessageIn: {
+            /** At */
+            at?: string | null;
+            /** From Me */
+            from_me: boolean;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @default text
+             * @enum {string}
+             */
+            kind: "text" | "photo" | "video" | "document" | "voice" | "sticker" | "other";
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+        };
         /** AuditOut */
         app__modules__audit__router__AuditOut: {
             /** Action */
@@ -11135,6 +11562,26 @@ export interface components {
             /** Stage Id */
             stage_id?: string | null;
         };
+        /** LinkIn */
+        app__modules__crm__records_router__LinkIn: {
+            /** From Deal Id */
+            from_deal_id?: string | null;
+            /** From Lead Id */
+            from_lead_id?: string | null;
+            /** From Record Id */
+            from_record_id?: string | null;
+            /**
+             * Link Type Id
+             * Format: uuid
+             */
+            link_type_id: string;
+            /** To Deal Id */
+            to_deal_id?: string | null;
+            /** To Lead Id */
+            to_lead_id?: string | null;
+            /** To Record Id */
+            to_record_id?: string | null;
+        };
         /** NoteIn */
         app__modules__crm__records_router__NoteIn: {
             /** Body */
@@ -11191,6 +11638,21 @@ export interface components {
             name?: string | null;
             /** Required Fields */
             required_fields?: string[] | null;
+        };
+        /** LinkIn */
+        app__modules__engage__extension__LinkIn: {
+            /** Chat Key */
+            chat_key: string;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+        };
+        /** NoteIn */
+        app__modules__engage__extension__NoteIn: {
+            /** Body */
+            body: string;
         };
         /** MemberIn */
         app__modules__engage__inbox_router__MemberIn: {
@@ -14562,6 +15024,362 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnrolmentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-create_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewLeadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-follow_up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-add_note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__engage__extension__NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__engage__extension__LinkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-lookup": {
+        parameters: {
+            query?: {
+                phone?: string | null;
+                chat_key?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtensionMeOut"];
+                };
+            };
+        };
+    };
+    "extension-log_messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyOut"][];
+                };
+            };
+        };
+    };
+    "extension-search": {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchHit"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "extension-all_extensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtensionOut"][];
+                };
+            };
+        };
+    };
+    "extension-revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ext_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtensionOut"][];
                 };
             };
             /** @description Validation Error */
@@ -18215,7 +19033,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LinkIn"];
+                "application/json": components["schemas"]["app__modules__crm__records_router__LinkIn"];
             };
         };
         responses: {
@@ -18609,6 +19427,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MyDayOut"];
+                };
+            };
+        };
+    };
+    "extension-make_code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodeOut"];
+                };
+            };
+        };
+    };
+    "extension-my_extensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtensionOut"][];
                 };
             };
         };

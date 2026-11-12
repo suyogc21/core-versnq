@@ -40,3 +40,6 @@ DEMO_CREDENTIALS.md
 
 # uploaded files (Decision log #29): never committed
 backend/var/
+
+# Built WhatsApp extension (make extension)
+extension/dist/

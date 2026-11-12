@@ -64,6 +64,11 @@ fe-check: ## Typecheck, lint and verify the API client is up to date (both apps)
 	done
 	@echo "frontend checks passed"
 
+extension: ## Build the WhatsApp Chrome extension into extension/dist (load it in chrome://extensions)
+	cd extension && ../frontend/node_modules/.bin/tsc -p . && cp manifest.json src/panel.html dist/
+
+.PHONY: extension
+
 demo-seed: ## Add the demo companies (dev only; prints the shared password once)
 	$(UV) python -m app.platform.demo
 

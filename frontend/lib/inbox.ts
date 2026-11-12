@@ -6,6 +6,12 @@ import type { components } from "@/lib/api/schema";
 
 export type ConversationRow = components["schemas"]["ConversationRow"];
 export type ConversationDetail = components["schemas"]["ConversationDetail"];
+/** Opens the person's chat in the rep's own WhatsApp (phone app or WhatsApp Web). */
+export function waLink(phone: string | null | undefined): string | null {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  return digits ? `https://wa.me/${digits}` : null;
+}
+
 export type InboxView = "mine" | "waiting" | "shared" | "unassigned" | "all" | "closed";
 
 export function useInbox(view: InboxView, q: string, enabled = true) {

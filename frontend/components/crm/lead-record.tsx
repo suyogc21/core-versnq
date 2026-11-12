@@ -289,7 +289,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
             </Section>
           )}
           <CustomerSection leadId={l.id} />
-          <Section title="Emails">
+          <Section title="Conversations">
             <LeadEmails leadId={l.id} email={l.primary_email} name={l.display_name} />
           </Section>
           <Section title="Sequences">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Paperclip, Send, StickyNote, UserPlus, X } from "lucide-react";
+import { Lock, MessageCircle, Paperclip, Send, StickyNote, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 import { when } from "@/lib/crm";
-import { type ConversationDetail, useCanned, useConversation, usePeople, useRefreshInbox } from "@/lib/inbox";
+import { type ConversationDetail, useCanned, useConversation, usePeople, useRefreshInbox, waLink } from "@/lib/inbox";
 import { cn } from "@/lib/utils";
 
 type Item = { at: string; kind: "message"; m: ConversationDetail["messages"][number] } | { at: string; kind: "note"; n: ConversationDetail["notes"][number] };
@@ -51,7 +51,10 @@ function View({ c, onClose }: { c: ConversationDetail; onClose?: () => void }) {
       <div className="space-y-2 border-b px-4 py-3">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-base font-semibold">{c.subject || "(no subject)"}</h2>
+            <h2 className="flex items-center gap-1.5 truncate text-base font-semibold">
+              {c.channel === "whatsapp" && <MessageCircle className="size-4 shrink-0 text-emerald-600" aria-hidden />}
+              {c.subject || "(no subject)"}
+            </h2>
             <div className="text-xs text-muted-foreground">
               {c.lead.can_open ? (
                 <Link href={`/leads/${c.lead.id}`} className="font-medium text-foreground hover:underline">
@@ -60,7 +63,7 @@ function View({ c, onClose }: { c: ConversationDetail; onClose?: () => void }) {
               ) : (
                 <span className="font-medium text-foreground">{c.lead.name}</span>
               )}
-              {c.lead.email && ` · ${c.lead.email}`}
+              {c.channel === "whatsapp" ? c.lead.phone && ` · ${c.lead.phone}` : c.lead.email && ` · ${c.lead.email}`}
               {c.lead.stage && ` · ${c.lead.stage}`}
               {c.lead.owner_name && ` · owner ${c.lead.owner_name}`}
             </div>
@@ -260,7 +263,8 @@ function Composer({ c }: { c: ConversationDetail }) {
   const refresh = useRefreshInbox();
   const canned = useCanned();
   const people = usePeople();
-  const [mode, setMode] = useState<"reply" | "note">("reply");
+  const wa = c.channel === "whatsapp"; // answered from the rep's own WhatsApp (step 10a)
+  const [mode, setMode] = useState<"reply" | "note">(wa ? "note" : "reply");
   const [body, setBody] = useState("");
   const [cc, setCc] = useState("");
   const [mentions, setMentions] = useState<string[]>([]);
@@ -288,9 +292,19 @@ function Composer({ c }: { c: ConversationDetail }) {
   }
   return (
     <div className={cn("space-y-2 border-t p-3", mode === "note" && "bg-amber-500/5")}>
+      {wa && (
+        <p className="text-xs text-muted-foreground" data-wa-hint>
+          Answer on WhatsApp; it is logged here automatically by the Versnq extension.{" "}
+          {waLink(c.lead.phone) && (
+            <a href={waLink(c.lead.phone)!} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline">
+              Open in WhatsApp
+            </a>
+          )}
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <div className="flex rounded-md border p-0.5">
-          {(["reply", "note"] as const).map((m) => (
+          {(wa ? (["note"] as const) : (["reply", "note"] as const)).map((m) => (
             <button key={m} onClick={() => setMode(m)} className={cn("rounded px-2 py-0.5", mode === m && "bg-foreground text-background")}>
               {m === "reply" ? "Reply" : "Internal note"}
             </button>

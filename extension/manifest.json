@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Versnq Core for WhatsApp",
+  "version": "0.1.0",
+  "description": "Shows the Versnq Core lead beside each WhatsApp Web chat and saves your chats with leads on their timeline. Never sends anything by itself.",
+  "permissions": ["storage", "sidePanel"],
+  "host_permissions": ["https://web.whatsapp.com/*"],
+  "optional_host_permissions": ["https://*/*", "http://*.localhost/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://web.whatsapp.com/*"],
+      "js": ["reader.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "side_panel": { "default_path": "panel.html" },
+  "action": { "default_title": "Versnq" }
+}

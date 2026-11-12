@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Versnq</title>
+    <style>
+      :root { --fg: #1c1917; --muted: #78716c; --line: #e7e5e4; --bg: #fff; --soft: #f5f5f4; --accent: #c2410c; --ok: #15803d; --warn: #b45309; }
+      @media (prefers-color-scheme: dark) { :root { --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --bg: #1c1917; --soft: #292524; --accent: #fb923c; --ok: #4ade80; --warn: #fbbf24; } }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
+      header { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+      header b { font-size: 14px; }
+      header span { color: var(--muted); margin-left: auto; font-size: 12px; }
+      main { padding: 14px; display: grid; gap: 12px; }
+      h2 { font-size: 15px; margin: 0; }
+      .muted { color: var(--muted); }
+      .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+      .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+      dl { display: grid; grid-template-columns: 7.5rem 1fr; gap: 3px 8px; margin: 0; }
+      dt { color: var(--muted); }
+      dd { margin: 0; }
+      input, textarea, button { font: inherit; color: inherit; }
+      input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--bg); }
+      button { border: 1px solid var(--line); background: var(--soft); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .error { color: #dc2626; }
+      .ok { color: var(--ok); }
+      .list { display: grid; gap: 4px; }
+      .list button { text-align: left; }
+      a { color: var(--accent); }
+      label { display: grid; gap: 4px; }
+    </style>
+  </head>
+  <body>
+    <header><b>Versnq</b><span id="who"></span></header>
+    <main id="app"><p class="muted">Loading…</p></main>
+    <script src="panel.js"></script>
+  </body>
+</html>

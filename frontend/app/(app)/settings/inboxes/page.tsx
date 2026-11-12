@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
 import { CopyInAddress } from "@/components/crm/copy-in";
+import { WhatsAppExtensionsAdmin } from "@/components/crm/wa-extension";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,7 @@ export default function InboxesSettingsPage() {
         </p>
         <Mailboxes />
         <CompanyCopyIn />
+        <WhatsAppExtensionsAdmin />
         <Exclusions />
       </div>
     </>

@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/app/app-shell";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { TwoFactorSetupForm } from "@/components/app/restriction-screens";
 import { MyMailbox } from "@/components/crm/my-mailbox";
+import { MyWhatsAppExtension } from "@/components/crm/wa-extension";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
@@ -48,6 +49,7 @@ export default function AccountPage() {
           <p className="text-xs text-muted-foreground">To change your name or role, ask an admin in your workspace.</p>
         </Section>
         {can("inbox.reply") && <MyMailbox />}
+        {can("inbox.reply") && <MyWhatsAppExtension />}
         <ChangePassword onDone={logout} />
         <TwoFactor />
         <Section
