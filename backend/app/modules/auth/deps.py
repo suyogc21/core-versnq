@@ -73,6 +73,25 @@ async def _key_user(request: Request, workspace: Workspace, db: AsyncSession, to
     )
 
 
+async def _extension_user(request: Request, db: AsyncSession, token: str):
+    """The WhatsApp extension's token acts as its rep, and only on the extension's own
+    endpoints (Decision log #41)."""
+    from app.modules.engage import extension
+
+    if not request.url.path.startswith("/api/v1/extension/"):
+        raise _unauthorized()
+    user = await extension.token_user(db, token, request.headers.get("x-versnq-extension"))
+    if user is None:
+        raise _unauthorized()
+    role = await db.get(Role, user.role_id)
+    return CurrentUser(
+        user=user,
+        role=role,
+        restrictions=restrictions(user, role),
+        permissions=await effective_permissions(db, role),
+    )
+
+
 async def current_user_any(
     request: Request,
     workspace: WorkspaceDep,
@@ -85,6 +104,8 @@ async def current_user_any(
         raise _unauthorized()
     if creds.credentials.startswith("vq_live_"):
         return await _key_user(request, workspace, db, creds.credentials)
+    if creds.credentials.startswith("vq_ext_"):  # the WhatsApp extension (step 10a)
+        return await _extension_user(request, db, creds.credentials)
     try:
         claims = decode_access_token(creds.credentials, expected_typ="user")
     except InvalidToken:

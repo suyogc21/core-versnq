@@ -39,6 +39,7 @@ Replier = Annotated[CurrentUser, require("inbox.reply")]
 # ---------- shapes ----------
 class ConversationRow(BaseModel):
     id: uuid.UUID
+    channel: str  # email / whatsapp
     lead_id: uuid.UUID
     lead_name: str
     subject: str | None
@@ -103,6 +104,7 @@ class LeadBasics(BaseModel):
 
 class ConversationDetail(BaseModel):
     id: uuid.UUID
+    channel: str
     subject: str | None
     status: str
     is_private: bool
@@ -231,6 +233,7 @@ async def _rows(db, actor: CurrentUser, rows: list[Conversation]) -> list[Conver
             assignee_id=assignees[c.id],
             assignee_name=names.get(assignees[c.id]),
             status=c.status,
+            channel=c.channel,
             is_private=c.is_private,
             last_message_at=c.last_message_at,
             waiting=c.last_direction == "in",
@@ -320,6 +323,7 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
         id=conv.id,
         subject=conv.subject,
         status=conv.status,
+        channel=conv.channel,
         is_private=conv.is_private,
         assignee_id=assignee,
         assignee_name=names.get(assignee),
@@ -358,7 +362,7 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
             NoteOut(id=n.id, user_name=names.get(n.user_id), body=n.body, created_at=n.created_at)
             for n in notes
         ],
-        can_reply=True,
+        can_reply=conv.channel == "email",
         can_manage=await IB.can_manage(db, actor, conv),
     )
 
@@ -396,6 +400,8 @@ class NewEmailIn(ReplyIn):
 @router.post("/conversations/{conv_id}/reply", response_model=ConversationDetail)
 async def reply(conv_id: uuid.UUID, body: ReplyIn, db: CrmDb, actor: Replier) -> ConversationDetail:
     conv = await IB.get_visible(db, actor, conv_id)
+    if conv.channel != "email":  # WhatsApp is answered from the rep's own WhatsApp (#41)
+        raise Invalid("Answer this on WhatsApp; it is logged here automatically")
     lead = await db.get(Lead, conv.lead_id)
     subject = conv.subject or "(no subject)"
     if not subject.lower().startswith("re:"):

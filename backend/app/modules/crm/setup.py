@@ -134,6 +134,16 @@ STEP9A_SYSTEM_TYPES = [
 STEP9B_SYSTEM_TYPES = [
     {"key": "email_received", "label": "Email received", "icon": "mail", "loggable": False},
 ]
+# The reps' own WhatsApp (step 10a, Decision log #41); frozen copy in migration 0027.
+STEP10_SYSTEM_TYPES = [
+    {"key": "whatsapp_sent", "label": "WhatsApp sent", "icon": "message-circle", "loggable": False},
+    {
+        "key": "whatsapp_received",
+        "label": "WhatsApp received",
+        "icon": "message-circle",
+        "loggable": False,
+    },
+]
 # Money (step 6, Decision log #34); frozen copy in migration 0017.
 STEP6_SYSTEM_TYPES = [
     {"key": key, "label": label, "icon": icon, "loggable": False}
@@ -168,6 +178,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP_M4_SYSTEM_TYPES,
         *STEP9A_SYSTEM_TYPES,
         *STEP9B_SYSTEM_TYPES,
+        *STEP10_SYSTEM_TYPES,
     ]
 
 

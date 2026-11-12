@@ -109,6 +109,8 @@ class Message(TenantScoped, TimestampMixin, Base):
     cc: Mapped[list] = mapped_column(JSONB, default=list)
     # step 9b-3: the user's own mailbox it was synced from or sent through
     mailbox_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    # step 10a: WhatsApp's own message id (from the extension), so nothing is logged twice
+    external_id: Mapped[str | None] = mapped_column(String(200))
 
 
 class MessageEvent(TenantScoped, Base):
@@ -244,4 +246,37 @@ class CopyInAddress(TenantScoped, Base):
 
     user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     token: Mapped[str] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ExtensionToken(TenantScoped, Base):
+    """One browser with the Versnq WhatsApp extension (step 10a): a one-time connect code,
+    then a token that works only on /api/v1/extension/*."""
+
+    __tablename__ = "extension_tokens"
+    __table_args__ = (_fk("user_id", "users", "fk_extension_tokens_user_same_tenant", "CASCADE"),)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    code_hash: Mapped[str | None] = mapped_column(String(64))
+    code_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    token_hash: Mapped[str | None] = mapped_column(String(64))
+    device: Mapped[str | None] = mapped_column(String(120))
+    version: Mapped[str | None] = mapped_column(String(20))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class WhatsAppChatLink(TenantScoped, Base):
+    """A WhatsApp Web chat with no visible number, linked to a lead once by the rep."""
+
+    __tablename__ = "whatsapp_chat_links"
+    __table_args__ = (
+        _fk("user_id", "users", "fk_whatsapp_chat_links_user_same_tenant", "CASCADE"),
+        _fk("lead_id", "leads", "fk_whatsapp_chat_links_lead_same_tenant", "CASCADE"),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    chat_key: Mapped[str] = mapped_column(String(200))
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -30,6 +30,9 @@ PUBLIC = {
     ("GET", "/api/v1/t/c/{token}/{index}"),
     ("GET", "/api/v1/u/{token}"),
     ("POST", "/api/v1/u/{token}"),
+    # The WhatsApp extension trades a one-time code (made in My account) for its token (#41).
+    # Rate-limited per address and per company.
+    ("POST", "/api/v1/extension/connect"),
 }
 
 

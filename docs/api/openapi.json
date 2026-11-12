@@ -2439,6 +2439,25 @@
         "title": "ChecklistOut",
         "type": "object"
       },
+      "CodeOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "expires_at"
+        ],
+        "title": "CodeOut",
+        "type": "object"
+      },
       "CompanyCopyInOut": {
         "properties": {
           "address": {
@@ -2575,6 +2594,56 @@
           "op"
         ],
         "title": "Condition",
+        "type": "object"
+      },
+      "ConnectIn": {
+        "properties": {
+          "code": {
+            "maxLength": 20,
+            "minLength": 6,
+            "title": "Code",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "ConnectIn",
+        "type": "object"
+      },
+      "ConnectOut": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          },
+          "workspace": {
+            "title": "Workspace",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "user_name",
+          "workspace"
+        ],
+        "title": "ConnectOut",
         "type": "object"
       },
       "ConsentIn": {
@@ -2734,6 +2803,10 @@
             "title": "Can Reply",
             "type": "boolean"
           },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -2785,6 +2858,7 @@
         },
         "required": [
           "id",
+          "channel",
           "subject",
           "status",
           "is_private",
@@ -2901,6 +2975,10 @@
             ],
             "title": "Assignee Name"
           },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -2972,6 +3050,7 @@
         },
         "required": [
           "id",
+          "channel",
           "lead_id",
           "lead_name",
           "subject",
@@ -5529,6 +5608,92 @@
         "title": "Exclusions",
         "type": "object"
       },
+      "ExtensionOut": {
+        "properties": {
+          "connected": {
+            "title": "Connected",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "user_name",
+          "device",
+          "version",
+          "connected",
+          "created_at",
+          "last_used_at",
+          "revoked_at"
+        ],
+        "title": "ExtensionOut",
+        "type": "object"
+      },
       "FieldIn": {
         "properties": {
           "depends_on": {
@@ -5839,6 +6004,27 @@
           "created_at"
         ],
         "title": "FileOut",
+        "type": "object"
+      },
+      "FollowUpIn": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          }
+        },
+        "required": [
+          "at"
+        ],
+        "title": "FollowUpIn",
         "type": "object"
       },
       "ForgotIn": {
@@ -7786,6 +7972,100 @@
         "title": "LeadBrief",
         "type": "object"
       },
+      "LeadCard": {
+        "properties": {
+          "balance_due": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Balance Due",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_yours": {
+            "title": "Is Yours",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "next_follow_up_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Follow Up At"
+          },
+          "open_deal_value": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Open Deal Value",
+            "type": "array"
+          },
+          "open_deals": {
+            "title": "Open Deals",
+            "type": "integer"
+          },
+          "org_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Name"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "org_name",
+          "stage",
+          "owner_name",
+          "is_yours",
+          "next_follow_up_at",
+          "open_deals",
+          "open_deal_value",
+          "balance_due",
+          "url"
+        ],
+        "title": "LeadCard",
+        "type": "object"
+      },
       "LeadFilter": {
         "description": "Every value list is OR within itself and AND across fields.",
         "properties": {
@@ -9207,92 +9487,6 @@
         "title": "LinkEnd",
         "type": "object"
       },
-      "LinkIn": {
-        "properties": {
-          "from_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Deal Id"
-          },
-          "from_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Lead Id"
-          },
-          "from_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Record Id"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "to_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Deal Id"
-          },
-          "to_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Lead Id"
-          },
-          "to_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Record Id"
-          }
-        },
-        "required": [
-          "link_type_id"
-        ],
-        "title": "LinkIn",
-        "type": "object"
-      },
       "LinkOut": {
         "properties": {
           "created_at": {
@@ -9576,6 +9770,47 @@
         "title": "LinkTypePatch",
         "type": "object"
       },
+      "LogIn": {
+        "properties": {
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/WaMessageIn"
+            },
+            "maxItems": 200,
+            "title": "Messages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lead_id",
+          "messages"
+        ],
+        "title": "LogIn",
+        "type": "object"
+      },
+      "LogOut": {
+        "properties": {
+          "logged": {
+            "title": "Logged",
+            "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "logged",
+          "skipped"
+        ],
+        "title": "LogOut",
+        "type": "object"
+      },
       "LoggedOut": {
         "properties": {
           "activity": {
@@ -9660,6 +9895,37 @@
           }
         },
         "title": "LoginOut",
+        "type": "object"
+      },
+      "LookupOut": {
+        "properties": {
+          "lead": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LeadCard"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "lead",
+          "phone"
+        ],
+        "title": "LookupOut",
         "type": "object"
       },
       "LostReasonIn": {
@@ -10091,59 +10357,6 @@
           }
         },
         "title": "MakeIn",
-        "type": "object"
-      },
-      "MeOut": {
-        "properties": {
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "permissions": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Permissions",
-            "type": "array"
-          },
-          "restrictions": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Restrictions",
-            "type": "array"
-          },
-          "role": {
-            "$ref": "#/components/schemas/app__modules__auth__schemas__RoleOut"
-          },
-          "tenant": {
-            "$ref": "#/components/schemas/TenantRef"
-          },
-          "two_factor_enabled": {
-            "title": "Two Factor Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "name",
-          "role",
-          "tenant",
-          "restrictions",
-          "permissions",
-          "two_factor_enabled"
-        ],
-        "title": "MeOut",
         "type": "object"
       },
       "Member": {
@@ -10685,6 +10898,45 @@
           "customer_id"
         ],
         "title": "NewInvoice",
+        "type": "object"
+      },
+      "NewLeadIn": {
+        "properties": {
+          "chat_key": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Key"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "NewLeadIn",
         "type": "object"
       },
       "NoteOut": {
@@ -12649,6 +12901,30 @@
         "title": "ReplyIn",
         "type": "object"
       },
+      "ReplyOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "body"
+        ],
+        "title": "ReplyOut",
+        "type": "object"
+      },
       "RequirementIn": {
         "properties": {
           "allow_office": {
@@ -13580,6 +13856,37 @@
           "warm_score"
         ],
         "title": "ScoreSettings",
+        "type": "object"
+      },
+      "SearchHit": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "phone"
+        ],
+        "title": "SearchHit",
         "type": "object"
       },
       "SecretOut": {
@@ -17543,6 +17850,58 @@
         "title": "ViewPatch",
         "type": "object"
       },
+      "WaMessageIn": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "from_me": {
+            "title": "From Me",
+            "type": "boolean"
+          },
+          "id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "default": "text",
+            "enum": [
+              "text",
+              "photo",
+              "video",
+              "document",
+              "voice",
+              "sticker",
+              "other"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "text": {
+            "default": "",
+            "maxLength": 20000,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "from_me"
+        ],
+        "title": "WaMessageIn",
+        "type": "object"
+      },
       "app__modules__audit__router__AuditOut": {
         "properties": {
           "action": {
@@ -17628,6 +17987,59 @@
           "created_at"
         ],
         "title": "AuditOut",
+        "type": "object"
+      },
+      "app__modules__auth__schemas__MeOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restrictions",
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/app__modules__auth__schemas__RoleOut"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "two_factor_enabled": {
+            "title": "Two Factor Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "tenant",
+          "restrictions",
+          "permissions",
+          "two_factor_enabled"
+        ],
+        "title": "MeOut",
         "type": "object"
       },
       "app__modules__auth__schemas__RoleOut": {
@@ -18136,6 +18548,92 @@
         "title": "BulkIn",
         "type": "object"
       },
+      "app__modules__crm__records_router__LinkIn": {
+        "properties": {
+          "from_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Deal Id"
+          },
+          "from_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Lead Id"
+          },
+          "from_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Record Id"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "to_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Deal Id"
+          },
+          "to_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Lead Id"
+          },
+          "to_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Record Id"
+          }
+        },
+        "required": [
+          "link_type_id"
+        ],
+        "title": "LinkIn",
+        "type": "object"
+      },
       "app__modules__crm__records_router__NoteIn": {
         "properties": {
           "body": {
@@ -18313,6 +18811,60 @@
           }
         },
         "title": "StagePatch",
+        "type": "object"
+      },
+      "app__modules__engage__extension__LinkIn": {
+        "properties": {
+          "chat_key": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Chat Key",
+            "type": "string"
+          },
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chat_key",
+          "lead_id"
+        ],
+        "title": "LinkIn",
+        "type": "object"
+      },
+      "app__modules__engage__extension__MeOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "app__modules__engage__extension__NoteIn": {
+        "properties": {
+          "body": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "NoteIn",
         "type": "object"
       },
       "app__modules__engage__inbox_router__MemberIn": {
@@ -19491,7 +20043,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MeOut"
+                  "$ref": "#/components/schemas/app__modules__auth__schemas__MeOut"
                 }
               }
             },
@@ -24336,6 +24888,568 @@
         "summary": "Stop Enrolment",
         "tags": [
           "sequences"
+        ]
+      }
+    },
+    "/api/v1/extension/connect": {
+      "post": {
+        "description": "Exchanges a one-time code (made in My account) for the extension's own token. Tries are\nlimited per address and per company, so codes can't be guessed.",
+        "operationId": "extension-connect",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Connect",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/leads": {
+      "post": {
+        "description": "Create a lead from the open chat (source \"WhatsApp\" if the company has one). Same\nduplicate rules as quick-add: an existing lead with this number is refused.",
+        "operationId": "extension-create_lead",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLeadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Lead",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/leads/{lead_id}/follow-up": {
+      "put": {
+        "operationId": "extension-follow_up",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowUpIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Follow Up",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/leads/{lead_id}/note": {
+      "post": {
+        "operationId": "extension-add_note",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__engage__extension__NoteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Note",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/link": {
+      "post": {
+        "operationId": "extension-link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__engage__extension__LinkIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Link",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/lookup": {
+      "get": {
+        "description": "Is the open chat a lead this rep may see? The number is not stored.",
+        "operationId": "extension-lookup",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "phone",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phone"
+            }
+          },
+          {
+            "in": "query",
+            "name": "chat_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Chat Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Lookup",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/me": {
+      "get": {
+        "description": "Who is signed in, for the panel's header.",
+        "operationId": "extension-me",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__engage__extension__MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Me",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/messages": {
+      "post": {
+        "description": "Messages from the open chat with this lead, in order. Already-logged ones are skipped.",
+        "operationId": "extension-log_messages",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Log Messages",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/replies": {
+      "get": {
+        "description": "Saved replies (the rep's own and shared ones), to put into the WhatsApp message box.",
+        "operationId": "extension-replies",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReplyOut"
+                  },
+                  "title": "Response Extension-Replies",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Replies",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extension/search": {
+      "get": {
+        "description": "For \"Link to lead\" when WhatsApp Web shows no number.",
+        "operationId": "extension-search",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SearchHit"
+                  },
+                  "title": "Response Extension-Search",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extensions": {
+      "get": {
+        "operationId": "extension-all_extensions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExtensionOut"
+                  },
+                  "title": "Response Extension-All Extensions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "All Extensions",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/extensions/{ext_id}/revoke": {
+      "post": {
+        "description": "The rep revokes their own; an admin (mailboxes.manage) anyone's.",
+        "operationId": "extension-revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ext_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ext Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExtensionOut"
+                  },
+                  "title": "Response Extension-Revoke",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Revoke",
+        "tags": [
+          "extension"
         ]
       }
     },
@@ -31007,7 +32121,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LinkIn"
+                "$ref": "#/components/schemas/app__modules__crm__records_router__LinkIn"
               }
             }
           },
@@ -31583,6 +32697,63 @@
         "summary": "My Day",
         "tags": [
           "work"
+        ]
+      }
+    },
+    "/api/v1/me/extension/code": {
+      "post": {
+        "description": "A one-time code to connect the WhatsApp extension in one browser (10 minutes).",
+        "operationId": "extension-make_code",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Make Code",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
+    "/api/v1/me/extensions": {
+      "get": {
+        "operationId": "extension-my_extensions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExtensionOut"
+                  },
+                  "title": "Response Extension-My Extensions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Extensions",
+        "tags": [
+          "extension"
         ]
       }
     },
