@@ -746,3 +746,41 @@ Answered 2026-11-12 (Decision log #35): all as recommended, except R4 (export pe
 | R5 | "Revenue" means? | Show both: **booked** (won deal value) and **collected** (payments received), side by side |
 | R6 | Build-your-own reports, scheduled email of dashboards | Later (spec: custom reports "Later"); email of reports once email exists (step 9) |
 | R7 | Different dashboards per industry | Same dashboards for everyone, in each company's own words (Student / Buyer / Client); per-industry dashboard layouts later if needed |
+
+---
+
+## 11. B2B / SaaS demo company, then step 7b: key accounts add-on
+
+### 11.1 The B2B demo company (built first, so 7b has real-looking data)
+
+- **A new industry pack `b2b_saas`** (configuration only, rule 2): words Prospect / Opportunity / Client; lead stages New → Contacted → Discovery call → Qualified → Nurture / Unqualified; pipeline Discovery → Demo → Proposal → Negotiation → Won / Lost with win %; sources Website, LinkedIn, Referral, Event, Outbound, Partner; fields company size, industry, seats, current tool, decision timeline; lost reasons (price, chose competitor, no budget, timing); products with per-seat yearly prices and a one-time implementation fee; documents (signed MSA, purchase order, GST certificate); GST 18%.
+- **Demo company "Brightlane Software"** (invented, India, INR, sells an HR and payroll suite): about 150 prospects across invented client companies, reps and a manager, opportunities at every stage, won deals that became clients, yearly and quarterly repeat invoices, some overdue, documents collected. Its own login like Acme and Bluewave.
+- No real company or brand names anywhere in demo data.
+
+### 11.2 Step 7b: key accounts (Decision log #31)
+
+For companies that sell to large organisations over months. An add-on: a module switch (off by default, on for Brightlane), so EdTech and real-estate companies never see it and nothing in Core changes for them.
+
+| Part | What it is | Built on |
+| --- | --- | --- |
+| **Key account** | An organisation marked as key: tier (strategic / growth / maintain), account owner, yearly target, health (on track / at risk / off track) | Organisations (step 1) |
+| **Group tree** | Parent and subsidiaries (Vertex Group → Vertex Motors, Vertex Retail); won, pipeline and collected roll up the tree, per currency | New parent link |
+| **Budget holders** | The departments that buy (HR, Finance, IT), each with its budget holder (a contact) | Contacts on the organisation |
+| **Opportunity grid** | Departments × products: each cell shows Won / In progress / Lost from real deals, or "With competitor X" / "Not a fit" set by the rep; click a cell to open its deals or start one | Deals + products (step 3) |
+| **Competitors** | The company's list of competitors; each grid cell can name who holds it today | New small list |
+| **People map** | Each contact's role (decision maker / influencer / user / gatekeeper), stance (champion / supporter / neutral / blocker) and strength, with their last touch from the timeline | Contacts + activities |
+| **Account plan** | Goals (with target amount and date) and next actions (tasks), reviewed on the account page | Tasks (step 1) |
+
+- **Screens:** "Key accounts" in the sidebar (list with tier, owner, target vs won this year, pipeline, health); an account page with tabs Overview (roll-ups, plan), Opportunity grid, People map, Group tree.
+- **Rules:** account visibility follows the organisation's (owner / team / all); new permission `key_accounts.manage` (default Owner, Admin, Sales Manager; reps edit accounts they own). Every change writes an activity on the organisation's timeline; events `account.updated` for automations and webhooks.
+- **Tests:** isolation, visibility, roll-ups per currency across the tree (no loops in the tree), grid from real deals, module switched off answers 404, browser walk on Brightlane.
+
+### 11.3 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| K1 | Separate "account" records, or mark existing organisations as key? | **Mark organisations** (one record, one timeline; nothing to keep in step) |
+| K2 | Is a department a contact or its own thing? | **Its own small record** under the account, with a contact as budget holder (a department outlives the person) |
+| K3 | Health: set by hand or worked out? | **Set by the owner**, with a hint from data (no touch in 30 days, overdue money, lost deals) |
+| K4 | Paid add-on? | Yes, priced separately (your call on the price) |
+| K5 | Demo industry | HR and payroll software ("Brightlane"), unless you prefer another |
