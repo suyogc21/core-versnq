@@ -163,9 +163,11 @@ async def lead_fields(db: AsyncSession, entity: str = "lead") -> dict[str, Custo
 
 
 async def apply_custom_fields(
-    db: AsyncSession, obj, incoming: dict, *, creating: bool, entity: str = "lead"
+    db: AsyncSession, obj, incoming: dict, *, creating: bool, entity: str = "lead", rules=None
 ) -> list[str]:
-    """Validate and merge custom values onto a lead or record. Returns the keys that changed."""
+    """Validate and merge custom values onto a lead or record. Returns the keys that changed.
+    `rules` (step 8): fields the person may not edit are refused if changed, and never block
+    them as required."""
     defs = await lead_fields(db, entity)
     unknown = [k for k in incoming if k not in defs]
     if unknown:
@@ -174,9 +176,12 @@ async def apply_custom_fields(
     calc.refuse_input(defs, incoming, obj.custom_fields or {})
     merged = dict(obj.custom_fields or {})
     changed = []
+    locked = rules.locked_custom() if rules else set()
     for key, raw in incoming.items():
         d = defs[key]
         value = F.coerce({"type": d.type, "label": d.label, "options": d.options}, raw)
+        if key in locked:
+            rules.check_value(f"cf.{key}", merged.get(key), value)
         if merged.get(key) != value:
             changed.append(key)
         if value is None:
@@ -184,7 +189,12 @@ async def apply_custom_fields(
         else:
             merged[key] = value
     for d in defs.values():
-        if d.required and merged.get(d.key) is None and (creating or d.key in incoming):
+        if (
+            d.required
+            and d.key not in locked
+            and merged.get(d.key) is None
+            and (creating or d.key in incoming)
+        ):
             raise Invalid(f"{d.label} is required")
         if d.depends_on and merged.get(d.key) is not None:
             parent_value = merged.get(d.depends_on)
@@ -259,14 +269,17 @@ BUILTIN_VALUE = {
 }
 
 
-async def check_stage_entry(db: AsyncSession, lead: Lead, stage: LeadStage) -> None:
-    """Required fields per stage (Decision log #21) and a reason for unqualified stages."""
+async def check_stage_entry(db: AsyncSession, lead: Lead, stage: LeadStage, rules=None) -> None:
+    """Required fields per stage (Decision log #21) and a reason for unqualified stages. A
+    field the person may not edit never blocks them (step 8)."""
     if not stage.required_fields:
         missing = []
     else:
         defs = await lead_fields(db)
         missing = []
         for key in stage.required_fields:
+            if rules and not rules.editable(key if key in BUILTIN_VALUE else f"cf.{key}"):
+                continue
             if key in BUILTIN_VALUE:
                 if not BUILTIN_VALUE[key](lead):
                     missing.append(key.replace("_", " "))
@@ -421,7 +434,9 @@ async def move_stage(
 ) -> None:
     if stage.id == lead.stage_id:
         return
-    await check_stage_entry(db, lead, stage)
+    from app.modules.crm import access as A  # access builds on field definitions
+
+    await check_stage_entry(db, lead, stage, await A.rules(db, actor, "lead"))
     old = await db.get(LeadStage, lead.stage_id)
     lead.stage_id, lead.stage_changed_at, lead.is_open = stage.id, now(), stage.is_open
     if not stage.is_unqualified:

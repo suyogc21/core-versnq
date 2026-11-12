@@ -193,7 +193,7 @@ async def log_activity(lead_id: uuid.UUID, body: ActivityIn, db: CrmDb, actor: E
     )
     await db.flush()
     return LoggedOut(
-        activity=(await _activities_out(db, [activity]))[0], lead=(await _out(db, [lead]))[0]
+        activity=(await _activities_out(db, [activity]))[0], lead=(await _out(db, [lead], actor))[0]
     )
 
 
@@ -337,6 +337,6 @@ async def my_day(db: CrmDb, actor: ActiveUser) -> MyDayOut:
         overdue=[t for t in out if t.due_at < now],
         today=[t for t in out if now <= t.due_at < tomorrow],
         upcoming=[t for t in out if t.due_at >= tomorrow],
-        new_leads=await _out(db, list(new_leads.all())),
+        new_leads=await _out(db, list(new_leads.all()), actor),
         unassigned_count=unassigned,
     )

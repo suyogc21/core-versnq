@@ -847,3 +847,47 @@ A key reads only its own company (isolation) and only what its role allows (a Sa
 | W5 | ACE conversation on the timeline | **One activity per conversation** (messages + summary), not one per message |
 | W6 | Rate limit | **100 requests a minute per key** (Suyog, Nov 12), raise per company later if needed |
 | W7 | `call.analyzed` endpoint | **Later, with call analysis** (parked, #36); event stays in the catalogue |
+
+## 13. Step 8 in detail: page layouts and field permissions
+
+What it is for: each company decides what its people see on a record and what they may change, without code (rule 3). A real-estate firm puts Budget and Locality at the top; a B2B firm puts Seats and Current tool; and an owner can stop a sales rep from seeing or changing fields such as deal value, discount or a client's PAN.
+
+Already built and reused: custom fields with a group and an order, required fields (always, or from a stage onwards), linked dropdowns, unique fields, roles.
+
+### 13.1 Page layouts (per company, per kind of record: lead, deal, customer, each record type)
+
+- **Sections:** named, ordered boxes on the record page ("Contact", "Requirement", "Billing"). Built-in fields (company, website, city, industry…) and custom fields can both be placed in any section, in any order, or left off the page.
+- **Highlights:** up to 4 fields shown under the record's name at the top (e.g. Budget, Locality), so the most important facts are seen first.
+- **Add form:** which fields appear when someone adds a record (required fields always appear).
+- One layout per kind of record for the whole company; what a role may see is set by field permissions (13.2), so there is one layout to keep tidy, not one per role.
+- Every company starts with today's page as its layout, so nothing moves until an admin changes it.
+
+### 13.2 Field permissions (per role, per field)
+
+For each role and each field: **Edit** (default), **View only**, or **Hidden**. "Mandatory" stays per field and per stage, as today.
+- Owner and Admin always edit everything (nobody can lock the company out).
+- Enforced in the backend everywhere the field could leak: the record page, lists and saved-view columns, search and filters on that field, CSV export, CSV import (a view-only field is not overwritten), the API (keys follow their role), the "Details changed" lines on the timeline (a hidden field's old and new values are not shown), and merge. A view-only field cannot be changed by that role from anywhere.
+- Required fields a role cannot edit do not block that role (the rule asks only what the person can fill).
+- Calculated fields follow their own permission; a hidden input never shows through a calculation the role can see unless the admin allows that calculation.
+
+### 13.3 Screens
+
+Settings → Records and fields → each kind of record gets two new tabs: **Layout** (drag fields between sections, choose highlights and the add form, live preview) and **Field access** (a grid: fields down the side, roles across the top, Edit / View / Hidden in each cell).
+
+### 13.4 Tables — migration 0022
+
+`record_layouts` (company, kind of record, sections with their fields in order, highlights, add-form fields) · `field_permissions` (company, role, kind of record, field key, access view / hidden; no row = edit). Both company-scoped with forced RLS.
+
+### 13.5 Tests ("done" means these pass)
+
+Isolation; a hidden field never appears for that role in the record, list, search, filter, export, API or timeline; a view-only field cannot be changed by API, import, merge or the page; Owner/Admin unaffected; required-but-not-editable does not block; layouts keep working when a field is deleted or renamed; a company with no layout sees today's page; browser walk on Brightlane (hide Deal value from Sales User, reorder the lead page, add highlights) on desktop and phone.
+
+### 13.6 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| P1 | One layout per company, or per role? | **One per company**; roles differ through field permissions |
+| P2 | Which built-in fields can be hidden or made view-only? | **All except the name and the owner**; phone and email may be **view only** but not hidden (reps must be able to call and write) |
+| P3 | "Mandatory" per role? | **No**: stays per field and per stage |
+| P4 | Can a calculated field show a value built from a hidden field? | **No by default**; the admin can allow it per calculated field |
+| P5 | Highlights | **Up to 4** per kind of record |

@@ -87,6 +87,9 @@ class CustomFieldDefinition(TenantScoped, TimestampMixin, Base):
     group_name: Mapped[str | None] = mapped_column(String(80))
     position: Mapped[int] = mapped_column(Integer)
     formula: Mapped[str | None] = mapped_column(String(500))  # type "calculated" only
+    # a calculated field built from a field a role cannot see is hidden from that role too,
+    # unless the admin allows it here (step 8, Decision log #38)
+    show_with_hidden_inputs: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class CustomFieldUniqueValue(TenantScoped, Base):
@@ -866,3 +869,36 @@ class StoredFile(TenantScoped, Base):
     sha256: Mapped[str] = mapped_column(String(64))
     uploaded_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+class RecordLayout(TenantScoped, TimestampMixin, Base):
+    """How one kind of record's page is arranged (step 8). No row = the default page."""
+
+    __tablename__ = "record_layouts"
+    __table_args__ = (UniqueConstraint("tenant_id", "entity", name="uq_record_layouts_entity"),)
+
+    entity: Mapped[str] = mapped_column(String(50))
+    sections: Mapped[list] = mapped_column(JSONB)  # [{"name": str, "fields": [keys]}]
+    highlights: Mapped[list] = mapped_column(JSONB)
+    add_form: Mapped[list] = mapped_column(JSONB)
+    updated_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class FieldPermission(TenantScoped, TimestampMixin, Base):
+    """What one role may do with one field: 'view' or 'hidden' (no row = edit)."""
+
+    __tablename__ = "field_permissions"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "role_id", "entity", "field", name="uq_field_permissions"),
+        ForeignKeyConstraint(
+            ["tenant_id", "role_id"],
+            ["roles.tenant_id", "roles.id"],
+            name="fk_field_permissions_role_same_tenant",
+            ondelete="CASCADE",
+        ),
+    )
+
+    role_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    entity: Mapped[str] = mapped_column(String(50))
+    field: Mapped[str] = mapped_column(String(70))
+    access: Mapped[str] = mapped_column(String(6))

@@ -25,6 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Conflict, DomainError, Invalid
 from app.modules.auth.deps import CurrentUser
+from app.modules.crm import access as A
 from app.modules.crm import consent as C
 from app.modules.crm import leads as L
 from app.modules.crm import orgs as O
@@ -186,6 +187,11 @@ async def _create(
 ) -> Lead:
     if inc.kind == "organisation" and not (inc.fields.get("org_name") or "").strip():
         raise Invalid("An organisation needs a name")
+    rules = await A.rules(db, actor, "lead")
+    for name, (_, attrs) in A.builtins("lead").items():
+        for attr in attrs:  # a field the person may not edit cannot be filled in either
+            if inc.fields.get(attr) not in (None, ""):
+                rules.check_value(name, None, inc.fields[attr])
     await L.check_source(db, inc.source_id)
     stage = await L.get_stage(db, inc.stage_id) if inc.stage_id else await L.default_stage(db)
 
@@ -208,9 +214,11 @@ async def _create(
     db.add(lead)
     await db.flush()
     await L.set_identities(db, lead, inc.identities, country)
-    await L.apply_custom_fields(db, lead, inc.custom_fields, creating=inc.enforce_required)
+    await L.apply_custom_fields(
+        db, lead, inc.custom_fields, creating=inc.enforce_required, rules=rules
+    )
     try:
-        await L.check_stage_entry(db, lead, stage)
+        await L.check_stage_entry(db, lead, stage, rules)
     except Invalid:
         if inc.enforce_required:
             raise
@@ -313,12 +321,18 @@ async def reenquire(db: AsyncSession, lead: Lead, inc: Incoming, actor: CurrentU
             country,
         )
         filled.append("identities")
+    rules = await A.rules(db, actor, "lead")
+    locked = {
+        a for n, (_, attrs) in A.builtins("lead").items() if not rules.editable(n) for a in attrs
+    }
     for key, value in inc.fields.items():
-        if key in PLAIN_FIELDS and value and not getattr(lead, key):
+        if key in PLAIN_FIELDS and key not in locked and value and not getattr(lead, key):
             setattr(lead, key, value)
             filled.append(key)
     blank_custom = {
-        k: v for k, v in inc.custom_fields.items() if (lead.custom_fields or {}).get(k) is None
+        k: v
+        for k, v in inc.custom_fields.items()
+        if (lead.custom_fields or {}).get(k) is None and k not in rules.locked_custom()
     }
     if blank_custom:
         before = dict(lead.custom_fields or {})

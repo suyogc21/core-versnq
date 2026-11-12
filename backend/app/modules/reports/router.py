@@ -371,16 +371,17 @@ def _major(minor: int | None, currency: str) -> str:
     return plain(minor or 0, currency) if currency else ""
 
 
-async def _fields(db, entity: str) -> list[CustomFieldDefinition]:
-    return list(
-        (
-            await db.scalars(
-                select(CustomFieldDefinition)
-                .where(CustomFieldDefinition.entity == entity)
-                .order_by(CustomFieldDefinition.position)
-            )
-        ).all()
+async def _fields(db, entity: str, actor) -> list[CustomFieldDefinition]:
+    """Custom columns for an export, without the ones this person may not see (step 8)."""
+    from app.modules.crm import access as A
+
+    rules = await A.rules(db, actor, entity)
+    rows = await db.scalars(
+        select(CustomFieldDefinition)
+        .where(CustomFieldDefinition.entity == entity)
+        .order_by(CustomFieldDefinition.position)
     )
+    return [d for d in rows.all() if not rules.hidden(f"cf.{d.key}")]
 
 
 async def _done(db, actor: CurrentUser, what: str, count: int) -> None:
@@ -439,7 +440,7 @@ async def export_leads(
     tz = await _tz(db)
     stages = dict((await db.execute(select(LeadStage.id, LeadStage.name))).all())
     sources = dict((await db.execute(select(LeadSource.id, LeadSource.name))).all())
-    fields = await _fields(db, "lead")
+    fields = await _fields(db, "lead", actor)
     header = [
         "Name",
         "Email",
@@ -544,7 +545,7 @@ async def export_deals(
         items += more.items
     tz = await _tz(db)
     pipes = dict((await db.execute(select(Pipeline.id, Pipeline.name))).all())
-    fields = await _fields(db, "deal")
+    fields = await _fields(db, "deal", actor)
     header = [
         "Deal",
         "Contact",
@@ -570,7 +571,7 @@ async def export_deals(
             d.stage_name,
             d.status,
             d.owner_name,
-            _major(d.amount_minor, d.currency),
+            "" if d.amount_minor is None else _major(d.amount_minor, d.currency),  # hidden: blank
             d.currency,
             d.expected_close_on,
             _local(d.closed_at, tz),
@@ -624,7 +625,7 @@ async def export_customers(
             break
         items += more.items
     tz = await _tz(db)
-    fields = await _fields(db, "customer")
+    fields = await _fields(db, "customer", actor)
     header = [
         "Number",
         "Name",

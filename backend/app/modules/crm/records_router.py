@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Text, cast, func, inspect, nulls_last, or_, select
 
 from app.core.errors import Conflict, Forbidden, Invalid, NotFound
-from app.modules.auth.deps import ActiveUser
+from app.modules.auth.deps import ActiveUser, CurrentUser
+from app.modules.crm import access as A
 from app.modules.crm import leads as L
 from app.modules.crm import records as RC
 from app.modules.crm.deps import CRM, CrmDb, audit
@@ -63,7 +64,11 @@ class RecordPatch(BaseModel):
     custom_fields: dict | None = None
 
 
-async def _out(db, records: list[Record]) -> list[RecordOut]:
+async def _out(
+    db, records: list[Record], actor: CurrentUser | None, entity: str
+) -> list[RecordOut]:
+    """Records of one type as the person may see them: hidden fields blanked (step 8)."""
+    rules = await A.rules(db, actor, entity)
     for r in records:
         if inspect(r).expired_attributes:
             await db.refresh(r)
@@ -77,6 +82,7 @@ async def _out(db, records: list[Record]) -> list[RecordOut]:
     for r in records:
         item = RecordOut.model_validate(r)
         item.owner_name = names.get(r.owner_user_id)
+        rules.redact(item)
         out.append(item)
     return out
 
@@ -103,9 +109,14 @@ async def list_records(
     if not acc.view or not rtype.is_active:
         raise NotFound("Record type not found")
     where = [Record.record_type_id == rtype.id, await RC.record_filter(db, actor, rtype, acc)]
+    rules = await A.rules(db, actor, rtype.entity)
     if q and q.strip():
         term = f"%{q.strip()}%"
-        where.append(or_(Record.name.ilike(term), cast(Record.custom_fields, Text).ilike(term)))
+        inside = cast(Record.custom_fields, Text).ilike(term)
+        where.append(or_(Record.name.ilike(term), inside if not rules.hidden_custom() else False))
+    for item in cf:
+        if rules.hidden(f"cf.{item.partition(':')[0]}"):
+            raise Invalid("You can't filter on a field you can't see")
     if owner:
         conds = []
         for o in owner:
@@ -147,7 +158,7 @@ async def list_records(
         .limit(limit)
         .offset(offset)
     )
-    return RecordPage(items=await _out(db, list(rows.all())), total=total)
+    return RecordPage(items=await _out(db, list(rows.all()), actor, rtype.entity), total=total)
 
 
 @router.post("/records", response_model=RecordOut, status_code=status.HTTP_201_CREATED)
@@ -172,7 +183,10 @@ async def create_record(body: RecordIn, db: CrmDb, actor: ActiveUser) -> RecordO
         record.team_id = await L.owner_team(db, record.owner_user_id)
     db.add(record)
     await db.flush()
-    await L.apply_custom_fields(db, record, body.custom_fields, creating=True, entity=rtype.entity)
+    await L.apply_custom_fields(
+        db, record, body.custom_fields, creating=True, entity=rtype.entity,
+        rules=await A.rules(db, actor, rtype.entity),
+    )  # fmt: skip
     if rtype.has_stages:
         stage = (
             await RC.check_stage(db, rtype, record, body.stage_id)
@@ -184,13 +198,13 @@ async def create_record(body: RecordIn, db: CrmDb, actor: ActiveUser) -> RecordO
     await RC.log(db, record, "record_created", f"Added by {actor.user.name}", actor)
     await RC.event(db, record, rtype, "record.created")
     await db.flush()
-    return (await _out(db, [record]))[0]
+    return (await _out(db, [record], actor, rtype.entity))[0]
 
 
 @router.get("/records/{record_id}", response_model=RecordOut)
 async def get_record(record_id: uuid.UUID, db: CrmDb, actor: ActiveUser) -> RecordOut:
     v = await RC.get_visible(db, actor, record_id)
-    return (await _out(db, [v.record]))[0]
+    return (await _out(db, [v.record], actor, v.rtype.entity))[0]
 
 
 @router.patch("/records/{record_id}", response_model=RecordOut)
@@ -210,8 +224,9 @@ async def update_record(
         changed.append("name")
     if body.custom_fields is not None:
         changed += await L.apply_custom_fields(
-            db, record, body.custom_fields, creating=False, entity=rtype.entity
-        )
+            db, record, body.custom_fields, creating=False, entity=rtype.entity,
+            rules=await A.rules(db, actor, rtype.entity),
+        )  # fmt: skip
     if (
         "owner_user_id" in changes
         and rtype.has_owner
@@ -257,7 +272,7 @@ async def update_record(
         await RC.event(db, record, rtype, "record.updated", {"fields": changed})
     record.version += 1
     await db.flush()
-    return (await _out(db, [record]))[0]
+    return (await _out(db, [record], actor, rtype.entity))[0]
 
 
 @router.delete("/records/{record_id}", status_code=status.HTTP_204_NO_CONTENT)

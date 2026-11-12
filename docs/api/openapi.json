@@ -23,37 +23,98 @@
         "title": "AcceptInviteIn",
         "type": "object"
       },
-      "AccessOut": {
+      "AccessField": {
         "properties": {
-          "create": {
-            "title": "Create",
+          "builtin": {
+            "title": "Builtin",
             "type": "boolean"
           },
-          "delete": {
-            "title": "Delete",
-            "type": "boolean"
+          "choices": {
+            "items": {
+              "enum": [
+                "edit",
+                "view",
+                "hidden"
+              ],
+              "type": "string"
+            },
+            "title": "Choices",
+            "type": "array"
           },
-          "edit": {
-            "title": "Edit",
-            "type": "boolean"
-          },
-          "scope": {
-            "title": "Scope",
+          "key": {
+            "title": "Key",
             "type": "string"
           },
-          "view": {
-            "title": "View",
-            "type": "boolean"
+          "label": {
+            "title": "Label",
+            "type": "string"
           }
         },
         "required": [
-          "view",
-          "create",
-          "edit",
-          "delete",
-          "scope"
+          "key",
+          "label",
+          "builtin",
+          "choices"
         ],
-        "title": "AccessOut",
+        "title": "AccessField",
+        "type": "object"
+      },
+      "AccessIn": {
+        "properties": {
+          "access": {
+            "additionalProperties": {
+              "enum": [
+                "edit",
+                "view",
+                "hidden"
+              ],
+              "type": "string"
+            },
+            "maxProperties": 300,
+            "title": "Access",
+            "type": "object"
+          }
+        },
+        "required": [
+          "access"
+        ],
+        "title": "AccessIn",
+        "type": "object"
+      },
+      "AccessRole": {
+        "properties": {
+          "access": {
+            "additionalProperties": {
+              "enum": [
+                "view",
+                "hidden"
+              ],
+              "type": "string"
+            },
+            "title": "Access",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "locked",
+          "access"
+        ],
+        "title": "AccessRole",
         "type": "object"
       },
       "AccountDetail": {
@@ -1566,8 +1627,15 @@
       "BoardColumn": {
         "properties": {
           "amount_minor": {
-            "title": "Amount Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Minor"
           },
           "colour": {
             "anyOf": [
@@ -1609,8 +1677,15 @@
             "type": "string"
           },
           "weighted_minor": {
-            "title": "Weighted Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weighted Minor"
           }
         },
         "required": [
@@ -1645,8 +1720,15 @@
             "type": "integer"
           },
           "open_minor": {
-            "title": "Open Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Minor"
           },
           "pipeline_id": {
             "format": "uuid",
@@ -1658,12 +1740,26 @@
             "type": "string"
           },
           "weighted_minor": {
-            "title": "Weighted Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weighted Minor"
           },
           "won_minor": {
-            "title": "Won Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Won Minor"
           }
         },
         "required": [
@@ -3047,8 +3143,15 @@
       "DealOut": {
         "properties": {
           "amount_minor": {
-            "title": "Amount Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Minor"
           },
           "close_note": {
             "anyOf": [
@@ -4910,6 +5013,11 @@
             "title": "Required",
             "type": "boolean"
           },
+          "show_with_hidden_inputs": {
+            "default": false,
+            "title": "Show With Hidden Inputs",
+            "type": "boolean"
+          },
           "type": {
             "title": "Type",
             "type": "string"
@@ -4996,6 +5104,17 @@
               }
             ],
             "title": "Required"
+          },
+          "show_with_hidden_inputs": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Show With Hidden Inputs"
           }
         },
         "title": "FieldPatch",
@@ -6683,6 +6802,157 @@
           "plural"
         ],
         "title": "Label",
+        "type": "object"
+      },
+      "LayoutField": {
+        "properties": {
+          "builtin": {
+            "title": "Builtin",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "builtin"
+        ],
+        "title": "LayoutField",
+        "type": "object"
+      },
+      "LayoutIn": {
+        "properties": {
+          "add_form": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Add Form",
+            "type": "array"
+          },
+          "highlights": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4,
+            "title": "Highlights",
+            "type": "array"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "maxItems": 20,
+            "title": "Sections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sections"
+        ],
+        "title": "LayoutIn",
+        "type": "object"
+      },
+      "LayoutOut": {
+        "properties": {
+          "add_form": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Add Form",
+            "type": "array"
+          },
+          "entity": {
+            "title": "Entity",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/LayoutField"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "highlights": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4,
+            "title": "Highlights",
+            "type": "array"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "my_access": {
+            "additionalProperties": {
+              "enum": [
+                "view",
+                "hidden"
+              ],
+              "type": "string"
+            },
+            "title": "My Access",
+            "type": "object"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "maxItems": 20,
+            "title": "Sections",
+            "type": "array"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "sections",
+          "entity",
+          "is_default",
+          "fields",
+          "my_access"
+        ],
+        "title": "LayoutOut",
         "type": "object"
       },
       "LeadBrief": {
@@ -10345,8 +10615,15 @@
             "type": "integer"
           },
           "open_minor": {
-            "title": "Open Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Minor"
           },
           "pipeline_id": {
             "format": "uuid",
@@ -10354,16 +10631,30 @@
             "type": "string"
           },
           "weighted_minor": {
-            "title": "Weighted Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weighted Minor"
           },
           "won_count": {
             "title": "Won Count",
             "type": "integer"
           },
           "won_minor": {
-            "title": "Won Minor",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Won Minor"
           }
         },
         "required": [
@@ -11194,7 +11485,7 @@
           "my_access": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AccessOut"
+                "$ref": "#/components/schemas/app__modules__crm__record_types_router__AccessOut"
               },
               {
                 "type": "null"
@@ -12290,6 +12581,30 @@
           "secret"
         ],
         "title": "SecretOut",
+        "type": "object"
+      },
+      "Section": {
+        "properties": {
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Fields",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "fields"
+        ],
+        "title": "Section",
         "type": "object"
       },
       "SetTags": {
@@ -15721,6 +16036,35 @@
         "title": "BulkIn",
         "type": "object"
       },
+      "app__modules__crm__layouts_router__AccessOut": {
+        "properties": {
+          "entity": {
+            "title": "Entity",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/AccessField"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/AccessRole"
+            },
+            "title": "Roles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entity",
+          "fields",
+          "roles"
+        ],
+        "title": "AccessOut",
+        "type": "object"
+      },
       "app__modules__crm__leads_router__BulkIn": {
         "description": "Act on the ticked leads (ids) or on everything matching a filter.",
         "properties": {
@@ -15960,6 +16304,39 @@
           }
         },
         "title": "StagePatch",
+        "type": "object"
+      },
+      "app__modules__crm__record_types_router__AccessOut": {
+        "properties": {
+          "create": {
+            "title": "Create",
+            "type": "boolean"
+          },
+          "delete": {
+            "title": "Delete",
+            "type": "boolean"
+          },
+          "edit": {
+            "title": "Edit",
+            "type": "boolean"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "view": {
+            "title": "View",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "view",
+          "create",
+          "edit",
+          "delete",
+          "scope"
+        ],
+        "title": "AccessOut",
         "type": "object"
       },
       "app__modules__crm__record_types_router__OrderIn": {
@@ -21113,6 +21490,121 @@
         ]
       }
     },
+    "/api/v1/field-access/{entity}": {
+      "get": {
+        "operationId": "layouts-get_access",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entity",
+            "required": true,
+            "schema": {
+              "title": "Entity",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__crm__layouts_router__AccessOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Access",
+        "tags": [
+          "layouts"
+        ]
+      }
+    },
+    "/api/v1/field-access/{entity}/{role_id}": {
+      "put": {
+        "description": "Replace one role's access on one kind of record. Fields not sent are Edit.",
+        "operationId": "layouts-set_access",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entity",
+            "required": true,
+            "schema": {
+              "title": "Entity",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "role_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Role Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__crm__layouts_router__AccessOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Access",
+        "tags": [
+          "layouts"
+        ]
+      }
+    },
     "/api/v1/formula/check": {
       "post": {
         "description": "Is this formula valid here? Lists the fields a formula may use.",
@@ -24494,6 +24986,147 @@
         "summary": "Update Unit",
         "tags": [
           "key accounts"
+        ]
+      }
+    },
+    "/api/v1/layouts/{entity}": {
+      "delete": {
+        "description": "Back to the default page.",
+        "operationId": "layouts-reset_layout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entity",
+            "required": true,
+            "schema": {
+              "title": "Entity",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reset Layout",
+        "tags": [
+          "layouts"
+        ]
+      },
+      "get": {
+        "operationId": "layouts-get_layout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entity",
+            "required": true,
+            "schema": {
+              "title": "Entity",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Layout",
+        "tags": [
+          "layouts"
+        ]
+      },
+      "put": {
+        "operationId": "layouts-save_layout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entity",
+            "required": true,
+            "schema": {
+              "title": "Entity",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LayoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Layout",
+        "tags": [
+          "layouts"
         ]
       }
     },

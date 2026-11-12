@@ -14,6 +14,7 @@ from sqlalchemy import func, or_, select
 from app.core import storage
 from app.core.errors import Conflict, Forbidden, Invalid, NotFound
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
+from app.modules.crm import access as A
 from app.modules.crm import customers as C
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
@@ -154,7 +155,11 @@ class StorageOut(BaseModel):
 
 
 # ---------- helpers ----------
-async def _out(db, rows: list[tuple[Customer, Lead]]) -> list[CustomerOut]:
+async def _out(
+    db, rows: list[tuple[Customer, Lead]], actor: CurrentUser | None
+) -> list[CustomerOut]:
+    """Customers as the person may see them: hidden fields are blanked (step 8)."""
+    rules = await A.rules(db, actor, "customer")
     owners = {
         u.id: u.name
         for u in (
@@ -177,6 +182,7 @@ async def _out(db, rows: list[tuple[Customer, Lead]]) -> list[CustomerOut]:
                     "owner_name": owners.get(ld.owner_user_id),
                     "docs_done": done,
                     "docs_required": required,
+                    "custom_fields": rules.redact_custom(c.custom_fields),
                 }
             )
         )
@@ -246,7 +252,7 @@ async def make_customer(lead_id: uuid.UUID, body: MakeIn, db: CrmDb, actor: Acti
     await audit(
         db, actor, "customer.created", "customer", customer.id, after={"lead": str(lead.id)}
     )
-    return (await _out(db, [(customer, lead)]))[0]
+    return (await _out(db, [(customer, lead)], actor))[0]
 
 
 @router.get("/leads/{lead_id}/customer", response_model=CustomerOut | None)
@@ -258,7 +264,7 @@ async def customer_of_lead(lead_id: uuid.UUID, db: CrmDb, actor: ActiveUser):
             .where(Customer.lead_id == lead_id, await C.visibility(db, actor))
         )
     ).first()
-    return (await _out(db, [tuple(row)]))[0] if row else None
+    return (await _out(db, [tuple(row)], actor))[0] if row else None
 
 
 # ---------- list and one ----------
@@ -323,12 +329,12 @@ async def list_customers(
             base.order_by(order, Customer.id).offset((page - 1) * page_size).limit(page_size)
         )
     ).all()
-    return CustomerPage(items=await _out(db, [tuple(r) for r in rows]), total=total or 0)
+    return CustomerPage(items=await _out(db, [tuple(r) for r in rows], actor), total=total or 0)
 
 
 @router.get("/customers/{customer_id}", response_model=CustomerOut)
 async def get_customer(customer_id: uuid.UUID, db: CrmDb, actor: ActiveUser):
-    return (await _out(db, [await C.get_visible(db, actor, customer_id)]))[0]
+    return (await _out(db, [await C.get_visible(db, actor, customer_id)], actor))[0]
 
 
 @router.patch("/customers/{customer_id}", response_model=CustomerOut)
@@ -344,8 +350,9 @@ async def update_customer(
         changed.append("status")
     if body.custom_fields is not None:
         changed += await L.apply_custom_fields(
-            db, customer, body.custom_fields, creating=False, entity="customer"
-        )
+            db, customer, body.custom_fields, creating=False, entity="customer",
+            rules=await A.rules(db, actor, "customer"),
+        )  # fmt: skip
     if changed:
         customer.version += 1
         await L.log(
@@ -360,7 +367,7 @@ async def update_customer(
             db, actor, "customer.updated", "customer", customer.id, after={"fields": changed}
         )
     await db.flush()
-    return (await _out(db, [(customer, lead)]))[0]
+    return (await _out(db, [(customer, lead)], actor))[0]
 
 
 # ---------- documents ----------

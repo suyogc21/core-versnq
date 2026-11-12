@@ -120,15 +120,23 @@ BUILTIN_REQUIRED = {
 }
 
 
-async def check_stage_entry(db: AsyncSession, deal: Deal, stage: PipelineStage) -> None:
+async def check_stage_entry(
+    db: AsyncSession, deal: Deal, stage: PipelineStage, actor: CurrentUser | None = None
+) -> None:
+    """Required fields per stage; a field the person may not edit never blocks them (#38)."""
     if not stage.required_fields:
         return
+    from app.modules.crm import access as A
+
+    rules = await A.rules(db, actor, ENTITY)
     defs = await L.lead_fields(db, ENTITY)
     lines = await db.scalar(
         select(func.count()).select_from(DealProduct).where(DealProduct.deal_id == deal.id)
     )
     missing = []
     for key in stage.required_fields:
+        if not rules.editable(key if key in BUILTIN_REQUIRED else f"cf.{key}"):
+            continue
         if key in BUILTIN_REQUIRED:
             label, ok = BUILTIN_REQUIRED[key]
             if not ok(deal, lines):
@@ -200,7 +208,7 @@ async def move(
         raise Invalid("Choose a stage of this pipeline")
     if stage.id == deal.stage_id:
         return
-    await check_stage_entry(db, deal, stage)
+    await check_stage_entry(db, deal, stage, actor)
     reason = None
     if stage.kind == "lost":
         if lost_reason_id is None:

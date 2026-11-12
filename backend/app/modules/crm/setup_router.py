@@ -21,6 +21,7 @@ from app.modules.crm.models import (
     CustomFieldDefinition,
     CustomFieldUniqueValue,
     Deal,
+    FieldPermission,
     Lead,
     LeadSource,
     LeadStage,
@@ -97,6 +98,7 @@ class FieldOut(BaseModel):
     depends_on: str | None
     group_name: str | None
     formula: str | None = None
+    show_with_hidden_inputs: bool = False
     position: int
 
 
@@ -120,6 +122,8 @@ class FieldPatch(BaseModel):
     required: bool | None = None
     group_name: str | None = Field(default=None, max_length=80)
     formula: str | None = Field(default=None, max_length=500)
+    # calculated fields: show the result even to roles that can't see an input (step 8)
+    show_with_hidden_inputs: bool | None = None
 
 
 class TypeOut(BaseModel):
@@ -506,6 +510,11 @@ async def delete_field(field_id: uuid.UUID, db: CrmDb, actor: Configurer) -> Non
         delete(CustomFieldUniqueValue).where(
             CustomFieldUniqueValue.entity == field.entity,
             CustomFieldUniqueValue.field_key == field.key,
+        )
+    )
+    await db.execute(  # its access settings go with it (step 8)
+        delete(FieldPermission).where(
+            FieldPermission.entity == field.entity, FieldPermission.field == f"cf.{field.key}"
         )
     )
     await db.delete(field)

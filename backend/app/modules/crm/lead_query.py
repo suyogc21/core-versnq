@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Invalid
 from app.modules.auth.deps import CurrentUser
+from app.modules.crm import access as A
 from app.modules.crm import leads as L
 from app.modules.crm import tags as T
 from app.modules.crm.models import Lead, LeadIdentity, LeadSource, LeadStage
@@ -41,6 +42,7 @@ class LeadFilter(BaseModel):
 
 async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> list:
     where = [await L.visibility_filter(db, actor)]
+    rules = await A.rules(db, actor, "lead")  # hidden fields can't be searched or filtered
     if f.q and f.q.strip():
         term = f"%{f.q.strip().lower()}%"  # ILIKE uses the trigram indexes (0020)
         digits = "".join(ch for ch in f.q if ch.isdigit())
@@ -53,7 +55,7 @@ async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> 
         where.append(
             or_(
                 Lead.display_name.ilike(term),
-                Lead.org_name.ilike(term),
+                Lead.org_name.ilike(term) if not rules.hidden("org_name") else False,
                 Lead.id.in_(identity),
             )
         )
@@ -108,6 +110,8 @@ async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> 
             raise Invalid("Custom field filters look like key:value")
         by_key.setdefault(key, []).append(value)
     for key, values in by_key.items():
+        if rules.hidden(f"cf.{key}"):
+            raise Invalid("You can't filter on a field you can't see")
         # A select field holds a string, a multi-select a list: match either.
         where.append(
             or_(

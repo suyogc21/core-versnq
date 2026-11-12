@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import DomainError, Invalid
 from app.core.tenancy import platform_session, tenant_session
 from app.modules.auth.deps import CurrentUser, effective_permissions
+from app.modules.crm import access as A
 from app.modules.crm import intake as I
 from app.modules.crm import leads as L
 from app.modules.crm import mapping as MP
@@ -117,6 +118,13 @@ async def check_mapping(
             raise Invalid(f"There is no column '{column}' in the file")
         if target not in allowed:
             raise Invalid(f"'{target}' is not a field you can import into")
+    rules = await A.rules(db, actor, "lead")
+    for name, (label, attrs) in A.builtins("lead").items():
+        if not rules.editable(name) and set(attrs) & set(mapping.values()):
+            raise Invalid(f"You can't import into {label}")
+    for target in mapping.values():
+        if target.startswith("cf.") and not rules.editable(target):
+            raise Invalid(f"You can't import into {defs[target[3:]].label}")
     targets = set(mapping.values())
     if not targets & IDENTITY_TARGETS:
         raise Invalid("Match at least one column to a phone, email or LinkedIn field")

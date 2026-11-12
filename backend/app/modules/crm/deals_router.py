@@ -11,7 +11,8 @@ from sqlalchemy import Text, cast, func, inspect, nulls_last, or_, select
 
 from app.core import money
 from app.core.errors import Conflict, Forbidden, Invalid, NotFound
-from app.modules.auth.deps import ActiveUser
+from app.modules.auth.deps import ActiveUser, CurrentUser
+from app.modules.crm import access as A
 from app.modules.crm import deals as D
 from app.modules.crm import leads as L
 from app.modules.crm import tags as T
@@ -46,7 +47,7 @@ class DealOut(BaseModel):
     status: str
     owner_user_id: uuid.UUID | None
     owner_name: str | None = None
-    amount_minor: int
+    amount_minor: int | None  # None when the person may not see deal values (step 8)
     currency: str
     expected_close_on: date | None
     closed_at: datetime | None
@@ -127,7 +128,8 @@ class DealWithLines(BaseModel):
 
 
 # ---------- helpers ----------
-async def _out(db, deals: list[Deal]) -> list[DealOut]:
+async def _out(db, deals: list[Deal], actor: CurrentUser | None) -> list[DealOut]:
+    """Deals as the person may see them: hidden fields are blanked (step 8)."""
     for d in deals:
         if inspect(d).expired_attributes:
             await db.refresh(d)
@@ -154,6 +156,7 @@ async def _out(db, deals: list[Deal]) -> list[DealOut]:
             )
         ).all()
     )
+    rules = await A.rules(db, actor, D.ENTITY)
     out = []
     for d in deals:
         item = DealOut.model_validate(d)
@@ -163,13 +166,14 @@ async def _out(db, deals: list[Deal]) -> list[DealOut]:
         item.lost_reason = reasons.get(d.lost_reason_id)
         item.has_lines = d.id in with_lines
         item.tags = [TagRef.model_validate(t) for t in tags.get(d.id, [])]
+        rules.redact(item)
         out.append(item)
     return out
 
 
-async def _one(db, deal: Deal) -> DealOut:
+async def _one(db, deal: Deal, actor: CurrentUser | None) -> DealOut:
     await db.flush()
-    return (await _out(db, [deal]))[0]
+    return (await _out(db, [deal], actor))[0]
 
 
 def _lines(items: list[LineIn]) -> list[D.LineIn]:
@@ -251,6 +255,7 @@ async def list_deals(
         where.append(Deal.expected_close_on >= close_from)
     if close_to:
         where.append(Deal.expected_close_on <= close_to)
+    rules = await A.rules(db, actor, D.ENTITY)
     if q and q.strip():
         term = f"%{q.strip()}%"
         lead_match = select(Lead.id).where(Lead.display_name.ilike(term))
@@ -258,9 +263,17 @@ async def list_deals(
             or_(
                 Deal.name.ilike(term),
                 Deal.lead_id.in_(lead_match),
-                cast(Deal.custom_fields, Text).ilike(term),
+                # searching inside custom values could reveal hidden ones (step 8)
+                cast(Deal.custom_fields, Text).ilike(term) if not rules.hidden_custom() else False,
             )
         )
+    for item in cf:
+        if rules.hidden(f"cf.{item.partition(':')[0]}"):
+            raise Invalid("You can't filter on a field you can't see")
+    if (sort == "amount" and rules.hidden("amount")) or (
+        sort == "close" and rules.hidden("expected_close_on")
+    ):
+        raise Invalid("You can't sort by a field you can't see")
     where += _cf_filters(cf)
     if tag:
         where.append(T.has_any(Deal.id, tag))
@@ -284,7 +297,7 @@ async def list_deals(
         .limit(limit)
         .offset(offset)
     )
-    return DealPage(items=await _out(db, list(rows.all())), total=total)
+    return DealPage(items=await _out(db, list(rows.all()), actor), total=total)
 
 
 # ---------- board + forecast ----------
@@ -295,8 +308,8 @@ class BoardColumn(BaseModel):
     probability: int
     colour: str | None
     count: int
-    amount_minor: int
-    weighted_minor: int
+    amount_minor: int | None  # None when deal values are hidden from the person (step 8)
+    weighted_minor: int | None
     deals: list[DealOut]
 
 
@@ -306,9 +319,9 @@ class BoardOut(BaseModel):
     currency: str
     columns: list[BoardColumn]
     open_count: int
-    open_minor: int
-    weighted_minor: int
-    won_minor: int
+    open_minor: int | None
+    weighted_minor: int | None
+    won_minor: int | None
 
 
 CARDS_PER_STAGE = 100
@@ -357,7 +370,7 @@ async def board(
             .order_by(Deal.stage_changed_at.desc(), Deal.id)
         )
     ).all()
-    cards_out = await _out(db, list(cards))
+    cards_out = await _out(db, list(cards), actor)
     columns = []
     for stage in await D.stages_of(db, pipeline.id):
         t = totals[stage.id]
@@ -375,7 +388,7 @@ async def board(
             )
         )
     open_cols = [c for c in columns if c.kind == "open"]
-    return BoardOut(
+    out = BoardOut(
         pipeline_id=pipeline.id,
         pipeline_name=pipeline.name,
         currency=pipeline.currency,
@@ -385,6 +398,11 @@ async def board(
         weighted_minor=sum(c.weighted_minor for c in open_cols),
         won_minor=sum(c.amount_minor for c in columns if c.kind == "won"),
     )
+    if (await A.rules(db, actor, D.ENTITY)).hidden("amount"):
+        out.open_minor = out.weighted_minor = out.won_minor = None
+        for c in out.columns:
+            c.amount_minor = c.weighted_minor = None
+    return out
 
 
 class PipelineSummary(BaseModel):
@@ -392,10 +410,10 @@ class PipelineSummary(BaseModel):
     name: str
     currency: str
     open_count: int
-    open_minor: int
-    weighted_minor: int
+    open_minor: int | None  # None when deal values are hidden from the person (step 8)
+    weighted_minor: int | None
     won_count: int
-    won_minor: int
+    won_minor: int | None
     lost_count: int
 
 
@@ -407,6 +425,7 @@ async def summary(
 ) -> list[PipelineSummary]:
     """Forecast per pipeline (each in its own currency; never added across currencies)."""
     where = [_owner_filter(owner, actor)] if owner else []
+    no_values = (await A.rules(db, actor, D.ENTITY)).hidden("amount")
     out = []
     for p in (await db.scalars(select(Pipeline).order_by(Pipeline.position))).all():
         totals = await D.stage_totals(db, actor, p, where)
@@ -428,6 +447,8 @@ async def summary(
                 lost_count=of("lost", "count"),
             )
         )
+        if no_values:
+            out[-1].open_minor = out[-1].weighted_minor = out[-1].won_minor = None
     return out
 
 
@@ -451,6 +472,11 @@ async def create_deal(body: DealIn, db: CrmDb, actor: ActiveUser) -> DealOut:
         raise Invalid("New deals start in an open stage")
     owner_id = body.owner_user_id or (actor.user.id if body.assign_to_me else None)
     owner = await D.check_owner(db, actor, owner_id)
+    rules = await A.rules(db, actor, D.ENTITY)
+    rules.check_value("amount", 0, body.amount_minor)
+    if body.lines:
+        rules.check_value("amount", [], ["products"])
+    rules.check_value("expected_close_on", None, body.expected_close_on)
     deal = Deal(
         tenant_id=actor.user.tenant_id,
         name=" ".join((body.name or lead.display_name).split())[:300] or lead.display_name,
@@ -469,19 +495,21 @@ async def create_deal(body: DealIn, db: CrmDb, actor: ActiveUser) -> DealOut:
     )
     db.add(deal)
     await db.flush()
-    await L.apply_custom_fields(db, deal, body.custom_fields, creating=True, entity=D.ENTITY)
+    await L.apply_custom_fields(
+        db, deal, body.custom_fields, creating=True, entity=D.ENTITY, rules=rules
+    )
     if body.lines:
         await D.set_lines(db, deal, _lines(body.lines))
         await L.refresh_calculated(db, deal, D.ENTITY)
-    await D.check_stage_entry(db, deal, stage)
+    await D.check_stage_entry(db, deal, stage, actor)
     await D.log(db, deal, "deal_created", f"Deal added: {deal.name}", actor)
     await D.event(db, deal, "deal.created")
-    return await _one(db, deal)
+    return await _one(db, deal, actor)
 
 
 @router.get("/deals/{deal_id}", response_model=DealOut)
 async def get_deal(deal_id: uuid.UUID, db: CrmDb, actor: ActiveUser) -> DealOut:
-    return await _one(db, await D.get_visible(db, actor, deal_id))
+    return await _one(db, await D.get_visible(db, actor, deal_id), actor)
 
 
 @router.patch("/deals/{deal_id}", response_model=DealOut)
@@ -489,6 +517,13 @@ async def update_deal(deal_id: uuid.UUID, body: DealPatch, db: CrmDb, actor: Act
     deal = await _editable(db, actor, deal_id, body.version)
     changes = body.model_dump(exclude_unset=True, exclude={"version"})
     changed: list[str] = []
+    rules = await A.rules(db, actor, D.ENTITY)
+    if rules.hidden("expected_close_on") and changes.get("expected_close_on", 0) is None:
+        changes.pop("expected_close_on")  # blank from a form that never saw it: not a change
+    if body.amount_minor is not None:
+        rules.check_value("amount", deal.amount_minor, body.amount_minor)
+    if "expected_close_on" in changes:
+        rules.check_value("expected_close_on", deal.expected_close_on, changes["expected_close_on"])
     if body.name is not None and " ".join(body.name.split()) != deal.name:
         deal.name = " ".join(body.name.split())
         changed.append("name")
@@ -502,7 +537,7 @@ async def update_deal(deal_id: uuid.UUID, body: DealPatch, db: CrmDb, actor: Act
         changed.append("expected close date")
     if body.custom_fields is not None:
         changed += await L.apply_custom_fields(
-            db, deal, body.custom_fields, creating=False, entity=D.ENTITY
+            db, deal, body.custom_fields, creating=False, entity=D.ENTITY, rules=rules
         )
     if "owner_user_id" in changes and changes["owner_user_id"] != deal.owner_user_id:
         owner = await D.check_owner(db, actor, changes["owner_user_id"])
@@ -527,7 +562,7 @@ async def update_deal(deal_id: uuid.UUID, body: DealPatch, db: CrmDb, actor: Act
     if changed:
         await D.event(db, deal, "deal.updated", {"fields": changed})
     deal.version += 1
-    return await _one(db, deal)
+    return await _one(db, deal, actor)
 
 
 async def _change_pipeline(db, actor, deal: Deal, pipeline_id, stage_id) -> None:
@@ -545,7 +580,7 @@ async def _change_pipeline(db, actor, deal: Deal, pipeline_id, stage_id) -> None
     )
     if stage.kind != "open":
         raise Invalid("Choose an open stage")
-    await D.check_stage_entry(db, deal, stage)
+    await D.check_stage_entry(db, deal, stage, actor)
     old = await db.get(Pipeline, deal.pipeline_id)
     deal.pipeline_id, deal.stage_id, deal.stage_changed_at = pipeline.id, stage.id, L.now()
     data = {"from_pipeline": str(old.id), "to_pipeline": str(pipeline.id), "to": str(stage.id)}
@@ -563,10 +598,10 @@ async def move_deal(deal_id: uuid.UUID, body: MoveIn, db: CrmDb, actor: ActiveUs
     pipeline = await db.get(Pipeline, deal.pipeline_id)
     stage = await D.get_stage(db, pipeline, body.stage_id)
     if stage.id == deal.stage_id:
-        return await _one(db, deal)
+        return await _one(db, deal, actor)
     await D.move(db, actor, deal, stage, lost_reason_id=body.lost_reason_id, note=body.note)
     deal.version += 1
-    return await _one(db, deal)
+    return await _one(db, deal, actor)
 
 
 @router.delete("/deals/{deal_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -600,6 +635,8 @@ async def _delete(db, actor, deal: Deal) -> None:
 @router.get("/deals/{deal_id}/products", response_model=list[LineOut])
 async def get_lines(deal_id: uuid.UUID, db: CrmDb, actor: ActiveUser) -> list[DealProduct]:
     deal = await D.get_visible(db, actor, deal_id)
+    if (await A.rules(db, actor, D.ENTITY)).hidden("amount"):
+        return []  # line prices would show the hidden value (step 8)
     return await D.lines_of(db, deal.id)
 
 
@@ -608,6 +645,8 @@ async def set_lines(deal_id: uuid.UUID, body: LinesIn, db: CrmDb, actor: ActiveU
     """Replace the lines. With lines, the deal's amount is their exact sum; with none, the
     amount stays as it was and can be typed again."""
     deal = await _editable(db, actor, deal_id, body.version)
+    if not (await A.rules(db, actor, D.ENTITY)).editable("amount"):
+        raise Forbidden("You can't change Value")
     before = deal.amount_minor
     rows = await D.set_lines(db, deal, _lines(body.lines))
     summary = f"{deal.name}: products updated ({len(rows)} line{'s' if len(rows) != 1 else ''})"
@@ -617,7 +656,7 @@ async def set_lines(deal_id: uuid.UUID, body: LinesIn, db: CrmDb, actor: ActiveU
     await D.event(db, deal, "deal.updated", {"fields": fields})
     deal.version += 1
     return DealWithLines(
-        deal=await _one(db, deal),
+        deal=await _one(db, deal, actor),
         lines=[LineOut.model_validate(r) for r in await D.lines_of(db, deal.id)],
     )
 

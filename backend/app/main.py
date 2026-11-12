@@ -12,6 +12,7 @@ from app.modules.crm.capture_router import router as capture_router
 from app.modules.crm.customers_router import router as customers_router
 from app.modules.crm.deals_router import router as deals_router
 from app.modules.crm.imports_router import router as imports_router
+from app.modules.crm.layouts_router import router as layouts_router
 from app.modules.crm.lead_tools_router import router as lead_tools_router
 from app.modules.crm.leads_router import router as leads_router
 from app.modules.crm.notifications_router import router as notifications_router
@@ -56,6 +57,7 @@ app.include_router(users_router)
 app.include_router(audit_router)
 app.include_router(reports_router)  # before the CRM routers: /leads/export is not a lead id
 app.include_router(crm_setup_router)
+app.include_router(layouts_router)
 app.include_router(accounts_router)
 app.include_router(lead_api_router)  # before leads: /leads/upsert is not a lead id
 app.include_router(leads_router)

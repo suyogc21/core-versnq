@@ -90,7 +90,7 @@ async def merge_leads(body: MergeIn, db: CrmDb, actor: Merger) -> LeadOut:
         raise Conflict("One of these leads was changed. Reload and try again")
     lead = await M.merge(db, actor, survivor, other, body.take_from_other)
     await db.flush()
-    return (await _out(db, [lead]))[0]
+    return (await _out(db, [lead], actor))[0]
 
 
 @router.get("/{lead_id}/merged-into")
@@ -138,7 +138,7 @@ async def set_consent(lead_id: uuid.UUID, body: ConsentIn, db: CrmDb, actor: Edi
     lead.version += 1
     await L.event(db, lead, "lead.updated", {"fields": [f"{body.channel}_consent"]})
     await db.flush()
-    return (await _out(db, [lead]))[0]
+    return (await _out(db, [lead], actor))[0]
 
 
 # ---------- organisations ----------
@@ -192,7 +192,7 @@ async def set_organisation(
     await O.link(db, lead, org, actor)
     lead.version += 1
     await db.flush()
-    return (await _out(db, [lead]))[0]
+    return (await _out(db, [lead], actor))[0]
 
 
 @router.get("/{lead_id}/people", response_model=list[LeadBrief])

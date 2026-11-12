@@ -12,8 +12,9 @@ import uuid
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import Invalid
+from app.core.errors import Forbidden, Invalid
 from app.modules.auth.deps import CurrentUser
+from app.modules.crm import access as A
 from app.modules.crm import leads as L
 from app.modules.crm.deps import audit
 from app.modules.crm.intake import PLAIN_FIELDS
@@ -72,6 +73,13 @@ async def merge(
     unknown = [f for f in take_from_other if f not in CHOOSABLE and not f.startswith("custom:")]
     if unknown:
         raise Invalid(f"Unknown field: {unknown[0]}")
+    # Choosing the other lead's value counts as a change; blanks are still filled (step 8).
+    rules = await A.rules(db, actor, "lead")
+    owner_of = {a: n for n, (_, attrs) in A.builtins("lead").items() for a in attrs}
+    for f in take_from_other:
+        name = f"cf.{f[7:]}" if f.startswith("custom:") else owner_of.get(f)
+        if name and not rules.editable(name):
+            raise Forbidden(f"You can't change {rules.labels.get(name, name)}")
 
     other_ids = (
         await db.scalars(

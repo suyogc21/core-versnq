@@ -10,10 +10,12 @@ from sqlalchemy import delete, func, inspect, select
 
 from app.core.errors import Conflict, Forbidden, Invalid
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
+from app.modules.crm import access as A
 from app.modules.crm import intake as I
 from app.modules.crm import leads as L
 from app.modules.crm import tags as T
 from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.identities import normalize
 from app.modules.crm.lead_query import LeadFilter, SortKey, ordered, where_clauses
 from app.modules.crm.models import Customer, CustomFieldUniqueValue, Lead
 from app.modules.settings.models import TenantSettings
@@ -159,7 +161,8 @@ class OwnerIn(BaseModel):
     owner_user_id: uuid.UUID | None
 
 
-async def _out(db, leads: list[Lead]) -> list[LeadOut]:
+async def _out(db, leads: list[Lead], actor: CurrentUser | None) -> list[LeadOut]:
+    """Leads as the person may see them: hidden fields are blanked (step 8)."""
     for lead in leads:  # timestamps set by the database must be re-read after a save
         if inspect(lead).expired_attributes:
             await db.refresh(lead)
@@ -172,12 +175,14 @@ async def _out(db, leads: list[Lead]) -> list[LeadOut]:
             (await db.execute(select(User.id, User.name).where(User.id.in_(owner_ids)))).all()
         )
     tags = await T.of(db, lead_ids=ids)
+    rules = await A.rules(db, actor, "lead")
     out = []
     for lead in leads:
         item = LeadOut.model_validate(lead)
         item.tags = [TagRef.model_validate(t) for t in tags.get(lead.id, [])]
         item.identities = [IdentityOut.model_validate(i) for i in identities[lead.id]]
         item.owner_name = names.get(lead.owner_user_id)
+        rules.redact(item)
         out.append(item)
     return out
 
@@ -200,11 +205,13 @@ async def list_leads(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> LeadPage:
+    if sort == "city" and (await A.rules(db, actor, "lead")).hidden("city"):
+        raise Invalid("You can't sort by a field you can't see")
     where = await where_clauses(db, actor, f)
     total = await db.scalar(select(func.count()).select_from(Lead).where(*where))
     query = ordered(select(Lead).where(*where), sort, direction).limit(limit).offset(offset)
     rows = await db.scalars(query)
-    return LeadPage(items=await _out(db, list(rows.all())), total=total or 0)
+    return LeadPage(items=await _out(db, list(rows.all()), actor), total=total or 0)
 
 
 class ViewCounts(BaseModel):
@@ -388,12 +395,12 @@ async def create_lead(body: LeadIn, db: CrmDb, actor: Creator) -> LeadOut:
         inc.fields["unqualified_reason"] = body.unqualified_reason
     outcome = await I.intake(db, tenant_id, inc, policy=policy, actor=actor)
     await db.flush()
-    return (await _out(db, [outcome.lead]))[0]
+    return (await _out(db, [outcome.lead], actor))[0]
 
 
 @router.get("/{lead_id}", response_model=LeadOut)
 async def get_lead(lead_id: uuid.UUID, db: CrmDb, actor: ActiveUser) -> LeadOut:
-    return (await _out(db, [await L.get_visible(db, actor, lead_id)]))[0]
+    return (await _out(db, [await L.get_visible(db, actor, lead_id)], actor))[0]
 
 
 @router.patch("/{lead_id}", response_model=LeadOut)
@@ -403,11 +410,19 @@ async def update_lead(lead_id: uuid.UUID, body: LeadPatch, db: CrmDb, actor: Edi
         raise Conflict("Someone else changed this lead. Reload to see their changes")
     changes = body.model_dump(exclude_unset=True, exclude={"version"})
     changed: list[str] = []
+    rules = await A.rules(db, actor, "lead")
+    owner_of = {a: n for n, (_, attrs) in A.builtins("lead").items() for a in attrs}
 
     simple = {
-        k: v for k, v in _clean(changes).items() if k in LeadFields.model_fields or k == "kind"
+        k: v
+        for k, v in _clean(changes).items()
+        if (k in LeadFields.model_fields or k == "kind")
+        # a hidden field comes back blank from a form that never saw it: not a change
+        and not (k in owner_of and rules.hidden(owner_of[k]) and v is None)
     }
     for key, value in simple.items():
+        if key in owner_of:
+            rules.check_value(owner_of[key], getattr(lead, key), value)
         if getattr(lead, key) != value:
             setattr(lead, key, value)
             changed.append(key)
@@ -418,16 +433,25 @@ async def update_lead(lead_id: uuid.UUID, body: LeadPatch, db: CrmDb, actor: Edi
         lead.source_id = changes["source_id"]
         changed.append("source")
     if body.identities is not None:
-        await L.set_identities(
-            db, lead, _identities(body.identities), await L.tenant_country(db, lead.tenant_id)
-        )
+        country = await L.tenant_country(db, lead.tenant_id)
+        if not (rules.editable("phone") and rules.editable("email")):
+            have = (await L.identities_of(db, [lead.id]))[lead.id]
+            for kind in ("phone", "email"):
+                old = sorted(i.value_normalized for i in have if i.type == kind)
+                new = sorted(
+                    normalize(i.type, i.value, country) for i in body.identities if i.type == kind
+                )
+                rules.check_value(kind, old, new)
+        await L.set_identities(db, lead, _identities(body.identities), country)
         changed.append("identities")
     else:
         lead.display_name = L.display_name(
             lead, {"email": lead.primary_email, "phone": lead.primary_phone}
         )
     if body.custom_fields is not None:
-        changed += await L.apply_custom_fields(db, lead, body.custom_fields, creating=False)
+        changed += await L.apply_custom_fields(
+            db, lead, body.custom_fields, creating=False, rules=rules
+        )
     if "stage_id" in changes and changes["stage_id"]:
         await L.move_stage(db, lead, await L.get_stage(db, changes["stage_id"]), actor)
     if "next_follow_up_at" in changes:
@@ -448,7 +472,7 @@ async def update_lead(lead_id: uuid.UUID, body: LeadPatch, db: CrmDb, actor: Edi
         await L.event(db, lead, "lead.updated", {"fields": real_changes})
     lead.version += 1
     await db.flush()
-    return (await _out(db, [lead]))[0]
+    return (await _out(db, [lead], actor))[0]
 
 
 @router.put("/{lead_id}/owner", response_model=LeadOut)
@@ -458,7 +482,7 @@ async def assign_lead(lead_id: uuid.UUID, body: OwnerIn, db: CrmDb, actor: Assig
     await L.change_owner(db, lead, owner, actor)
     lead.version += 1
     await db.flush()
-    return (await _out(db, [lead]))[0]
+    return (await _out(db, [lead], actor))[0]
 
 
 async def _not_a_customer(db, lead: Lead) -> None:

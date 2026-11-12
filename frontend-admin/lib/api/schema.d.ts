@@ -1128,6 +1128,43 @@ export interface paths {
         patch: operations["customers-update_requirement"];
         trace?: never;
     };
+    "/api/v1/field-access/{entity}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Access */
+        get: operations["layouts-get_access"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/field-access/{entity}/{role_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Access
+         * @description Replace one role's access on one kind of record. Fields not sent are Edit.
+         */
+        put: operations["layouts-set_access"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/formula/check": {
         parameters: {
             query?: never;
@@ -1918,6 +1955,28 @@ export interface paths {
         post?: never;
         /** Remove Unit */
         delete: operations["key accounts-remove_unit"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/layouts/{entity}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Layout */
+        get: operations["layouts-get_layout"];
+        /** Save Layout */
+        put: operations["layouts-save_layout"];
+        post?: never;
+        /**
+         * Reset Layout
+         * @description Back to the default page.
+         */
+        delete: operations["layouts-reset_layout"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4180,18 +4239,39 @@ export interface components {
             /** Token */
             token: string;
         };
-        /** AccessOut */
-        AccessOut: {
-            /** Create */
-            create: boolean;
-            /** Delete */
-            delete: boolean;
-            /** Edit */
-            edit: boolean;
-            /** Scope */
-            scope: string;
-            /** View */
-            view: boolean;
+        /** AccessField */
+        AccessField: {
+            /** Builtin */
+            builtin: boolean;
+            /** Choices */
+            choices: ("edit" | "view" | "hidden")[];
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** AccessIn */
+        AccessIn: {
+            /** Access */
+            access: {
+                [key: string]: "edit" | "view" | "hidden";
+            };
+        };
+        /** AccessRole */
+        AccessRole: {
+            /** Access */
+            access: {
+                [key: string]: "view" | "hidden";
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Locked */
+            locked: boolean;
+            /** Name */
+            name: string;
         };
         /** AccountDetail */
         AccountDetail: {
@@ -4720,7 +4800,7 @@ export interface components {
         /** BoardColumn */
         BoardColumn: {
             /** Amount Minor */
-            amount_minor: number;
+            amount_minor: number | null;
             /** Colour */
             colour: string | null;
             /** Count */
@@ -4739,7 +4819,7 @@ export interface components {
              */
             stage_id: string;
             /** Weighted Minor */
-            weighted_minor: number;
+            weighted_minor: number | null;
         };
         /** BoardOut */
         BoardOut: {
@@ -4750,7 +4830,7 @@ export interface components {
             /** Open Count */
             open_count: number;
             /** Open Minor */
-            open_minor: number;
+            open_minor: number | null;
             /**
              * Pipeline Id
              * Format: uuid
@@ -4759,9 +4839,9 @@ export interface components {
             /** Pipeline Name */
             pipeline_name: string;
             /** Weighted Minor */
-            weighted_minor: number;
+            weighted_minor: number | null;
             /** Won Minor */
-            won_minor: number;
+            won_minor: number | null;
         };
         /** Branding */
         Branding: {
@@ -5235,7 +5315,7 @@ export interface components {
         /** DealOut */
         DealOut: {
             /** Amount Minor */
-            amount_minor: number;
+            amount_minor: number | null;
             /** Close Note */
             close_note: string | null;
             /** Closed At */
@@ -5808,6 +5888,11 @@ export interface components {
             position: number;
             /** Required */
             required: boolean;
+            /**
+             * Show With Hidden Inputs
+             * @default false
+             */
+            show_with_hidden_inputs: boolean;
             /** Type */
             type: string;
         };
@@ -5828,6 +5913,8 @@ export interface components {
             }[] | null;
             /** Required */
             required?: boolean | null;
+            /** Show With Hidden Inputs */
+            show_with_hidden_inputs?: boolean | null;
         };
         /** FileOut */
         FileOut: {
@@ -6438,6 +6525,64 @@ export interface components {
             plural: string;
             /** Singular */
             singular: string;
+        };
+        /** LayoutField */
+        LayoutField: {
+            /** Builtin */
+            builtin: boolean;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Type */
+            type?: string | null;
+        };
+        /** LayoutIn */
+        LayoutIn: {
+            /**
+             * Add Form
+             * @default []
+             */
+            add_form: string[];
+            /**
+             * Highlights
+             * @default []
+             */
+            highlights: string[];
+            /** Sections */
+            sections: components["schemas"]["Section"][];
+        };
+        /** LayoutOut */
+        LayoutOut: {
+            /**
+             * Add Form
+             * @default []
+             */
+            add_form: string[];
+            /** Entity */
+            entity: string;
+            /** Fields */
+            fields: components["schemas"]["LayoutField"][];
+            /**
+             * Highlights
+             * @default []
+             */
+            highlights: string[];
+            /** Is Default */
+            is_default: boolean;
+            /** My Access */
+            my_access: {
+                [key: string]: "view" | "hidden";
+            };
+            /** Sections */
+            sections: components["schemas"]["Section"][];
+            /** Updated At */
+            updated_at?: string | null;
         };
         /** LeadBrief */
         LeadBrief: {
@@ -7652,18 +7797,18 @@ export interface components {
             /** Open Count */
             open_count: number;
             /** Open Minor */
-            open_minor: number;
+            open_minor: number | null;
             /**
              * Pipeline Id
              * Format: uuid
              */
             pipeline_id: string;
             /** Weighted Minor */
-            weighted_minor: number;
+            weighted_minor: number | null;
             /** Won Count */
             won_count: number;
             /** Won Minor */
-            won_minor: number;
+            won_minor: number | null;
         };
         /** ProductIn */
         ProductIn: {
@@ -7937,7 +8082,7 @@ export interface components {
             is_active: boolean;
             /** Key */
             key: string;
-            my_access?: components["schemas"]["AccessOut"] | null;
+            my_access?: components["schemas"]["app__modules__crm__record_types_router__AccessOut"] | null;
             /** Plural */
             plural: string;
             /** Position */
@@ -8274,6 +8419,13 @@ export interface components {
         SecretOut: {
             /** Secret */
             secret: string;
+        };
+        /** Section */
+        Section: {
+            /** Fields */
+            fields: string[];
+            /** Name */
+            name: string;
         };
         /** SetTags */
         SetTags: {
@@ -9448,6 +9600,15 @@ export interface components {
              */
             tag_ids: string[];
         };
+        /** AccessOut */
+        app__modules__crm__layouts_router__AccessOut: {
+            /** Entity */
+            entity: string;
+            /** Fields */
+            fields: components["schemas"]["AccessField"][];
+            /** Roles */
+            roles: components["schemas"]["AccessRole"][];
+        };
         /**
          * BulkIn
          * @description Act on the ticked leads (ids) or on everything matching a filter.
@@ -9515,6 +9676,19 @@ export interface components {
             probability?: number | null;
             /** Required Fields */
             required_fields?: string[] | null;
+        };
+        /** AccessOut */
+        app__modules__crm__record_types_router__AccessOut: {
+            /** Create */
+            create: boolean;
+            /** Delete */
+            delete: boolean;
+            /** Edit */
+            edit: boolean;
+            /** Scope */
+            scope: string;
+            /** View */
+            view: boolean;
         };
         /** OrderIn */
         app__modules__crm__record_types_router__OrderIn: {
@@ -12332,6 +12506,73 @@ export interface operations {
             };
         };
     };
+    "layouts-get_access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__modules__crm__layouts_router__AccessOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "layouts-set_access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity: string;
+                role_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccessIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__modules__crm__layouts_router__AccessOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "organise-check_formula": {
         parameters: {
             query?: never;
@@ -14178,6 +14419,101 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UnitOut"][];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "layouts-get_layout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LayoutOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "layouts-save_layout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LayoutIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LayoutOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "layouts-reset_layout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
