@@ -739,6 +739,23 @@ async def delete_canned(c_id: uuid.UUID, db: CrmDb, actor: Replier) -> None:
     await db.delete(r)
 
 
+# ---------- colleagues to add or mention ----------
+class Person(BaseModel):
+    id: uuid.UUID
+    name: str
+
+
+@router.get("/inbox/people", response_model=list[Person])
+async def inbox_people(db: CrmDb, actor: Replier) -> list[Person]:
+    """Active team members' names, to add to a conversation or mention in a note."""
+    rows = (
+        await db.execute(
+            select(User.id, User.name).where(User.status == "active").order_by(User.name)
+        )
+    ).all()
+    return [Person(id=i, name=n) for i, n in rows]
+
+
 # ---------- counts for the sidebar ----------
 class InboxCounts(BaseModel):
     mine_unread: int

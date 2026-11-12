@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, LogOut, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, Inbox, LogOut, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -14,8 +14,9 @@ import { useMoneyOn } from "@/lib/money";
 import { useRecordTypes } from "@/lib/records";
 import { SETTINGS_PAGES, settingsPageFor } from "@/lib/settings-nav";
 import { useLabels, useWorkspaceSettings } from "@/lib/settings";
+import { useInboxCounts } from "@/lib/inbox";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; permission?: string };
+type NavItem = { href: string; label: string; icon: LucideIcon; permission?: string; count?: number };
 
 const MAIN: NavItem[] = [
   { href: "/", label: "My Day", icon: Sunrise },
@@ -44,6 +45,11 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void 
     >
       <Icon className="size-4 opacity-80" />
       {item.label}
+      {item.count ? (
+        <span className="ml-auto rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground tabular-nums" aria-label={`${item.count} unread`}>
+          {item.count}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -58,9 +64,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const recordTypes = useRecordTypes();
   const moneyOn = useMoneyOn();
   const keyOn = useKeyAccountsOn();
+  const inboxCounts = useInboxCounts(!!me && can("inbox.reply"));
   if (!me) return null;
   const mainItems = [
     ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/" ? i : { ...i, label: label(i.label, true) })),
+    ...(can("inbox.reply") ? [{ href: "/inbox", label: "Inbox", icon: Inbox, count: inboxCounts.data?.mine_unread }] : []),
     ...(keyOn && can("leads.edit") ? [{ href: "/key-accounts", label: "Key accounts", icon: Star }] : []),
     ...(moneyOn && can("invoices.read") ? [{ href: "/money", label: "Money", icon: ReceiptText }] : []),
     ...(["leads.edit", "dashboards.team", "dashboards.business", "dashboards.money"].some((c) => can(c))

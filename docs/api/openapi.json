@@ -10840,6 +10840,25 @@
         "title": "PermissionOut",
         "type": "object"
       },
+      "Person": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Person",
+        "type": "object"
+      },
       "PersonIn": {
         "properties": {
           "note": {
@@ -24501,6 +24520,37 @@
           }
         ],
         "summary": "Inbox Counts",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/inbox/people": {
+      "get": {
+        "description": "Active team members' names, to add to a conversation or mention in a note.",
+        "operationId": "inbox-inbox_people",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Person"
+                  },
+                  "title": "Response Inbox-Inbox People",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Inbox People",
         "tags": [
           "inbox"
         ]
