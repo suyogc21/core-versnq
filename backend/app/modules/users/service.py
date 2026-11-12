@@ -48,7 +48,7 @@ async def _audit(db, actor: CurrentUser, action: str, target: User, before=None)
 
 async def list_visible(db: AsyncSession, actor: CurrentUser) -> list[User]:
     visible = await visible_user_ids(db, actor.user.id, actor.role.scope)
-    query = select(User).order_by(User.name)
+    query = select(User).where(User.status != "integration").order_by(User.name)
     if visible is not None:
         query = query.where(User.id.in_(visible))
     return list((await db.scalars(query)).all())
@@ -57,7 +57,11 @@ async def list_visible(db: AsyncSession, actor: CurrentUser) -> list[User]:
 async def get_visible(db: AsyncSession, actor: CurrentUser, user_id: uuid.UUID) -> User:
     user = await db.get(User, user_id)
     visible = await visible_user_ids(db, actor.user.id, actor.role.scope)
-    if user is None or (visible is not None and user.id not in visible):
+    if (
+        user is None
+        or user.status == "integration"
+        or (visible is not None and user.id not in visible)
+    ):
         raise NotFound("User not found")
     return user
 

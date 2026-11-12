@@ -116,7 +116,7 @@ async def page_users(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> UserPage:
     """Users this person may see, a page at a time, for lists of hundreds of people."""
-    where = []
+    where = [User.status != "integration"]  # API keys' users are not team members
     visible = await visible_user_ids(db, actor.user.id, actor.role.scope)
     if visible is not None:
         where.append(User.id.in_(visible))

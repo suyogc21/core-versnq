@@ -56,15 +56,17 @@ async def rescore_job(ctx, tenant_id: str) -> int:
 async def nightly_job(ctx) -> dict:
     """Once a night: engagement windows move, today() formulas move, owners get a task for
     documents still missing, files that lost their record are removed from disk, and money:
-    repeat invoices, payment reminders, and payment links whose webhook was missed."""
+    repeat invoices, payment reminders, and payment links whose webhook was missed; API and
+    webhook logs older than 30 days move to the archive files."""
     from app.core.tenancy import tenant_session
     from app.modules.crm import customers
     from app.modules.crm.automation import _active_tenants
     from app.modules.crm.calc import recalc_tenant
     from app.modules.crm.scoring import rescore_tenant
+    from app.modules.integrations.logs import archive_tenant
     from app.modules.money.worker import nightly_tenant
 
-    rescored = recalced = reminded = removed = 0
+    rescored = recalced = reminded = removed = logs_archived = 0
     missing: dict[str, list[str]] = {}
     money: dict[str, dict] = {}
     for t in await _active_tenants():
@@ -79,7 +81,10 @@ async def nightly_job(ctx) -> dict:
             missing[str(t)] = report["missing"]
         if done := await nightly_tenant(t):
             money[str(t)] = done
+        archived = await archive_tenant(t)
+        logs_archived += archived["api"] + archived["webhooks"]
     return {
+        "logs_archived": logs_archived,
         "money": money,
         "rescored": rescored,
         "recalculated": recalced,
@@ -118,6 +123,14 @@ async def money_mail_job(ctx, tenant_id: str, message_id: str) -> str:
         return await send_one(uuid.UUID(tenant_id), uuid.UUID(message_id), tries >= MAX_TRIES)
     except Invalid:
         raise Retry(defer=60 * tries) from None
+
+
+async def webhooks_job(ctx) -> dict:
+    """Every 10 seconds: new events become webhook deliveries; due deliveries are sent."""
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.integrations.webhooks import run_all
+
+    return await run_all(await _active_tenants())
 
 
 async def money_mail_sweep_job(ctx) -> int:

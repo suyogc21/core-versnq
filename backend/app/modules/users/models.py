@@ -34,7 +34,9 @@ class User(IdMixin, TimestampMixin, Base):
             name="fk_users_role_same_tenant",
         ),
         Index("uq_users_tenant_email", "tenant_id", text("lower(email)"), unique=True),
-        CheckConstraint("status IN ('invited', 'active', 'disabled')", name="status_valid"),
+        CheckConstraint(
+            "status IN ('invited', 'active', 'disabled', 'integration')", name="status_valid"
+        ),  # integration: the user behind an API key (cannot sign in, not a team member)
     )
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tenants.id"))

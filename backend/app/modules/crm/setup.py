@@ -108,6 +108,16 @@ STEP7B_SYSTEM_TYPES = [
         "loggable": False,
     }
 ]
+# API and ACE (milestone 4, Decision log #37); frozen copy in migration 0021.
+STEP_M4_SYSTEM_TYPES = [
+    {
+        "key": "api_conversation",
+        "label": "Conversation",
+        "icon": "messages-square",
+        "loggable": False,
+    },
+    {"key": "intent_changed", "label": "Intent changed", "icon": "gauge", "loggable": False},
+]
 # Money (step 6, Decision log #34); frozen copy in migration 0017.
 STEP6_SYSTEM_TYPES = [
     {"key": key, "label": label, "icon": icon, "loggable": False}
@@ -139,6 +149,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP5_SYSTEM_TYPES,
         *STEP6_SYSTEM_TYPES,
         *STEP7B_SYSTEM_TYPES,
+        *STEP_M4_SYSTEM_TYPES,
     ]
 
 

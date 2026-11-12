@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,14 +58,33 @@ def _unauthorized() -> HTTPException:
     return HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
 
 
+async def _key_user(request: Request, workspace: Workspace, db: AsyncSession, token: str):
+    """An API key acts as its integration user (milestone 4). Its requests are logged."""
+    from app.modules.integrations import keys
+
+    found = await keys.authenticate(db, token)
+    if found is None:
+        raise _unauthorized()
+    key, user = found
+    request.state.api_key = (workspace.id, key.id)  # the API log middleware reads this
+    role = await db.get(Role, user.role_id)
+    return CurrentUser(
+        user=user, role=role, restrictions=[], permissions=await effective_permissions(db, role)
+    )
+
+
 async def current_user_any(
+    request: Request,
     workspace: WorkspaceDep,
     db: TenantDb,
     creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
 ) -> CurrentUser:
-    """Logged-in user, even if they still must change password or set up 2FA."""
+    """Logged-in user, even if they still must change password or set up 2FA. An API key
+    (`vq_live_…`) signs in as its integration user."""
     if creds is None:
         raise _unauthorized()
+    if creds.credentials.startswith("vq_live_"):
+        return await _key_user(request, workspace, db, creds.credentials)
     try:
         claims = decode_access_token(creds.credentials, expected_typ="user")
     except InvalidToken:

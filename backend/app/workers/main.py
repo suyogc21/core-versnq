@@ -15,6 +15,7 @@ from app.workers.jobs import (
     rescore_job,
     routing_checks_job,
     webhook_job,
+    webhooks_job,
 )
 
 
@@ -32,6 +33,7 @@ class WorkerSettings:
         rescore_job,
         nightly_job,
         webhook_job,
+        webhooks_job,
         money_mail_job,
         money_mail_sweep_job,
     ]
@@ -42,6 +44,7 @@ class WorkerSettings:
         cron(no_response_job, second=50),
         cron(money_mail_sweep_job, second=30),
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
+        cron(webhooks_job, second=set(range(7, 60, 10)), unique=True),  # every 10 seconds
         cron(nightly_job, hour=21, minute=30, second=10),  # 03:00 in India
     ]
     max_tries = 3
