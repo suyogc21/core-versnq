@@ -15,7 +15,7 @@ import { DealsCard } from "@/components/crm/deals";
 import { ScoreBadge, TagEditor } from "@/components/crm/tags";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
 import { LinksCard } from "@/components/crm/links-card";
-import { ActionButton, EditLead, Facts, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
+import { ActionButton, EditLead, Facts, Highlights, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
 import { LogActivityForm } from "@/components/crm/log-activity";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ import {
   useStages,
   when,
 } from "@/lib/crm";
+import { useLayout } from "@/lib/layouts";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -204,6 +205,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
   const lead = useLead(leadId);
   const label = useLabels();
   const fields = useFields();
+  const layout = useLayout("lead");
   const [logType, setLogType] = useState("call");
   const [filter, setFilter] = useState("All");
   const [editing, setEditing] = useState(false);
@@ -227,7 +229,8 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
             <div className="text-[13px] text-muted-foreground">
               {[l.primary_phone && formatPhone(l.primary_phone), l.primary_email, l.city, `added ${relative(l.created_at)}`].filter(Boolean).join(" · ")}
             </div>
-            <div className="mt-1">
+            <div className="mt-1 space-y-1.5">
+              <Highlights layout={layout.data} fields={fields.data ?? []} values={l.custom_fields as Record<string, unknown>} builtin={l as Record<string, unknown>} />
               <TagEditor kind="lead" id={l.id} tags={l.tags ?? []} editable={can("leads.edit")} />
             </div>
           </div>

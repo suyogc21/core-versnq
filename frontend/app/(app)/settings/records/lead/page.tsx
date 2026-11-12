@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/app/app-shell";
 import { StagePill } from "@/components/crm/bits";
 import { FieldSettings, OptionsEditor } from "@/components/crm/field-settings";
 import { ScoringSettings } from "@/components/crm/scoring-settings";
+import { FieldAccessSettings, LayoutSettings } from "@/components/crm/layout-settings";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,7 @@ import {
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type Tab = "stages" | "sources" | "fields" | "activities" | "scoring" | "rules";
+type Tab = "stages" | "sources" | "fields" | "activities" | "scoring" | "rules" | "layout" | "access";
 const TYPES: [string, string][] = [
   ["text", "Text"],
   ["number", "Number"],
@@ -83,6 +84,8 @@ export default function SetupPage() {
     ["stages", "Stages"],
     ["sources", "Sources"],
     ["fields", "Custom fields"],
+    ["layout", "Page layout"],
+    ["access", "Field access"],
     ["activities", "Activity types"],
     ["scoring", "Scoring"],
     ["rules", "Rules"],
@@ -108,6 +111,8 @@ export default function SetupPage() {
         {tab === "stages" && <Stages />}
         {tab === "sources" && <Sources />}
         {tab === "fields" && <FieldSettings entity="lead" />}
+        {tab === "layout" && <LayoutSettings entity="lead" />}
+        {tab === "access" && <FieldAccessSettings entity="lead" />}
         {tab === "activities" && <ActivityTypes />}
         {tab === "scoring" && <ScoringSettings />}
         {tab === "rules" && <Rules />}

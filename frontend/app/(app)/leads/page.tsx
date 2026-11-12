@@ -53,6 +53,7 @@ import { useTags, useViews } from "@/lib/organise";
 import { exportCsv } from "@/lib/reports";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+import { accessOf, useLayout } from "@/lib/layouts";
 
 type Filters = { stage_id: string[]; source_id: string[]; owner: string[]; tag: string[]; band: string[]; cf: Record<string, string[]> };
 const NO_FILTERS: Filters = { stage_id: [], source_id: [], owner: [], tag: [], band: [], cf: {} };
@@ -158,7 +159,9 @@ function LeadsList() {
 
   const stageById = useMemo(() => new Map((stages.data ?? []).map((s) => [s.id, s])), [stages.data]);
   const sourceById = useMemo(() => new Map((sources.data ?? []).map((s) => [s.id, s.name])), [sources.data]);
-  const selectFields = (fields.data ?? []).filter((f) => f.type === "select" || f.type === "multi_select");
+  const layout = useLayout("lead");
+  // columns and filters leave out fields this person may not see (step 8)
+  const selectFields = (fields.data ?? []).filter((f) => (f.type === "select" || f.type === "multi_select") && accessOf(layout.data, `cf.${f.key}`) !== "hidden");
 
   const columns: Column<Lead>[] = [
     {
@@ -212,7 +215,7 @@ function LeadsList() {
         cell: (l) => <span className="text-muted-foreground">{fieldValue(f, (l.custom_fields as Record<string, unknown>)[f.key])}</span>,
       }),
     ),
-    { key: "city", label: "City", sort: "city", hiddenByDefault: true, cell: (l) => <span className="text-muted-foreground">{l.city ?? "—"}</span> },
+    ...(accessOf(layout.data, "city") === "hidden" ? [] : [{ key: "city", label: "City", sort: "city" as const, hiddenByDefault: true, cell: (l: Lead) => <span className="text-muted-foreground">{l.city ?? "—"}</span> }]),
     { key: "created", label: "Created", sort: "created", hiddenByDefault: true, cell: (l) => <span className="text-muted-foreground">{relative(l.created_at)}</span> },
   ];
   const prefs = useTablePrefs("leads", columns as Column<unknown>[]);

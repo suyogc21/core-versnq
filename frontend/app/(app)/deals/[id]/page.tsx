@@ -36,6 +36,7 @@ import {
 } from "@/lib/deals";
 import { useLeadCustomer } from "@/lib/customers";
 import { useUsers } from "@/lib/directory";
+import { accessOf, customSections, useLayout } from "@/lib/layouts";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 import { NewInvoiceButton } from "@/components/crm/money";
@@ -225,15 +226,16 @@ function Facts({ deal }: { deal: Deal }) {
   const label = useLabels();
   const fields = useDealFields();
   const pipelines = usePipelines();
+  const layout = useLayout("deal");
   const values = deal.custom_fields as Record<string, unknown>;
   const rows: [string, React.ReactNode][] = [
     [label("pipeline"), pipelines.data?.find((p) => p.id === deal.pipeline_id)?.name ?? "—"],
     ["Stage", deal.stage_name],
-    ["Value", formatMoney(deal.amount_minor, deal.currency)],
-    ["Expected close", deal.expected_close_on ?? "—"],
+    ...(accessOf(layout.data, "amount") !== "hidden" ? [["Value", formatMoney(deal.amount_minor, deal.currency)] as [string, string]] : []),
+    ...(accessOf(layout.data, "expected_close_on") !== "hidden" ? [["Expected close", deal.expected_close_on ?? "—"] as [string, string]] : []),
     ["Owner", deal.owner_name ?? "Unassigned"],
   ];
-  for (const f of fields.data ?? []) rows.push([f.label, fieldValue(f, values[f.key])]);
+  for (const [, list] of customSections(layout.data, fields.data ?? [])) for (const f of list) rows.push([f.label, fieldValue(f, values[f.key])]);
   if (deal.closed_at) rows.push(["Closed", when(deal.closed_at)]);
   rows.push(["Updated", relative(deal.updated_at)]);
   return (
@@ -259,13 +261,17 @@ function EditDeal({ deal, onDone }: { deal: Deal; onDone: () => void }) {
   const [close, setClose] = useState(deal.expected_close_on ?? "");
   const [owner, setOwner] = useState(deal.owner_user_id ?? "none");
   const [custom, setCustom] = useState<Record<string, unknown>>(deal.custom_fields as Record<string, unknown>);
+  const layout = useLayout("deal");
+  const amountOk = accessOf(layout.data, "amount") === "edit"; // step 8: value may be view only or hidden
+  const closeAccess = accessOf(layout.data, "expected_close_on");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (amount === null) return;
+    if (amountOk && amount === null) return;
     try {
-      const body: Record<string, unknown> = { version: deal.version, name, expected_close_on: close || null, custom_fields: custom };
-      if (!deal.has_lines) body.amount_minor = amount;
+      const body: Record<string, unknown> = { version: deal.version, name, custom_fields: custom };
+      if (closeAccess === "edit") body.expected_close_on = close || null;
+      if (!deal.has_lines && amountOk) body.amount_minor = amount;
       if (!ownScope) body.owner_user_id = owner === "none" ? null : owner;
       unwrap(await api.PATCH("/api/v1/deals/{deal_id}", { params: { path: { deal_id: deal.id } }, body: body as never }));
       refresh();
@@ -284,22 +290,29 @@ function EditDeal({ deal, onDone }: { deal: Deal; onDone: () => void }) {
         </label>
         <Input id="d-name" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
-      <div className="space-y-1">
-        <label htmlFor="d-amount" className="text-muted-foreground">
-          Value
-        </label>
-        {deal.has_lines ? (
-          <p className="text-muted-foreground">{formatMoney(deal.amount_minor, deal.currency)} — the sum of the products below</p>
-        ) : (
-          <MoneyInput id="d-amount" currency={deal.currency} value={deal.amount_minor} onChange={setAmount} />
-        )}
-      </div>
-      <div className="space-y-1">
-        <label htmlFor="d-close" className="text-muted-foreground">
-          Expected close
-        </label>
-        <Input id="d-close" type="date" className="h-8" value={close} onChange={(e) => setClose(e.target.value)} />
-      </div>
+      {accessOf(layout.data, "amount") !== "hidden" && (
+        <div className="space-y-1">
+          <label htmlFor="d-amount" className="text-muted-foreground">
+            Value
+          </label>
+          {deal.has_lines || !amountOk || deal.amount_minor === null ? (
+            <p className="text-muted-foreground">
+              {formatMoney(deal.amount_minor, deal.currency)}
+              {deal.has_lines ? " — the sum of the products below" : " · view only"}
+            </p>
+          ) : (
+            <MoneyInput id="d-amount" currency={deal.currency} value={deal.amount_minor} onChange={setAmount} />
+          )}
+        </div>
+      )}
+      {closeAccess !== "hidden" && (
+        <div className="space-y-1">
+          <label htmlFor="d-close" className="text-muted-foreground">
+            Expected close
+          </label>
+          <Input id="d-close" type="date" className="h-8" value={close} disabled={closeAccess !== "edit"} onChange={(e) => setClose(e.target.value)} />
+        </div>
+      )}
       {!ownScope && (
         <div className="space-y-1">
           <label htmlFor="d-owner" className="text-muted-foreground">
@@ -317,13 +330,13 @@ function EditDeal({ deal, onDone }: { deal: Deal; onDone: () => void }) {
           </NativeSelect>
         </div>
       )}
-      <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />
+      <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} layout={layout.data} />
       {can("crm.configure") && (
         <div>
           <AddFieldButton entity="deal" />
         </div>
       )}
-      <Button size="sm" type="submit" disabled={!name.trim() || amount === null}>
+      <Button size="sm" type="submit" disabled={!name.trim() || (amountOk && amount === null)}>
         Save
       </Button>
     </form>
@@ -332,10 +345,14 @@ function EditDeal({ deal, onDone }: { deal: Deal; onDone: () => void }) {
 
 type Draft = { key: string; product_id: string | null; name: string; quantity: number; unit_price_minor: number | null; discount_minor: number | null };
 
-function Lines({ deal, editable }: { deal: Deal; editable: boolean }) {
+function Lines({ deal, editable: canEdit }: { deal: Deal; editable: boolean }) {
   const lines = useDealLines(deal.id);
+  const layout = useLayout("deal");
   const [editing, setEditing] = useState(false);
   const items = lines.data ?? [];
+  const value = accessOf(layout.data, "amount"); // products set the value (step 8)
+  const editable = canEdit && value === "edit";
+  if (value === "hidden") return <p className="text-xs text-muted-foreground">Prices are not shown to your role.</p>;
   if (lines.isLoading) return <p className="text-xs text-muted-foreground">Loading…</p>;
   if (editing) return <LinesEditor deal={deal} lines={items} onDone={() => setEditing(false)} />;
   return (

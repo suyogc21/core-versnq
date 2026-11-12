@@ -241,7 +241,7 @@ function Column({ col, currency, editable }: { col: Board["columns"][number]; cu
         </div>
         <div className="text-xs text-muted-foreground tabular-nums">
           {formatMoney(col.amount_minor, currency)}
-          {col.kind === "open" && col.amount_minor > 0 && ` · weighted ${formatMoney(col.weighted_minor, currency)}`}
+          {col.kind === "open" && (col.amount_minor ?? 0) > 0 && ` · weighted ${formatMoney(col.weighted_minor, currency)}`}
         </div>
       </header>
       <div className="flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto p-2">

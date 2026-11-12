@@ -14,6 +14,7 @@ import { ApiError, unwrap } from "@/lib/api/errors";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { fromLocalInput, identity, quickFollowUps, type Lead, useFields, useRefreshLead, useSources, useStages } from "@/lib/crm";
+import { accessOf, useLayout } from "@/lib/layouts";
 import { useUsers } from "@/lib/directory";
 import { useLabels } from "@/lib/settings";
 
@@ -24,6 +25,8 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
   const stages = useStages();
   const sources = useSources();
   const fields = useFields();
+  const layout = useLayout("lead");
+  const cityOk = accessOf(layout.data, "city") === "edit"; // a field you may not edit can't be filled in either
   const canAssign = can("leads.assign");
   const users = useUsers(canAssign && can("users.read"));
   const refresh = useRefreshLead();
@@ -64,7 +67,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
             first_name: kind === "person" ? v.first_name || null : null,
             last_name: kind === "person" ? v.last_name || null : null,
             org_name: kind === "organisation" ? v.org_name || null : null,
-            city: v.city || null,
+            city: cityOk ? v.city || null : null,
             identities,
             source_id: sourceId,
             stage_id: stageId || null,
@@ -121,7 +124,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
             <LabeledInput id="phone" label="Phone" type="tel" placeholder="98765 43210" value={v.phone} onChange={set("phone")} />
             <LabeledInput id="email" label="Email" type="email" value={v.email} onChange={set("email")} />
             <LabeledInput id="linkedin" label="LinkedIn profile" placeholder="linkedin.com/in/…" value={v.linkedin} onChange={set("linkedin")} />
-            <LabeledInput id="city" label="City" value={v.city} onChange={set("city")} />
+            {cityOk && <LabeledInput id="city" label="City" value={v.city} onChange={set("city")} />}
           </div>
           <p className="-mt-2 text-xs text-muted-foreground">At least one of phone, email or LinkedIn.</p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -177,7 +180,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
             </div>
           </div>
           {(fields.data ?? []).length > 0 && (
-            <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />
+            <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} layout={layout.data} mode="add" />
           )}
           {error && (
             <p className="text-xs text-destructive">

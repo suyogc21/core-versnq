@@ -77,7 +77,8 @@ export function currencyDigits(currency: string): number {
 }
 
 /** "₹69,999" from 6999900 minor units. Whole amounts drop the decimals; exact via BigInt. */
-export function formatMoney(minor: number, currency: string, opts: { compact?: boolean } = {}): string {
+export function formatMoney(minor: number | null | undefined, currency: string, opts: { compact?: boolean } = {}): string {
+  if (minor === null || minor === undefined) return "—"; // hidden from this person (field access)
   const d = currencyDigits(currency);
   const scale = BigInt(10) ** BigInt(d);
   const big = BigInt(minor);

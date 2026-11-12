@@ -31,6 +31,7 @@ import {
   useRefreshRecords,
 } from "@/lib/records";
 import { cn } from "@/lib/utils";
+import { customSections, useLayout } from "@/lib/layouts";
 
 export default function RecordPage() {
   const { type: key, id } = useParams<{ type: string; id: string }>();
@@ -177,10 +178,11 @@ function Stepper({ rtype, record, editable }: { rtype: RecordType; record: Recor
 
 function Facts({ rtype, record }: { rtype: RecordType; record: RecordItem }) {
   const fields = useRecordFields(rtype.key);
+  const layout = useLayout(`rt:${rtype.key}`);
   const values = record.custom_fields as Record<string, unknown>;
   const rows: [string, React.ReactNode][] = [];
   if (rtype.has_owner) rows.push(["Owner", record.owner_name ?? "Unassigned"]);
-  for (const f of fields.data ?? []) rows.push([f.label, fieldValue(f, values[f.key])]);
+  for (const [, list] of customSections(layout.data, fields.data ?? [])) for (const f of list) rows.push([f.label, fieldValue(f, values[f.key])]);
   rows.push(["Updated", relative(record.updated_at)]);
   return (
     <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-xs">
@@ -195,6 +197,7 @@ function Facts({ rtype, record }: { rtype: RecordType; record: RecordItem }) {
 }
 
 function EditRecord({ rtype, record, onDone }: { rtype: RecordType; record: RecordItem; onDone: () => void }) {
+  const layout = useLayout(`rt:${rtype.key}`);
   const { can } = useAuth();
   const acc = rtype.my_access!;
   const fields = useRecordFields(rtype.key);
@@ -243,7 +246,7 @@ function EditRecord({ rtype, record, onDone }: { rtype: RecordType; record: Reco
           </NativeSelect>
         </div>
       )}
-      <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />
+      <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} layout={layout.data} />
       {can("crm.configure") && (
         <div>
           <AddFieldButton entity={`rt:${rtype.key}`} />

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/app/native-select";
 import { type FieldDef, type FieldOption, initials, type Stage } from "@/lib/crm";
+import { accessOf, addFormFields, customSections, type Layout } from "@/lib/layouts";
 import { cn } from "@/lib/utils";
 
 export function StagePill({ stage, className }: { stage: Stage | undefined; className?: string }) {
@@ -97,14 +98,21 @@ export function CustomFieldsEditor({
   fields,
   values,
   onChange,
+  layout,
+  mode = "edit",
 }: {
   fields: FieldDef[];
   values: Record<string, unknown>;
   onChange: (values: Record<string, unknown>) => void;
+  /** The company's layout (step 8): sections and order, hidden and view-only fields. */
+  layout?: Layout;
+  /** "add": only the fields the layout puts on the add form. */
+  mode?: "edit" | "add";
 }) {
-  const groups = new Map<string, FieldDef[]>();
   // Calculated fields fill themselves in; they are shown on the record, not edited.
-  for (const f of fields.filter((x) => x.type !== "calculated")) groups.set(f.group_name ?? "", [...(groups.get(f.group_name ?? "") ?? []), f]);
+  const editable = fields.filter((x) => x.type !== "calculated");
+  const groups: [string, FieldDef[]][] =
+    mode === "add" ? [["", addFormFields(layout, editable)]] : customSections(layout, editable);
   const set = (key: string, value: unknown) => {
     const next = { ...values, [key]: value };
     for (const child of fields.filter((f) => f.depends_on === key)) next[child.key] = null; // parent changed
@@ -112,22 +120,20 @@ export function CustomFieldsEditor({
   };
   return (
     <div className="space-y-4">
-      {[...groups].map(([group, list]) => (
-        <div key={group} className="space-y-3">
-          {group && <div className="text-[11px] tracking-wide text-muted-foreground uppercase">{group}</div>}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {list.map((f) => (
-              <CustomFieldInput
-                key={f.key}
-                field={f}
-                value={values[f.key]}
-                parentValue={f.depends_on ? values[f.depends_on] : undefined}
-                onChange={(v) => set(f.key, v)}
-              />
-            ))}
+      {groups
+        .filter(([, list]) => list.length > 0)
+        .map(([group, list]) => (
+          <div key={group} className="space-y-3">
+            {group && <div className="text-[11px] tracking-wide text-muted-foreground uppercase">{group}</div>}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {list.map((f) => (
+                <fieldset key={f.key} disabled={accessOf(layout, `cf.${f.key}`) === "view"} className="min-w-0" title={accessOf(layout, `cf.${f.key}`) === "view" ? "View only" : undefined}>
+                  <CustomFieldInput field={f} value={values[f.key]} parentValue={f.depends_on ? values[f.depends_on] : undefined} onChange={(v) => set(f.key, v)} />
+                </fieldset>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
     </div>
   );
 }

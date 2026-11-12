@@ -2,7 +2,7 @@
 
 import { Phone, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
@@ -16,6 +16,7 @@ import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 import {
   type ActivityItem,
+  type FieldDef,
   fieldValue,
   fromLocalInput,
   identity,
@@ -33,6 +34,7 @@ import {
   when,
 } from "@/lib/crm";
 import { useUsers } from "@/lib/directory";
+import { accessOf, type Layout, useLayout } from "@/lib/layouts";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -75,6 +77,7 @@ export function ActionButton({
 /** Stage, owner, source and custom field values, with stage and owner changeable in place. */
 export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: boolean }) {
   const { can, me } = useAuth();
+  const layout = useLayout("lead");
   const stages = useStages();
   const sources = useSources();
   const fields = useFields();
@@ -123,7 +126,6 @@ export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: bool
   }
 
   const source = sources.data?.find((s) => s.id === lead.source_id);
-  const values = lead.custom_fields as Record<string, unknown>;
   return (
     <div className="space-y-3">
       <dl className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 text-xs">
@@ -189,14 +191,60 @@ export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: bool
             <dd>{lead.last_disposition}</dd>
           </>
         )}
-        {(fields.data ?? [])
-          .filter((f) => values[f.key] !== undefined)
-          .map((f) => (
-            <FactRow key={f.key} label={f.label} value={fieldValue(f, values[f.key])} />
-          ))}
-        {lead.city && <FactRow label="City" value={lead.city} />}
+        {layoutRows(layout.data, fields.data ?? [], lead).map(([section, rows]) => (
+          <Fragment key={section}>
+            <dt className="col-span-2 pt-1 text-[11px] tracking-wide text-muted-foreground uppercase">{section}</dt>
+            {rows.map(([label, value]) => (
+              <FactRow key={label} label={label} value={value} />
+            ))}
+          </Fragment>
+        ))}
         <FactRow label="Added" value={relative(lead.created_at)} />
       </dl>
+    </div>
+  );
+}
+
+/** A lead's built-in and custom values, in the company's layout sections (step 8). Empty
+ * values and fields hidden from this person are left out. */
+export function layoutRows(layout: Layout | undefined, fields: FieldDef[], lead: Lead): [string, [string, string][]][] {
+  const byKey = new Map(fields.map((f) => [`cf.${f.key}`, f]));
+  const builtinLabel = new Map((layout?.fields ?? []).filter((f) => f.builtin).map((f) => [f.key, f.label]));
+  const values = lead.custom_fields as Record<string, unknown>;
+  const sections = layout?.sections ?? [{ name: "Details", fields: [...byKey.keys(), "city"] }];
+  return sections
+    .map((s): [string, [string, string][]] => [
+      s.name,
+      s.fields.flatMap((key): [string, string][] => {
+        if (accessOf(layout, key) === "hidden") return [];
+        const f = byKey.get(key);
+        if (f) return values[f.key] === undefined || values[f.key] === null ? [] : [[f.label, fieldValue(f, values[f.key])]];
+        const v = (lead as Record<string, unknown>)[key];
+        return v ? [[builtinLabel.get(key) ?? key, String(v)]] : [];
+      }),
+    ])
+    .filter(([, rows]) => rows.length > 0);
+}
+
+/** Up to 4 key facts under a record's name, as the layout picks them (step 8). */
+export function Highlights({ layout, fields, values, builtin }: { layout: Layout | undefined; fields: FieldDef[]; values: Record<string, unknown>; builtin?: Record<string, unknown> }) {
+  const byKey = new Map(fields.map((f) => [`cf.${f.key}`, f]));
+  const label = new Map((layout?.fields ?? []).map((f) => [f.key, f.label]));
+  const items = (layout?.highlights ?? []).flatMap((key): [string, string][] => {
+    if (accessOf(layout, key) === "hidden") return [];
+    const f = byKey.get(key);
+    const raw = f ? values[f.key] : builtin?.[key];
+    if (raw === undefined || raw === null || raw === "") return [];
+    return [[label.get(key) ?? key, f ? fieldValue(f, raw) : String(raw)]];
+  });
+  if (!items.length) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5" data-highlights>
+      {items.map(([k, v]) => (
+        <span key={k} className="rounded-md border bg-muted/40 px-2 py-0.5 text-xs">
+          <span className="text-muted-foreground">{k}</span> <span className="font-medium">{v}</span>
+        </span>
+      ))}
     </div>
   );
 }
@@ -286,6 +334,8 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
   const [custom, setCustom] = useState<Record<string, unknown>>(lead.custom_fields as Record<string, unknown>);
   const [saving, setSaving] = useState(false);
   const editable = can("leads.edit");
+  const layout = useLayout("lead");
+  const may = (key: string) => accessOf(layout.data, key); // edit / view / hidden (step 8)
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setV({ ...v, [k]: e.target.value });
 
   async function save(e: React.FormEvent) {
@@ -309,8 +359,8 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
             version: lead.version,
             first_name: v.first_name || null,
             last_name: v.last_name || null,
-            org_name: v.org_name || null,
-            city: v.city || null,
+            ...(may("org_name") === "edit" ? { org_name: v.org_name || null } : {}),
+            ...(may("city") === "edit" ? { city: v.city || null } : {}),
             source_id: v.source_id,
             identities,
             custom_fields: custom,
@@ -349,13 +399,13 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
             <LabeledInput id="e-last" label="Last name" value={v.last_name} onChange={set("last_name")} />
           </div>
         ) : (
-          <LabeledInput id="e-org" label="Company name" value={v.org_name} onChange={set("org_name")} />
+          <LabeledInput id="e-org" label="Company name" value={v.org_name} onChange={set("org_name")} disabled={may("org_name") !== "edit"} />
         )}
         <div className="grid gap-3 sm:grid-cols-2">
-          <LabeledInput id="e-phone" label="Phone" type="tel" value={v.phone} onChange={set("phone")} />
-          <LabeledInput id="e-email" label="Email" type="email" value={v.email} onChange={set("email")} />
+          <LabeledInput id="e-phone" label="Phone" type="tel" value={v.phone} onChange={set("phone")} disabled={may("phone") !== "edit"} />
+          <LabeledInput id="e-email" label="Email" type="email" value={v.email} onChange={set("email")} disabled={may("email") !== "edit"} />
           <LabeledInput id="e-linkedin" label="LinkedIn profile" value={v.linkedin} onChange={set("linkedin")} />
-          <LabeledInput id="e-city" label="City" value={v.city} onChange={set("city")} />
+          {may("city") !== "hidden" && <LabeledInput id="e-city" label="City" value={v.city} onChange={set("city")} disabled={may("city") !== "edit"} />}
           <div className="space-y-1.5">
             <label htmlFor="e-source" className="text-sm font-medium">
               Source
@@ -369,7 +419,7 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
             </NativeSelect>
           </div>
         </div>
-        {(fields.data ?? []).length > 0 && <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} />}
+        {(fields.data ?? []).length > 0 && <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} layout={layout.data} />}
         {can("crm.configure") && <AddFieldButton entity="lead" />}
       </fieldset>
       <div className="flex items-center gap-2">

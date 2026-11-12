@@ -21,6 +21,7 @@ import { useAuth } from "@/lib/auth";
 import { fieldValue, relative, type Stage } from "@/lib/crm";
 import { useUsers } from "@/lib/directory";
 import { type RecordItem, type RecordQuery, type RecordType, useRecordFields, useRecords, useRecordStages, useRecordTypes, useRefreshRecords } from "@/lib/records";
+import { accessOf, useLayout } from "@/lib/layouts";
 
 type Filters = { stage_id: string[]; owner: string[]; cf: Record<string, string[]> };
 const NONE: Filters = { stage_id: [], owner: [], cf: {} };
@@ -83,7 +84,8 @@ function RecordList({ rtype }: { rtype: RecordType }) {
   };
   const records = useRecords(query);
   const stageById = useMemo(() => new Map((stages.data ?? []).map((s) => [s.id, s])), [stages.data]);
-  const fieldList = fields.data ?? [];
+  const layout = useLayout(`rt:${rtype.key}`);
+  const fieldList = (fields.data ?? []).filter((f) => accessOf(layout.data, `cf.${f.key}`) !== "hidden"); // step 8
   const selectFields = fieldList.filter((f) => f.type === "select" || f.type === "multi_select");
 
   const columns: Column<RecordItem>[] = [

@@ -166,6 +166,7 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
     depends_on: field?.depends_on ?? "",
     group_name: field?.group_name ?? "",
     formula: field?.formula ?? "",
+    show_with_hidden_inputs: field?.show_with_hidden_inputs ?? false,
   });
   const isCalc = v.type === "calculated";
   const [keyTouched, setKeyTouched] = useState(false);
@@ -185,7 +186,7 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
                 body: {
                   label: v.label,
                   group_name: v.group_name || null,
-                  ...(isCalc ? { formula: v.formula } : { required: v.required }),
+                  ...(isCalc ? { formula: v.formula, show_with_hidden_inputs: v.show_with_hidden_inputs } : { required: v.required }),
                   ...(isChoice ? { options: v.options } : {}),
                 },
               }),
@@ -284,6 +285,12 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
             </>
           )}
           {isCalc && <FormulaBox entity={entity} fieldKey={v.key || "new_field"} value={v.formula} onChange={(formula) => setV({ ...v, formula })} />}
+          {isCalc && field && (
+            <label className="flex items-start gap-2 text-xs text-muted-foreground">
+              <input type="checkbox" className="mt-0.5" checked={v.show_with_hidden_inputs} onChange={(e) => setV({ ...v, show_with_hidden_inputs: e.target.checked })} />
+              Show the result even to roles that can&apos;t see a field it is worked out from
+            </label>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="f-group">Group (optional)</Label>
             <Input id="f-group" placeholder="e.g. Interest, KYC" value={v.group_name} onChange={(e) => setV({ ...v, group_name: e.target.value })} />

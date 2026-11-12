@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/app/app-shell";
 import { NativeSelect } from "@/components/app/native-select";
 import { MoneyInput } from "@/components/crm/deals";
 import { FieldSettings } from "@/components/crm/field-settings";
+import { FieldAccessSettings, LayoutSettings } from "@/components/crm/layout-settings";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ import { type Pipeline, type PipelineStage, type Product, formatMoney, useDealFi
 import { useLabels, useWorkspaceSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type Tab = "pipelines" | "reasons" | "products" | "fields";
+type Tab = "pipelines" | "reasons" | "products" | "fields" | "layout" | "access";
 const BUILTIN_REQUIRABLE: [string, string][] = [
   ["amount", "Value"],
   ["expected_close_on", "Expected close"],
@@ -51,6 +52,8 @@ export default function DealSetupPage() {
     ["reasons", "Lost reasons"],
     ["products", "Products"],
     ["fields", "Custom fields"],
+    ["layout", "Page layout"],
+    ["access", "Field access"],
   ];
   return (
     <>
@@ -74,6 +77,8 @@ export default function DealSetupPage() {
         {tab === "reasons" && <Reasons />}
         {tab === "products" && <Products />}
         {tab === "fields" && <FieldSettings entity="deal" />}
+        {tab === "layout" && <LayoutSettings entity="deal" />}
+        {tab === "access" && <FieldAccessSettings entity="deal" />}
       </div>
     </>
   );

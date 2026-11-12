@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { FieldSettings } from "@/components/crm/field-settings";
+import { FieldAccessSettings, LayoutSettings } from "@/components/crm/layout-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,7 @@ import { useProducts } from "@/lib/deals";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type Tab = "checklist" | "fields" | "settings";
+type Tab = "checklist" | "fields" | "settings" | "layout" | "access";
 
 function useSave() {
   const qc = useQueryClient();
@@ -41,6 +42,8 @@ export default function CustomerSetupPage() {
   const tabs: [Tab, string][] = [
     ["checklist", "Document checklist"],
     ["fields", "Custom fields"],
+    ["layout", "Page layout"],
+    ["access", "Field access"],
     ["settings", "Numbers and storage"],
   ];
   return (
@@ -63,6 +66,8 @@ export default function CustomerSetupPage() {
         </div>
         {tab === "checklist" && <Checklist />}
         {tab === "fields" && <FieldSettings entity="customer" />}
+        {tab === "layout" && <LayoutSettings entity="customer" />}
+        {tab === "access" && <FieldAccessSettings entity="customer" />}
         {tab === "settings" && <NumberSettings />}
       </div>
     </>

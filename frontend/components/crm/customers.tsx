@@ -29,6 +29,7 @@ import {
 } from "@/lib/customers";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+import { customSections, useLayout } from "@/lib/layouts";
 
 function Card({ title, action, children }: { title: React.ReactNode; action?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -95,6 +96,7 @@ export function CustomerSection({ leadId }: { leadId: string }) {
 }
 
 export function CustomerCard({ customer }: { customer: Customer }) {
+  const layout = useLayout("customer");
   const { can } = useAuth();
   const label = useLabels();
   const fields = useCustomerFields();
@@ -147,7 +149,8 @@ export function CustomerCard({ customer }: { customer: Customer }) {
           <span className={cn(customer.status !== "active" && "text-muted-foreground")}>{customer.status === "active" ? "Active" : "Inactive"}</span>
         </dd>
         {!editing &&
-          list
+          customSections(layout.data, list)
+            .flatMap(([, fs]) => fs)
             .filter((f) => f.type !== "calculated" || custom[f.key] != null)
             .map((f) => (
               <div key={f.key} className="contents">
@@ -167,7 +170,7 @@ export function CustomerCard({ customer }: { customer: Customer }) {
             }
           }}
         >
-          <CustomFieldsEditor fields={list} values={values} onChange={setValues} />
+          <CustomFieldsEditor fields={list} values={values} onChange={setValues} layout={layout.data} />
           <Button size="sm" type="submit">
             Save
           </Button>

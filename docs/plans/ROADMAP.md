@@ -114,8 +114,8 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts) — *My Day with the calling queue done in slice A*
 - [x] 2.13 CSV export
 - [ ] 2.14 Frontend for 2.1–2.13
-- [ ] 2.15 Record page layouts per company (slice G)
-- [ ] 2.16 Field-level permissions: view / edit / hidden / mandatory per role (slice G)
+- [x] 2.15 Record page layouts per company (slice G)
+- [x] 2.16 Field-level permissions: view / edit / hidden / mandatory per role (slice G)
 - [x] 2.17 Custom record types (custom objects) on the same generic engine, plus labelled links between any records (step 2, moved up)
 - Each item gets its own Test lines in the Phase 2 detailed plan (isolation + visibility tests on every item)
 - [ ] **Gate 2:** all tests green, Suyog approves

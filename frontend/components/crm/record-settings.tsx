@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
 import { FieldSettings, slug } from "@/components/crm/field-settings";
+import { FieldAccessSettings, LayoutSettings } from "@/components/crm/layout-settings";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -209,12 +210,14 @@ function CreateType({ onClose, onCreated }: { onClose: () => void; onCreated: (t
   );
 }
 
-type Tab = "details" | "fields" | "stages" | "access";
+type Tab = "details" | "fields" | "stages" | "access" | "layout" | "field-access";
 
 function TypeEditor({ rtype, onDeleted }: { rtype: RecordType; onDeleted: () => void }) {
   const [tab, setTab] = useState<Tab>("fields");
   const tabs: [Tab, string][] = [
     ["fields", "Fields"],
+    ["layout", "Page layout"],
+    ["field-access", "Field access"],
     ...(rtype.has_stages ? ([["stages", "Stages"]] as [Tab, string][]) : []),
     ["access", "Who can do what"],
     ["details", "Details"],
@@ -235,6 +238,8 @@ function TypeEditor({ rtype, onDeleted }: { rtype: RecordType; onDeleted: () => 
       {tab === "fields" && <FieldSettings entity={`rt:${rtype.key}`} />}
       {tab === "stages" && <Stages rtype={rtype} />}
       {tab === "access" && <Access rtype={rtype} />}
+      {tab === "layout" && <LayoutSettings entity={`rt:${rtype.key}`} />}
+      {tab === "field-access" && <FieldAccessSettings entity={`rt:${rtype.key}`} />}
       {tab === "details" && <Details rtype={rtype} onDeleted={onDeleted} />}
     </div>
   );
