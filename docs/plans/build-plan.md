@@ -777,6 +777,9 @@ For companies that sell to large organisations over months. An add-on: a module 
 
 ### 11.3 Open questions
 
+Answered 2026-11-12 (Decision log #36): all as recommended.
+
+
 | # | Question | Recommendation |
 | --- | --- | --- |
 | K1 | Separate "account" records, or mark existing organisations as key? | **Mark organisations** (one record, one timeline; nothing to keep in step) |
