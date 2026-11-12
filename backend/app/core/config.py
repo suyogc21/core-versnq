@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     # Outside production: connected inboxes (step 9b-3) are read from <dir>/<address>/<folder>/
     # <uid>.eml instead of a real IMAP server, so mailbox sync can be tried without one.
     mailbox_test_dir: str | None = None
+    # Copy-in addresses (step 9b-2) are <company>-<token>@INBOUND_EMAIL_DOMAIN. They start
+    # working when inbound mail for that domain reaches Core (Amazon SES, at go-live).
+    inbound_email_domain: str = "copy.versnq.in"
+    inbound_email_live: bool = False
     # sequence emails (step 9a): "test" keeps them in Core; "mailbox" sends through the
     # company's own mailbox; Amazon SES is added at go-live (Decision log #39)
     email_sender: Literal["test", "mailbox"] = "test"

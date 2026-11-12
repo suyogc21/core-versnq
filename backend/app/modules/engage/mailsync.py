@@ -361,7 +361,10 @@ async def _folder(
             async with db.begin_nested():  # one odd email never stops the rest
                 quiet = first_pass or _older_than_connect(raw, mb)
                 if direction == "out":
-                    stored = await IB.ingest_sent(db, mb, raw, lead, quiet=quiet)
+                    stored = await IB.ingest_sent(
+                        db, raw, lead, user_id=mb.user_id, from_address=mb.email_address,
+                        mailbox_id=mb.id, quiet=quiet,
+                    )  # fmt: skip
                 else:
                     stored = await IB.ingest(db, mb.tenant_id, raw, mailbox=mb, quiet=quiet)
                 kept += stored is not None

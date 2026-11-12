@@ -34,6 +34,10 @@ class TenantSettings(TimestampMixin, Base):
     )
     # Connected inboxes (step 9b-3): addresses and @domains never synced from anyone's mailbox.
     mail_exclusions: Mapped[list] = mapped_column(JSONB, default=list)
+    # Copy-in address (step 9b-2): does an email with an unknown person create a lead, and how.
+    copy_in: Mapped[dict] = mapped_column(
+        JSONB, default=lambda: {"create_leads": False, "source_id": None}
+    )
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)
     # Duplicates on automatic capture (R5): update the existing lead / flag / always create.

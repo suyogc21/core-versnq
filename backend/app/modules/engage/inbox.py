@@ -233,6 +233,7 @@ async def ingest(
     *,
     mailbox: Mailbox | None = None,
     quiet: bool = False,
+    dated: bool = False,
 ) -> Message | None:
     """One incoming email (the test inbox, a user's connected mailbox (step 9b-3); the provider
     and the copy-in address later). Returns the stored message, or None if it matches no lead.
@@ -255,7 +256,7 @@ async def ingest(
 
     subject = (parsed.get("Subject") or "").strip()[:300]
     conv = await _conversation_for(db, lead, answered, subject)
-    when = (_date_of(parsed) if mailbox else None) or L.now()
+    when = (_date_of(parsed) if mailbox or dated else None) or L.now()
 
     to_addrs = [a for _, a in getaddresses(parsed.get_all("To", []))]
     cc = [a for _, a in getaddresses(parsed.get_all("Cc", [])) if a]
@@ -323,17 +324,26 @@ async def ingest(
 
 
 async def ingest_sent(
-    db: AsyncSession, mailbox: Mailbox, raw: bytes, lead: Lead, *, quiet: bool = False
+    db: AsyncSession,
+    raw: bytes,
+    lead: Lead,
+    *,
+    user_id: uuid.UUID | None,
+    from_address: str,
+    mailbox_id: uuid.UUID | None = None,
+    via: str = "mailbox",
+    quiet: bool = False,
 ) -> Message | None:
-    """An email the user sent to a lead from their own mail app (found in their Sent folder,
-    step 9b-3). Emails sent from Core are already kept and are skipped by their Message-ID."""
+    """An email a user sent to a lead from their own mail app: found in their Sent folder
+    (step 9b-3, via "mailbox") or copied to a copy-in address (step 9b-2, via "copy_in").
+    Emails sent from Core are already kept and are skipped by their Message-ID."""
     parsed = email.message_from_bytes(raw, policy=email.policy.default)
     header_id = (parsed.get("Message-ID") or "").strip()[:300] or None
     if await _seen(db, header_id):
         return None
     subject = (parsed.get("Subject") or "").strip()[:300]
     answered = await _answered(db, parsed)
-    conv = await _conversation_for(db, lead, answered, subject, by=mailbox.user_id)
+    conv = await _conversation_for(db, lead, answered, subject, by=user_id)
     when = _date_of(parsed) or L.now()
     to = (lead.primary_email or "").lower()
     others = [
@@ -349,7 +359,7 @@ async def ingest_sent(
         direction="out",
         conversation_id=conv.id,
         to_address=to[:320],
-        from_address=mailbox.email_address,
+        from_address=from_address[:320],
         subject=subject or None,
         body=_text_of(parsed)[:100000],
         token=secrets.token_urlsafe(24),
@@ -359,8 +369,8 @@ async def ingest_sent(
         references=(parsed.get("References") or "")[:5000] or None,
         cc=others[:50],
         sent_at=when,
-        sent_by_user_id=mailbox.user_id,
-        mailbox_id=mailbox.id,
+        sent_by_user_id=user_id,
+        mailbox_id=mailbox_id,
     )
     db.add(msg)
     await db.flush()
@@ -371,9 +381,9 @@ async def ingest_sent(
         db,
         lead,
         "email_sent",
-        f"Email sent from {mailbox.email_address}: {subject or '(no subject)'}",
+        f"Email sent from {from_address}: {subject or '(no subject)'}",
         None,
-        {"message_id": str(msg.id), "conversation_id": str(conv.id), "via": "mailbox"},
+        {"message_id": str(msg.id), "conversation_id": str(conv.id), "via": via},
         body=msg.body[:2000],
         occurred_at=when,
     )

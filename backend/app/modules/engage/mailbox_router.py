@@ -8,20 +8,23 @@ from datetime import datetime
 from typing import Annotated, Literal
 
 import sqlalchemy as sa
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, func, select
 
 from app.core import secrets as SEC
+from app.core.config import get_settings
 from app.core.errors import Invalid, NotFound
 from app.modules.auth.deps import CurrentUser, require
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
-from app.modules.crm.models import Activity
+from app.modules.crm.models import Activity, LeadSource
+from app.modules.engage import copyin as CI
 from app.modules.engage import mailsync as MS
 from app.modules.engage.models import Conversation, Mailbox, Message
 from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
+from app.platform.models import Tenant
 
 router = APIRouter(prefix="/api/v1", tags=["mailboxes"], dependencies=CRM)
 Replier = Annotated[CurrentUser, require("inbox.reply")]
@@ -237,3 +240,104 @@ async def set_exclusions(body: Exclusions, db: CrmDb, actor: Admin) -> Exclusion
         db, actor, "mailbox.exclusions", "settings", None, {"items": before}, {"items": items}
     )
     return Exclusions(items=items)
+
+
+# ---------- copy-in addresses (step 9b-2) ----------
+class CopyInOut(BaseModel):
+    address: str
+    live: bool  # False until inbound mail for the domain reaches Core (go-live)
+
+
+class CopyInSettings(BaseModel):
+    create_leads: bool = False
+    source_id: uuid.UUID | None = None
+
+
+class CompanyCopyInOut(CopyInSettings):
+    address: str
+    live: bool
+
+
+class CopyInResult(BaseModel):
+    address: str
+    stored: bool
+    lead_id: uuid.UUID | None
+    created_lead: bool
+    conversation_id: uuid.UUID | None
+
+
+async def _copy_in(db, actor: CurrentUser, user_id: uuid.UUID | None, *, new: bool = False):
+    row = await CI.get_or_create(db, actor.user.tenant_id, user_id)
+    if new:
+        await CI.reset(db, row)
+        await audit(db, actor, "copy_in.reset", "copy_in", row.id)
+    tenant = await db.get(Tenant, actor.user.tenant_id)
+    return CI.address_of(tenant.slug, row.token), get_settings().inbound_email_live
+
+
+@router.get("/me/copy-in", response_model=CopyInOut)
+async def my_copy_in(db: CrmDb, actor: Replier) -> CopyInOut:
+    address, live = await _copy_in(db, actor, actor.user.id)
+    return CopyInOut(address=address, live=live)
+
+
+@router.post("/me/copy-in/reset", response_model=CopyInOut)
+async def reset_my_copy_in(db: CrmDb, actor: Replier) -> CopyInOut:
+    """A new address for this user; the old one stops working (if it leaked)."""
+    address, live = await _copy_in(db, actor, actor.user.id, new=True)
+    return CopyInOut(address=address, live=live)
+
+
+async def _company(db, actor: CurrentUser, new: bool = False) -> CompanyCopyInOut:
+    address, live = await _copy_in(db, actor, None, new=new)
+    cfg = (await db.get(TenantSettings, actor.user.tenant_id)).copy_in or {}
+    return CompanyCopyInOut(
+        address=address,
+        live=live,
+        create_leads=bool(cfg.get("create_leads")),
+        source_id=cfg.get("source_id"),
+    )
+
+
+@router.get("/copy-in", response_model=CompanyCopyInOut)
+async def company_copy_in(db: CrmDb, actor: Admin) -> CompanyCopyInOut:
+    return await _company(db, actor)
+
+
+@router.post("/copy-in/reset", response_model=CompanyCopyInOut)
+async def reset_company_copy_in(db: CrmDb, actor: Admin) -> CompanyCopyInOut:
+    return await _company(db, actor, new=True)
+
+
+@router.put("/copy-in", response_model=CompanyCopyInOut)
+async def set_copy_in(body: CopyInSettings, db: CrmDb, actor: Admin) -> CompanyCopyInOut:
+    """Whether an email with someone unknown creates a lead (off by default), and its source."""
+    if body.create_leads:
+        source = await db.get(LeadSource, body.source_id) if body.source_id else None
+        if source is None or not source.is_active:
+            raise Invalid("Choose the source new leads get")
+    settings = await db.get(TenantSettings, actor.user.tenant_id)
+    before = dict(settings.copy_in or {})
+    settings.copy_in = {
+        "create_leads": body.create_leads,
+        "source_id": str(body.source_id) if body.source_id else None,
+    }
+    await db.flush()
+    await audit(db, actor, "copy_in.settings", "settings", None, before, settings.copy_in)
+    return await _company(db, actor)
+
+
+@router.post("/inbox/test-copy-in", response_model=list[CopyInResult])
+async def test_copy_in(
+    request: Request,
+    to: Annotated[str, Query(max_length=320)],
+    actor: Annotated[CurrentUser, require("settings.manage")],
+) -> list[CopyInResult]:
+    """Outside production only: deliver a raw email (.eml text) to a copy-in address as if it
+    had arrived, until inbound mail is switched on at go-live."""
+    if get_settings().environment == "prod":
+        raise NotFound("Not found")
+    raw = await request.body()
+    if not raw or len(raw) > 25 * 1024 * 1024:
+        raise Invalid("Send the raw email (an .eml file's text)")
+    return [CopyInResult(**r.__dict__) for r in await CI.receive(raw, [to])]

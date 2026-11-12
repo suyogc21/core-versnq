@@ -233,3 +233,15 @@ class Mailbox(TenantScoped, TimestampMixin, Base):
     sync_requested: Mapped[bool] = mapped_column(Boolean, default=False)
     # per folder: {"INBOX": {"v": uidvalidity, "last": highest uid seen}}
     sync_state: Mapped[dict] = mapped_column(JSONB, default=dict)
+
+
+class CopyInAddress(TenantScoped, Base):
+    """A secret address to CC / BCC or forward emails to (step 9b-2). user_id empty: the
+    company's own; otherwise one user's (emails logged as theirs)."""
+
+    __tablename__ = "copy_in_addresses"
+    __table_args__ = (_fk("user_id", "users", "fk_copy_in_addresses_user_same_tenant", "CASCADE"),)
+
+    user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    token: Mapped[str] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

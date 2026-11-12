@@ -2439,6 +2439,41 @@
         "title": "ChecklistOut",
         "type": "object"
       },
+      "CompanyCopyInOut": {
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "create_leads": {
+            "default": false,
+            "title": "Create Leads",
+            "type": "boolean"
+          },
+          "live": {
+            "title": "Live",
+            "type": "boolean"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          }
+        },
+        "required": [
+          "address",
+          "live"
+        ],
+        "title": "CompanyCopyInOut",
+        "type": "object"
+      },
       "CompetitorIn": {
         "properties": {
           "is_active": {
@@ -2951,6 +2986,96 @@
           "shared"
         ],
         "title": "ConversationRow",
+        "type": "object"
+      },
+      "CopyInOut": {
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "live": {
+            "title": "Live",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "address",
+          "live"
+        ],
+        "title": "CopyInOut",
+        "type": "object"
+      },
+      "CopyInResult": {
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "created_lead": {
+            "title": "Created Lead",
+            "type": "boolean"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "stored": {
+            "title": "Stored",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "address",
+          "stored",
+          "lead_id",
+          "created_lead",
+          "conversation_id"
+        ],
+        "title": "CopyInResult",
+        "type": "object"
+      },
+      "CopyInSettings": {
+        "properties": {
+          "create_leads": {
+            "default": false,
+            "title": "Create Leads",
+            "type": "boolean"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          }
+        },
+        "title": "CopyInSettings",
         "type": "object"
       },
       "CrmRules": {
@@ -21023,6 +21148,103 @@
         ]
       }
     },
+    "/api/v1/copy-in": {
+      "get": {
+        "operationId": "mailboxes-company_copy_in",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCopyInOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Company Copy In",
+        "tags": [
+          "mailboxes"
+        ]
+      },
+      "put": {
+        "description": "Whether an email with someone unknown creates a lead (off by default), and its source.",
+        "operationId": "mailboxes-set_copy_in",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyInSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCopyInOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Copy In",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/copy-in/reset": {
+      "post": {
+        "operationId": "mailboxes-reset_company_copy_in",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCopyInOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reset Company Copy In",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
     "/api/v1/crm-rules": {
       "get": {
         "operationId": "routing-get_crm_rules",
@@ -24756,6 +24978,59 @@
         "summary": "Inbox People",
         "tags": [
           "inbox"
+        ]
+      }
+    },
+    "/api/v1/inbox/test-copy-in": {
+      "post": {
+        "description": "Outside production only: deliver a raw email (.eml text) to a copy-in address as if it\nhad arrived, until inbound mail is switched on at go-live.",
+        "operationId": "mailboxes-test_copy_in",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "maxLength": 320,
+              "title": "To",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CopyInResult"
+                  },
+                  "title": "Response Mailboxes-Test Copy In",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Copy In",
+        "tags": [
+          "mailboxes"
         ]
       }
     },
@@ -31226,6 +31501,59 @@
           }
         ],
         "summary": "Remove Synced",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/me/copy-in": {
+      "get": {
+        "operationId": "mailboxes-my_copy_in",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopyInOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Copy In",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/me/copy-in/reset": {
+      "post": {
+        "description": "A new address for this user; the old one stops working (if it leaked).",
+        "operationId": "mailboxes-reset_my_copy_in",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopyInOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reset My Copy In",
         "tags": [
           "mailboxes"
         ]
