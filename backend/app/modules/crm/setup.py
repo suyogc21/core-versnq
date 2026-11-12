@@ -130,6 +130,10 @@ STEP9A_SYSTEM_TYPES = [
     },
     {"key": "sequence_ended", "label": "Sequence ended", "icon": "list-end", "loggable": False},
 ]
+# Shared inbox (step 9b, Decision log #40); frozen copy in migration 0024.
+STEP9B_SYSTEM_TYPES = [
+    {"key": "email_received", "label": "Email received", "icon": "mail", "loggable": False},
+]
 # Money (step 6, Decision log #34); frozen copy in migration 0017.
 STEP6_SYSTEM_TYPES = [
     {"key": key, "label": label, "icon": icon, "loggable": False}
@@ -163,6 +167,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP7B_SYSTEM_TYPES,
         *STEP_M4_SYSTEM_TYPES,
         *STEP9A_SYSTEM_TYPES,
+        *STEP9B_SYSTEM_TYPES,
     ]
 
 

@@ -52,7 +52,9 @@ class Built:
     links: list[str]
 
 
-def build_email(body: str, *, track_base: str | None, token: str, unsubscribe_url: str) -> Built:
+def build_email(
+    body: str, *, track_base: str | None, token: str, unsubscribe_url: str | None
+) -> Built:
     """Plain text → (text, html, tracked links). `track_base` None = no tracking (tests can
     still check the links list)."""
     links: list[str] = []
@@ -81,6 +83,8 @@ def build_email(body: str, *, track_base: str | None, token: str, unsubscribe_ur
     footer = (
         '<p style="color:#888;font-size:12px">Don\'t want these emails? '
         f'<a href="{html.escape(unsubscribe_url, quote=True)}">Unsubscribe</a></p>'
+        if unsubscribe_url
+        else ""
     )
     page = (
         '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5">'
@@ -89,5 +93,7 @@ def build_email(body: str, *, track_base: str | None, token: str, unsubscribe_ur
         + pixel
         + "</div>"
     )
-    text = f"{(body or '').strip()}\n\n—\nUnsubscribe: {unsubscribe_url}\n"
+    text = (body or "").strip() + "\n"
+    if unsubscribe_url:
+        text += f"\n—\nUnsubscribe: {unsubscribe_url}\n"
     return Built(text=text, html=page, links=links)

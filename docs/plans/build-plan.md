@@ -957,3 +957,53 @@ Isolation; a sequence sends in order and waits; quiet hours and caps hold; every
 | E6 | Quiet hours | **Company time zone**, default 9:00–20:00, Monday–Saturday, editable |
 | E7 | Daily sending cap per address | **200 emails a day to start**, editable (protects new domains) |
 | E8 | Auto-enrol | **Through the automation builder** (one place for "when X happens") rather than a second set of triggers |
+
+## 15. Step 9b in detail: the full email trail and the shared inbox (replaces 14.4)
+
+Goal (Suyog, Nov 12): match everything LeadSquared does with email, then go past it. LeadSquared captures the full mail trail three ways: each rep's Google Workspace / Office 365 mailbox synced (attachments included, CC'd people seen), a "copy-in" address (MarkCopy) for any mail app, and one-to-one emails from the CRM. Its limits: no personal Gmail / Outlook, one provider per account, no open / click tracking on copied-in mail.
+
+### 15.1 Built in four slices
+
+| Slice | What | Testable now? | Needs from Suyog |
+| --- | --- | --- | --- |
+| **9b-1** Threads and the shared inbox | Every email in or out with a lead grouped into conversations (by the email's own thread headers), CC'd people shown, attachments kept on the lead; inbox with mine / shared with me / unassigned / team / waiting for us; reply and new email from the CRM (with CC); colleagues added to a conversation; internal notes with @mentions; saved replies; a reply stops the person's sequences; merging two leads merges their conversations | Yes (test inbound) | Nothing |
+| **9b-2** Copy-in address | One secret address per company (and per user): CC / BCC it on any email, or auto-forward, and the email lands on the right lead; an unknown sender can become a lead (company setting) | Yes (test inbound) | Inbound mail at go-live (with SES) |
+| **9b-3** Connect my inbox (any provider) | Each user connects their own mailbox by IMAP + SMTP with an app password — Gmail (personal too), Google Workspace, Outlook / Office 365, Zoho, any mail server. Two-way: emails with known leads (sent or received, any device) sync to the lead; emails sent from the CRM go out from their own mailbox and appear in their Sent folder. Only emails with leads are stored; admin exclusion list (domains / addresses); each user can mark a thread private; disconnecting stops sync | Yes (simulated mailbox in tests) | Nothing |
+| **9b-4** One-click Gmail / Outlook sign-in | The same sync, but connected with "Sign in with Google / Microsoft" instead of an app password | At go-live | Google OAuth app + Google's security review for Gmail access (weeks, paid); Microsoft app registration |
+
+### 15.2 Where we go past LeadSquared
+
+| | LeadSquared | Versnq Core |
+| --- | --- | --- |
+| Personal Gmail / Outlook.com | No (Workspace / 365 only) | **Yes** (9b-3) |
+| Several providers in one company | One provider at a time | **Any mix** — each user connects their own |
+| Open / click tracking on CRM emails | Not on copied-in mail | **Yes**, on every email sent from Core |
+| Email + WhatsApp in one conversation per lead | Separate | **One thread** (step 10) |
+| A reply stops every sequence, on any channel | Partly | **Yes** |
+| Colleagues join a conversation, internal notes, @mentions | Limited | **Yes** |
+| An emailed document (PAN, contract) saved to the customer checklist in one click | No | **Yes** (step 5 checklist) |
+| Who may see which email | Mailbox-level | **Lead visibility + field access** (step 8) apply to emails too |
+| AI drafts and replies | Add-on | **ACE**, same inbox |
+
+### 15.3 Privacy and safety
+
+Mailbox passwords and tokens encrypted (as gateway keys are). Only emails to or from known leads are kept — never the rest of someone's mailbox. Admin exclusion list. A user can mark a thread private (only they and admins see it). Disconnecting stops sync; their synced emails stay on the leads unless an admin removes them. Attachments go through the same file checks as uploads (type, size, storage quota). Everything audited.
+
+### 15.4 Tables — migration 0024
+
+`conversations` (lead, channel, subject, assignee, status open / waiting / closed, last message, private), `conversation_members` (colleagues added), `conversation_notes` (internal, with mentions), `message_attachments` (file record per attachment), `mailboxes` (per user: provider, IMAP / SMTP settings, encrypted secret, last sync, sync cursor, status), `canned_replies`; `messages` gains thread ids (Message-ID, In-Reply-To), CC list, mailbox and conversation links. Tenant settings: copy-in address, unknown-sender policy, exclusion list. Permissions `inbox.reply` (default everyone who edits leads), `inbox.take_over` (managers), `mailboxes.manage` (admins: exclusions, see who is connected).
+
+### 15.5 Tests ("done" means these pass)
+
+Isolation; replies thread onto the right conversation by headers and by address; CC'd people and attachments kept; reps see only conversations of leads they can see, plus ones shared with them; a shared colleague sees the conversation and lead basics but not deals or money unless their role allows; internal notes never go out in an email; a reply stops sequences; merge moves conversations; copy-in address logs to the right lead and creates one only when the setting allows; mailbox sync stores only emails with known leads, honours exclusions and private threads, never duplicates an email seen twice, survives a wrong password (status shows it); sending from the CRM through the user's own mailbox; browser walks per slice, desktop and phone.
+
+### 15.6 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| I1 | Build order | **9b-1 → 9b-3 → 9b-2**, 9b-4 at go-live (9b-3 gives the full trail without waiting for Google) |
+| I2 | A colleague added to a conversation sees… | **The conversation + the lead's basics** (name, contact, stage); deals and money only if their role allows |
+| I3 | Unknown sender on the copy-in address or a synced mailbox | **Don't create a lead by default**; company setting "create a lead" (copy-in only) |
+| I4 | How far back to sync when a mailbox is connected | **30 days**, then live |
+| I5 | When a user disconnects | **Keep their synced emails on the leads**; an admin can remove them |
+| I6 | Who can read a synced email on a lead | **Whoever can see the lead**, unless the user marked the thread private |

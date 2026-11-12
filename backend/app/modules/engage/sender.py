@@ -20,6 +20,10 @@ from app.modules.money.messages import box as box_of
 from app.modules.money.models import MailAccount
 
 
+def new_message_id(from_email: str) -> str:
+    return make_msgid(domain=from_email.split("@")[-1] or None)
+
+
 async def sender_address(db: AsyncSession, company_name: str) -> tuple[str, str]:
     """(from name, from email) shown on emails."""
     account = await db.scalar(select(MailAccount).where(MailAccount.is_active.is_(True)))
@@ -37,20 +41,31 @@ async def send(
     html: str,
     from_name: str,
     from_email: str,
-    unsubscribe_url: str,
+    unsubscribe_url: str | None,
     reply_to: str | None = None,
+    message_id: str | None = None,
+    cc: list[str] | None = None,
+    in_reply_to: str | None = None,
+    references: str | None = None,
 ) -> str:
-    """Sends one email. Returns the provider's message id. Raises Invalid on failure."""
+    """Sends one email. Returns the provider's message id. Raises Invalid on failure.
+    Sequence emails carry a one-click unsubscribe; one-to-one replies (step 9b) don't, but
+    carry the thread headers so the answer lands in the same conversation."""
     msg = EmailMessage()
     msg["From"] = formataddr((from_name, from_email))
     msg["To"] = to
+    if cc:
+        msg["Cc"] = ", ".join(cc)
     msg["Subject"] = subject
-    msg["Message-ID"] = make_msgid(domain=from_email.split("@")[-1] or None)
+    msg["Message-ID"] = message_id or new_message_id(from_email)
+    if in_reply_to:
+        msg["In-Reply-To"] = in_reply_to
+        msg["References"] = (references + " " if references else "") + in_reply_to
     if reply_to:
         msg["Reply-To"] = reply_to
-    # one-click unsubscribe (Gmail / Yahoo bulk-sender rules, RFC 8058)
-    msg["List-Unsubscribe"] = f"<{unsubscribe_url}>"
-    msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+    if unsubscribe_url:  # one-click unsubscribe (Gmail / Yahoo bulk-sender rules, RFC 8058)
+        msg["List-Unsubscribe"] = f"<{unsubscribe_url}>"
+        msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
     mode = get_settings().email_sender
@@ -59,7 +74,7 @@ async def send(
         if folder is not None:
             folder.mkdir(parents=True, exist_ok=True)
             (folder / f"seq-{uuid.uuid4().hex}.eml").write_bytes(msg.as_bytes())
-        return f"test-{uuid.uuid4().hex}"
+        return msg["Message-ID"]
     account = await db.scalar(select(MailAccount).where(MailAccount.is_active.is_(True)))
     if account is None:
         raise Invalid("Connect the company mailbox in Settings → Money first")

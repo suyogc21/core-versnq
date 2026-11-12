@@ -61,7 +61,13 @@ async def suppress(
                 value_normalized=value,
                 reason=reason,
             )
-            .on_conflict_do_nothing(constraint="uq_suppression_value")
+            # one row per address: a bounce or complaint replaces an earlier opt-out (it is the
+            # stronger "never email" reason); otherwise the first reason stays
+            .on_conflict_do_update(
+                constraint="uq_suppression_value",
+                set_={"reason": reason},
+                where=(Suppression.reason == "opt_out") & (reason != "opt_out"),
+            )
         )
 
 

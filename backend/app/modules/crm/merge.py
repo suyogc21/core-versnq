@@ -142,6 +142,14 @@ async def merge(
     await db.execute(
         update(Customer).where(Customer.lead_id == other.id).values(lead_id=survivor.id)
     )
+    # Emails and conversations move over (step 9b); the other lead's running sequences stop
+    # (the survivor may already be in the same one) and their history moves over.
+    from app.modules.engage import engine as SEQ
+    from app.modules.engage.models import Conversation, Enrolment, Message
+
+    await SEQ.stop_all(db, other.id, "merged")
+    for model in (Conversation, Message, Enrolment):
+        await db.execute(update(model).where(model.lead_id == other.id).values(lead_id=survivor.id))
     # Tags: the survivor ends with both sets (a tag both had is kept once).
     await db.execute(
         delete(Tagging).where(

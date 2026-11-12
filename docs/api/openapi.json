@@ -1158,6 +1158,27 @@
         "title": "ArchiveOut",
         "type": "object"
       },
+      "AssignIn": {
+        "properties": {
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "title": "AssignIn",
+        "type": "object"
+      },
       "AssignmentRuleIn": {
         "properties": {
           "conditions": {
@@ -1377,6 +1398,35 @@
           }
         },
         "title": "AssignmentRulePatch",
+        "type": "object"
+      },
+      "AttachmentOut": {
+        "properties": {
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "file_id": {
+            "format": "uuid",
+            "title": "File Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "file_id",
+          "name",
+          "size_bytes",
+          "content_type"
+        ],
+        "title": "AttachmentOut",
         "type": "object"
       },
       "AutomationIn": {
@@ -1857,6 +1907,67 @@
           "trend"
         ],
         "title": "BusinessDashboard",
+        "type": "object"
+      },
+      "CannedIn": {
+        "properties": {
+          "body": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "is_shared": {
+            "default": false,
+            "title": "Is Shared",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "body"
+        ],
+        "title": "CannedIn",
+        "type": "object"
+      },
+      "CannedOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_shared": {
+            "title": "Is Shared",
+            "type": "boolean"
+          },
+          "mine": {
+            "default": false,
+            "title": "Mine",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "body",
+          "is_shared"
+        ],
+        "title": "CannedOut",
         "type": "object"
       },
       "CaptureSourceIn": {
@@ -2523,6 +2634,137 @@
         "title": "ConsentOut",
         "type": "object"
       },
+      "ConvPatch": {
+        "properties": {
+          "is_private": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Private"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "open",
+                  "closed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "ConvPatch",
+        "type": "object"
+      },
+      "ConversationDetail": {
+        "properties": {
+          "assignee_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "assignee_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Name"
+          },
+          "can_manage": {
+            "title": "Can Manage",
+            "type": "boolean"
+          },
+          "can_reply": {
+            "title": "Can Reply",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_private": {
+            "title": "Is Private",
+            "type": "boolean"
+          },
+          "lead": {
+            "$ref": "#/components/schemas/LeadBasics"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__engage__inbox_router__MessageOut"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/NoteOut"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "required": [
+          "id",
+          "subject",
+          "status",
+          "is_private",
+          "assignee_id",
+          "assignee_name",
+          "lead",
+          "members",
+          "messages",
+          "notes",
+          "can_reply",
+          "can_manage"
+        ],
+        "title": "ConversationDetail",
+        "type": "object"
+      },
       "ConversationIn": {
         "properties": {
           "channel": {
@@ -2597,6 +2839,118 @@
           "created"
         ],
         "title": "ConversationOut",
+        "type": "object"
+      },
+      "ConversationRow": {
+        "properties": {
+          "assignee_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "assignee_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_private": {
+            "title": "Is Private",
+            "type": "boolean"
+          },
+          "last_message_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Message At"
+          },
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "lead_name": {
+            "title": "Lead Name",
+            "type": "string"
+          },
+          "shared": {
+            "title": "Shared",
+            "type": "boolean"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "unread": {
+            "title": "Unread",
+            "type": "boolean"
+          },
+          "waiting": {
+            "title": "Waiting",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "lead_id",
+          "lead_name",
+          "subject",
+          "assignee_id",
+          "assignee_name",
+          "status",
+          "is_private",
+          "last_message_at",
+          "waiting",
+          "unread",
+          "snippet",
+          "shared"
+        ],
+        "title": "ConversationRow",
         "type": "object"
       },
       "CrmRules": {
@@ -6001,6 +6355,24 @@
         "title": "ImportOut",
         "type": "object"
       },
+      "InboxCounts": {
+        "properties": {
+          "mine_unread": {
+            "title": "Mine Unread",
+            "type": "integer"
+          },
+          "waiting": {
+            "title": "Waiting",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mine_unread",
+          "waiting"
+        ],
+        "title": "InboxCounts",
+        "type": "object"
+      },
       "InstallmentOut": {
         "properties": {
           "amount_minor": {
@@ -6377,7 +6749,7 @@
           "messages": {
             "default": [],
             "items": {
-              "$ref": "#/components/schemas/MessageOut"
+              "$ref": "#/components/schemas/app__modules__money__router__MessageOut"
             },
             "title": "Messages",
             "type": "array"
@@ -7125,6 +7497,78 @@
           "my_access"
         ],
         "title": "LayoutOut",
+        "type": "object"
+      },
+      "LeadBasics": {
+        "properties": {
+          "can_open": {
+            "title": "Can Open",
+            "type": "boolean"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "phone",
+          "stage",
+          "owner_name",
+          "can_open"
+        ],
+        "title": "LeadBasics",
         "type": "object"
       },
       "LeadBrief": {
@@ -9387,12 +9831,11 @@
         "title": "MeOut",
         "type": "object"
       },
-      "MemberIn": {
+      "Member": {
         "properties": {
-          "is_manager": {
-            "default": false,
-            "title": "Is Manager",
-            "type": "boolean"
+          "name": {
+            "title": "Name",
+            "type": "string"
           },
           "user_id": {
             "format": "uuid",
@@ -9401,9 +9844,10 @@
           }
         },
         "required": [
-          "user_id"
+          "user_id",
+          "name"
         ],
-        "title": "MemberIn",
+        "title": "Member",
         "type": "object"
       },
       "MemberOut": {
@@ -9499,66 +9943,6 @@
           "text"
         ],
         "title": "MessageIn",
-        "type": "object"
-      },
-      "MessageOut": {
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
-          "sent_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sent At"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "to_address": {
-            "title": "To Address",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "kind",
-          "to_address",
-          "status",
-          "error",
-          "created_at",
-          "sent_at"
-        ],
-        "title": "MessageOut",
         "type": "object"
       },
       "MethodAmount": {
@@ -9919,6 +10303,37 @@
         "title": "Named",
         "type": "object"
       },
+      "NewEmailIn": {
+        "properties": {
+          "body": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "cc": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Cc",
+            "type": "array"
+          },
+          "subject": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body",
+          "subject"
+        ],
+        "title": "NewEmailIn",
+        "type": "object"
+      },
       "NewInvoice": {
         "properties": {
           "customer_id": {
@@ -9957,19 +10372,41 @@
         "title": "NewInvoice",
         "type": "object"
       },
-      "NoteIn": {
+      "NoteOut": {
         "properties": {
           "body": {
-            "maxLength": 10000,
-            "minLength": 1,
             "title": "Body",
             "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
           }
         },
         "required": [
-          "body"
+          "id",
+          "user_name",
+          "body",
+          "created_at"
         ],
-        "title": "NoteIn",
+        "title": "NoteOut",
         "type": "object"
       },
       "NotificationOut": {
@@ -11839,6 +12276,30 @@
           "months"
         ],
         "title": "RepeatIn",
+        "type": "object"
+      },
+      "ReplyIn": {
+        "properties": {
+          "body": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "cc": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Cc",
+            "type": "array"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "ReplyIn",
         "type": "object"
       },
       "RequirementIn": {
@@ -15337,6 +15798,31 @@
         "title": "TenantUpdate",
         "type": "object"
       },
+      "TestInboundOut": {
+        "properties": {
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "stored": {
+            "title": "Stored",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "stored"
+        ],
+        "title": "TestInboundOut",
+        "type": "object"
+      },
       "TestOut": {
         "properties": {
           "conditions": {
@@ -15357,6 +15843,20 @@
           "conditions"
         ],
         "title": "TestOut",
+        "type": "object"
+      },
+      "ToDocumentIn": {
+        "properties": {
+          "document_id": {
+            "format": "uuid",
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "ToDocumentIn",
         "type": "object"
       },
       "TreeNode": {
@@ -16899,6 +17399,21 @@
         "title": "BulkIn",
         "type": "object"
       },
+      "app__modules__crm__deals_router__NoteIn": {
+        "properties": {
+          "body": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "NoteIn",
+        "type": "object"
+      },
       "app__modules__crm__layouts_router__AccessOut": {
         "properties": {
           "entity": {
@@ -17274,6 +17789,21 @@
         "title": "BulkIn",
         "type": "object"
       },
+      "app__modules__crm__records_router__NoteIn": {
+        "properties": {
+          "body": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "NoteIn",
+        "type": "object"
+      },
       "app__modules__crm__rules_router__OrderIn": {
         "properties": {
           "ids": {
@@ -17438,6 +17968,253 @@
         "title": "StagePatch",
         "type": "object"
       },
+      "app__modules__engage__inbox_router__MemberIn": {
+        "properties": {
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "title": "MemberIn",
+        "type": "object"
+      },
+      "app__modules__engage__inbox_router__MessageOut": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentOut"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "cc": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cc",
+            "type": "array"
+          },
+          "clicked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clicked At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "from_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Address"
+          },
+          "from_sequence": {
+            "title": "From Sequence",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "sent_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent By Name"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "to_address": {
+            "title": "To Address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "direction",
+          "from_address",
+          "to_address",
+          "cc",
+          "subject",
+          "body",
+          "status",
+          "error",
+          "sent_at",
+          "created_at",
+          "opened_at",
+          "clicked_at",
+          "sent_by_name",
+          "from_sequence",
+          "attachments"
+        ],
+        "title": "MessageOut",
+        "type": "object"
+      },
+      "app__modules__engage__inbox_router__NoteIn": {
+        "properties": {
+          "body": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "mention_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Mention Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "NoteIn",
+        "type": "object"
+      },
+      "app__modules__money__router__MessageOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "to_address": {
+            "title": "To Address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "to_address",
+          "status",
+          "error",
+          "created_at",
+          "sent_at"
+        ],
+        "title": "MessageOut",
+        "type": "object"
+      },
       "app__modules__roles__router__RoleOut": {
         "properties": {
           "id": {
@@ -17485,6 +18262,25 @@
           "permissions"
         ],
         "title": "RoleOut",
+        "type": "object"
+      },
+      "app__modules__teams__router__MemberIn": {
+        "properties": {
+          "is_manager": {
+            "default": false,
+            "title": "Is Manager",
+            "type": "boolean"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "title": "MemberIn",
         "type": "object"
       },
       "app__platform__tenants__schemas__AuditOut": {
@@ -18945,6 +19741,121 @@
         ]
       }
     },
+    "/api/v1/canned-replies": {
+      "get": {
+        "operationId": "inbox-list_canned",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CannedOut"
+                  },
+                  "title": "Response Inbox-List Canned",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Canned",
+        "tags": [
+          "inbox"
+        ]
+      },
+      "post": {
+        "operationId": "inbox-create_canned",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CannedIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CannedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Canned",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/canned-replies/{c_id}": {
+      "delete": {
+        "operationId": "inbox-delete_canned",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "c_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "C Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Canned",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
     "/api/v1/capture-sources": {
       "get": {
         "operationId": "capture-list_capture_sources",
@@ -19374,6 +20285,519 @@
         "summary": "Update Competitor",
         "tags": [
           "key accounts"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}": {
+      "get": {
+        "operationId": "inbox-get_conversation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Conversation",
+        "tags": [
+          "inbox"
+        ]
+      },
+      "patch": {
+        "operationId": "inbox-update_conversation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConvPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Conversation",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/assignee": {
+      "put": {
+        "description": "Take over (yourself) or hand on (someone else).",
+        "operationId": "inbox-assign",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Assign",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/attachments/{file_id}": {
+      "get": {
+        "operationId": "inbox-get_attachment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "File Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Attachment",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/attachments/{file_id}/to-document": {
+      "post": {
+        "description": "Put an emailed file (PAN card, signed contract) into the customer's checklist.",
+        "operationId": "inbox-attachment_to_document",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "File Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToDocumentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Attachment To Document",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/members": {
+      "post": {
+        "description": "Add a colleague: they see this conversation and the lead's basics, and can reply.",
+        "operationId": "inbox-add_member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__engage__inbox_router__MemberIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Member",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/members/{user_id}": {
+      "delete": {
+        "operationId": "inbox-remove_member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Member",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/notes": {
+      "post": {
+        "description": "An internal note: the team sees it, the lead never does. Mentioned colleagues are told;\nwhen the writer may add colleagues, mentioned people are added so they can see it.",
+        "operationId": "inbox-add_note",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__engage__inbox_router__NoteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Note",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/reply": {
+      "post": {
+        "operationId": "inbox-reply",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reply",
+        "tags": [
+          "inbox"
         ]
       }
     },
@@ -21921,7 +23345,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteIn"
+                "$ref": "#/components/schemas/app__modules__crm__deals_router__NoteIn"
               }
             }
           },
@@ -22948,6 +24372,164 @@
         "summary": "Start",
         "tags": [
           "imports"
+        ]
+      }
+    },
+    "/api/v1/inbox": {
+      "get": {
+        "operationId": "inbox-inbox",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "default": "mine",
+              "enum": [
+                "mine",
+                "shared",
+                "unassigned",
+                "waiting",
+                "all",
+                "closed"
+              ],
+              "title": "View",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationRow"
+                  },
+                  "title": "Response Inbox-Inbox",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Inbox",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/inbox/counts": {
+      "get": {
+        "operationId": "inbox-inbox_counts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxCounts"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Inbox Counts",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/inbox/test-inbound": {
+      "post": {
+        "description": "Outside production only: deliver a raw email (.eml text) as if it had arrived, so the\ninbox can be tried end to end before the email provider is connected.",
+        "operationId": "inbox-test_inbound",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestInboundOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Inbound",
+        "tags": [
+          "inbox"
         ]
       }
     },
@@ -27752,6 +29334,58 @@
         ]
       }
     },
+    "/api/v1/leads/{lead_id}/conversations": {
+      "get": {
+        "operationId": "inbox-lead_conversations",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationRow"
+                  },
+                  "title": "Response Inbox-Lead Conversations",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Lead Conversations",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
     "/api/v1/leads/{lead_id}/customer": {
       "get": {
         "operationId": "customers-customer_of_lead",
@@ -27914,6 +29548,65 @@
         "summary": "Duplicates",
         "tags": [
           "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{lead_id}/emails": {
+      "post": {
+        "description": "A new email to a lead you can see; starts a conversation.",
+        "operationId": "inbox-new_email",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewEmailIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "New Email",
+        "tags": [
+          "inbox"
         ]
       }
     },
@@ -32072,7 +33765,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NoteIn"
+                "$ref": "#/components/schemas/app__modules__crm__records_router__NoteIn"
               }
             }
           },
@@ -34141,7 +35834,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/MemberIn"
+                  "$ref": "#/components/schemas/app__modules__teams__router__MemberIn"
                 },
                 "title": "Body",
                 "type": "array"

@@ -1,7 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
 # code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
-# 0017, 0018, 0019, 0021, 0023).
+# 0017, 0018, 0019, 0021, 0023, 0024).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -38,6 +38,8 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "key_accounts.manage": ("key_accounts", "Mark key accounts and plan them"),
     "integrations.manage": ("settings", "Manage API keys, webhooks and their logs"),
     "sequences.manage": ("crm", "Create sequences and message templates"),
+    "inbox.reply": ("crm", "Read and answer conversations of leads you can see"),
+    "inbox.take_over": ("crm", "Take over or hand on any conversation you can see"),
 }
 # Finance: all of money except exporting, which the admin grants (Decision log #35).
 MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money" and not c.endswith(".export")}
@@ -60,6 +62,8 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "dashboards.team",
         "key_accounts.manage",
         "sequences.manage",
+        "inbox.reply",
+        "inbox.take_over",
         "invoices.read",
         "invoices.create",
         "payments.record",
@@ -74,6 +78,7 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "invoices.read",
         "invoices.create",
         "payments.record",
+        "inbox.reply",
     },
     "finance": {"audit.read", "customers.read", *MONEY_CODES},
 }

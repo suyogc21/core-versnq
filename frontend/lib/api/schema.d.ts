@@ -426,6 +426,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/canned-replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Canned */
+        get: operations["inbox-list_canned"];
+        put?: never;
+        /** Create Canned */
+        post: operations["inbox-create_canned"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/canned-replies/{c_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Canned */
+        delete: operations["inbox-delete_canned"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/capture-sources": {
         parameters: {
             query?: never;
@@ -535,6 +570,156 @@ export interface paths {
         /** Update Competitor */
         put: operations["key accounts-update_competitor"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Conversation */
+        get: operations["inbox-get_conversation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Conversation */
+        patch: operations["inbox-update_conversation"];
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/assignee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Assign
+         * @description Take over (yourself) or hand on (someone else).
+         */
+        put: operations["inbox-assign"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/attachments/{file_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Attachment */
+        get: operations["inbox-get_attachment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/attachments/{file_id}/to-document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attachment To Document
+         * @description Put an emailed file (PAN card, signed contract) into the customer's checklist.
+         */
+        post: operations["inbox-attachment_to_document"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Member
+         * @description Add a colleague: they see this conversation and the lead's basics, and can reply.
+         */
+        post: operations["inbox-add_member"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Member */
+        delete: operations["inbox-remove_member"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Note
+         * @description An internal note: the team sees it, the lead never does. Mentioned colleagues are told;
+         *     when the writer may add colleagues, mentioned people are added so they can see it.
+         */
+        post: operations["inbox-add_note"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conv_id}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reply */
+        post: operations["inbox-reply"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1310,6 +1495,61 @@ export interface paths {
         put?: never;
         /** Start */
         post: operations["imports-start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inbox */
+        get: operations["inbox-inbox"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inbox Counts */
+        get: operations["inbox-inbox_counts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/test-inbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Inbound
+         * @description Outside production only: deliver a raw email (.eml text) as if it had arrived, so the
+         *     inbox can be tried end to end before the email provider is connected.
+         */
+        post: operations["inbox-test_inbound"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2313,6 +2553,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lead Conversations */
+        get: operations["inbox-lead_conversations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/customer": {
         parameters: {
             query?: never;
@@ -2345,6 +2602,26 @@ export interface paths {
         get: operations["leads-duplicates"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * New Email
+         * @description A new email to a lead you can see; starts a conversation.
+         */
+        post: operations["inbox-new_email"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4905,6 +5182,11 @@ export interface components {
             /** Size */
             size: number;
         };
+        /** AssignIn */
+        AssignIn: {
+            /** User Id */
+            user_id: string | null;
+        };
         /** AssignmentRuleIn */
         AssignmentRuleIn: {
             /**
@@ -4975,6 +5257,20 @@ export interface components {
             team_id?: string | null;
             /** User Ids */
             user_ids?: string[] | null;
+        };
+        /** AttachmentOut */
+        AttachmentOut: {
+            /** Content Type */
+            content_type: string;
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+            /** Name */
+            name: string;
+            /** Size Bytes */
+            size_bytes: number;
         };
         /** AutomationIn */
         AutomationIn: {
@@ -5148,6 +5444,37 @@ export interface components {
             previous: components["schemas"]["Headline"];
             /** Trend */
             trend: components["schemas"]["TrendMonth"][];
+        };
+        /** CannedIn */
+        CannedIn: {
+            /** Body */
+            body: string;
+            /**
+             * Is Shared
+             * @default false
+             */
+            is_shared: boolean;
+            /** Name */
+            name: string;
+        };
+        /** CannedOut */
+        CannedOut: {
+            /** Body */
+            body: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Shared */
+            is_shared: boolean;
+            /**
+             * Mine
+             * @default false
+             */
+            mine: boolean;
+            /** Name */
+            name: string;
         };
         /** CaptureSourceIn */
         CaptureSourceIn: {
@@ -5382,6 +5709,42 @@ export interface components {
             /** Wording */
             wording: string | null;
         };
+        /** ConvPatch */
+        ConvPatch: {
+            /** Is Private */
+            is_private?: boolean | null;
+            /** Status */
+            status?: ("open" | "closed") | null;
+        };
+        /** ConversationDetail */
+        ConversationDetail: {
+            /** Assignee Id */
+            assignee_id: string | null;
+            /** Assignee Name */
+            assignee_name: string | null;
+            /** Can Manage */
+            can_manage: boolean;
+            /** Can Reply */
+            can_reply: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Private */
+            is_private: boolean;
+            lead: components["schemas"]["LeadBasics"];
+            /** Members */
+            members: components["schemas"]["Member"][];
+            /** Messages */
+            messages: components["schemas"]["app__modules__engage__inbox_router__MessageOut"][];
+            /** Notes */
+            notes: components["schemas"]["NoteOut"][];
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+        };
         /** ConversationIn */
         ConversationIn: {
             /**
@@ -5408,6 +5771,41 @@ export interface components {
             activity_id: string;
             /** Created */
             created: boolean;
+        };
+        /** ConversationRow */
+        ConversationRow: {
+            /** Assignee Id */
+            assignee_id: string | null;
+            /** Assignee Name */
+            assignee_name: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Private */
+            is_private: boolean;
+            /** Last Message At */
+            last_message_at: string | null;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Lead Name */
+            lead_name: string;
+            /** Shared */
+            shared: boolean;
+            /** Snippet */
+            snippet: string | null;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+            /** Unread */
+            unread: boolean;
+            /** Waiting */
+            waiting: boolean;
         };
         /** CrmRules */
         CrmRules: {
@@ -6533,6 +6931,13 @@ export interface components {
             /** Updated Count */
             updated_count: number;
         };
+        /** InboxCounts */
+        InboxCounts: {
+            /** Mine Unread */
+            mine_unread: number;
+            /** Waiting */
+            waiting: number;
+        };
         /** InstallmentOut */
         InstallmentOut: {
             /** Amount Minor */
@@ -6694,7 +7099,7 @@ export interface components {
              * Messages
              * @default []
              */
-            messages: components["schemas"]["MessageOut"][];
+            messages: components["schemas"]["app__modules__money__router__MessageOut"][];
             /** Next Due Date */
             next_due_date?: string | null;
             /** Notes */
@@ -6929,6 +7334,26 @@ export interface components {
             sections: components["schemas"]["Section"][];
             /** Updated At */
             updated_at?: string | null;
+        };
+        /** LeadBasics */
+        LeadBasics: {
+            /** Can Open */
+            can_open: boolean;
+            /** Email */
+            email: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Stage */
+            stage: string | null;
         };
         /** LeadBrief */
         LeadBrief: {
@@ -7622,13 +8047,10 @@ export interface components {
             /** Two Factor Enabled */
             two_factor_enabled: boolean;
         };
-        /** MemberIn */
-        MemberIn: {
-            /**
-             * Is Manager
-             * @default false
-             */
-            is_manager: boolean;
+        /** Member */
+        Member: {
+            /** Name */
+            name: string;
             /**
              * User Id
              * Format: uuid
@@ -7682,29 +8104,6 @@ export interface components {
             sender: "lead" | "us";
             /** Text */
             text: string;
-        };
-        /** MessageOut */
-        MessageOut: {
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /** Error */
-            error: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Kind */
-            kind: string;
-            /** Sent At */
-            sent_at: string | null;
-            /** Status */
-            status: string;
-            /** To Address */
-            to_address: string;
         };
         /** MethodAmount */
         MethodAmount: {
@@ -7817,6 +8216,18 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** NewEmailIn */
+        NewEmailIn: {
+            /** Body */
+            body: string;
+            /**
+             * Cc
+             * @default []
+             */
+            cc: string[];
+            /** Subject */
+            subject: string;
+        };
         /** NewInvoice */
         NewInvoice: {
             /**
@@ -7829,10 +8240,22 @@ export interface components {
             /** Entity Id */
             entity_id?: string | null;
         };
-        /** NoteIn */
-        NoteIn: {
+        /** NoteOut */
+        NoteOut: {
             /** Body */
             body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** User Name */
+            user_name: string | null;
         };
         /** NotificationOut */
         NotificationOut: {
@@ -8475,6 +8898,16 @@ export interface components {
         RepeatIn: {
             /** Months */
             months: (1 | 3 | 6 | 12) | null;
+        };
+        /** ReplyIn */
+        ReplyIn: {
+            /** Body */
+            body: string;
+            /**
+             * Cc
+             * @default []
+             */
+            cc: string[];
         };
         /** RequirementIn */
         RequirementIn: {
@@ -9685,6 +10118,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** TestInboundOut */
+        TestInboundOut: {
+            /** Conversation Id */
+            conversation_id?: string | null;
+            /** Stored */
+            stored: boolean;
+        };
         /** TestOut */
         TestOut: {
             /** Conditions */
@@ -9693,6 +10133,14 @@ export interface components {
             }[];
             /** Matches */
             matches: boolean;
+        };
+        /** ToDocumentIn */
+        ToDocumentIn: {
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
         };
         /** TreeNode */
         TreeNode: {
@@ -10203,6 +10651,11 @@ export interface components {
              */
             tag_ids: string[];
         };
+        /** NoteIn */
+        app__modules__crm__deals_router__NoteIn: {
+            /** Body */
+            body: string;
+        };
         /** AccessOut */
         app__modules__crm__layouts_router__AccessOut: {
             /** Entity */
@@ -10312,6 +10765,11 @@ export interface components {
             /** Stage Id */
             stage_id?: string | null;
         };
+        /** NoteIn */
+        app__modules__crm__records_router__NoteIn: {
+            /** Body */
+            body: string;
+        };
         /** OrderIn */
         app__modules__crm__rules_router__OrderIn: {
             /** Ids */
@@ -10364,6 +10822,88 @@ export interface components {
             /** Required Fields */
             required_fields?: string[] | null;
         };
+        /** MemberIn */
+        app__modules__engage__inbox_router__MemberIn: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
+        /** MessageOut */
+        app__modules__engage__inbox_router__MessageOut: {
+            /** Attachments */
+            attachments: components["schemas"]["AttachmentOut"][];
+            /** Body */
+            body: string;
+            /** Cc */
+            cc: string[];
+            /** Clicked At */
+            clicked_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Direction */
+            direction: string;
+            /** Error */
+            error: string | null;
+            /** From Address */
+            from_address: string | null;
+            /** From Sequence */
+            from_sequence: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Opened At */
+            opened_at: string | null;
+            /** Sent At */
+            sent_at: string | null;
+            /** Sent By Name */
+            sent_by_name: string | null;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+            /** To Address */
+            to_address: string;
+        };
+        /** NoteIn */
+        app__modules__engage__inbox_router__NoteIn: {
+            /** Body */
+            body: string;
+            /**
+             * Mention Ids
+             * @default []
+             */
+            mention_ids: string[];
+        };
+        /** MessageOut */
+        app__modules__money__router__MessageOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error */
+            error: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Sent At */
+            sent_at: string | null;
+            /** Status */
+            status: string;
+            /** To Address */
+            to_address: string;
+        };
         /** RoleOut */
         app__modules__roles__router__RoleOut: {
             /**
@@ -10381,6 +10921,19 @@ export interface components {
             permissions: string[];
             /** Scope */
             scope: string;
+        };
+        /** MemberIn */
+        app__modules__teams__router__MemberIn: {
+            /**
+             * Is Manager
+             * @default false
+             */
+            is_manager: boolean;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
         };
         /** AuditOut */
         app__platform__tenants__schemas__AuditOut: {
@@ -11342,6 +11895,88 @@ export interface operations {
             };
         };
     };
+    "inbox-list_canned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CannedOut"][];
+                };
+            };
+        };
+    };
+    "inbox-create_canned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CannedIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CannedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-delete_canned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                c_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "capture-list_capture_sources": {
         parameters: {
             query?: never;
@@ -11627,6 +12262,310 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CompetitorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-get_conversation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-update_conversation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConvPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-get_attachment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-attachment_to_document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToDocumentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-add_member": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__engage__inbox_router__MemberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-remove_member": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-add_note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__engage__inbox_router__NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
                 };
             };
             /** @description Validation Error */
@@ -12834,7 +13773,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NoteIn"];
+                "application/json": components["schemas"]["app__modules__crm__deals_router__NoteIn"];
             };
         };
         responses: {
@@ -13499,6 +14438,80 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-inbox": {
+        parameters: {
+            query?: {
+                view?: "mine" | "shared" | "unassigned" | "waiting" | "all" | "closed";
+                q?: string | null;
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-inbox_counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxCounts"];
+                };
+            };
+        };
+    };
+    "inbox-test_inbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestInboundOut"];
                 };
             };
         };
@@ -16028,6 +17041,37 @@ export interface operations {
             };
         };
     };
+    "inbox-lead_conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "customers-customer_of_lead": {
         parameters: {
             query?: never;
@@ -16112,6 +17156,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LeadBrief"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-new_email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewEmailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
                 };
             };
             /** @description Validation Error */
@@ -18649,7 +19728,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NoteIn"];
+                "application/json": components["schemas"]["app__modules__crm__records_router__NoteIn"];
             };
         };
         responses: {
@@ -19970,7 +21049,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MemberIn"][];
+                "application/json": components["schemas"]["app__modules__teams__router__MemberIn"][];
             };
         };
         responses: {

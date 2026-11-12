@@ -101,6 +101,12 @@ class Message(TenantScoped, TimestampMixin, Base):
     bounced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     unsubscribed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     sent_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    # threads (step 9b): the email's own Message-ID, what it answers, and who was copied
+    conversation_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    message_id_header: Mapped[str | None] = mapped_column(String(300))
+    in_reply_to: Mapped[str | None] = mapped_column(String(300))
+    references: Mapped[str | None] = mapped_column(Text)
+    cc: Mapped[list] = mapped_column(JSONB, default=list)
 
 
 class MessageEvent(TenantScoped, Base):
@@ -113,3 +119,91 @@ class MessageEvent(TenantScoped, Base):
     type: Mapped[str] = mapped_column(String(12))
     data: Mapped[dict] = mapped_column(JSONB, default=dict)
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Conversation(TenantScoped, TimestampMixin, Base):
+    """A thread with one lead (step 9b). Follows the lead's owner unless taken over."""
+
+    __tablename__ = "conversations"
+    __table_args__ = (_fk("lead_id", "leads", "fk_conversations_lead_same_tenant", "CASCADE"),)
+
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    channel: Mapped[str] = mapped_column(String(10))
+    subject: Mapped[str | None] = mapped_column(String(300))
+    assignee_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    status: Mapped[str] = mapped_column(String(8), default="open")
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False)
+    private_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    enrolment_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    last_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_inbound_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_direction: Mapped[str | None] = mapped_column(String(3))
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class ConversationMember(TenantScoped, Base):
+    __tablename__ = "conversation_members"
+    __table_args__ = (
+        _fk(
+            "conversation_id",
+            "conversations",
+            "fk_conversation_members_conv_same_tenant",
+            "CASCADE",
+        ),
+        _fk("user_id", "users", "fk_conversation_members_user_same_tenant", "CASCADE"),
+    )
+
+    conversation_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    added_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ConversationNote(TenantScoped, Base):
+    """Internal: seen by the team, never emailed."""
+
+    __tablename__ = "conversation_notes"
+    __table_args__ = (
+        _fk(
+            "conversation_id", "conversations", "fk_conversation_notes_conv_same_tenant", "CASCADE"
+        ),
+    )
+
+    conversation_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    body: Mapped[str] = mapped_column(Text)
+    mentions: Mapped[list] = mapped_column(JSONB, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ConversationRead(TenantScoped, Base):
+    __tablename__ = "conversation_reads"
+    __table_args__ = (
+        _fk(
+            "conversation_id", "conversations", "fk_conversation_reads_conv_same_tenant", "CASCADE"
+        ),
+    )
+
+    conversation_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class MessageAttachment(TenantScoped, Base):
+    __tablename__ = "message_attachments"
+    __table_args__ = (
+        _fk("message_id", "messages", "fk_message_attachments_message_same_tenant", "CASCADE"),
+        _fk("file_id", "files", "fk_message_attachments_file_same_tenant", "CASCADE"),
+    )
+
+    message_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    file_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+
+
+class CannedReply(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "canned_replies"
+
+    name: Mapped[str] = mapped_column(String(120))
+    body: Mapped[str] = mapped_column(Text)
+    is_shared: Mapped[bool] = mapped_column(Boolean, default=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)

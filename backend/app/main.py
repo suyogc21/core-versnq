@@ -23,6 +23,7 @@ from app.modules.crm.records_router import router as records_router
 from app.modules.crm.rules_router import router as rules_router
 from app.modules.crm.setup_router import router as crm_setup_router
 from app.modules.crm.work_router import router as work_router
+from app.modules.engage.inbox_router import router as inbox_router
 from app.modules.engage.router import public as engage_public_router
 from app.modules.engage.router import router as engage_router
 from app.modules.integrations import logs as integration_logs
@@ -81,5 +82,6 @@ app.include_router(automations_router)
 app.include_router(integrations_router)
 app.include_router(engage_router)
 app.include_router(engage_public_router)
+app.include_router(inbox_router)
 app.include_router(work_router)
 app.include_router(staff_accounts_router)

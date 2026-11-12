@@ -54,6 +54,7 @@ REASONS = STOP_RULES | {
     "manual": "stopped by hand",
     "sequence_off": "the sequence was switched off",
     "lead_deleted": "the lead was deleted",
+    "merged": "the lead was merged into another",
 }
 STEPS_PER_RUN = 10  # check and task steps run straight on; this bounds one run
 MAX_SEND_TRIES = 3
@@ -364,6 +365,10 @@ async def _email(
         body, track_base=f"{base}/api/v1/t", token=token, unsubscribe_url=unsubscribe
     )
     from_name, from_email = await S.sender_address(db, tenant.name)
+    header_id = S.new_message_id(from_email)
+    from app.modules.engage import inbox as IB  # inbox builds on this module
+
+    conv = await IB.for_enrolment(db, e, lead, subject)
     msg = Message(
         id=uuid.uuid4(),
         tenant_id=lead.tenant_id,
@@ -380,6 +385,8 @@ async def _email(
         links=built.links,
         token=token,
         status="queued",
+        message_id_header=header_id,
+        conversation_id=conv.id,
     )
     db.add(msg)
     await db.flush()
@@ -393,6 +400,7 @@ async def _email(
             from_name=from_name,
             from_email=from_email,
             unsubscribe_url=unsubscribe,
+            message_id=header_id,
         )
     except Invalid as err:
         msg.status, msg.error = "failed", str(err.detail)[:300]
@@ -415,6 +423,7 @@ async def _email(
             return "skipped"
         return "retry"
     msg.status, msg.sent_at = "sent", now()
+    IB._touch(conv, msg)
     await L.log(
         db,
         lead,
