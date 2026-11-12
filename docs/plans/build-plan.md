@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 approved 2026-11-12 (Decision log #32); in progress.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, uploads, review, secure customer link (376 backend tests, 6 e2e, 34-check walk). Next: step 6, money.
 
 | Step | What | Why here |
 | --- | --- | --- |
@@ -484,7 +484,7 @@ Goal: a won deal turns into a customer without losing anything, and the paperwor
 - **Becoming a customer:** "Make customer" on a won deal (offered right after the win), or on the lead page. A lead becomes a customer once; later wins add to the same customer.
 - **Customer status:** Active / Inactive (a company can rename; no deletions while money exists, from step 6).
 - **The customer page is the lead page with more on it:** a Customer card (number, since, status, fields), the document checklist and the registration link. No second page to keep in step.
-- **Who sees customers:** the same rules as leads (owner, team, everyone). Finance gets read access to customers and their documents (as agreed in Decision log #21).
+- **Who sees customers:** the same rules as leads (owner, team, everyone). A role that reads customers but does not work leads (Finance) sees every customer, read-only, and still no leads or deals (as agreed in Decision log #21).
 
 ### 8.2 Documents
 
