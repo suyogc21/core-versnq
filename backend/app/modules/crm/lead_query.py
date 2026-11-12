@@ -7,7 +7,7 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Invalid
@@ -42,7 +42,7 @@ class LeadFilter(BaseModel):
 async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> list:
     where = [await L.visibility_filter(db, actor)]
     if f.q and f.q.strip():
-        term = f"%{f.q.strip().lower()}%"
+        term = f"%{f.q.strip().lower()}%"  # ILIKE uses the trigram indexes (0020)
         digits = "".join(ch for ch in f.q if ch.isdigit())
         identity = select(LeadIdentity.lead_id).where(
             or_(
@@ -52,8 +52,8 @@ async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> 
         )
         where.append(
             or_(
-                func.lower(Lead.display_name).like(term),
-                func.lower(Lead.org_name).like(term),
+                Lead.display_name.ilike(term),
+                Lead.org_name.ilike(term),
                 Lead.id.in_(identity),
             )
         )
