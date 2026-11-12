@@ -47,3 +47,19 @@ export function useExclusions(enabled = true) {
     queryFn: async () => unwrap(await api.GET("/api/v1/mailboxes/exclusions")),
   });
 }
+
+export function useMyCopyIn(enabled = true) {
+  return useQuery({
+    queryKey: ["copy-in", "me"],
+    enabled,
+    queryFn: async () => unwrap(await api.GET("/api/v1/me/copy-in")),
+  });
+}
+
+export function useCompanyCopyIn(enabled = true) {
+  return useQuery({
+    queryKey: ["copy-in", "company"],
+    enabled,
+    queryFn: async () => unwrap(await api.GET("/api/v1/copy-in")),
+  });
+}

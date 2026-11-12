@@ -726,6 +726,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/copy-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Company Copy In */
+        get: operations["mailboxes-company_copy_in"];
+        /**
+         * Set Copy In
+         * @description Whether an email with someone unknown creates a lead (off by default), and its source.
+         */
+        put: operations["mailboxes-set_copy_in"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/copy-in/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Company Copy In */
+        post: operations["mailboxes-reset_company_copy_in"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/crm-rules": {
         parameters: {
             query?: never;
@@ -1549,6 +1587,27 @@ export interface paths {
         get: operations["inbox-inbox_people"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/test-copy-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Copy In
+         * @description Outside production only: deliver a raw email (.eml text) to a copy-in address as if it
+         *     had arrived, until inbound mail is switched on at go-live.
+         */
+        post: operations["mailboxes-test_copy_in"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3040,6 +3099,43 @@ export interface paths {
          *     entries. Emails written in Core stay: they are the company's own record.
          */
         delete: operations["mailboxes-remove_synced"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/copy-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Copy In */
+        get: operations["mailboxes-my_copy_in"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/copy-in/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset My Copy In
+         * @description A new address for this user; the old one stops working (if it leaked).
+         */
+        post: operations["mailboxes-reset_my_copy_in"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -5774,6 +5870,20 @@ export interface components {
             /** Required */
             required: number;
         };
+        /** CompanyCopyInOut */
+        CompanyCopyInOut: {
+            /** Address */
+            address: string;
+            /**
+             * Create Leads
+             * @default false
+             */
+            create_leads: boolean;
+            /** Live */
+            live: boolean;
+            /** Source Id */
+            source_id?: string | null;
+        };
         /** CompetitorIn */
         CompetitorIn: {
             /**
@@ -5945,6 +6055,36 @@ export interface components {
             unread: boolean;
             /** Waiting */
             waiting: boolean;
+        };
+        /** CopyInOut */
+        CopyInOut: {
+            /** Address */
+            address: string;
+            /** Live */
+            live: boolean;
+        };
+        /** CopyInResult */
+        CopyInResult: {
+            /** Address */
+            address: string;
+            /** Conversation Id */
+            conversation_id: string | null;
+            /** Created Lead */
+            created_lead: boolean;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Stored */
+            stored: boolean;
+        };
+        /** CopyInSettings */
+        CopyInSettings: {
+            /**
+             * Create Leads
+             * @default false
+             */
+            create_leads: boolean;
+            /** Source Id */
+            source_id?: string | null;
         };
         /** CrmRules */
         CrmRules: {
@@ -12809,6 +12949,79 @@ export interface operations {
             };
         };
     };
+    "mailboxes-company_copy_in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyCopyInOut"];
+                };
+            };
+        };
+    };
+    "mailboxes-set_copy_in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopyInSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyCopyInOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "mailboxes-reset_company_copy_in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyCopyInOut"];
+                };
+            };
+        };
+    };
     "routing-get_crm_rules": {
         parameters: {
             query?: never;
@@ -14742,6 +14955,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Person"][];
+                };
+            };
+        };
+    };
+    "mailboxes-test_copy_in": {
+        parameters: {
+            query: {
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CopyInResult"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -18305,6 +18549,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "mailboxes-my_copy_in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CopyInOut"];
+                };
+            };
+        };
+    };
+    "mailboxes-reset_my_copy_in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CopyInOut"];
                 };
             };
         };

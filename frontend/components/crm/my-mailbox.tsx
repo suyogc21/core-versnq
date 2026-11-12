@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
+import { CopyInAddress } from "@/components/crm/copy-in";
 import { relative } from "@/lib/crm";
-import { type Mailbox, type ProviderKey, PROVIDERS, providerOf, useMyMailbox } from "@/lib/mailboxes";
+import { type Mailbox, type ProviderKey, PROVIDERS, providerOf, useMyCopyIn, useMyMailbox } from "@/lib/mailboxes";
 
 const STATUS: Record<string, [string, "secondary" | "destructive" | "outline"]> = {
   active: ["Syncing", "secondary"],
@@ -85,7 +86,36 @@ export function MyMailbox() {
           }}
         />
       )}
+      <MyCopyIn />
     </section>
+  );
+}
+
+/** Works from any mail app, no mailbox connected: CC / BCC it or auto-forward to it. */
+function MyCopyIn() {
+  const copyIn = useMyCopyIn();
+  const qc = useQueryClient();
+  if (!copyIn.data) return null;
+  return (
+    <div className="space-y-2 pt-3">
+      <h3 className="text-sm font-medium">Or: your copy-in address</h3>
+      <p className="text-xs text-muted-foreground">
+        From any mail app, add this address in CC or BCC (or have replies auto-forwarded to it), and the email is saved on the lead. Emails with nobody we know are dropped.
+      </p>
+      <CopyInAddress
+        address={copyIn.data.address}
+        live={copyIn.data.live}
+        onReset={async () => {
+          try {
+            unwrap(await api.POST("/api/v1/me/copy-in/reset"));
+            toast.success("New address made. Update it wherever you used the old one.");
+            await qc.invalidateQueries({ queryKey: ["copy-in"] });
+          } catch (e) {
+            toast.error((e as Error).message);
+          }
+        }}
+      />
+    </div>
   );
 }
 
