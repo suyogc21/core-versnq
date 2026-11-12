@@ -196,7 +196,7 @@ function PipelineEditor({ p }: { p: Pipeline }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border p-3">
+      <div className="surface flex flex-wrap items-end gap-3 p-4">
         <div className="space-y-1">
           <Label htmlFor="p-name">Name</Label>
           <Input id="p-name" className="h-8 w-56" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name.trim() && name !== p.name && patchPipeline({ name: name.trim() }, "Saved")} />
@@ -216,7 +216,7 @@ function PipelineEditor({ p }: { p: Pipeline }) {
           </Button>
         )}
       </div>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {stages.map((s, i) => (
           <StageRow key={s.id} s={s} first={i === 0} last={i === stages.length - 1} onMove={(d) => order(i, d)} onPatch={(b) => patchStage(s, b)} onRequires={() => setRequires(s)} onRemove={() => setRemoving(s)} />
         ))}
@@ -379,7 +379,7 @@ function Reasons() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">Asked every time a deal is lost, so you can see why deals are lost. A reason that has been used can only be switched off.</p>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {(reasons.data ?? []).map((r) => (
           <div key={r.id} className="flex items-center gap-3 px-3 py-2 text-sm">
             <span className={cn("flex-1", !r.is_active && "text-muted-foreground line-through")}>{r.name}</span>
@@ -422,7 +422,7 @@ function Products() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">Your price list. Adding a product to a deal copies its price; changing a price later does not change existing deals.</p>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {(products.data ?? []).length === 0 && <p className="px-3 py-4 text-sm text-muted-foreground">No products yet.</p>}
         {(products.data ?? []).map((p) => (
           <div key={p.id} className="flex items-center gap-3 px-3 py-2 text-sm">

@@ -209,7 +209,7 @@ export function DataTable<T>({
               <thead>
                 <tr>
                   {selectable && (
-                    <th className="sticky top-0 left-0 z-30 w-9 border-b bg-background pl-4">
+                    <th className="sticky top-0 left-0 z-30 w-9 border-b bg-card pl-4">
                       <input
                         type="checkbox"
                         aria-label="Select this page"
@@ -225,7 +225,7 @@ export function DataTable<T>({
                       <th
                         key={c.key}
                         className={cn(
-                          "sticky top-0 z-20 h-9 border-b bg-background px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground",
+                          "sticky top-0 z-20 h-9 border-b bg-card px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground",
                           c.pinned && "left-9 z-30 shadow-[1px_0_0_var(--border)]",
                           c.sort && "cursor-pointer select-none hover:text-foreground",
                         )}
@@ -254,7 +254,7 @@ export function DataTable<T>({
                         onOpen?.(row);
                       }}
                       className={cn(
-                        "group cursor-pointer bg-background hover:bg-accent/60",
+                        "group cursor-pointer bg-card hover:bg-accent/60",
                         isSelected && "bg-primary/[0.06]",
                         cursor === i && "shadow-[inset_2px_0_0_var(--primary)]",
                       )}
@@ -314,7 +314,7 @@ export function DataTable<T>({
           Rows
           <select
             aria-label="Rows per page"
-            className="rounded border bg-background px-1 py-0.5"
+            className="rounded border bg-card px-1 py-0.5"
             value={paging.size}
             onChange={(e) => onPaging({ ...paging, page: 1, size: Number(e.target.value) })}
           >

@@ -80,29 +80,35 @@ export default function MyDayPage() {
           )
         }
       />
-      <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
+      <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
         <div>
-          <h2 className="text-lg font-semibold">Good to see you, {me?.name.split(" ")[0]}.</h2>
-          <p className="text-muted-foreground">
-            {day.data
-              ? `${day.data.overdue.length} overdue · ${day.data.today.length} due today · ${day.data.new_leads.length} new ${leadsWord}`
-              : "Loading your day…"}
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight">Good to see you, {me?.name.split(" ")[0]}.</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{day.data ? "Here is what needs you today." : "Loading your day…"}</p>
         </div>
+        {day.data && (
+          <div className="surface grid grid-cols-3 divide-x overflow-hidden">
+            <Stat label="Overdue" value={day.data.overdue.length} danger={day.data.overdue.length > 0} />
+            <Stat label="Due today" value={day.data.today.length} />
+            <Stat label={`New ${leadsWord}`} value={day.data.new_leads.length} />
+          </div>
+        )}
         {day.data?.unassigned_count ? (
-          <Link href="/leads" className="block rounded-lg border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs">
-            <b>{day.data.unassigned_count}</b> open {leadsWord} have no owner yet. Assign them from the list (view “Unassigned”).
+          <Link href="/leads" className="surface flex items-center gap-2.5 px-4 py-3 text-[13px] hover:shadow-float">
+            <span className="size-2 shrink-0 rounded-full bg-amber-500" />
+            <span>
+              <b>{day.data.unassigned_count}</b> open {leadsWord} have no owner yet. Assign them from the list (view “Unassigned”).
+            </span>
           </Link>
         ) : null}
         <Bucket title="Overdue" tone="danger" tasks={day.data?.overdue} empty="Nothing overdue." />
         <Bucket title="Today" tasks={day.data?.today} empty="Nothing else due today." />
         {day.data && day.data.new_leads.length > 0 && (
-          <section>
-            <h3 className="mb-2 text-xs font-medium text-muted-foreground uppercase">New {leadsWord} — not contacted yet</h3>
-            <ul className="divide-y rounded-lg border">
+          <section className="surface overflow-hidden">
+            <h3 className="border-b px-4 py-3 text-[13px] font-semibold">New {leadsWord} — not contacted yet</h3>
+            <ul className="divide-y">
               {day.data.new_leads.map((l) => (
                 <li key={l.id}>
-                  <Link href={`/leads/${l.id}`} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent/50">
+                  <Link href={`/leads/${l.id}`} className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-accent/50">
                     <span className="font-medium">{l.display_name}</span>
                     <span className="text-muted-foreground">{l.primary_phone ? phone(l.primary_phone) : l.primary_email}</span>
                   </Link>
@@ -120,17 +126,18 @@ export default function MyDayPage() {
 
 function Bucket({ title, tasks, empty, tone, muted }: { title: string; tasks?: TaskItem[]; empty: string; tone?: "danger"; muted?: boolean }) {
   return (
-    <section>
-      <h3 className={cn("mb-2 text-xs font-medium uppercase", tone === "danger" ? "text-destructive" : "text-muted-foreground")}>
-        {title} {tasks?.length ? `(${tasks.length})` : ""}
+    <section className="surface overflow-hidden">
+      <h3 className={cn("flex items-center gap-2 px-4 py-3 text-[13px] font-semibold", tasks?.length && "border-b", tone === "danger" && tasks?.length && "text-destructive")}>
+        {title}
+        {tasks?.length ? <span className="font-normal text-muted-foreground">{tasks.length}</span> : null}
       </h3>
       {!tasks ? null : tasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{empty}</p>
+        <p className="-mt-1 px-4 pb-3 text-sm text-muted-foreground">{empty}</p>
       ) : (
-        <ul className={cn("divide-y rounded-lg border", muted && "opacity-80")}>
+        <ul className={cn("divide-y", muted && "opacity-80")}>
           {tasks.map((t) => (
             <li key={t.id}>
-              <Link href={t.lead_id ? `/leads/${t.lead_id}` : "#"} className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent/50">
+              <Link href={t.lead_id ? `/leads/${t.lead_id}` : "#"} className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent/50">
                 <span className={cn("w-28 shrink-0 text-xs", tone === "danger" ? "text-destructive" : "text-muted-foreground")}>{when(t.due_at)}</span>
                 <span className="min-w-0 flex-1 truncate">
                   <span className="font-medium">{t.lead_name ?? t.title}</span>
@@ -143,5 +150,14 @@ function Bucket({ title, tasks, empty, tone, muted }: { title: string; tasks?: T
         </ul>
       )}
     </section>
+  );
+}
+
+function Stat({ label, value, danger }: { label: string; value: number; danger?: boolean }) {
+  return (
+    <div className="px-4 py-4 sm:px-5">
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className={cn("mt-1 text-3xl font-semibold tracking-tight tabular-nums", danger && "text-destructive")}>{value}</div>
+    </div>
   );
 }

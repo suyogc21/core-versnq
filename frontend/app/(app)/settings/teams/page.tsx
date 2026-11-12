@@ -119,7 +119,7 @@ export default function TeamsPage() {
               <p className="mt-3 text-xs text-muted-foreground">
                 Managers see the records of everyone in this team and its sub-teams.
               </p>
-              <ul className="mt-3 divide-y rounded-lg border">
+              <ul className="mt-3 divide-y surface">
                 {selected.members.length === 0 && <li className="p-3 text-muted-foreground">No members yet.</li>}
                 {[...selected.members]
                   .sort((a, b) => Number(b.is_manager) - Number(a.is_manager))

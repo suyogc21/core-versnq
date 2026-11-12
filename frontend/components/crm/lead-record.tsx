@@ -175,7 +175,7 @@ function FollowUpCard({ lead }: { lead: Lead }) {
   const missing = !lead.next_follow_up_at;
   const late = isOverdue(lead.next_follow_up_at);
   return (
-    <div className={cn("rounded-lg border p-3 text-xs", (missing || late) && "border-destructive/40 bg-destructive/5")}>
+    <div className={cn("rounded-lg border bg-card p-3 text-xs", (missing || late) && "border-destructive/40 bg-destructive/5")}>
       <div className={cn("text-sm font-semibold", (missing || late) && "text-destructive")}>{missing ? "Not set" : when(lead.next_follow_up_at)}</div>
       <div className="text-muted-foreground">
         {missing ? `Every open ${label("lead").toLowerCase()} needs one. Log what happened and set it.` : late ? "Overdue" : relative(lead.next_follow_up_at)}
@@ -186,8 +186,8 @@ function FollowUpCard({ lead }: { lead: Lead }) {
 
 function Section({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <section className="space-y-2">
-      <h4 className="flex items-center justify-between text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+    <section className="surface space-y-3 p-4">
+      <h4 className="flex items-center justify-between text-[13px] font-semibold">
         {title}
         {action}
       </h4>
@@ -211,7 +211,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <div className="space-y-3 border-b px-4 py-3 md:px-6">
+      <div className="space-y-4 px-4 pt-4 pb-2 md:px-6 md:pt-5">
         <div className="text-xs text-muted-foreground">
           <Link href="/leads" className="hover:underline">
             {label("lead", true)}
@@ -219,10 +219,10 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
           / {l.display_name}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Avatar name={l.display_name} colour="#6366f1" size={9} />
+          <Avatar name={l.display_name} colour="#6366f1" size={12} />
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-semibold">{l.display_name}</h2>
-            <div className="text-xs text-muted-foreground">
+            <h2 className="truncate text-2xl font-bold tracking-tight">{l.display_name}</h2>
+            <div className="text-[13px] text-muted-foreground">
               {[l.primary_phone && formatPhone(l.primary_phone), l.primary_email, l.city, `added ${relative(l.created_at)}`].filter(Boolean).join(" · ")}
             </div>
             <div className="mt-1">
@@ -237,12 +237,12 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
         <StageStepper lead={l} />
         <DuplicateBanner key={`dupes-${l.version}`} lead={l} />
       </div>
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[300px_minmax(0,1fr)_300px]">
-        <div className="space-y-5 border-b p-4 lg:border-r lg:border-b-0">
+      <div className="grid min-h-0 flex-1 items-start gap-4 p-4 md:px-6 lg:grid-cols-[300px_minmax(0,1fr)_300px]">
+        <div className="space-y-4">
           <Section
             title="About"
             action={
-              <button className="normal-case" onClick={() => setEditing(!editing)}>
+              <button className="text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => setEditing(!editing)}>
                 {editing ? "Done" : "Edit"}
               </button>
             }
@@ -254,22 +254,24 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
             <ConsentCard lead={l} />
           </Section>
         </div>
-        <div className="space-y-4 border-b p-4 lg:border-b-0">
+        <div className="space-y-4">
           <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} onLogged={onLogged} />
-          <div className="flex flex-wrap gap-1.5">
+          <div className="surface space-y-4 p-4">
+            <div className="flex flex-wrap gap-1.5">
             {Object.keys(TIMELINE_FILTERS).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={cn("rounded-full border px-2.5 py-0.5 text-xs", filter === f && "border-primary bg-primary text-primary-foreground")}
+                className={cn("rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground", filter === f && "bg-foreground text-background hover:bg-foreground hover:text-background")}
               >
                 {f}
               </button>
             ))}
           </div>
-          <Timeline leadId={l.id} filter={filter} />
+            <Timeline leadId={l.id} filter={filter} />
+          </div>
         </div>
-        <div className="space-y-5 p-4 lg:border-l">
+        <div className="space-y-4">
           <Section title="Next follow-up">
             <FollowUpCard lead={l} />
           </Section>
@@ -318,7 +320,7 @@ export function LeadPreview({ leadId, onClose, onLogged }: { leadId: string; onC
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/10" onClick={onClose} aria-hidden />
-      <aside role="dialog" aria-label="Preview" className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col border-l bg-background shadow-2xl">
+      <aside role="dialog" aria-label="Preview" className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col border-l bg-card shadow-2xl">
         {!l ? (
           <p className="p-6 text-muted-foreground">Loading…</p>
         ) : (
@@ -340,10 +342,12 @@ export function LeadPreview({ leadId, onClose, onLogged }: { leadId: string; onC
                 </Link>
               </div>
             </div>
-            <div className="flex-1 space-y-4 overflow-auto p-4">
+            <div className="flex-1 space-y-4 overflow-auto bg-background p-4">
               <FollowUpCard lead={l} />
               <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} onLogged={onLogged} />
-              <Facts lead={l} />
+              <div className="surface p-4">
+                <Facts lead={l} />
+              </div>
               <Section title="Recent activity">
                 <Timeline leadId={l.id} />
               </Section>

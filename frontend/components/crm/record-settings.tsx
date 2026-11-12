@@ -54,7 +54,7 @@ export function RecordsIndex() {
           Each kind of record has its own fields and stages. Add your own kinds (Properties, Batches, Vehicles, Policies…): each gets its own
           list in the sidebar, and they can be linked to {label("lead", true).toLowerCase()} and to each other.
         </p>
-        <div className="divide-y rounded-lg border">
+        <div className="divide-y surface">
           <Link href="/settings/records/lead" className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent">
             <span className="w-3" />
             <span className="font-medium">{label("lead", true)}</span>
@@ -299,7 +299,7 @@ function Stages({ rtype }: { rtype: RecordType }) {
 
   return (
     <div className="space-y-4 text-sm">
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {list.map((s, i) => (
           <div key={s.id} className="flex items-center gap-3 px-3 py-2">
             <div className="flex flex-col">
@@ -480,7 +480,7 @@ function LinkTypes({ types }: { types: RecordType[] }) {
         For example: a {label("lead").toLowerCase()} is <i>interested in</i> a property, and a property has <i>interested buyers</i>. Links show on
         both records.
       </p>
-      <div className="divide-y rounded-lg border text-sm">
+      <div className="divide-y surface text-sm">
         {(linkTypes.data ?? []).length === 0 && <p className="p-4 text-muted-foreground">No links set up yet.</p>}
         {(linkTypes.data ?? []).map((lt: LinkType) => (
           <div key={lt.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5">

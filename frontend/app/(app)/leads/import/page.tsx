@@ -378,7 +378,7 @@ function Recent({ onOpen }: { onOpen: (id: string) => void }) {
   return (
     <section className="space-y-2">
       <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Recent imports</h3>
-      <div className="divide-y rounded-lg border text-sm">
+      <div className="divide-y surface text-sm">
         {items.map((i) => (
           <div key={i.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
             {i.status === "uploaded" ? (

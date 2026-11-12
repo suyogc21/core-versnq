@@ -134,7 +134,7 @@ function Rules() {
   if (!r) return <p className="text-muted-foreground">Loading…</p>;
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 rounded-lg border p-3">
+      <div className="surface flex items-start gap-3 p-4">
         <Switch
           aria-label="Follow-up rule"
           checked={r.follow_up_required}
@@ -169,7 +169,7 @@ function Stages() {
   const list = stages.data ?? [];
   return (
     <div className="space-y-6">
-      <ul className="divide-y rounded-lg border">
+      <ul className="divide-y surface">
         {list.map((s, i) => (
           <li key={s.id} className="flex items-center gap-2 px-3 py-2">
             <div className="flex flex-col">
@@ -304,7 +304,7 @@ function Sources() {
   const list = sources.data ?? [];
   return (
     <div className="space-y-4">
-      <ul className="divide-y rounded-lg border">
+      <ul className="divide-y surface">
         {list.map((s, i) => (
           <li key={s.id} className="flex items-center gap-2 px-3 py-2">
             <div className="flex flex-col">
@@ -357,7 +357,7 @@ function ActivityTypes() {
   const list = (types.data ?? []).filter((t) => t.is_loggable);
   return (
     <div className="space-y-4">
-      <ul className="divide-y rounded-lg border">
+      <ul className="divide-y surface">
         {list.map((t) => (
           <li key={t.id} className="flex items-center gap-2 px-3 py-2">
             <button className="min-w-0 flex-1 text-left" onClick={() => setEditing(t)}>

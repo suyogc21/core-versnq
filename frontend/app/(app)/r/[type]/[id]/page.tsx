@@ -44,8 +44,8 @@ export default function RecordPage() {
 
 function Section({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <section className="space-y-2">
-      <h4 className="flex items-center justify-between text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+    <section className="surface space-y-3 p-4">
+      <h4 className="flex items-center justify-between text-[13px] font-semibold">
         {title}
         {action}
       </h4>
@@ -83,7 +83,7 @@ function RecordView({ rtype, record }: { rtype: RecordType; record: RecordItem }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <div className="space-y-3 border-b px-4 py-3 md:px-6">
+      <div className="space-y-4 px-4 pt-4 pb-2 md:px-6 md:pt-5">
         <div className="text-xs text-muted-foreground">
           <Link href={`/r/${rtype.key}`} className="hover:underline">
             {rtype.plural}
@@ -91,7 +91,7 @@ function RecordView({ rtype, record }: { rtype: RecordType; record: RecordItem }
           / {record.name}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="min-w-0 truncate text-lg font-semibold">{record.name}</h2>
+          <h2 className="min-w-0 truncate text-2xl font-bold tracking-tight">{record.name}</h2>
           <span className="text-xs text-muted-foreground">
             {rtype.singular} · added {relative(record.created_at)}
           </span>
@@ -103,13 +103,13 @@ function RecordView({ rtype, record }: { rtype: RecordType; record: RecordItem }
         </div>
         {rtype.has_stages && <Stepper rtype={rtype} record={record} editable={acc.edit} />}
       </div>
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[320px_minmax(0,1fr)_320px]">
-        <div className="space-y-5 border-b p-4 lg:border-r lg:border-b-0">
+      <div className="grid min-h-0 flex-1 items-start gap-4 p-4 md:px-6 lg:grid-cols-[320px_minmax(0,1fr)_320px]">
+        <div className="space-y-4">
           <Section
             title="About"
             action={
               acc.edit ? (
-                <button className="normal-case" onClick={() => setEditing(!editing)}>
+                <button className="text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => setEditing(!editing)}>
                   {editing ? "Cancel" : "Edit"}
                 </button>
               ) : undefined
@@ -118,11 +118,13 @@ function RecordView({ rtype, record }: { rtype: RecordType; record: RecordItem }
             {editing ? <EditRecord rtype={rtype} record={record} onDone={() => setEditing(false)} /> : <Facts rtype={rtype} record={record} />}
           </Section>
         </div>
-        <div className="space-y-4 border-b p-4 lg:border-b-0">
+        <div className="space-y-4">
           {acc.edit && <NoteBox record={record} />}
-          <RecordTimeline recordId={record.id} />
+          <div className="surface p-4">
+            <RecordTimeline recordId={record.id} />
+          </div>
         </div>
-        <div className="space-y-5 p-4 lg:border-l">
+        <div className="space-y-4">
           <Section title="Linked">
             <LinksCard end={{ kind: "record", id: record.id, typeId: rtype.id }} editable={acc.edit} />
           </Section>
@@ -268,7 +270,7 @@ function NoteBox({ record }: { record: RecordItem }) {
     }
   }
   return (
-    <form onSubmit={save} className="space-y-2 rounded-lg border p-3">
+    <form onSubmit={save} className="surface space-y-2 p-4">
       <Textarea aria-label="Note" placeholder="Write a note…" value={text} onChange={(e) => setText(e.target.value)} />
       <Button size="sm" type="submit" disabled={!text.trim()}>
         Add note

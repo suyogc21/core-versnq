@@ -97,7 +97,7 @@ function Forms() {
         Each form gets its own secret link. Your website sends enquiries to it and they arrive here: duplicates are caught and the assignment rules
         pick the owner.
       </p>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {(list.data ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">No forms yet.</p>}
         {(list.data ?? []).map((f) => (
           <div key={f.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-sm">
@@ -400,7 +400,7 @@ function Assignment() {
         For web forms, imports set to &quot;by assignment rules&quot; and anyone adding a lead that way. Rules are checked top to bottom; the first
         one that matches decides. If none match, the lead waits in the Unassigned tab. Turns skip anyone who is disabled.
       </p>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {list.length === 0 && <p className="p-4 text-sm text-muted-foreground">No rules yet: new leads stay unassigned.</p>}
         {list.map((r, i) => (
           <div key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-sm">
@@ -657,7 +657,7 @@ function Sla() {
         A clock starts when a lead arrives or enters a stage. The owner gets a task due at the deadline. A call (or any contact) stops the clock; if
         nobody reaches the lead in time, it is noted on the timeline and the manager is told.
       </p>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {(rules.data ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">No response-time rules yet.</p>}
         {(rules.data ?? []).map((r) => {
           const [n, unit] = inUnits(r.within_minutes);

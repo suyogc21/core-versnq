@@ -21,7 +21,7 @@ export function Avatar({ name, colour, size = 6 }: { name: string; colour?: stri
     <span
       title={name}
       className="grid shrink-0 place-items-center rounded-full text-[10px] font-semibold text-white"
-      style={{ background: colour ?? "#64748b", width: size * 4, height: size * 4 }}
+      style={{ background: colour ?? "#64748b", width: size * 4, height: size * 4, fontSize: Math.max(10, size * 1.4) }}
     >
       {initials(name)}
     </span>

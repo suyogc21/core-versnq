@@ -35,8 +35,8 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void 
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground",
-        active && "bg-accent font-medium text-foreground",
+        "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
+        active && "bg-card text-foreground shadow-card hover:bg-card",
       )}
     >
       <Icon className="size-4 opacity-80" />
@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const workspaceBadge = (
     <div className="flex min-w-0 items-center gap-2">
-      <div className="grid size-6 shrink-0 place-items-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground">
+      <div className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
         {me.tenant.name.charAt(0).toUpperCase()}
       </div>
       <div className="min-w-0">
@@ -86,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-dvh flex-col overflow-hidden md:flex-row">
       {/* Phone: a top bar with a menu button; the sidebar slides in over the page. */}
-      <div className="flex h-12 shrink-0 items-center gap-2 border-b px-2 md:hidden">
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b bg-sidebar px-2 md:hidden">
         <button aria-label="Open menu" className="rounded p-2 hover:bg-accent" onClick={() => setMenuOpen(true)}>
           <Menu className="size-5" />
         </button>
@@ -100,11 +100,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {menuOpen && <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={close} aria-hidden />}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-0.5 border-r bg-sidebar px-2 py-2.5 transition-transform md:static md:w-56 md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-0.5 border-r bg-sidebar px-3 py-3 transition-transform md:static md:w-56 md:translate-x-0",
           menuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="mb-2 flex items-center justify-between rounded-md px-2 py-1.5">
+        <div className="mb-3 flex items-center justify-between rounded-md px-1.5 py-1">
           {workspaceBadge}
           {can("leads.edit") && (
             <div className="hidden md:block">
@@ -154,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col overflow-auto">
+      <main className="flex min-w-0 flex-1 flex-col overflow-auto bg-background">
         {locked ? (
           <>
             <PageHeader title={locked.label} />
@@ -181,7 +181,7 @@ export function PageHeader({
   back?: { href: string; label: string };
 }) {
   return (
-    <div className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-2.5 gap-y-2 border-b px-4 py-2">
+    <div className="sticky top-0 z-20 flex min-h-13 shrink-0 flex-wrap items-center gap-x-2.5 gap-y-2 border-b bg-background/80 px-4 py-2 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       {back && (
         <>
           <Link href={back.href} className="text-sm text-muted-foreground hover:text-foreground">
@@ -190,7 +190,7 @@ export function PageHeader({
           <span className="text-muted-foreground">/</span>
         </>
       )}
-      <h1 className="text-sm font-semibold">{title}</h1>
+      <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
       {count !== undefined ? <span className="text-muted-foreground">{count}</span> : null}
       {actions ? <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">{actions}</div> : null}
     </div>

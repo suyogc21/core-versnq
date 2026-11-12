@@ -63,7 +63,7 @@ test("a new company goes from creation to a working, permission-limited team", a
   await expect(seller.getByRole("heading", { name: /Good to see you, Sam/ })).toBeVisible();
   // EdTech pack labels reach the screen: leads are "Students".
   await expect(seller.getByRole("link", { name: "Students", exact: true })).toBeVisible();
-  await expect(seller.getByText(/new students/)).toBeVisible();
+  await expect(seller.getByText("New students", { exact: true })).toBeVisible();
   await expect(seller.getByRole("link", { name: "Settings", exact: true })).toHaveCount(0);
   // Typing an admin address directly gets a refusal, not an empty admin page.
   for (const page of ["settings", "settings/users", "settings/roles", "settings/company", "settings/records"]) {

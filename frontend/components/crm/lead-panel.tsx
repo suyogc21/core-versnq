@@ -125,8 +125,8 @@ export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: bool
   const source = sources.data?.find((s) => s.id === lead.source_id);
   const values = lead.custom_fields as Record<string, unknown>;
   return (
-    <div className="space-y-3 p-4">
-      <dl className="grid grid-cols-[7rem_1fr] items-center gap-x-3 gap-y-2 text-xs">
+    <div className="space-y-3">
+      <dl className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 text-xs">
         {showStage && <dt className="text-muted-foreground">Stage</dt>}
         {showStage && <dd>
           {editable ? (
@@ -164,7 +164,7 @@ export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: bool
         <dt className="text-muted-foreground">Owner</dt>
         <dd>
           {can("leads.assign") && users.data ? (
-            <NativeSelect aria-label="Owner" className="h-7 w-auto" value={lead.owner_user_id ?? "none"} onChange={(e) => assign(e.target.value)}>
+            <NativeSelect aria-label="Owner" className="h-7 w-auto max-w-full" value={lead.owner_user_id ?? "none"} onChange={(e) => assign(e.target.value)}>
               <option value="none">Unassigned</option>
               {users.data
                 .filter((u) => u.status === "active" || u.id === lead.owner_user_id)
@@ -242,7 +242,7 @@ export function Timeline({ leadId, filter = "All" }: { leadId: string; filter?: 
     <ol className="space-y-3">
       {items.map((a: ActivityItem) => (
         <li key={a.id} className="flex gap-2.5">
-          <div className="grid size-6 shrink-0 place-items-center rounded-full border bg-background text-[11px]" title={typeLabel(a.type_key)}>
+          <div className="grid size-6 shrink-0 place-items-center rounded-full border bg-card text-[11px]" title={typeLabel(a.type_key)}>
             {ICON[a.type_key] ?? "•"}
           </div>
           <div className="min-w-0 flex-1 text-xs">
@@ -414,7 +414,7 @@ export function LeadTasks({ lead }: { lead: Lead }) {
 
   return (
     <div className="space-y-3">
-      <ul className="divide-y rounded-lg border">
+      <ul className="divide-y surface">
         {tasks.isLoading && <li className="p-3 text-xs text-muted-foreground">Loading…</li>}
         {tasks.data && tasks.data.length === 0 && <li className="p-3 text-xs text-muted-foreground">No open tasks.</li>}
         {(tasks.data ?? []).map((t) => (

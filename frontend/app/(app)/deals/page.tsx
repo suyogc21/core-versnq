@@ -174,7 +174,7 @@ function BoardView({ pipelineId, owner, q }: { pipelineId: string; owner?: strin
         onDragEnd={onDragEnd}
         onDragCancel={() => setDragging(null)}
       >
-        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto p-3">
+        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto p-4 md:px-6">
           {data.columns.map((col) => (
             <Column key={col.stage_id} col={col} currency={data.currency} editable={editable} />
           ))}
@@ -202,7 +202,7 @@ function Totals({ board }: { board: Board }) {
     ["Won", formatMoney(board.won_minor, board.currency)],
   ];
   return (
-    <div className="flex flex-wrap gap-x-6 gap-y-1 border-b px-4 py-2 text-xs">
+    <div className="flex flex-wrap gap-x-6 gap-y-1 border-b px-4 py-2.5 text-[13px] sm:px-6">
       {items.map(([k, v]) => (
         <div key={k}>
           <span className="text-muted-foreground">{k}</span> <span className="font-semibold tabular-nums">{v}</span>
@@ -218,10 +218,10 @@ function Column({ col, currency, editable }: { col: Board["columns"][number]; cu
     <section
       ref={setNodeRef}
       aria-label={col.name}
-      className={cn("flex w-72 shrink-0 flex-col rounded-lg border bg-muted/30", isOver && "ring-2 ring-primary")}
+      className={cn("flex w-72 shrink-0 flex-col rounded-xl bg-foreground/[0.035]", isOver && "ring-2 ring-primary")}
     >
-      <header className="space-y-0.5 border-b px-3 py-2">
-        <div className="flex items-center gap-2 text-sm font-medium">
+      <header className="space-y-0.5 px-3 pt-3 pb-1">
+        <div className="flex items-center gap-2 text-sm font-semibold">
           <span className="size-2 rounded-full" style={{ background: col.colour ?? "#94a3b8" }} />
           <span className="truncate">{col.name}</span>
           <span className="text-muted-foreground">{col.count}</span>
@@ -255,7 +255,7 @@ function Card({ deal, overlay }: { deal: Deal; overlay?: boolean }) {
   const today = new Date().toISOString().slice(0, 10);
   const late = deal.status === "open" && deal.expected_close_on && deal.expected_close_on < today;
   return (
-    <div className={cn("space-y-1 rounded-md border bg-background p-2.5 text-xs shadow-xs", overlay && "rotate-2 shadow-lg")}>
+    <div className={cn("space-y-1 rounded-lg bg-card p-3 text-xs shadow-card transition-shadow hover:shadow-float", overlay && "rotate-2 shadow-overlay")}>
       <div className="flex items-start gap-2">
         <Link href={`/deals/${deal.id}`} className="min-w-0 flex-1 truncate font-medium hover:underline" onClick={(e) => overlay && e.preventDefault()}>
           {deal.name}

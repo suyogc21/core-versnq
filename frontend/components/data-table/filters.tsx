@@ -80,7 +80,7 @@ export function OptionSearch({ options, children }: { options: Option[]; childre
           autoFocus
           aria-label="Search options"
           placeholder="Search…"
-          className="mx-1 mb-1 h-7 w-[calc(100%-0.5rem)] rounded-md border bg-background px-2 text-xs outline-none"
+          className="mx-1 mb-1 h-7 w-[calc(100%-0.5rem)] rounded-md border bg-card px-2 text-xs outline-none"
           value={term}
           onChange={(e) => setTerm(e.target.value)}
         />

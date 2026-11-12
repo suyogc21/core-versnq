@@ -24,7 +24,7 @@ export default function TagsPage() {
           Anyone who works a record can add tags (and create new ones) right on the record or in bulk from a list. Here you tidy them up: rename, recolour, merge
           duplicates, or delete.
         </p>
-        <div className="divide-y rounded-lg border">
+        <div className="divide-y surface">
           {tags.isLoading && <p className="p-4 text-muted-foreground">Loading…</p>}
           {tags.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">No tags yet.</p>}
           {(tags.data ?? []).map((t) => (

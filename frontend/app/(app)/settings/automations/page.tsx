@@ -99,7 +99,7 @@ export default function AutomationsPage() {
               When something happens, check a few conditions, then do the work. Automations follow the same rules as people, and everything they do shows on the
               timeline as “Automation: name”.
             </p>
-            <div className="divide-y rounded-lg border">
+            <div className="divide-y surface">
               {autos.isLoading && <p className="p-4 text-muted-foreground">Loading…</p>}
               {autos.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">No automations yet.</p>}
               {list.map((a, i) => (
@@ -233,7 +233,7 @@ function Builder({ draft, onDone }: { draft: Draft; onDone: () => void }) {
 
 function Step({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-2 rounded-lg border p-3">
+    <section className="surface space-y-2 p-4">
       <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{title}</h3>
       {children}
     </section>
@@ -577,7 +577,7 @@ function TestBox({ autoId, subject, conditions, choices }: { autoId: string; sub
 function Runs({ auto, onClose }: { auto: Automation; onClose: () => void }) {
   const runs = useAutomationRuns(auto.id);
   return (
-    <section className="space-y-2 rounded-lg border p-3">
+    <section className="surface space-y-2 p-4">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">History · {auto.name}</h3>
         <Button size="sm" variant="ghost" onClick={onClose}>

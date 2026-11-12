@@ -141,7 +141,7 @@ function FitRules({ rules }: { rules: ScoreRule[] }) {
   return (
     <section className="space-y-3">
       <h3 className="font-medium">Fit — who they are</h3>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {rules.length === 0 && <p className="px-3 py-3 text-sm text-muted-foreground">No fit rules yet.</p>}
         {rules.map((r) => (
           <RuleShell key={r.id} rule={r}>
@@ -150,7 +150,7 @@ function FitRules({ rules }: { rules: ScoreRule[] }) {
         ))}
       </div>
       {draft ? (
-        <div className="space-y-2 rounded-lg border p-3">
+        <div className="surface space-y-2 p-4">
           <ConditionRow choices={choices} value={draft} onChange={setDraft} onRemove={() => setDraft(null)} />
           <div className="flex items-center gap-2">
             <span className="text-sm">Points</span>
@@ -189,7 +189,7 @@ function EngagementRules({ rules }: { rules: ScoreRule[] }) {
   return (
     <section className="space-y-3">
       <h3 className="font-medium">Engagement — what they did recently</h3>
-      <div className="divide-y rounded-lg border">
+      <div className="divide-y surface">
         {rules.length === 0 && <p className="px-3 py-3 text-sm text-muted-foreground">No engagement rules yet.</p>}
         {rules.map((r) => (
           <RuleShell key={r.id} rule={r}>

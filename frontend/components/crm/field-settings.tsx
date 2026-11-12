@@ -72,7 +72,7 @@ export function FieldSettings({ entity }: { entity: string }) {
   const list = fields.data ?? [];
   return (
     <div className="space-y-4">
-      <ul className="divide-y rounded-lg border">
+      <ul className="divide-y surface">
         {list.length === 0 && <li className="p-3 text-muted-foreground">No custom fields yet.</li>}
         {list.map((f, i) => (
           <li key={f.id} className="flex items-center gap-2 px-3 py-2">

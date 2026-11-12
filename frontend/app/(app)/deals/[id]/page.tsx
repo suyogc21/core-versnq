@@ -47,8 +47,8 @@ export default function DealPage() {
 
 function Section({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <section className="space-y-2">
-      <h4 className="flex items-center justify-between text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+    <section className="surface space-y-3 p-4">
+      <h4 className="flex items-center justify-between text-[13px] font-semibold">
         {title}
         {action}
       </h4>
@@ -79,7 +79,7 @@ function DealView({ deal }: { deal: Deal }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <div className="space-y-3 border-b px-4 py-3 md:px-6">
+      <div className="space-y-4 px-4 pt-4 pb-2 md:px-6 md:pt-5">
         <div className="text-xs text-muted-foreground">
           <Link href="/deals" className="hover:underline">
             {label("deal", true)}
@@ -87,9 +87,9 @@ function DealView({ deal }: { deal: Deal }) {
           / {deal.name}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="min-w-0 truncate text-lg font-semibold">{deal.name}</h2>
+          <h2 className="min-w-0 truncate text-2xl font-bold tracking-tight">{deal.name}</h2>
           <StatusBadge status={deal.status} />
-          <span className="text-lg font-semibold tabular-nums">{formatMoney(deal.amount_minor, deal.currency)}</span>
+          <span className="text-2xl font-semibold tracking-tight tabular-nums">{formatMoney(deal.amount_minor, deal.currency)}</span>
           <span className="text-xs text-muted-foreground">added {relative(deal.created_at)}</span>
           <TagEditor kind="deal" id={deal.id} tags={deal.tags ?? []} editable={editable} />
           {can("deals.delete") && (
@@ -106,13 +106,13 @@ function DealView({ deal }: { deal: Deal }) {
           </p>
         )}
       </div>
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[340px_minmax(0,1fr)_320px]">
-        <div className="space-y-5 border-b p-4 lg:border-r lg:border-b-0">
+      <div className="grid min-h-0 flex-1 items-start gap-4 p-4 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)_320px]">
+        <div className="space-y-4">
           <Section
             title="About"
             action={
               editable ? (
-                <button className="normal-case" onClick={() => setEditing(!editing)}>
+                <button className="text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => setEditing(!editing)}>
                   {editing ? "Cancel" : "Edit"}
                 </button>
               ) : undefined
@@ -124,11 +124,13 @@ function DealView({ deal }: { deal: Deal }) {
             <Lines deal={deal} editable={editable} />
           </Section>
         </div>
-        <div className="space-y-4 border-b p-4 lg:border-b-0">
+        <div className="space-y-4">
           {editable && <NoteBox deal={deal} />}
-          <Timeline dealId={deal.id} />
+          <div className="surface p-4">
+            <Timeline dealId={deal.id} />
+          </div>
         </div>
-        <div className="space-y-5 p-4 lg:border-l">
+        <div className="space-y-4">
           <Section title={label("lead")}>
             <Link href={`/leads/${deal.lead_id}`} className="block rounded-md border px-2 py-1.5 text-xs font-medium hover:bg-accent">
               {deal.lead_name}
@@ -466,7 +468,7 @@ function NoteBox({ deal }: { deal: Deal }) {
     }
   }
   return (
-    <form onSubmit={save} className="space-y-2 rounded-lg border p-3">
+    <form onSubmit={save} className="surface space-y-2 p-4">
       <Textarea aria-label="Note" placeholder="Write a note…" value={text} onChange={(e) => setText(e.target.value)} />
       <Button size="sm" type="submit" disabled={!text.trim()}>
         Add note

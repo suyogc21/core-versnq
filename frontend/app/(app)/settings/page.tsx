@@ -25,7 +25,7 @@ export default function SettingsHome() {
                 .map((p) => {
                   const Icon = p.icon;
                   return (
-                    <Link key={p.href} href={p.href} className="flex gap-3 rounded-lg border p-3 hover:bg-accent">
+                    <Link key={p.href} href={p.href} className="surface flex gap-3 p-4 transition-shadow hover:shadow-float">
                       <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                       <span>
                         <span className="block text-sm font-medium">{p.title}</span>

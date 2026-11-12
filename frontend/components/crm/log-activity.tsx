@@ -83,14 +83,14 @@ export function LogActivityForm({
 
   if (!kind) return null;
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg border bg-muted/30 p-3">
+    <form onSubmit={submit} className="surface space-y-3 p-4">
       <div className="flex flex-wrap gap-1">
         {loggable.map((t) => (
           <button
             key={t.key}
             type="button"
             onClick={() => onTypeChange(t.key)}
-            className={`rounded-md border px-2 py-1 text-xs ${t.key === kind.key ? "border-primary bg-primary/10 font-medium" : "bg-background text-muted-foreground"}`}
+            className={`rounded-md border px-2 py-1 text-xs ${t.key === kind.key ? "border-primary bg-primary/10 font-medium" : "bg-card text-muted-foreground"}`}
           >
             {t.label}
           </button>
@@ -106,7 +106,7 @@ export function LogActivityForm({
                   key={o.value}
                   type="button"
                   onClick={() => setData({ ...data, disposition: o.value })}
-                  className={`rounded-full border px-2.5 py-0.5 text-xs ${data.disposition === o.value ? "border-primary bg-primary text-primary-foreground" : "bg-background"}`}
+                  className={`rounded-full border px-2.5 py-0.5 text-xs ${data.disposition === o.value ? "border-primary bg-primary text-primary-foreground" : "bg-card"}`}
                 >
                   {o.label}
                 </button>
@@ -139,7 +139,7 @@ export function LogActivityForm({
               <button
                 key={q.label}
                 type="button"
-                className="rounded border bg-background px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent"
+                className="rounded border bg-card px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent"
                 onClick={() => setFollowUp(q.value)}
               >
                 {q.label}
