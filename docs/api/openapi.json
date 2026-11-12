@@ -220,6 +220,42 @@
         "title": "ActivityOut",
         "type": "object"
       },
+      "AgingOut": {
+        "properties": {
+          "buckets": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Buckets",
+            "type": "object"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_name": {
+            "title": "Entity Name",
+            "type": "string"
+          },
+          "total_minor": {
+            "title": "Total Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entity_id",
+          "entity_name",
+          "currency",
+          "buckets",
+          "total_minor"
+        ],
+        "title": "AgingOut",
+        "type": "object"
+      },
       "AgingRow": {
         "properties": {
           "buckets": {
@@ -260,6 +296,24 @@
           "due_later_minor"
         ],
         "title": "AgingRow",
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "minor": {
+            "title": "Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "currency",
+          "minor"
+        ],
+        "title": "Amount",
         "type": "object"
       },
       "AssignmentRuleIn": {
@@ -894,6 +948,38 @@
           "skipped"
         ],
         "title": "BulkOut",
+        "type": "object"
+      },
+      "BusinessDashboard": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/Headline"
+          },
+          "now": {
+            "$ref": "#/components/schemas/RightNow"
+          },
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/Headline"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendMonth"
+            },
+            "title": "Trend",
+            "type": "array"
+          }
+        },
+        "required": [
+          "period",
+          "now",
+          "current",
+          "previous",
+          "trend"
+        ],
+        "title": "BusinessDashboard",
         "type": "object"
       },
       "CaptureSourceIn": {
@@ -2268,6 +2354,44 @@
         "title": "DealWithLines",
         "type": "object"
       },
+      "Debtor": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "customer_id": {
+            "title": "Customer Id",
+            "type": "string"
+          },
+          "lead_id": {
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "minor": {
+            "title": "Minor",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id",
+          "number",
+          "name",
+          "lead_id",
+          "currency",
+          "minor"
+        ],
+        "title": "Debtor",
+        "type": "object"
+      },
       "DocumentOut": {
         "properties": {
           "allow_office": {
@@ -2383,6 +2507,34 @@
           "files"
         ],
         "title": "DocumentOut",
+        "type": "object"
+      },
+      "EntityAmount": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_name": {
+            "title": "Entity Name",
+            "type": "string"
+          },
+          "minor": {
+            "title": "Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entity_id",
+          "entity_name",
+          "currency",
+          "minor"
+        ],
+        "title": "EntityAmount",
         "type": "object"
       },
       "EntityIn": {
@@ -3384,6 +3536,29 @@
         "title": "FormulaOut",
         "type": "object"
       },
+      "FunnelStep": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "count"
+        ],
+        "title": "FunnelStep",
+        "type": "object"
+      },
       "GatewayIn": {
         "properties": {
           "entity_id": {
@@ -3535,6 +3710,55 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Headline": {
+        "properties": {
+          "booked": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Booked",
+            "type": "array"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "collected": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Collected",
+            "type": "array"
+          },
+          "converted": {
+            "title": "Converted",
+            "type": "integer"
+          },
+          "deals_won": {
+            "title": "Deals Won",
+            "type": "integer"
+          },
+          "follow_ups_done": {
+            "title": "Follow Ups Done",
+            "type": "integer"
+          },
+          "new_leads": {
+            "title": "New Leads",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "new_leads",
+          "calls",
+          "follow_ups_done",
+          "deals_won",
+          "booked",
+          "converted",
+          "collected"
+        ],
+        "title": "Headline",
         "type": "object"
       },
       "IdentityIn": {
@@ -4734,6 +4958,32 @@
             "title": "Cf",
             "type": "array"
           },
+          "created_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "created on or after (company day)",
+            "title": "Created From"
+          },
+          "created_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "created on or before (company day)",
+            "title": "Created To"
+          },
           "follow_up": {
             "anyOf": [
               {
@@ -5820,6 +6070,65 @@
           "version"
         ],
         "title": "LeadPatch",
+        "type": "object"
+      },
+      "LeaderRow": {
+        "properties": {
+          "booked": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Booked",
+            "type": "array"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "collected": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Collected",
+            "type": "array"
+          },
+          "deals_won": {
+            "title": "Deals Won",
+            "type": "integer"
+          },
+          "follow_ups_done": {
+            "title": "Follow Ups Done",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "new_leads": {
+            "title": "New Leads",
+            "type": "integer"
+          },
+          "sla_missed": {
+            "title": "Sla Missed",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "name",
+          "new_leads",
+          "calls",
+          "follow_ups_done",
+          "deals_won",
+          "booked",
+          "collected",
+          "sla_missed"
+        ],
+        "title": "LeaderRow",
         "type": "object"
       },
       "LineBody": {
@@ -6948,6 +7257,29 @@
         "title": "MessageOut",
         "type": "object"
       },
+      "MethodAmount": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "minor": {
+            "title": "Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "method",
+          "currency",
+          "minor"
+        ],
+        "title": "MethodAmount",
+        "type": "object"
+      },
       "ModuleOut": {
         "properties": {
           "core": {
@@ -6974,6 +7306,128 @@
           "enabled"
         ],
         "title": "ModuleOut",
+        "type": "object"
+      },
+      "MoneyDashboard": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/MoneyNumbers"
+          },
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "previous_collected": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Previous Collected",
+            "type": "array"
+          },
+          "previous_invoiced": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Previous Invoiced",
+            "type": "array"
+          }
+        },
+        "required": [
+          "period",
+          "current",
+          "previous_invoiced",
+          "previous_collected"
+        ],
+        "title": "MoneyDashboard",
+        "type": "object"
+      },
+      "MoneyNumbers": {
+        "properties": {
+          "aging": {
+            "items": {
+              "$ref": "#/components/schemas/AgingOut"
+            },
+            "title": "Aging",
+            "type": "array"
+          },
+          "by_entity": {
+            "items": {
+              "$ref": "#/components/schemas/EntityAmount"
+            },
+            "title": "By Entity",
+            "type": "array"
+          },
+          "by_method": {
+            "items": {
+              "$ref": "#/components/schemas/MethodAmount"
+            },
+            "title": "By Method",
+            "type": "array"
+          },
+          "collected": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Collected",
+            "type": "array"
+          },
+          "due": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Due",
+            "type": "array"
+          },
+          "due_next_30_days": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Due Next 30 Days",
+            "type": "array"
+          },
+          "installments_next_30_days": {
+            "title": "Installments Next 30 Days",
+            "type": "integer"
+          },
+          "invoiced": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Invoiced",
+            "type": "array"
+          },
+          "invoices_issued": {
+            "title": "Invoices Issued",
+            "type": "integer"
+          },
+          "overdue": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Overdue",
+            "type": "array"
+          },
+          "top_overdue": {
+            "items": {
+              "$ref": "#/components/schemas/Debtor"
+            },
+            "title": "Top Overdue",
+            "type": "array"
+          }
+        },
+        "required": [
+          "invoiced",
+          "invoices_issued",
+          "collected",
+          "due",
+          "overdue",
+          "due_next_30_days",
+          "installments_next_30_days",
+          "aging",
+          "by_method",
+          "by_entity",
+          "top_overdue"
+        ],
+        "title": "MoneyNumbers",
         "type": "object"
       },
       "MoneySettings": {
@@ -7067,6 +7521,30 @@
         "title": "MoveIn",
         "type": "object"
       },
+      "MyDashboard": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/Headline"
+          },
+          "now": {
+            "$ref": "#/components/schemas/RightNow"
+          },
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/Headline"
+          }
+        },
+        "required": [
+          "period",
+          "now",
+          "current",
+          "previous"
+        ],
+        "title": "MyDashboard",
+        "type": "object"
+      },
       "MyDayOut": {
         "properties": {
           "new_leads": {
@@ -7117,6 +7595,24 @@
           "unassigned_count"
         ],
         "title": "MyDayOut",
+        "type": "object"
+      },
+      "Named": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "count"
+        ],
+        "title": "Named",
         "type": "object"
       },
       "NewInvoice": {
@@ -7541,6 +8037,43 @@
           "created_at"
         ],
         "title": "PaymentOut",
+        "type": "object"
+      },
+      "PeriodOut": {
+        "properties": {
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "previous_end": {
+            "format": "date",
+            "title": "Previous End",
+            "type": "string"
+          },
+          "previous_start": {
+            "format": "date",
+            "title": "Previous Start",
+            "type": "string"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "start",
+          "end",
+          "previous_start",
+          "previous_end"
+        ],
+        "title": "PeriodOut",
         "type": "object"
       },
       "PermissionOut": {
@@ -8961,6 +9494,58 @@
         "title": "ResetIn",
         "type": "object"
       },
+      "RightNow": {
+        "properties": {
+          "leaking": {
+            "title": "Leaking",
+            "type": "integer"
+          },
+          "open_deals": {
+            "title": "Open Deals",
+            "type": "integer"
+          },
+          "overdue_money": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Overdue Money",
+            "type": "array"
+          },
+          "pipeline": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Pipeline",
+            "type": "array"
+          },
+          "tasks_due_today": {
+            "title": "Tasks Due Today",
+            "type": "integer"
+          },
+          "tasks_overdue": {
+            "title": "Tasks Overdue",
+            "type": "integer"
+          },
+          "weighted": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Weighted",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tasks_overdue",
+          "tasks_due_today",
+          "open_deals",
+          "pipeline",
+          "weighted",
+          "overdue_money",
+          "leaking"
+        ],
+        "title": "RightNow",
+        "type": "object"
+      },
       "RoleAccess": {
         "properties": {
           "create": {
@@ -10074,6 +10659,44 @@
         "title": "SourcePatch",
         "type": "object"
       },
+      "SourceRow": {
+        "properties": {
+          "contacted": {
+            "title": "Contacted",
+            "type": "integer"
+          },
+          "conversion_bp": {
+            "title": "Conversion Bp",
+            "type": "integer"
+          },
+          "converted": {
+            "title": "Converted",
+            "type": "integer"
+          },
+          "leads": {
+            "title": "Leads",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "name",
+          "leads",
+          "contacted",
+          "converted",
+          "conversion_bp"
+        ],
+        "title": "SourceRow",
+        "type": "object"
+      },
       "StaffAccountOut": {
         "properties": {
           "email": {
@@ -10979,6 +11602,72 @@
         "title": "TaxPatch",
         "type": "object"
       },
+      "TeamDashboard": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/Headline"
+          },
+          "everyone": {
+            "title": "Everyone",
+            "type": "boolean"
+          },
+          "funnel": {
+            "items": {
+              "$ref": "#/components/schemas/FunnelStep"
+            },
+            "title": "Funnel",
+            "type": "array"
+          },
+          "leaderboard": {
+            "items": {
+              "$ref": "#/components/schemas/LeaderRow"
+            },
+            "title": "Leaderboard",
+            "type": "array"
+          },
+          "lost_reasons": {
+            "items": {
+              "$ref": "#/components/schemas/Named"
+            },
+            "title": "Lost Reasons",
+            "type": "array"
+          },
+          "now": {
+            "$ref": "#/components/schemas/RightNow"
+          },
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/Headline"
+          },
+          "sla_breaches": {
+            "title": "Sla Breaches",
+            "type": "integer"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRow"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "period",
+          "everyone",
+          "now",
+          "current",
+          "previous",
+          "funnel",
+          "sources",
+          "leaderboard",
+          "sla_breaches",
+          "lost_reasons"
+        ],
+        "title": "TeamDashboard",
+        "type": "object"
+      },
       "TeamIn": {
         "properties": {
           "name": {
@@ -11283,6 +11972,45 @@
           "conditions"
         ],
         "title": "TestOut",
+        "type": "object"
+      },
+      "TrendMonth": {
+        "properties": {
+          "booked": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Booked",
+            "type": "array"
+          },
+          "collected": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Collected",
+            "type": "array"
+          },
+          "converted": {
+            "title": "Converted",
+            "type": "integer"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "new_leads": {
+            "title": "New Leads",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "new_leads",
+          "converted",
+          "booked",
+          "collected"
+        ],
+        "title": "TrendMonth",
         "type": "object"
       },
       "TwoFactorDisableIn": {
@@ -15289,6 +16017,109 @@
         ]
       }
     },
+    "/api/v1/customers/export": {
+      "get": {
+        "operationId": "reports-export_customers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "inactive"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Owner",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "documents",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "missing",
+                    "complete"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Documents"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Customers",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
     "/api/v1/customers/{customer_id}": {
       "get": {
         "operationId": "customers-get_customer",
@@ -15865,6 +16696,370 @@
         ]
       }
     },
+    "/api/v1/dashboards/business": {
+      "get": {
+        "operationId": "reports-business_dashboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "default": "month",
+              "enum": [
+                "today",
+                "week",
+                "month",
+                "last_month",
+                "quarter",
+                "year",
+                "custom"
+              ],
+              "title": "Period",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Business Dashboard",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/dashboards/me": {
+      "get": {
+        "operationId": "reports-my_dashboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "default": "month",
+              "enum": [
+                "today",
+                "week",
+                "month",
+                "last_month",
+                "quarter",
+                "year",
+                "custom"
+              ],
+              "title": "Period",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyDashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Dashboard",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/dashboards/money": {
+      "get": {
+        "operationId": "reports-money_dashboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "default": "month",
+              "enum": [
+                "today",
+                "week",
+                "month",
+                "last_month",
+                "quarter",
+                "year",
+                "custom"
+              ],
+              "title": "Period",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoneyDashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Money Dashboard",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/dashboards/team": {
+      "get": {
+        "operationId": "reports-team_dashboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "default": "month",
+              "enum": [
+                "today",
+                "week",
+                "month",
+                "last_month",
+                "quarter",
+                "year",
+                "custom"
+              ],
+              "title": "Period",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Team Dashboard",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
     "/api/v1/deals": {
       "get": {
         "operationId": "deals-list_deals",
@@ -16291,6 +17486,182 @@
         "summary": "Bulk Deals",
         "tags": [
           "deals"
+        ]
+      }
+    },
+    "/api/v1/deals/export": {
+      "get": {
+        "operationId": "reports-export_deals",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pipeline_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pipeline Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "stage_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Stage Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "won",
+                    "lost"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Owner",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "close_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Close From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "close_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Close To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cf",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Cf",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Tag",
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Deals",
+        "tags": [
+          "reports"
         ]
       }
     },
@@ -17647,6 +19018,133 @@
         ]
       }
     },
+    "/api/v1/invoices/export": {
+      "get": {
+        "operationId": "reports-export_invoices",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "enum": [
+                  "draft",
+                  "issued",
+                  "partly_paid",
+                  "paid",
+                  "void"
+                ],
+                "type": "string"
+              },
+              "title": "Status",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Customer Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Owner",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "overdue",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Overdue",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Invoices",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
     "/api/v1/invoices/{invoice_id}": {
       "delete": {
         "operationId": "money-delete_invoice",
@@ -18956,6 +20454,44 @@
             }
           },
           {
+            "description": "created on or after (company day)",
+            "in": "query",
+            "name": "created_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "created on or after (company day)",
+              "title": "Created From"
+            }
+          },
+          {
+            "description": "created on or before (company day)",
+            "in": "query",
+            "name": "created_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "created on or before (company day)",
+              "title": "Created To"
+            }
+          },
+          {
             "in": "query",
             "name": "sort",
             "required": false,
@@ -19163,6 +20699,263 @@
         "summary": "View Counts",
         "tags": [
           "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/export": {
+      "get": {
+        "operationId": "reports-export_leads",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "stage_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Stage Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Source Id",
+              "type": "array"
+            }
+          },
+          {
+            "description": "'me', 'unassigned' or user ids",
+            "in": "query",
+            "name": "owner",
+            "required": false,
+            "schema": {
+              "default": [],
+              "description": "'me', 'unassigned' or user ids",
+              "items": {
+                "type": "string"
+              },
+              "title": "Owner",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "closed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "follow_up",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "overdue",
+                    "today",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Follow Up"
+            }
+          },
+          {
+            "description": "custom field filters as key:value",
+            "in": "query",
+            "name": "cf",
+            "required": false,
+            "schema": {
+              "default": [],
+              "description": "custom field filters as key:value",
+              "items": {
+                "type": "string"
+              },
+              "title": "Cf",
+              "type": "array"
+            }
+          },
+          {
+            "description": "has any of these tags",
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "default": [],
+              "description": "has any of these tags",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Tag",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "band",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "enum": [
+                  "hot",
+                  "warm",
+                  "cold"
+                ],
+                "type": "string"
+              },
+              "title": "Band",
+              "type": "array"
+            }
+          },
+          {
+            "description": "created on or after (company day)",
+            "in": "query",
+            "name": "created_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "created on or after (company day)",
+              "title": "Created From"
+            }
+          },
+          {
+            "description": "created on or before (company day)",
+            "in": "query",
+            "name": "created_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "created on or before (company day)",
+              "title": "Created To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "created",
+              "enum": [
+                "name",
+                "stage",
+                "follow_up",
+                "owner",
+                "last_activity",
+                "source",
+                "created",
+                "city",
+                "score"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dir",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "title": "Dir",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Leads",
+        "tags": [
+          "reports"
         ]
       }
     },
@@ -21692,6 +23485,91 @@
         "summary": "List Payments",
         "tags": [
           "money"
+        ]
+      }
+    },
+    "/api/v1/payments/export": {
+      "get": {
+        "operationId": "reports-export_payments",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Payments",
+        "tags": [
+          "reports"
         ]
       }
     },

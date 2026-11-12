@@ -44,6 +44,7 @@ async def test_me_lists_the_users_permissions(ws):
     assert (await c.get("/api/v1/auth/me", headers=mgr)).json()["permissions"] == [
         "customers.create",
         "customers.read",
+        "dashboards.team",
         "deals.create",
         "deals.edit",
         "documents.verify",

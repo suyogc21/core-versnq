@@ -2,7 +2,9 @@
 'select all matching' acts on exactly the rows the list shows."""
 
 import uuid
+from datetime import date, datetime, time, timedelta
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, or_, select
@@ -13,6 +15,7 @@ from app.modules.auth.deps import CurrentUser
 from app.modules.crm import leads as L
 from app.modules.crm import tags as T
 from app.modules.crm.models import Lead, LeadIdentity, LeadSource, LeadStage
+from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 
 SortKey = Literal[
@@ -32,6 +35,8 @@ class LeadFilter(BaseModel):
     cf: list[str] = Field(default=[], description="custom field filters as key:value")
     tag: list[uuid.UUID] = Field(default=[], description="has any of these tags")
     band: list[Literal["hot", "warm", "cold"]] = []
+    created_from: date | None = Field(default=None, description="created on or after (company day)")
+    created_to: date | None = Field(default=None, description="created on or before (company day)")
 
 
 async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> list:
@@ -52,6 +57,14 @@ async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> 
                 Lead.id.in_(identity),
             )
         )
+    if f.created_from or f.created_to:  # whole days in the company's time zone (dashboards)
+        tz = ZoneInfo(await db.scalar(select(TenantSettings.timezone)) or "UTC")
+        if f.created_from:
+            start = datetime.combine(f.created_from, time.min, tz)
+            where.append(Lead.created_at >= start)
+        if f.created_to:
+            end = datetime.combine(f.created_to + timedelta(days=1), time.min, tz)
+            where.append(Lead.created_at < end)
     if f.stage_id:
         where.append(Lead.stage_id.in_(f.stage_id))
     if f.source_id:

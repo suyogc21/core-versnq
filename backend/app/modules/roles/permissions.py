@@ -1,7 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
 # code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
-# 0017).
+# 0017, 0018).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -28,8 +28,16 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "payments.record": ("money", "Record payments received outside the gateway"),
     "payments.reverse": ("money", "Reverse recorded payments"),
     "money.settings": ("money", "Set up billing entities, taxes, gateways and the mailbox"),
+    "dashboards.team": ("crm", "See the team dashboard (funnel, sources, leaderboard)"),
+    "dashboards.business": ("crm", "See the business dashboard (revenue, collections, trend)"),
+    "dashboards.money": ("money", "See the money dashboard (invoiced, collected, aging)"),
+    "leads.export": ("crm", "Export leads to a CSV file"),
+    "deals.export": ("crm", "Export deals to a CSV file"),
+    "customers.export": ("crm", "Export customers to a CSV file"),
+    "invoices.export": ("money", "Export invoices and payments to a CSV file"),
 }
-MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money"}
+# Finance: all of money except exporting, which the admin grants (Decision log #35).
+MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money" and not c.endswith(".export")}
 ALL_CODES = frozenset(CATALOGUE)
 
 DEFAULT_GRANTS: dict[str, set[str]] = {
@@ -46,6 +54,7 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "customers.read",
         "customers.create",
         "documents.verify",
+        "dashboards.team",
         "invoices.read",
         "invoices.create",
         "payments.record",
