@@ -675,3 +675,71 @@ Answered 2026-11-12 (Decision log #34): all as recommended. Added: emails to the
 | M10 | UPI QR on the invoice needs a QR-code library (new dependency) | ~~Approve `segno`~~ Not needed: `reportlab` draws QR codes itself (#34) |
 | M11 | Open-source gateways | Researched: Hyperswitch (Apache 2.0) is a router that still needs Razorpay / Stripe underneath; running a gateway that holds clients' money needs an RBI payment-aggregator licence (₹15 crore net worth at application). Not in step 6; can plug into the gateway module later |
 | M9 | Real gateway test | Built and tested with signed fake webhooks; a real test-mode run needs your Razorpay / Stripe **test** keys, entered in Settings (never in code). Can be done any time after |
+
+---
+
+## 10. Step 7 in detail: dashboards and CSV export
+
+Goal: everyone opens Core and sees how they, their team or the business is doing, from first enquiry to money in the bank, and can take any list out as a CSV file. Every number comes from data already in Core (steps 1–6); nothing is typed in twice. Every number obeys the same visibility as the lists (a rep's numbers never count other reps' leads), and every number can be clicked to open the list behind it.
+
+### 10.1 The dashboards (spec §9)
+
+One **Dashboards** page in the sidebar with a tab per view; each person sees only the tabs their role allows.
+
+| Tab | Who | Shows |
+| --- | --- | --- |
+| **My numbers** | Everyone who works leads | New leads assigned, follow-ups done / due / overdue, calls logged, my open pipeline (value and weighted), deals won (count, value), my customers' collections and overdue, today's summary |
+| **Team** | Sales Managers (their team), Owner / Admin (everyone) | Funnel (leads → contacted → qualified → deal → won), source performance (leads, conversion %, won value per source), rep leaderboard (calls, leads worked, deals won, value, collections), leakage (leads not touched in time), response-time (SLA) breaches, lost reasons |
+| **Business** | Owner / Admin | Booked revenue (won deals), collected money, overdue, new customers, pipeline forecast (weighted), conversion trend by month. Email / WhatsApp performance joins in steps 9–10 |
+| **Money** | Finance, Owner / Admin | Invoiced, collected, due, overdue; aging (0–30 / 31–60 / 61–90 / 90+); collections per billing entity and per payment method; upcoming dues (next 30 days); customers with the most overdue |
+
+- **Period:** today, this week, this month (default), last month, this quarter, this year, or chosen dates; each number shows the change against the period before. Dates follow the company's time zone.
+- **Filters:** team, owner, source, pipeline, billing entity (where they apply).
+- **Money is never added across currencies:** each currency gets its own figures.
+- **Click-through:** every number opens the matching list (leads, deals, customers, invoices) with those filters already applied.
+- **My Day stays the rep's home page**, with a small strip of their key numbers linking to "My numbers".
+
+### 10.2 CSV export (spec §10 "Import / export, CSV both ways")
+
+- An **Export** button on the Leads, Deals, Customers, Invoices and Payments lists: it exports exactly what the list shows (same filters, search and saved view) with the columns shown, plus custom fields.
+- Only records the person may see; amounts as plain numbers with a currency column; dates in the company's time zone.
+- New permission **`data.export`** (default: Owner, Admin, Sales Manager, Finance). Every export is in the audit log (who, which list, how many rows).
+- Safe to open in Excel: a cell starting with `=`, `+`, `-` or `@` is written so it can never run as a formula.
+- Up to 50,000 rows downloaded straight away; bigger exports later through the worker.
+
+### 10.3 How the numbers are worked out
+
+- Live from the existing tables, using the company's activity, deal, invoice and payment records; no new tables. Indexes are added where a dashboard query needs one.
+- Definitions written down once and shown on hover ("Converted = became a customer in this period"), so every screen means the same thing.
+- If dashboards get slow for very large companies, nightly summaries can be added later without changing the screens.
+
+### 10.4 Endpoints (under `/api/v1`)
+
+- `GET /dashboards/me`, `GET /dashboards/team`, `GET /dashboards/business`, `GET /dashboards/money` — each with `period` / `from` / `to` and the filters; each answers only with what the caller may see (403 for a tab the role lacks).
+- `GET /leads/export`, `/deals/export`, `/customers/export`, `/invoices/export`, `/payments/export` — the same query parameters as each list, answering a CSV file.
+
+### 10.5 Screens
+
+- **Dashboards** page: tabs, period and filter bar, number tiles with the change, and simple charts (bars for the funnel, sources and aging; a line for the monthly trend; a table for the leaderboard). Works on a phone.
+- **Export** button on the five lists.
+- **My Day:** a strip of the rep's key numbers.
+
+### 10.6 Tests ("done" means these pass)
+
+- Every number checked against a hand-built set of leads, activities, deals, invoices and payments, including period edges (midnight in the company's time zone, month ends).
+- Visibility: a rep's numbers only count their own records; a manager's only their team; Finance sees money and no lead numbers; another company's data never appears.
+- Money: never summed across currencies; matches the step 6 balances and aging exactly.
+- Export: the same rows as the list, permission and audit, formula-safe cells, custom fields, 50,000-row limit.
+- Browser walk: each role opens their tabs, changes the period, clicks a number into its list, exports a CSV.
+
+### 10.7 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| R1 | Charts need a chart library? | **No new library:** simple bars and lines drawn by Core itself (enough for these views, nothing to install). A library (e.g. Recharts) only if you later want rich interactive charts |
+| R2 | Where do dashboards live? | One **Dashboards** page with role tabs; My Day stays the rep's home with a small numbers strip |
+| R3 | Default period and week start | This month; weeks start on Monday; company time zone |
+| R4 | Who may export? | New `data.export`: Owner, Admin, Sales Manager, Finance. Sales Users not by default (client data protection); a company can turn it on in Roles |
+| R5 | "Revenue" means? | Show both: **booked** (won deal value) and **collected** (payments received), side by side |
+| R6 | Build-your-own reports, scheduled email of dashboards | Later (spec: custom reports "Later"); email of reports once email exists (step 9) |
+| R7 | Different dashboards per industry | Same dashboards for everyone, in each company's own words (Student / Buyer / Client); per-industry dashboard layouts later if needed |
