@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). Next: step 5, customers and documents (needs the file-storage decision).
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Next: step 5, customers and documents — plan in §8, waiting for approval.
 
 | Step | What | Why here |
 | --- | --- | --- |
@@ -471,3 +471,107 @@ Changes to existing tables (through a migration):
 | A7 | Automations on records (Property, Batch)? | Leads and deals now; record triggers later if asked |
 | A8 | "Wait 2 days, then…" delays in automations | Not now (not in #16); comes with sequences in step 9 |
 | A9 | Webhook action before step 11 | Yes, a simple signed POST with retries now; full webhook management (logs, secrets per endpoint) in step 11 |
+
+---
+
+## 8. Step 5 in detail: customers and documents
+
+Goal: a won deal turns into a customer without losing anything, and the paperwork that follows (registration details, ID proofs, signed forms, photos) is collected, checked and filed per customer. Files live on our own server (Decision log #29). Money (step 6) then hangs invoices off the customer. Everything is company configuration: "Customer" is a label ("Student", "Buyer", "Client", "Applicant"), and the checklist is whatever each company needs.
+
+### 8.1 How a customer works
+
+- **A customer is a lead that became a customer.** It keeps the same record and the same timeline: every call, note, deal and task stays where it was. A `customers` row holds what is new: customer number, since when, status and customer-only fields.
+- **Becoming a customer:** "Make customer" on a won deal (offered right after the win), or on the lead page. A lead becomes a customer once; later wins add to the same customer.
+- **Customer status:** Active / Inactive (a company can rename; no deletions while money exists, from step 6).
+- **The customer page is the lead page with more on it:** a Customer card (number, since, status, fields), the document checklist and the registration link. No second page to keep in step.
+- **Who sees customers:** the same rules as leads (owner, team, everyone). Finance gets read access to customers and their documents (as agreed in Decision log #21).
+
+### 8.2 Documents
+
+- **Checklist (per company):** each item has a name (Aadhaar, Passport, 10th marksheet, Signed agreement), required or optional, accepted file types, and whether it applies to every customer or only when a deal includes certain products (e.g. "Visa documents" only for the Study Abroad course).
+- **Each customer's checklist** shows every item as Pending → Received → Verified, or Rejected with a reason (which asks for a new upload).
+- **Uploads:** staff upload on the customer page; the customer uploads through the secure link (8.3). More than one file per item is allowed (front and back of an ID). Extra files that are not on the checklist go under "Other documents".
+- **Verifying:** a new permission `documents.verify` (default: Admin, Sales Manager). Every upload, verify, reject and delete writes an activity on the timeline and an audit entry.
+- **Viewing:** images and PDFs preview in the browser; everything else downloads. Every view and download goes through Core after a company + permission check.
+
+### 8.3 Registration and document link (the customer never logs in)
+
+- From the customer page, staff create a **secure link**: it opens a simple page with the company's name and colour, asks for the registration fields the company chose, and lists the documents still pending, each with an upload button.
+- The link works for 14 days (company setting), only for that one customer, can be cancelled any time, and stops working once everything is submitted. The address holds a long random code; only its hash is stored.
+- **Sending it now:** "Copy link", and "Open in WhatsApp" with a ready message (a normal WhatsApp share link on the rep's own phone, no WhatsApp API needed). Email and WhatsApp sending from Core arrive in steps 9 and 10.
+- What the customer submits fills the customer's fields and the checklist, shows on the timeline as "Submitted by the customer", and notifies the owner.
+- Protection: rate limit per link and per address, file size and type checks, nothing about other customers is ever shown.
+
+### 8.4 Files on our server (Decision log #29)
+
+- One storage module saves and reads every file: `FILES_DIR/<company-id>/<year>/<month>/<random-name>`. Postgres keeps the record (original name, size, type, checksum, who uploaded, what it belongs to).
+- **Limits:** 10 MB per file; 5 GB per company (company plan setting later). Allowed: PDF, JPG, PNG, WEBP, HEIC; Word and Excel only if the checklist item allows them. The real file type is checked from its contents, not just the name.
+- **Safety:** files are never served straight from the folder; they are sent with "download" headers so a file cannot run as a web page. A half-finished upload leaves nothing behind (saved to a temporary name, then moved). A nightly job removes files that lost their record and flags records whose file is missing.
+- **Backups:** the nightly backup (go-live, step 12) must include the files folder. On your Mac the folder is `backend/var/files/` and is kept out of git.
+
+### 8.5 Tables (all with `tenant_id`, forced row-level security, same-company keys)
+
+| Table | Purpose |
+| --- | --- |
+| `customers` | One per lead (unique): customer number (per company, e.g. C-0001), since, status, customer fields, the deal that made them a customer |
+| `files` | Every stored file: path, original name, size, type, checksum, uploaded by (a person, or "the customer via link"), uploaded at |
+| `document_requirements` | The company's checklist items: name, required, accepted types, applies to all or to chosen products, order, active |
+| `documents` | One checklist item for one customer: status (pending / received / verified / rejected), reject reason, verified by / at; links to its files |
+| `document_files` | Which files belong to which document (several per item); "Other documents" have no checklist item |
+| `form_links` | Secure links: customer, code hash, which fields to ask, expires at, cancelled at, submitted at, created by |
+
+Changes to existing tables (through a migration):
+
+- `custom_field_definitions`: entity `customer` (customer-only fields, e.g. "Admission number", "Passport number").
+- `tenant_settings`: link validity in days (default 14), customer number prefix (default "C-").
+- New permissions: `customers.create` (make customer), `documents.verify`; Finance gets read on customers and documents.
+- New activity types: Became customer, Document uploaded, Document verified, Document rejected, Submitted by the customer.
+
+### 8.6 Rules the backend enforces
+
+- Only a lead the person can see and edit can be made a customer; once only.
+- Uploads: size, type (by content) and company quota checked before saving; the record is written only after the file is safely on disk.
+- A rejected document needs a reason; verifying needs `documents.verify`; a customer link can upload only to its own customer and only to items still pending or rejected.
+- Merging two leads moves customers' documents with them (if both are customers, the merge is refused with a clear message).
+- A lead that is a customer cannot be deleted (it will hold invoices from step 6); it can be set Inactive.
+- **Events:** `customer.created` and `document.received` (already in the catalogue), plus new `document.verified` and `document.rejected`. Automations get two new triggers: "becomes a customer" and "document received".
+
+### 8.7 Endpoints (under `/api/v1`)
+
+- `POST /leads/{id}/customer` (make customer), `GET/PATCH /customers/{id}`, `GET /customers` (list, filters, saved views reuse the leads engine).
+- `GET/POST/PATCH/DELETE /document-requirements`, `PUT /document-requirements/order`.
+- `GET /customers/{id}/documents`; `POST /customers/{id}/documents/{doc_id}/files` (upload); `POST …/verify`; `POST …/reject`; `DELETE /files/{id}`; `GET /files/{id}` (view or download after checks).
+- `POST /customers/{id}/links`, `DELETE /links/{id}`; public (no login): `GET /public/links/{code}`, `POST /public/links/{code}/files`, `POST /public/links/{code}/submit`.
+- Settings: link validity and number prefix in the existing settings endpoint.
+
+### 8.8 Screens
+
+- **Customers** in the sidebar (company label, e.g. "Enrolled students", "Buyers"): list with number, name, since, owner, documents done (e.g. 3 of 5), status; filters and saved views like the leads list.
+- **Customer page** (the lead page): Customer card; Documents card with the checklist, upload by drag-and-drop or the phone camera, preview, verify / reject; "Send registration link" with Copy and Open in WhatsApp.
+- **Won deal:** "Make customer" right after the win.
+- **The customer's page** (public link): company name and colour, the fields to fill, each pending document with an upload button; works well on a phone; a clear "All done, thank you" at the end.
+- **Settings → Records → Customer:** customer fields, the document checklist, link validity, number prefix.
+
+### 8.9 Tests ("done" means these pass)
+
+- **Isolation:** customers, documents, files and links across companies; a file from company A can never be read with company B's session or link, even with its id.
+- **Visibility:** a rep sees only their customers' documents; Finance reads but cannot verify; verify needs `documents.verify`.
+- **Files:** size, type by content (a renamed .exe is refused), quota, half-finished upload leaves nothing, nightly clean-up, download headers.
+- **Links:** expired, cancelled, already submitted and wrong codes are refused; rate limit; a link reaches only its own customer and pending items.
+- **Conversion:** once only, keeps the timeline, numbering per company, merge and delete rules, events and automation triggers.
+- **Browser walk:** win a deal → make customer → send the link → open it on a phone, fill fields and upload → owner sees it → manager verifies one and rejects one with a reason → customer re-uploads.
+
+### 8.10 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| E1 | A separate customer record, or the lead page with customer parts? | The lead page with customer parts (one record, one timeline, nothing to keep in step) |
+| E2 | Can a lead become a customer without a won deal? | Yes, from the lead page (e.g. walk-in admissions, old customers being imported) |
+| E3 | Checklist per product, or one for everyone? | Both: each item applies to everyone or only to chosen products |
+| E4 | Who verifies documents? | New `documents.verify`; default Admin and Sales Manager; companies change it in Roles |
+| E5 | How does the customer get the link before email/WhatsApp exist? | Copy link + "Open in WhatsApp" share from the rep's phone; Core sends it itself from steps 9 and 10 |
+| E6 | Link validity | 14 days by default, editable per company; can be cancelled any time |
+| E7 | File limits | 10 MB per file, 5 GB per company; PDF and images always, Word/Excel only where an item allows them |
+| E8 | Reminders for missing documents | In-app now: owner gets a task when documents are still pending after N days (default 3). Message reminders come with sequences (step 9) |
+| E9 | A "File" custom field type (attach a file to any field) | Not now; the documents checklist covers it. Add later if asked |
+| E10 | Deleting files and old documents (data protection) | Only Admin deletes; every delete is in the audit log. Retention rules (auto-delete after X years) with the security work in step 11 |
