@@ -1806,27 +1806,6 @@
         "title": "Branding",
         "type": "object"
       },
-      "BulkOut": {
-        "properties": {
-          "done": {
-            "title": "Done",
-            "type": "integer"
-          },
-          "skipped": {
-            "items": {
-              "$ref": "#/components/schemas/Skipped"
-            },
-            "title": "Skipped",
-            "type": "array"
-          }
-        },
-        "required": [
-          "done",
-          "skipped"
-        ],
-        "title": "BulkOut",
-        "type": "object"
-      },
       "BusinessDashboard": {
         "properties": {
           "current": {
@@ -4182,6 +4161,147 @@
           "secret"
         ],
         "title": "EndpointWithSecret",
+        "type": "object"
+      },
+      "EnrolIn": {
+        "properties": {
+          "lead_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Lead Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lead_ids"
+        ],
+        "title": "EnrolIn",
+        "type": "object"
+      },
+      "EnrolOut": {
+        "properties": {
+          "enrolled": {
+            "title": "Enrolled",
+            "type": "integer"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__engage__router__Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "enrolled",
+          "skipped"
+        ],
+        "title": "EnrolOut",
+        "type": "object"
+      },
+      "EnrolmentOut": {
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "ended_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Reason"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "lead_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Name"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run At"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "sequence_id": {
+            "format": "uuid",
+            "title": "Sequence Id",
+            "type": "string"
+          },
+          "sequence_name": {
+            "title": "Sequence Name",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "steps": {
+            "title": "Steps",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sequence_id",
+          "sequence_name",
+          "lead_id",
+          "status",
+          "position",
+          "steps",
+          "next_run_at",
+          "ended_reason",
+          "started_at",
+          "ended_at"
+        ],
+        "title": "EnrolmentOut",
         "type": "object"
       },
       "EntityAmount": {
@@ -10671,6 +10791,38 @@
         "title": "PipelineSummary",
         "type": "object"
       },
+      "PreviewIn": {
+        "properties": {
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ],
+        "title": "PreviewIn",
+        "type": "object"
+      },
+      "PreviewOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "body"
+        ],
+        "title": "PreviewOut",
+        "type": "object"
+      },
       "ProductIn": {
         "properties": {
           "code": {
@@ -12607,6 +12759,294 @@
         "title": "Section",
         "type": "object"
       },
+      "SendingSettings": {
+        "properties": {
+          "daily_cap": {
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Daily Cap",
+            "type": "integer"
+          },
+          "days": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 7,
+            "minItems": 1,
+            "title": "Days",
+            "type": "array"
+          },
+          "from": {
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "title": "From",
+            "type": "string"
+          },
+          "to": {
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$|^24:00$",
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "days",
+          "daily_cap"
+        ],
+        "title": "SendingSettings",
+        "type": "object"
+      },
+      "SequenceIn": {
+        "properties": {
+          "allow_with_others": {
+            "default": false,
+            "title": "Allow With Others",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "stop_on": {
+            "default": [
+              "reply",
+              "customer",
+              "deal_won",
+              "payment",
+              "closed"
+            ],
+            "items": {
+              "enum": [
+                "reply",
+                "customer",
+                "deal_won",
+                "payment",
+                "closed"
+              ],
+              "type": "string"
+            },
+            "title": "Stop On",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SequenceIn",
+        "type": "object"
+      },
+      "SequenceOut": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "integer"
+          },
+          "allow_with_others": {
+            "title": "Allow With Others",
+            "type": "boolean"
+          },
+          "completed": {
+            "title": "Completed",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepOut"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "stop_on": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Stop On",
+            "type": "array"
+          },
+          "stopped": {
+            "title": "Stopped",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_active",
+          "allow_with_others",
+          "stop_on",
+          "steps",
+          "active",
+          "completed",
+          "stopped",
+          "updated_at"
+        ],
+        "title": "SequenceOut",
+        "type": "object"
+      },
+      "SequencePatch": {
+        "properties": {
+          "allow_with_others": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow With Others"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "stop_on": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "reply",
+                    "customer",
+                    "deal_won",
+                    "payment",
+                    "closed"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop On"
+          }
+        },
+        "title": "SequencePatch",
+        "type": "object"
+      },
+      "SequenceStats": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "integer"
+          },
+          "became_customers": {
+            "title": "Became Customers",
+            "type": "integer"
+          },
+          "completed": {
+            "title": "Completed",
+            "type": "integer"
+          },
+          "enrolled": {
+            "title": "Enrolled",
+            "type": "integer"
+          },
+          "got_a_deal": {
+            "title": "Got A Deal",
+            "type": "integer"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepStats"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "stopped": {
+            "title": "Stopped",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enrolled",
+          "active",
+          "completed",
+          "stopped",
+          "got_a_deal",
+          "became_customers",
+          "steps"
+        ],
+        "title": "SequenceStats",
+        "type": "object"
+      },
       "SetTags": {
         "properties": {
           "new": {
@@ -12798,30 +13238,6 @@
           "channel"
         ],
         "title": "SharedIn",
-        "type": "object"
-      },
-      "Skipped": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "reason": {
-            "title": "Reason",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "reason"
-        ],
-        "title": "Skipped",
         "type": "object"
       },
       "SlaRuleIn": {
@@ -13467,6 +13883,229 @@
           "mapping"
         ],
         "title": "StartIn",
+        "type": "object"
+      },
+      "StepIn": {
+        "properties": {
+          "check_if": {
+            "anyOf": [
+              {
+                "enum": [
+                  "opened",
+                  "clicked",
+                  "replied",
+                  "tag",
+                  "field"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check If"
+          },
+          "due_in_hours": {
+            "default": 0,
+            "maximum": 720.0,
+            "minimum": 0.0,
+            "title": "Due In Hours",
+            "type": "integer"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "go_to": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Go To"
+          },
+          "hours": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2160.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hours"
+          },
+          "kind": {
+            "enum": [
+              "email",
+              "task",
+              "wait",
+              "check"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "tag_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag Id"
+          },
+          "task_type": {
+            "default": "other",
+            "enum": [
+              "call",
+              "linkedin_connect",
+              "linkedin_message",
+              "other"
+            ],
+            "title": "Task Type",
+            "type": "string"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "StepIn",
+        "type": "object"
+      },
+      "StepOut": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "kind",
+          "config"
+        ],
+        "title": "StepOut",
+        "type": "object"
+      },
+      "StepStats": {
+        "properties": {
+          "bounced": {
+            "default": 0,
+            "title": "Bounced",
+            "type": "integer"
+          },
+          "clicked": {
+            "default": 0,
+            "title": "Clicked",
+            "type": "integer"
+          },
+          "delivered": {
+            "default": 0,
+            "title": "Delivered",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "opened": {
+            "default": 0,
+            "title": "Opened",
+            "type": "integer"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "replied": {
+            "default": 0,
+            "title": "Replied",
+            "type": "integer"
+          },
+          "sent": {
+            "default": 0,
+            "title": "Sent",
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "default": 0,
+            "title": "Unsubscribed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "position",
+          "kind"
+        ],
+        "title": "StepStats",
         "type": "object"
       },
       "StorageOut": {
@@ -14286,6 +14925,154 @@
           }
         },
         "title": "TeamPatch",
+        "type": "object"
+      },
+      "TemplateIn": {
+        "properties": {
+          "body": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "channel": {
+            "const": "email",
+            "default": "email",
+            "title": "Channel",
+            "type": "string"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "subject",
+          "body"
+        ],
+        "title": "TemplateIn",
+        "type": "object"
+      },
+      "TemplateOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "channel",
+          "subject",
+          "body",
+          "is_active",
+          "updated_at"
+        ],
+        "title": "TemplateOut",
+        "type": "object"
+      },
+      "TemplatePatch": {
+        "properties": {
+          "body": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "title": "TemplatePatch",
         "type": "object"
       },
       "TemporaryPasswordOut": {
@@ -16036,6 +16823,51 @@
         "title": "BulkIn",
         "type": "object"
       },
+      "app__modules__crm__deals_router__BulkOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__crm__deals_router__Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "skipped"
+        ],
+        "title": "BulkOut",
+        "type": "object"
+      },
+      "app__modules__crm__deals_router__Skipped": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "reason"
+        ],
+        "title": "Skipped",
+        "type": "object"
+      },
       "app__modules__crm__layouts_router__AccessOut": {
         "properties": {
           "entity": {
@@ -16178,6 +17010,51 @@
           "action"
         ],
         "title": "BulkIn",
+        "type": "object"
+      },
+      "app__modules__crm__leads_router__BulkOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__crm__leads_router__Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "skipped"
+        ],
+        "title": "BulkOut",
+        "type": "object"
+      },
+      "app__modules__crm__leads_router__Skipped": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "reason"
+        ],
+        "title": "Skipped",
         "type": "object"
       },
       "app__modules__crm__pipelines_router__StageIn": {
@@ -16411,6 +17288,51 @@
         "title": "BulkIn",
         "type": "object"
       },
+      "app__modules__crm__records_router__BulkOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__crm__records_router__Skipped"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "skipped"
+        ],
+        "title": "BulkOut",
+        "type": "object"
+      },
+      "app__modules__crm__records_router__Skipped": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "reason"
+        ],
+        "title": "Skipped",
+        "type": "object"
+      },
       "app__modules__crm__rules_router__OrderIn": {
         "properties": {
           "ids": {
@@ -16573,6 +17495,37 @@
           }
         },
         "title": "StagePatch",
+        "type": "object"
+      },
+      "app__modules__engage__router__Skipped": {
+        "properties": {
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id",
+          "name",
+          "reason"
+        ],
+        "title": "Skipped",
         "type": "object"
       },
       "app__modules__roles__router__RoleOut": {
@@ -20512,7 +21465,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BulkOut"
+                  "$ref": "#/components/schemas/app__modules__crm__deals_router__BulkOut"
                 }
               }
             },
@@ -21487,6 +22440,124 @@
         "summary": "Update Requirement",
         "tags": [
           "customers"
+        ]
+      }
+    },
+    "/api/v1/engage/settings": {
+      "get": {
+        "operationId": "sequences-get_sending",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendingSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Sending",
+        "tags": [
+          "sequences"
+        ]
+      },
+      "put": {
+        "operationId": "sequences-set_sending",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendingSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendingSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Sending",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/enrolments/{e_id}/stop": {
+      "post": {
+        "operationId": "sequences-stop_enrolment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "e_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "E Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolmentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Stop Enrolment",
+        "tags": [
+          "sequences"
         ]
       }
     },
@@ -25920,7 +26991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BulkOut"
+                  "$ref": "#/components/schemas/app__modules__crm__leads_router__BulkOut"
                 }
               }
             },
@@ -27418,6 +28489,58 @@
         "summary": "Lead Score",
         "tags": [
           "organise"
+        ]
+      }
+    },
+    "/api/v1/leads/{lead_id}/sequences": {
+      "get": {
+        "operationId": "sequences-lead_enrolments",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EnrolmentOut"
+                  },
+                  "title": "Response Sequences-Lead Enrolments",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Lead Enrolments",
+        "tags": [
+          "sequences"
         ]
       }
     },
@@ -30784,7 +31907,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BulkOut"
+                  "$ref": "#/components/schemas/app__modules__crm__records_router__BulkOut"
                 }
               }
             },
@@ -31586,6 +32709,479 @@
         ]
       }
     },
+    "/api/v1/sequences": {
+      "get": {
+        "description": "Anyone who can see leads may pick a sequence to put a lead into.",
+        "operationId": "sequences-list_sequences",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SequenceOut"
+                  },
+                  "title": "Response Sequences-List Sequences",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Sequences",
+        "tags": [
+          "sequences"
+        ]
+      },
+      "post": {
+        "operationId": "sequences-create_sequence",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SequenceIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Sequence",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/sequences/{s_id}": {
+      "delete": {
+        "operationId": "sequences-delete_sequence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Sequence",
+        "tags": [
+          "sequences"
+        ]
+      },
+      "get": {
+        "operationId": "sequences-get_sequence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Sequence",
+        "tags": [
+          "sequences"
+        ]
+      },
+      "patch": {
+        "operationId": "sequences-update_sequence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SequencePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Sequence",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/sequences/{s_id}/enrol": {
+      "post": {
+        "description": "Put leads you can see into the sequence. Each one that can't go in says why.",
+        "operationId": "sequences-enrol",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrolIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Enrol",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/sequences/{s_id}/enrolments": {
+      "get": {
+        "operationId": "sequences-sequence_enrolments",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "completed",
+                    "stopped"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EnrolmentOut"
+                  },
+                  "title": "Response Sequences-Sequence Enrolments",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sequence Enrolments",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/sequences/{s_id}/stats": {
+      "get": {
+        "operationId": "sequences-sequence_stats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sequence Stats",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/sequences/{s_id}/steps": {
+      "put": {
+        "description": "Replace the steps. People already in the sequence carry on from their step number.",
+        "operationId": "sequences-set_steps",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/StepIn"
+                },
+                "title": "Body",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Steps",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
     "/api/v1/settings": {
       "get": {
         "operationId": "settings-get_settings_",
@@ -31850,6 +33446,96 @@
         "summary": "Storage Use",
         "tags": [
           "customers"
+        ]
+      }
+    },
+    "/api/v1/t/c/{token}/{index}": {
+      "get": {
+        "description": "Only ever redirects to a link that was in the email (never an open redirect).",
+        "operationId": "sequences-public-track_click",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "index",
+            "required": true,
+            "schema": {
+              "title": "Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Track Click",
+        "tags": [
+          "sequences-public"
+        ]
+      }
+    },
+    "/api/v1/t/o/{token}.gif": {
+      "get": {
+        "operationId": "sequences-public-track_open",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Track Open",
+        "tags": [
+          "sequences-public"
         ]
       }
     },
@@ -32584,6 +34270,316 @@
         "summary": "Set Members",
         "tags": [
           "teams"
+        ]
+      }
+    },
+    "/api/v1/templates": {
+      "get": {
+        "operationId": "sequences-list_templates",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateOut"
+                  },
+                  "title": "Response Sequences-List Templates",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Templates",
+        "tags": [
+          "sequences"
+        ]
+      },
+      "post": {
+        "operationId": "sequences-create_template",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Template",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/templates/{t_id}": {
+      "delete": {
+        "operationId": "sequences-delete_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "t_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "T Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Template",
+        "tags": [
+          "sequences"
+        ]
+      },
+      "patch": {
+        "operationId": "sequences-update_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "t_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "T Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplatePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Template",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/templates/{t_id}/preview": {
+      "post": {
+        "description": "The template filled in for a real lead, before anything is sent.",
+        "operationId": "sequences-preview_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "t_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "T Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Template",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/u/{token}": {
+      "get": {
+        "description": "Shows a button (link scanners open links; only the button unsubscribes).",
+        "operationId": "sequences-public-unsubscribe_page",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unsubscribe Page",
+        "tags": [
+          "sequences-public"
+        ]
+      },
+      "post": {
+        "description": "The button, and mail apps' one-click unsubscribe (RFC 8058).",
+        "operationId": "sequences-public-unsubscribe",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unsubscribe",
+        "tags": [
+          "sequences-public"
         ]
       }
     },

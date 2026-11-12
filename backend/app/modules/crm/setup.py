@@ -118,6 +118,18 @@ STEP_M4_SYSTEM_TYPES = [
     },
     {"key": "intent_changed", "label": "Intent changed", "icon": "gauge", "loggable": False},
 ]
+# Sequences and email (step 9a, Decision log #39); frozen copy in migration 0023.
+STEP9A_SYSTEM_TYPES = [
+    {"key": "email_sent", "label": "Email sent", "icon": "mail", "loggable": False},
+    {"key": "email_event", "label": "Email activity", "icon": "mail-open", "loggable": False},
+    {
+        "key": "sequence_enrolled",
+        "label": "Added to a sequence",
+        "icon": "list-start",
+        "loggable": False,
+    },
+    {"key": "sequence_ended", "label": "Sequence ended", "icon": "list-end", "loggable": False},
+]
 # Money (step 6, Decision log #34); frozen copy in migration 0017.
 STEP6_SYSTEM_TYPES = [
     {"key": key, "label": label, "icon": icon, "loggable": False}
@@ -150,6 +162,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP6_SYSTEM_TYPES,
         *STEP7B_SYSTEM_TYPES,
         *STEP_M4_SYSTEM_TYPES,
+        *STEP9A_SYSTEM_TYPES,
     ]
 
 

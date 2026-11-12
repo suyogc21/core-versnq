@@ -345,7 +345,7 @@ class Consent(TenantScoped, Base):
     lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     channel: Mapped[str] = mapped_column(String(10))
     status: Mapped[str] = mapped_column(String(10))
-    source: Mapped[str] = mapped_column(String(10))
+    source: Mapped[str] = mapped_column(String(12))  # 'unsubscribe' is 11 (fixed in 0023)
     wording: Mapped[str | None] = mapped_column(String(500))
     evidence: Mapped[dict] = mapped_column(JSONB, default=dict)
     actor_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)

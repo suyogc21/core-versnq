@@ -133,6 +133,14 @@ async def webhooks_job(ctx) -> dict:
     return await run_all(await _active_tenants())
 
 
+async def sequences_job(ctx) -> int:
+    """Every 30 seconds: run the sequence steps that are due (step 9a)."""
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.engage.engine import run_all
+
+    return await run_all(await _active_tenants())
+
+
 async def money_mail_sweep_job(ctx) -> int:
     from app.modules.crm.automation import _active_tenants
     from app.modules.money.worker import sweep

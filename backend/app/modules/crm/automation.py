@@ -80,6 +80,7 @@ ACTIONS = {
     "change_stage",
     "notify",
     "webhook",
+    "enrol",  # put the lead into a sequence (step 9a, #16, #39)
 }
 LEAD_EDITABLE_BUILTINS = {"city", "region", "preferred_language", "campaign"}
 
@@ -258,6 +259,16 @@ async def _check_action(db, subject: str, a: dict, old_secrets: dict) -> dict:
         if not message:
             raise Invalid("Write the notification")
         return {"type": kind, "to": to, "message": message}
+    if kind == "enrol":
+        from app.modules.engage.models import Sequence
+
+        try:
+            seq = await db.get(Sequence, uuid.UUID(str(a.get("sequence_id"))))
+        except ValueError:
+            seq = None
+        if seq is None:
+            raise Invalid("Choose a sequence")
+        return {"type": kind, "sequence_id": str(seq.id)}
     url = check_url(str(a.get("url", "")).strip())
     secret = old_secrets.get(url) or "whsec_" + secrets.token_urlsafe(24)
     return {"type": "webhook", "url": url, "secret": secret}
@@ -397,6 +408,18 @@ async def _act(db, auto: Automation, subject: Lead | Deal, a: dict, webhooks: li
             users = [uuid.UUID(a["to"])]
         await notify(db, subject.tenant_id, users, "automation", a["message"], lead.id)
         return f"Notified {len(users)}"
+    if kind == "enrol":
+        from app.modules.engage import engine as E
+        from app.modules.engage.models import Sequence
+
+        seq = await db.get(Sequence, uuid.UUID(a["sequence_id"]))
+        if seq is None:
+            raise Skip("the sequence was deleted")
+        lead = subject if is_lead else await db.get(Lead, subject.lead_id)
+        out = await E.enrol(db, None, seq, lead)
+        if isinstance(out, str):
+            raise Skip(out)
+        return f"Added to {seq.name}"
     body = {
         "automation_id": str(auto.id),
         "automation": auto.name,

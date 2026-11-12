@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     trust_proxy_headers: bool = False
     # Dev/e2e only: save outgoing emails as files here instead of logging them. Ignored in prod.
     mail_outbox_dir: str | None = None
+    # sequence emails (step 9a): "test" keeps them in Core; "mailbox" sends through the
+    # company's own mailbox; Amazon SES is added at go-live (Decision log #39)
+    email_sender: Literal["test", "mailbox"] = "test"
     # Uploaded files (documents, later invoice PDFs) live here on our own server's disk
     # (Decision log #29). Back this folder up nightly with the database.
     files_dir: str = "var/files"

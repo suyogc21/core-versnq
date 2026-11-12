@@ -1,7 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
 # code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
-# 0017, 0018, 0019, 0021).
+# 0017, 0018, 0019, 0021, 0023).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -37,6 +37,7 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "invoices.export": ("money", "Export invoices and payments to a CSV file"),
     "key_accounts.manage": ("key_accounts", "Mark key accounts and plan them"),
     "integrations.manage": ("settings", "Manage API keys, webhooks and their logs"),
+    "sequences.manage": ("crm", "Create sequences and message templates"),
 }
 # Finance: all of money except exporting, which the admin grants (Decision log #35).
 MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money" and not c.endswith(".export")}
@@ -58,6 +59,7 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "documents.verify",
         "dashboards.team",
         "key_accounts.manage",
+        "sequences.manage",
         "invoices.read",
         "invoices.create",
         "payments.record",

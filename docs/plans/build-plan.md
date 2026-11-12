@@ -891,3 +891,69 @@ Isolation; a hidden field never appears for that role in the record, list, searc
 | P3 | "Mandatory" per role? | **No**: stays per field and per stage |
 | P4 | Can a calculated field show a value built from a hidden field? | **No by default**; the admin can allow it per calculated field |
 | P5 | Highlights | **Up to 4** per kind of record |
+
+## 14. Steps 9–10 in detail: sequences, email, shared inbox, WhatsApp
+
+What it is for: follow-ups run themselves. A new enquiry gets a welcome email and a WhatsApp, a reminder two days later, a task for the rep on day three; the moment the person replies, pays or opts out, the sequence stops and the reply lands in one shared inbox on the lead's timeline (rule 5). Everything is built and tested now with a **test sender** (messages are saved, not sent); the real email provider and Meta number plug in later without changing the rest.
+
+Already built and reused: the company's mailbox sending (step 6), the suppression list and consent per channel (step 1), the automation builder (its "put into a sequence" action was reserved for this step, #16), events `sequence.enrolled` and `sequence.replied`, the timeline, API keys and webhooks (milestone 4).
+
+### 14.1 Built in three slices, each tested before the next
+
+| Slice | What | Needs from Suyog |
+| --- | --- | --- |
+| **9a** Sequences + email | Templates, sequence builder, enrolment, stop rules, quiet hours, sending limits, tracking, unsubscribe, step analytics | Nothing (test sender) |
+| **9b** Shared inbox (email) | Replies threaded per lead, assignment, manager takeover, canned replies, reply from the inbox | Nothing (test inbound) |
+| **10** WhatsApp | The company's own number, approved templates, the 24-hour window, opt-out, delivery / read status, inbound from an unknown number creates a lead, WhatsApp in sequences and the inbox, number health | Nothing until go-live (test Meta), then Meta keys |
+
+### 14.2 Sequences (spec §5)
+
+- **Steps:** email, WhatsApp, task for the rep (LinkedIn connect / message, call), wait (hours or days), and a **check** ("if they opened / clicked / have tag X / field Y = Z, go to step N, otherwise carry on") — that is how branches work.
+- **Templates with variables:** `{{lead.first_name}}`, `{{owner.name}}`, `{{company.name}}`, any custom field, each with a fallback ("there" when the first name is blank). Preview with a real lead before saving.
+- **Enrolment:** by hand (one or many from a list), from the automation builder ("when a lead comes from the website form → put into Welcome sequence"), or through the API. A lead is in one sequence at a time unless the admin allows more.
+- **Stop rules:** the person replies, opts out, is unsubscribed or bounces, becomes a customer, a deal is won, a payment arrives, the lead is closed, or someone stops it by hand. Each stop is logged.
+- **Quiet hours and limits:** no sends outside the company's hours (e.g. 9:00–20:00, in the company time zone) or on chosen days; a daily cap per sending address and per channel, so a new domain warms up slowly.
+- **Respecting people (rule 8):** consent and the suppression list are checked at every send, not only at enrolment; every marketing email has a one-click unsubscribe.
+- **Analytics per step:** sent, delivered, opened (marked estimated, #28), clicked, replied, bounced, unsubscribed, and how many went on to a deal or became customers.
+
+### 14.3 Email (spec §6, #28)
+
+- **Sending:** through one "sender" switch: the test sender now; at go-live the chosen provider (SES recommended) from the company's own domain, after it adds the DNS records we show (SPF, DKIM, DMARC) — several domains and brands per company (roadmap 3.10). The company's own mailbox (Gmail / Zoho, already used for invoices) stays available for small volumes.
+- **Replies:** each email carries a reply address that routes the answer back into Core's inbox, so replies thread onto the right lead.
+- **Tracking:** opens (pixel, labelled estimated), clicks (links go through our address first), bounces and spam complaints (hard bounces and complaints are suppressed automatically), unsubscribes.
+
+### 14.4 Shared inbox (spec §6)
+
+- One list of conversations (email now, WhatsApp in step 10), each tied to a lead; unread counts; filters: mine, unassigned, team, waiting for us.
+- A conversation follows the lead's owner; a manager can take it over or hand it on; reps see only conversations of leads they can see.
+- Reply from the inbox (email free text; WhatsApp only inside the 24-hour window, else an approved template); canned replies with variables.
+- A reply stops the person's sequence and shows on the timeline; `sequence.replied` is emitted for automations, webhooks and later ACE.
+
+### 14.5 WhatsApp (spec §6, step 10)
+
+- The company's own number through the Meta Cloud API (direct, no reseller) — keys entered in settings, encrypted.
+- Templates: written in Core, sent to Meta for approval, status shown (approved / rejected / paused); only approved ones can start a conversation.
+- The 24-hour window: free text only within 24 hours of the person's last message; otherwise Core offers templates only.
+- Opt-out words ("STOP") switch WhatsApp consent off at once; delivered / read / failed come from Meta's status messages; number quality and messaging limit shown.
+- A message from an unknown number creates a lead (roadmap 3.5) through the normal intake and routing.
+
+### 14.6 Tables (company-scoped, forced RLS) — migrations 0023 (9a), 0024 (9b), 0025 (10)
+
+`message_templates`, `sequences`, `sequence_steps`, `enrolments`, `messages` (every email / WhatsApp in or out, with status and tracking), `message_events` (opened, clicked, bounced…), `sending_domains`, `conversations`, `canned_replies`, `whatsapp_accounts`, `whatsapp_templates`. Permissions `sequences.manage`, `templates.manage`, `inbox.reply`, `inbox.take_over`.
+
+### 14.7 Tests ("done" means these pass)
+
+Isolation; a sequence sends in order and waits; quiet hours and caps hold; every stop rule stops; opted-out, unsubscribed, bounced or suppressed people are never sent to, even mid-sequence; variables fill and fall back; unsubscribe link works without logging in; tracking counts; replies thread to the right lead and stop the sequence; reps see only their conversations; WhatsApp free text refused outside 24 hours; STOP opts out; unknown number creates a lead; browser walks per slice on desktop and phone.
+
+### 14.8 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| E1 | Build order | **9a, then 9b, then 10**, each approved before the next |
+| E2 | Email provider at go-live | **Amazon SES** (Mumbai), sending from each company's own domain; company mailbox kept for small volumes |
+| E3 | WhatsApp connection | **Direct Meta Cloud API** (no reseller fees) |
+| E4 | Branches | **"Check" steps that jump** (if … go to step N), not a drawing canvas — simpler to build and to understand |
+| E5 | One sequence at a time per lead? | **Yes by default**; the admin can allow more |
+| E6 | Quiet hours | **Company time zone**, default 9:00–20:00, Monday–Saturday, editable |
+| E7 | Daily sending cap per address | **200 emails a day to start**, editable (protects new domains) |
+| E8 | Auto-enrol | **Through the automation builder** (one place for "when X happens") rather than a second set of triggers |

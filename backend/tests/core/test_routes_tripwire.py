@@ -24,6 +24,12 @@ PUBLIC = {
     ("OPTIONS", "/api/v1/capture/{key}"),
     # Payment gateways tell Core a link was paid; only a valid signature is accepted (#34).
     ("POST", "/api/v1/webhooks/{gateway_name}/{account_id}"),
+    # Inside every sequence email (#39): open pixel, tracked links (only to links that were in
+    # that email), unsubscribe page and its button / one-click unsubscribe. Random tokens.
+    ("GET", "/api/v1/t/o/{token}.gif"),
+    ("GET", "/api/v1/t/c/{token}/{index}"),
+    ("GET", "/api/v1/u/{token}"),
+    ("POST", "/api/v1/u/{token}"),
 }
 
 

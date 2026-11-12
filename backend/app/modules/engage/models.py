@@ -1,0 +1,115 @@
+"""Sequences, templates and messages (step 9a, migration 0023). Company-scoped, forced RLS."""
+
+import uuid
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKeyConstraint, Integer, String, Text, Uuid, func
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.db import Base
+from app.core.models import TimestampMixin
+from app.modules.crm.models import TenantScoped, _fk
+
+
+class MessageTemplate(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "message_templates"
+
+    name: Mapped[str] = mapped_column(String(120))
+    channel: Mapped[str] = mapped_column(String(10))  # email / whatsapp
+    subject: Mapped[str | None] = mapped_column(String(300))
+    body: Mapped[str] = mapped_column(Text)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class Sequence(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "sequences"
+
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str | None] = mapped_column(String(500))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    allow_with_others: Mapped[bool] = mapped_column(Boolean, default=False)
+    stop_on: Mapped[list] = mapped_column(JSONB)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class SequenceStep(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "sequence_steps"
+    __table_args__ = (
+        _fk("sequence_id", "sequences", "fk_sequence_steps_sequence_same_tenant", "CASCADE"),
+    )
+
+    sequence_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    position: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(10))  # email / whatsapp / task / wait / check
+    config: Mapped[dict] = mapped_column(JSONB)
+
+
+class Enrolment(TenantScoped, TimestampMixin, Base):
+    __tablename__ = "enrolments"
+    __table_args__ = (
+        _fk("sequence_id", "sequences", "fk_enrolments_sequence_same_tenant", "CASCADE"),
+        _fk("lead_id", "leads", "fk_enrolments_lead_same_tenant", "CASCADE"),
+    )
+
+    sequence_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    status: Mapped[str] = mapped_column(String(10))  # active / completed / stopped
+    position: Mapped[int] = mapped_column(Integer, default=1)  # the next step to run
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ended_reason: Mapped[str | None] = mapped_column(String(40))
+    enrolled_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Message(TenantScoped, TimestampMixin, Base):
+    """Every email (and later WhatsApp) in or out, with its tracking."""
+
+    __tablename__ = "messages"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "lead_id"], ["leads.tenant_id", "leads.id"],
+            name="fk_messages_lead_same_tenant", ondelete="SET NULL",
+        ),
+        ForeignKeyConstraint(
+            ["tenant_id", "enrolment_id"], ["enrolments.tenant_id", "enrolments.id"],
+            name="fk_messages_enrolment_same_tenant", ondelete="SET NULL",
+        ),
+    )  # fmt: skip
+
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    channel: Mapped[str] = mapped_column(String(10))
+    direction: Mapped[str] = mapped_column(String(3))  # out / in
+    enrolment_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    step_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    template_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    to_address: Mapped[str] = mapped_column(String(320))
+    from_address: Mapped[str | None] = mapped_column(String(320))
+    subject: Mapped[str | None] = mapped_column(String(300))
+    body: Mapped[str] = mapped_column(Text)
+    links: Mapped[list] = mapped_column(JSONB, default=list)  # tracked link targets, by index
+    token: Mapped[str] = mapped_column(String(48), unique=True)
+    status: Mapped[str] = mapped_column(String(10))
+    provider_id: Mapped[str | None] = mapped_column(String(200))
+    error: Mapped[str | None] = mapped_column(String(300))
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    opened_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    clicked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    replied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    bounced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    unsubscribed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    sent_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class MessageEvent(TenantScoped, Base):
+    __tablename__ = "message_events"
+    __table_args__ = (
+        _fk("message_id", "messages", "fk_message_events_message_same_tenant", "CASCADE"),
+    )
+
+    message_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    type: Mapped[str] = mapped_column(String(12))
+    data: Mapped[dict] = mapped_column(JSONB, default=dict)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -22,6 +22,16 @@ class TenantSettings(TimestampMixin, Base):
         String(3), default="USD"
     )  # ISO 4217, new pipelines
     branding: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # sequences (step 9a): quiet hours, sending days (0 = Monday) and the daily email cap
+    engage: Mapped[dict] = mapped_column(
+        JSONB,
+        default=lambda: {
+            "from": "09:00",
+            "to": "20:00",
+            "days": [0, 1, 2, 3, 4, 5],
+            "daily_cap": 200,
+        },  # fmt: skip
+    )
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)
     # Duplicates on automatic capture (R5): update the existing lead / flag / always create.
