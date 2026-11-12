@@ -595,6 +595,8 @@ Goal: after a sale, the team bills the customer, collects by payment link or ban
 - The link is copied or opened in WhatsApp (as with other links before step 9/10 exist).
 - **Gateway webhooks** mark the installment paid: the signature is checked, the gateway's payment id makes a repeated webhook harmless, and the amount and currency must match. A nightly check asks the gateway about links still open, in case a webhook was missed.
 - No gateway connected yet? Everything else works; payments are recorded manually.
+- **Two ways to pay, chosen per invoice:** when issuing, the user ticks **Payment link** (Razorpay / Stripe, marked paid automatically) and/or **Pay directly** (the invoice PDF shows the entity's bank details and a UPI QR with the exact amount and invoice number filled in; free, no gateway fee; staff mark it paid with proof, like any bank transfer). The company sets the default; the user can change it on each invoice. An invoice can carry both.
+- **One gateway module:** all gateway calls go through one module (like file storage), so another provider — e.g. an open-source orchestrator such as Hyperswitch, still under research — can be added later without touching invoices or payments.
 
 ### 9.3 Reminders, receipts, aging
 
@@ -667,4 +669,6 @@ Changes to existing tables: `tenant_settings` gets reminder days (before / overd
 | M6 | Recurring invoices (SaaS / retainers, spec "recurring billing") | Include a simple **repeat** on an invoice: every 1 / 3 / 12 months, creates the next issued invoice on schedule. Keeps Core fit for B2B SaaS without subscriptions logic |
 | M7 | Number reset each financial year (India: April) | Per entity setting, on by default for India packs (e.g. INV/2026-27/0001) |
 | M8 | Demo data | Acme (India, INR, GST 18%) and Bluewave (Dubai, AED, VAT 5%) get invoices at every state: paid, partly paid, due soon, overdue 0–90+ days; gateways in test mode only |
+| M10 | UPI QR on the invoice needs a QR-code library (new dependency) | Approve **`segno`** (BSD licence, pure Python, no other packages) |
+| M11 | Open-source gateways | Researched: Hyperswitch (Apache 2.0) is a router that still needs Razorpay / Stripe underneath; running a gateway that holds clients' money needs an RBI payment-aggregator licence (₹15 crore net worth at application). Not in step 6; can plug into the gateway module later |
 | M9 | Real gateway test | Built and tested with signed fake webhooks; a real test-mode run needs your Razorpay / Stripe **test** keys, entered in Settings (never in code). Can be done any time after |
