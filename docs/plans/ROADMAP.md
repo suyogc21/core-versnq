@@ -154,6 +154,11 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [ ] M.7 Finance role: sees invoices, payments, reminders (spec Roles); every money calculation tested
 - [ ] **Gate M:** all tests green (every money calculation), Suyog approves
 
+## Add-ons in the lineup
+
+- [ ] Key accounts (Decision log #31, after step 7): opportunity grid by budget holder, competitor status, relationship depth, account plan, group tree
+- ⏸ Client / sponsor portal: not now (Decision log #31; end customers do not log in, #12)
+
 ## Security and data protection (after Phase 2)
 
 - [ ] S.1 Login history (who, when, IP, device) and admin "sign out everyone"
@@ -229,3 +234,4 @@ CORE/
 | 2026-11-10 | Money | Unparked by Suyog (Decision log #24): added to the lineup as step 6, after customers and before dashboards |
 | 2026-11-10 | 3 | Deals and pipelines built (Decision log #25): several pipelines (one currency each), stages with win %, deals on a lead with exact amounts, drag board with per-stage value and weighted forecast, lost needs a reason, product catalogue with deal lines, deals linked to records (Property, Batch), deal timeline/tasks, Deals card on the lead, Deals settings. 342 backend tests + 6 e2e + 26-check browser walk green |
 | 2026-11-11 | 4 | Tags (leads, deals; bulk), saved views (private/team/everyone, live counts), fit + engagement scoring with Hot/Warm/Cold and a breakdown, calculated fields (safe formula parser, exact money), automation builder (WHEN/IF/THEN, worker every 5 s, run history, test on a lead, loop guard, auto switch-off, signed webhooks). Message tracking and a Smartlead connector added to the lineup (#28). 366 backend tests + 6 e2e + 26-check walk green |
+| 2026-11-12 | UI | New look (Decision log #30): grey page with white panels, soft shadows, Inter, big titles and numbers; lead, deal and record pages as cards; My Day with number tiles; frosted top bar; dark mode matched; lists and board stay compact. Files on our server (#29); Key accounts in the lineup (#31). 6 e2e + 26-check walk green |

@@ -188,9 +188,10 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 | 2 | **Records and links engine**: custom record types, labelled links, organisation page | Deals and customers are built on it |
 | 3 | **Deals and pipelines** | First real use of the engine |
 | 4 | **Tags, saved views, live lists, scoring, calculated fields, automation builder** | Runs the business without manual work |
-| 5 | **Customers and documents** | Needs a file-storage decision |
+| 5 | **Customers and documents** | Files on our own server (Decision log #29). The UI restyle (#30) is done first |
 | 6 | **Money**: invoices (tax, PDF, numbering per entity), installment plans, payment links (Razorpay, Stripe), gateway webhooks, manual payments with proof, balances, receipts, reminders, collections aging, any entity and currency | Unparked 2026-11-10 (Decision log #24). Invoices hang off a deal or customer, so it follows step 5 |
 | 7 | **Dashboards and CSV export**, including the Finance dashboard and money on the owner's | Needs data from steps 1–6 |
+| 7b | **Key accounts add-on** (opportunity grid, competitor status, relationship depth, account plan, group tree) | Decision log #31; planned after step 7 |
 | 8 | **Page layouts and field-level permissions** | |
 | 9 | **Sequences, email, inbox, multi-brand** | Needs an email provider decision. Payment reminders and receipts also go by email from here |
 | 10 | **WhatsApp connector** | After Meta registration. Payment reminders by WhatsApp from here |
