@@ -32,6 +32,7 @@ from app.platform.demo_crm import (
     seed_customers,
     seed_deals,
     seed_leads,
+    seed_money,
     seed_organise,
     seed_properties,
     seed_routing,
@@ -516,6 +517,35 @@ async def seed_demo(prefix: str = "") -> DemoResult:
             "ID proof": "Passport copy",
             "Proof of address": "Emirates ID",
             "Signed agreement": "Signed MoU (Form F)",
+        },
+    )
+    # Step 6: invoices at every state (Decision log #34).
+    await seed_money(
+        acme_id,
+        seed=51,
+        item="Course fee",
+        entity={
+            "legal_name": "Acme Academy Pvt Ltd",
+            "tax_id": "27AABCA1234F1Z5",
+            "address": "4th floor, Lotus Park\nAndheri East, Mumbai 400069",
+            "email": "accounts@acme.demo",
+            "phone": "+91 22 4000 1234",
+            "bank_details": "HDFC Bank · A/c 50200012345678 · IFSC HDFC0000123",
+            "upi_id": "acmeacademy@hdfcbank",
+            "terms": "Fees once paid are refundable only as per the admission policy.",
+        },
+    )
+    await seed_money(
+        blue_id,
+        seed=53,
+        item="Booking amount",
+        entity={
+            "legal_name": "Bluewave Realty LLC",
+            "tax_id": "100123456700003",
+            "address": "Office 1204, Bay Square\nBusiness Bay, Dubai",
+            "email": "accounts@bluewave.demo",
+            "bank_details": "Emirates NBD · IBAN AE07 0260 0010 1234 5678 901",
+            "terms": "Booking amounts are adjusted against the final sale price.",
         },
     )
 

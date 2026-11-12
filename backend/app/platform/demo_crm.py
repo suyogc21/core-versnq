@@ -922,3 +922,133 @@ async def seed_customers(
             made += 1
         await db.flush()
     return made
+
+
+async def seed_money(tenant_id: uuid.UUID, *, seed: int, entity: dict, item: str) -> int:
+    """Step 6 demo: money switched on, the company's billing details filled in, and an invoice
+    for most customers at every state: paid (by bank and online), partly paid on installments,
+    due soon, overdue by 0–30 / 31–60 / 61–90 / 90+ days, a draft and a void one. Runs as the
+    company (RLS). No mailbox or gateway is connected (those need the company's own accounts)."""
+    from app.core import storage
+    from app.core.modules import set_module
+    from app.core.tenancy import tenant_session
+    from app.modules.crm.models import Customer, Deal, Lead, StoredFile
+    from app.modules.money import service as S
+    from app.modules.money.models import BillingEntity
+    from app.modules.money.setup import ensure_money_setup
+
+    rng = random.Random(seed)
+    async with tenant_session(tenant_id) as db:
+        await set_module(db, tenant_id, "money", True)
+        await ensure_money_setup(db, tenant_id)
+        e = await db.scalar(select(BillingEntity).where(BillingEntity.is_default.is_(True)))
+        for k, v in entity.items():
+            setattr(e, k, v)
+        today = await S.company_today(db)
+        rows = (
+            await db.execute(
+                select(Customer, Lead)
+                .join(Lead, Lead.id == Customer.lead_id)
+                .order_by(Customer.since)
+            )
+        ).all()
+        # (plan, days ago issued, installments, days between them)
+        plans = [
+            ("paid_bank", 70, 1, 0),
+            ("partly", 50, 3, 30),
+            ("due_soon", 4, 1, 0),
+            ("overdue", 20, 1, 0),
+            ("paid_online", 12, 1, 0),
+            ("overdue", 55, 2, 15),
+            ("overdue", 85, 1, 0),
+            ("draft", 0, 1, 0),
+            ("overdue", 130, 1, 0),
+            ("partly", 25, 4, 30),
+            ("void", 30, 1, 0),
+            ("due_soon", 2, 1, 0),
+        ]
+        work = []
+        for n, (customer, lead) in enumerate(rows):
+            plan, ago, count, gap = plans[n % len(plans)]
+            work.append((ago, plan, count, gap, customer, lead))
+        work.sort(key=lambda w: -w[0])  # issue oldest first, so numbers follow the dates
+        made = 0
+        for ago, plan, count, gap, customer, lead in work:
+            deal = await db.get(Deal, customer.won_deal_id) if customer.won_deal_id else None
+            same = deal is not None and deal.currency == e.currency
+            lines = await S.lines_from_deal(db, deal) if same else []
+            if not lines or not sum(ln.unit_price_minor for ln in lines):
+                rate = await S.default_rate(db)
+                price = rng.choice((4_500_000, 6_999_900, 8_500_000, 12_000_000))
+                lines = [S.LineIn(item, 1, price, 0, rate.id if rate else None)]
+            inv = S.Invoice(
+                tenant_id=tenant_id,
+                customer_id=customer.id,
+                lead_id=lead.id,
+                deal_id=deal.id if same else None,
+                entity_id=e.id,
+                currency=e.currency,
+                status="draft",
+                pay_link=True,
+                pay_direct=True,
+                tax_breakdown=[],
+                created_by_user_id=lead.owner_user_id,
+            )
+            db.add(inv)
+            await db.flush()
+            await S.set_lines(db, inv, lines)
+            made += 1
+            if plan == "draft":
+                continue
+            issued_on = today - timedelta(days=ago)
+            due = issued_on + timedelta(days=7)
+            if count > 1:
+                amounts = S.calc.split_equal(inv.total_minor, count)
+                plan_dates = [(a, due + timedelta(days=gap * i)) for i, a in enumerate(amounts)]
+                inv.issue_date = issued_on
+                await S.set_schedule(db, inv, plan_dates)
+            await S.issue(db, None, inv, issue_date=issued_on, due_date=due)
+            inv.issued_by_user_id = lead.owner_user_id
+            if plan == "void":
+                inv.status, inv.voided_at = "void", S.L.now()
+                inv.void_reason = "Raised on the wrong course; a new invoice was sent"
+                continue
+            paid_on = issued_on + timedelta(days=rng.randint(1, 5))
+            if plan in ("paid_bank", "partly"):
+                left = inv.total_minor if plan == "paid_bank" else (inv.total_minor // count)
+                data = sample_pdf("Bank transfer", f"{lead.display_name} - UTR demo")
+                saved = storage.save(tenant_id, data, "pdf", "application/pdf")
+                proof = StoredFile(
+                    tenant_id=tenant_id,
+                    lead_id=lead.id,
+                    path=saved.path,
+                    original_name="transfer.pdf",
+                    content_type="application/pdf",
+                    size_bytes=saved.size_bytes,
+                    sha256=saved.sha256,
+                )
+                db.add(proof)
+                await db.flush()
+                await S.apply_payment(
+                    db,
+                    inv,
+                    amount=left,
+                    method="bank",
+                    paid_on=min(paid_on, today),
+                    actor=None,
+                    reference=f"UTR{rng.randint(10**9, 10**10)}",
+                    proof_file_id=proof.id,
+                )
+            elif plan == "paid_online":
+                await S.apply_payment(
+                    db,
+                    inv,
+                    amount=inv.total_minor,
+                    method="gateway",
+                    paid_on=min(paid_on, today),
+                    actor=None,
+                    reference=f"pay_demo{made}",
+                    gateway_payment_id=f"pay_demo{made}",
+                )
+        await db.flush()
+    return made
