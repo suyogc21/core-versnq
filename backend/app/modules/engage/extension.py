@@ -638,12 +638,21 @@ async def replies(db: TenantDb, actor: Rep) -> list[ReplyOut]:
     return [ReplyOut(id=r.id, name=r.name, body=r.body) for r in rows]
 
 
-class MeOut(BaseModel):
+class ExtensionMeOut(BaseModel):
     name: str
     email: str
 
 
-@router.get("/me", response_model=MeOut)
-async def me(actor: Rep) -> MeOut:
+@router.get("/me", response_model=ExtensionMeOut)
+async def me(actor: Rep) -> ExtensionMeOut:
     """Who is signed in, for the panel's header."""
-    return MeOut(name=actor.user.name, email=actor.user.email)
+    return ExtensionMeOut(name=actor.user.name, email=actor.user.email)
+
+
+@router.post("/disconnect", status_code=status.HTTP_204_NO_CONTENT)
+async def disconnect(request: Request, db: TenantDb, actor: Rep) -> None:
+    """The extension signs itself out: its token stops working at once."""
+    token = request.headers.get("authorization", "").removeprefix("Bearer ").strip()
+    row = await db.scalar(select(ExtensionToken).where(ExtensionToken.token_hash == _hash(token)))
+    if row is not None and row.revoked_at is None:
+        row.revoked_at = now()

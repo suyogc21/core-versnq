@@ -5608,6 +5608,24 @@
         "title": "Exclusions",
         "type": "object"
       },
+      "ExtensionMeOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ],
+        "title": "ExtensionMeOut",
+        "type": "object"
+      },
       "ExtensionOut": {
         "properties": {
           "connected": {
@@ -10357,6 +10375,59 @@
           }
         },
         "title": "MakeIn",
+        "type": "object"
+      },
+      "MeOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restrictions",
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/app__modules__auth__schemas__RoleOut"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "two_factor_enabled": {
+            "title": "Two Factor Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "tenant",
+          "restrictions",
+          "permissions",
+          "two_factor_enabled"
+        ],
+        "title": "MeOut",
         "type": "object"
       },
       "Member": {
@@ -17989,59 +18060,6 @@
         "title": "AuditOut",
         "type": "object"
       },
-      "app__modules__auth__schemas__MeOut": {
-        "properties": {
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "permissions": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Permissions",
-            "type": "array"
-          },
-          "restrictions": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Restrictions",
-            "type": "array"
-          },
-          "role": {
-            "$ref": "#/components/schemas/app__modules__auth__schemas__RoleOut"
-          },
-          "tenant": {
-            "$ref": "#/components/schemas/TenantRef"
-          },
-          "two_factor_enabled": {
-            "title": "Two Factor Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "name",
-          "role",
-          "tenant",
-          "restrictions",
-          "permissions",
-          "two_factor_enabled"
-        ],
-        "title": "MeOut",
-        "type": "object"
-      },
       "app__modules__auth__schemas__RoleOut": {
         "properties": {
           "key": {
@@ -18832,24 +18850,6 @@
           "lead_id"
         ],
         "title": "LinkIn",
-        "type": "object"
-      },
-      "app__modules__engage__extension__MeOut": {
-        "properties": {
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "email"
-        ],
-        "title": "MeOut",
         "type": "object"
       },
       "app__modules__engage__extension__NoteIn": {
@@ -20043,7 +20043,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__auth__schemas__MeOut"
+                  "$ref": "#/components/schemas/MeOut"
                 }
               }
             },
@@ -24933,6 +24933,26 @@
         ]
       }
     },
+    "/api/v1/extension/disconnect": {
+      "post": {
+        "description": "The extension signs itself out: its token stops working at once.",
+        "operationId": "extension-disconnect",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disconnect",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
     "/api/v1/extension/leads": {
       "post": {
         "description": "Create a lead from the open chat (source \"WhatsApp\" if the company has one). Same\nduplicate rules as quick-add: an existing lead with this number is refused.",
@@ -25222,7 +25242,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__engage__extension__MeOut"
+                  "$ref": "#/components/schemas/ExtensionMeOut"
                 }
               }
             },
