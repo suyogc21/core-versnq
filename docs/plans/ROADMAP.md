@@ -136,11 +136,11 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ## Phase 4 — API, webhooks and ACE endpoints (Milestone 4)
 
-- [ ] 4.1 Public REST API with API keys per tenant, rate limits
-- [ ] 4.2 Outbound webhooks: admin picks events + URL, signed JSON, retries with backoff
-- [ ] 4.3 API and webhook logs with payload viewer
-- [ ] 4.4 ACE-facing endpoints: lead upsert from ACE (positive reply → hot/warm lead), append conversation to an existing lead, `lead.intent_changed`, `call.analyzed`
-- [ ] 4.5 Frontend for API keys, webhooks and logs
+- [x] 4.1 Public REST API with API keys per tenant, rate limits
+- [x] 4.2 Outbound webhooks: admin picks events + URL, signed JSON, retries with backoff
+- [x] 4.3 API and webhook logs with payload viewer
+- [x] 4.4 ACE-facing endpoints: lead upsert from ACE (positive reply → hot/warm lead), append conversation to an existing lead, `lead.intent_changed` (`call.analyzed` endpoint later with call analysis, Decision log #37)
+- [x] 4.5 Frontend for API keys, webhooks and logs
 - [ ] **Gate 4:** all tests green, Suyog approves
 
 ## Money (unparked 2026-11-10, Decision log #24; build step 6, after customers)
