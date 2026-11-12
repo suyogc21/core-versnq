@@ -232,6 +232,10 @@ async def move(
     if stage.kind == "won" and was != "won":
         await log(db, deal, "deal_won", f"Won: {deal.name}", actor, body=note)
         await event(db, deal, "deal.won")
+        from app.modules.crm import customers  # customers build on deals
+
+        if customer := await customers.of_lead(db, deal.lead_id):
+            await customers.sync_documents(db, customer)  # product-specific checklist items
     elif stage.kind == "lost" and was != "lost":
         await log(
             db,

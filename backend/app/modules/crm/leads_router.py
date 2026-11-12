@@ -15,7 +15,7 @@ from app.modules.crm import leads as L
 from app.modules.crm import tags as T
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.lead_query import LeadFilter, SortKey, ordered, where_clauses
-from app.modules.crm.models import CustomFieldUniqueValue, Lead
+from app.modules.crm.models import Customer, CustomFieldUniqueValue, Lead
 from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 
@@ -326,6 +326,7 @@ async def bulk_action(body: BulkIn, db: CrmDb, actor: ActiveUser) -> BulkOut:
                 await T.change(db, actor, lead, remove=[t.id for t in tags])
             else:
                 lead_id = lead.id
+                await _not_a_customer(db, lead)
                 await db.execute(
                     delete(CustomFieldUniqueValue).where(
                         CustomFieldUniqueValue.entity == "lead",
@@ -460,11 +461,20 @@ async def assign_lead(lead_id: uuid.UUID, body: OwnerIn, db: CrmDb, actor: Assig
     return (await _out(db, [lead]))[0]
 
 
+async def _not_a_customer(db, lead: Lead) -> None:
+    """Customers keep their documents (and, from step 6, invoices): set them Inactive instead."""
+    if await db.scalar(select(Customer.id).where(Customer.lead_id == lead.id)):
+        raise Invalid(
+            f"{lead.display_name} is a customer and cannot be deleted. Set them Inactive."
+        )
+
+
 @router.delete("/{lead_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_lead(lead_id: uuid.UUID, db: CrmDb, actor: Deleter) -> None:
     """Permanent (Decision log #18): the lead, its timeline and tasks are gone. The audit row
     keeps only the lead's ID, no personal data."""
     lead = await L.get_visible(db, actor, lead_id)
+    await _not_a_customer(db, lead)
     await db.execute(
         delete(CustomFieldUniqueValue).where(
             CustomFieldUniqueValue.entity == "lead", CustomFieldUniqueValue.record_id == lead.id

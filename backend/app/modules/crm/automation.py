@@ -67,6 +67,8 @@ TRIGGERS: dict[str, tuple[str, str | None]] = {
     "deal.stage_changed": ("deal", "deal.stage_changed"),
     "deal.won": ("deal", "deal.won"),
     "deal.lost": ("deal", "deal.lost"),
+    "customer.created": ("lead", "customer.created"),  # step 5 (Decision log #32)
+    "document.received": ("lead", "document.received"),
 }
 EVENT_TYPES = {ev for _, ev in TRIGGERS.values() if ev}
 ACTIONS = {

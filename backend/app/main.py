@@ -8,6 +8,8 @@ from app.modules.auth.router import router as auth_router
 from app.modules.crm.automations_router import router as automations_router
 from app.modules.crm.capture_router import public as capture_public_router
 from app.modules.crm.capture_router import router as capture_router
+from app.modules.crm.customers_router import public as customer_links_public_router
+from app.modules.crm.customers_router import router as customers_router
 from app.modules.crm.deals_router import router as deals_router
 from app.modules.crm.imports_router import router as imports_router
 from app.modules.crm.lead_tools_router import router as lead_tools_router
@@ -52,6 +54,8 @@ app.include_router(rules_router)
 app.include_router(notifications_router)
 app.include_router(capture_router)
 app.include_router(capture_public_router)
+app.include_router(customers_router)
+app.include_router(customer_links_public_router)
 app.include_router(imports_router)
 app.include_router(record_types_router)
 app.include_router(records_router)

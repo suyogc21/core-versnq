@@ -1158,6 +1158,32 @@
         "title": "ChangePasswordIn",
         "type": "object"
       },
+      "ChecklistOut": {
+        "properties": {
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentOut"
+            },
+            "title": "Documents",
+            "type": "array"
+          },
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "required": {
+            "title": "Required",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "documents",
+          "done",
+          "required"
+        ],
+        "title": "ChecklistOut",
+        "type": "object"
+      },
       "Condition": {
         "properties": {
           "field": {
@@ -1415,6 +1441,222 @@
           }
         },
         "title": "CrmRulesPatch",
+        "type": "object"
+      },
+      "CustomerOut": {
+        "properties": {
+          "custom_fields": {
+            "additionalProperties": true,
+            "title": "Custom Fields",
+            "type": "object"
+          },
+          "docs_done": {
+            "default": 0,
+            "title": "Docs Done",
+            "type": "integer"
+          },
+          "docs_required": {
+            "default": 0,
+            "title": "Docs Required",
+            "type": "integer"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "number": {
+            "title": "Number",
+            "type": "string"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "since": {
+            "format": "date-time",
+            "title": "Since",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "won_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Won Deal Id"
+          }
+        },
+        "required": [
+          "id",
+          "lead_id",
+          "number",
+          "since",
+          "status",
+          "custom_fields",
+          "won_deal_id",
+          "version"
+        ],
+        "title": "CustomerOut",
+        "type": "object"
+      },
+      "CustomerPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "CustomerPage",
+        "type": "object"
+      },
+      "CustomerPatch": {
+        "properties": {
+          "custom_fields": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Fields"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "inactive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "CustomerPatch",
+        "type": "object"
+      },
+      "CustomerSettings": {
+        "properties": {
+          "customer_prefix": {
+            "maxLength": 10,
+            "minLength": 1,
+            "title": "Customer Prefix",
+            "type": "string"
+          },
+          "document_reminder_days": {
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Document Reminder Days",
+            "type": "integer"
+          },
+          "link_days": {
+            "maximum": 90.0,
+            "minimum": 1.0,
+            "title": "Link Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "customer_prefix",
+          "link_days",
+          "document_reminder_days"
+        ],
+        "title": "CustomerSettings",
         "type": "object"
       },
       "DealActivityOut": {
@@ -1934,6 +2176,123 @@
         "title": "DealWithLines",
         "type": "object"
       },
+      "DocumentOut": {
+        "properties": {
+          "allow_office": {
+            "title": "Allow Office",
+            "type": "boolean"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileOut"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_required": {
+            "title": "Is Required",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received At"
+          },
+          "reject_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reject Reason"
+          },
+          "requirement_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Id"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "reviewed_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By Name"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "requirement_id",
+          "name",
+          "hint",
+          "is_required",
+          "allow_office",
+          "status",
+          "reject_reason",
+          "received_at",
+          "reviewed_at",
+          "reviewed_by_name",
+          "files"
+        ],
+        "title": "DocumentOut",
+        "type": "object"
+      },
       "FieldIn": {
         "properties": {
           "depends_on": {
@@ -2175,6 +2534,64 @@
           }
         },
         "title": "FieldPatch",
+        "type": "object"
+      },
+      "FileOut": {
+        "properties": {
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "original_name": {
+            "title": "Original Name",
+            "type": "string"
+          },
+          "previewable": {
+            "default": false,
+            "title": "Previewable",
+            "type": "boolean"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "uploaded_by_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploaded By User Id"
+          },
+          "uploaded_via": {
+            "title": "Uploaded Via",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "original_name",
+          "content_type",
+          "size_bytes",
+          "uploaded_via",
+          "uploaded_by_user_id",
+          "created_at"
+        ],
+        "title": "FileOut",
         "type": "object"
       },
       "ForgotIn": {
@@ -3931,136 +4348,6 @@
         "title": "LinkEnd",
         "type": "object"
       },
-      "LinkIn": {
-        "properties": {
-          "from_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Deal Id"
-          },
-          "from_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Lead Id"
-          },
-          "from_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Record Id"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "to_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Deal Id"
-          },
-          "to_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Lead Id"
-          },
-          "to_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Record Id"
-          }
-        },
-        "required": [
-          "link_type_id"
-        ],
-        "title": "LinkIn",
-        "type": "object"
-      },
-      "LinkOut": {
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "direction": {
-            "enum": [
-              "out",
-              "in"
-            ],
-            "title": "Direction",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "other": {
-            "$ref": "#/components/schemas/LinkEnd"
-          }
-        },
-        "required": [
-          "id",
-          "link_type_id",
-          "label",
-          "direction",
-          "other",
-          "created_at"
-        ],
-        "title": "LinkOut",
-        "type": "object"
-      },
       "LinkTypeIn": {
         "properties": {
           "from_kind": {
@@ -4460,6 +4747,24 @@
         "title": "LostReasonPatch",
         "type": "object"
       },
+      "MakeIn": {
+        "properties": {
+          "deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deal Id"
+          }
+        },
+        "title": "MakeIn",
+        "type": "object"
+      },
       "MeOut": {
         "properties": {
           "email": {
@@ -4713,6 +5018,76 @@
         "title": "MyDayOut",
         "type": "object"
       },
+      "NewLinkOut": {
+        "properties": {
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "field_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field Keys",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          }
+        },
+        "required": [
+          "id",
+          "field_keys",
+          "expires_at",
+          "submitted_at",
+          "cancelled_at",
+          "created_at",
+          "code"
+        ],
+        "title": "NewLinkOut",
+        "type": "object"
+      },
       "NoteIn": {
         "properties": {
           "body": {
@@ -4848,6 +5223,21 @@
           "organisation_id"
         ],
         "title": "OrganisationIn",
+        "type": "object"
+      },
+      "OtherIn": {
+        "properties": {
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "OtherIn",
         "type": "object"
       },
       "OwnerIn": {
@@ -5345,6 +5735,158 @@
           }
         },
         "title": "ProductPatch",
+        "type": "object"
+      },
+      "PublicDocument": {
+        "properties": {
+          "allow_office": {
+            "title": "Allow Office",
+            "type": "boolean"
+          },
+          "files": {
+            "title": "Files",
+            "type": "integer"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_required": {
+            "title": "Is Required",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reject_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reject Reason"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "hint",
+          "is_required",
+          "allow_office",
+          "status",
+          "reject_reason",
+          "files"
+        ],
+        "title": "PublicDocument",
+        "type": "object"
+      },
+      "PublicField": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "options": {
+            "items": {},
+            "title": "Options",
+            "type": "array"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type",
+          "required",
+          "options"
+        ],
+        "title": "PublicField",
+        "type": "object"
+      },
+      "PublicLinkOut": {
+        "properties": {
+          "colour": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Colour"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "customer_name": {
+            "title": "Customer Name",
+            "type": "string"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/PublicDocument"
+            },
+            "title": "Documents",
+            "type": "array"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/PublicField"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "company",
+          "colour",
+          "customer_name",
+          "fields",
+          "documents",
+          "expires_at"
+        ],
+        "title": "PublicLinkOut",
         "type": "object"
       },
       "ReadIn": {
@@ -6027,6 +6569,204 @@
           }
         },
         "title": "RecordTypePatch",
+        "type": "object"
+      },
+      "RejectIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "RejectIn",
+        "type": "object"
+      },
+      "RequirementIn": {
+        "properties": {
+          "allow_office": {
+            "default": false,
+            "title": "Allow Office",
+            "type": "boolean"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "is_required": {
+            "default": true,
+            "title": "Is Required",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "product_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Product Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "RequirementIn",
+        "type": "object"
+      },
+      "RequirementOut": {
+        "properties": {
+          "allow_office": {
+            "title": "Allow Office",
+            "type": "boolean"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_required": {
+            "title": "Is Required",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "product_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Product Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "hint",
+          "is_required",
+          "allow_office",
+          "product_ids",
+          "is_active",
+          "position"
+        ],
+        "title": "RequirementOut",
+        "type": "object"
+      },
+      "RequirementPatch": {
+        "properties": {
+          "allow_office": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Office"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "is_required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Required"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "product_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Ids"
+          }
+        },
+        "title": "RequirementPatch",
         "type": "object"
       },
       "ResetIn": {
@@ -7351,6 +8091,35 @@
           "mapping"
         ],
         "title": "StartIn",
+        "type": "object"
+      },
+      "StorageOut": {
+        "properties": {
+          "quota_bytes": {
+            "title": "Quota Bytes",
+            "type": "integer"
+          },
+          "used_bytes": {
+            "title": "Used Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "used_bytes",
+          "quota_bytes"
+        ],
+        "title": "StorageOut",
+        "type": "object"
+      },
+      "SubmitIn": {
+        "properties": {
+          "values": {
+            "additionalProperties": true,
+            "title": "Values",
+            "type": "object"
+          }
+        },
+        "title": "SubmitIn",
         "type": "object"
       },
       "TagIn": {
@@ -9212,6 +9981,102 @@
         "title": "RoleOut",
         "type": "object"
       },
+      "app__modules__crm__customers_router__LinkIn": {
+        "properties": {
+          "field_keys": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Field Keys",
+            "type": "array"
+          }
+        },
+        "title": "LinkIn",
+        "type": "object"
+      },
+      "app__modules__crm__customers_router__LinkOut": {
+        "properties": {
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "field_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field Keys",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          }
+        },
+        "required": [
+          "id",
+          "field_keys",
+          "expires_at",
+          "submitted_at",
+          "cancelled_at",
+          "created_at"
+        ],
+        "title": "LinkOut",
+        "type": "object"
+      },
+      "app__modules__crm__customers_router__OrderIn": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "title": "OrderIn",
+        "type": "object"
+      },
       "app__modules__crm__deals_router__BulkIn": {
         "properties": {
           "action": {
@@ -9609,6 +10474,136 @@
           "ids"
         ],
         "title": "BulkIn",
+        "type": "object"
+      },
+      "app__modules__crm__records_router__LinkIn": {
+        "properties": {
+          "from_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Deal Id"
+          },
+          "from_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Lead Id"
+          },
+          "from_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Record Id"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "to_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Deal Id"
+          },
+          "to_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Lead Id"
+          },
+          "to_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Record Id"
+          }
+        },
+        "required": [
+          "link_type_id"
+        ],
+        "title": "LinkIn",
+        "type": "object"
+      },
+      "app__modules__crm__records_router__LinkOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "out",
+              "in"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "other": {
+            "$ref": "#/components/schemas/LinkEnd"
+          }
+        },
+        "required": [
+          "id",
+          "link_type_id",
+          "label",
+          "direction",
+          "other",
+          "created_at"
+        ],
+        "title": "LinkOut",
         "type": "object"
       },
       "app__modules__crm__rules_router__OrderIn": {
@@ -11920,6 +12915,909 @@
         ]
       }
     },
+    "/api/v1/customer-settings": {
+      "get": {
+        "operationId": "customers-get_customer_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Customer Settings",
+        "tags": [
+          "customers"
+        ]
+      },
+      "put": {
+        "operationId": "customers-put_customer_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Customer Settings",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers": {
+      "get": {
+        "operationId": "customers-list_customers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "inactive"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Owner",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "documents",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "missing",
+                    "complete"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Documents"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "-since",
+              "enum": [
+                "since",
+                "-since",
+                "name",
+                "number"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Customers",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}": {
+      "get": {
+        "operationId": "customers-get_customer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Customer",
+        "tags": [
+          "customers"
+        ]
+      },
+      "patch": {
+        "operationId": "customers-update_customer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Customer",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/documents": {
+      "get": {
+        "operationId": "customers-documents",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Documents",
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "customers-add_other_document",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtherIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Other Document",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/documents/{document_id}/files": {
+      "post": {
+        "description": "The request body is the file itself (up to 10 MB); `name` is its original name.",
+        "operationId": "customers-upload_file",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload File",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/documents/{document_id}/reject": {
+      "post": {
+        "operationId": "customers-reject_document",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reject Document",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/documents/{document_id}/verify": {
+      "post": {
+        "operationId": "customers-verify_document",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Verify Document",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/files/{file_id}": {
+      "delete": {
+        "operationId": "customers-delete_file",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "File Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete File",
+        "tags": [
+          "customers"
+        ]
+      },
+      "get": {
+        "operationId": "customers-get_file",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "File Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "download",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Download",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get File",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/links": {
+      "get": {
+        "operationId": "customers-list_links",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__modules__crm__customers_router__LinkOut"
+                  },
+                  "title": "Response Customers-List Links",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Links",
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "customers-create_link",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__crm__customers_router__LinkIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Link",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}/links/{link_id}": {
+      "delete": {
+        "operationId": "customers-cancel_link",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Customer Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "link_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Link Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cancel Link",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
     "/api/v1/deals": {
       "get": {
         "operationId": "deals-list_deals",
@@ -12898,6 +14796,228 @@
         "summary": "Set Deal Tags",
         "tags": [
           "organise"
+        ]
+      }
+    },
+    "/api/v1/document-requirements": {
+      "get": {
+        "operationId": "customers-list_requirements",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RequirementOut"
+                  },
+                  "title": "Response Customers-List Requirements",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Requirements",
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "customers-create_requirement",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Requirement",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/document-requirements/order": {
+      "put": {
+        "operationId": "customers-order_requirements",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__crm__customers_router__OrderIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RequirementOut"
+                  },
+                  "title": "Response Customers-Order Requirements",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Order Requirements",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/api/v1/document-requirements/{req_id}": {
+      "delete": {
+        "description": "Customers keep what they already sent (it moves to \"Other documents\").",
+        "operationId": "customers-delete_requirement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "req_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Req Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Requirement",
+        "tags": [
+          "customers"
+        ]
+      },
+      "patch": {
+        "operationId": "customers-update_requirement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "req_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Req Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Requirement",
+        "tags": [
+          "customers"
         ]
       }
     },
@@ -14508,6 +16628,118 @@
         ]
       }
     },
+    "/api/v1/leads/{lead_id}/customer": {
+      "get": {
+        "operationId": "customers-customer_of_lead",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CustomerOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Customers-Customer Of Lead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Customer Of Lead",
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "customers-make_customer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MakeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Make Customer",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
     "/api/v1/leads/{lead_id}/duplicates": {
       "get": {
         "description": "Other leads (that you can see) sharing a phone or email with this one.",
@@ -15228,7 +17460,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/LinkOut"
+                    "$ref": "#/components/schemas/app__modules__crm__records_router__LinkOut"
                   },
                   "title": "Response Records-List Links",
                   "type": "array"
@@ -15264,7 +17496,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LinkIn"
+                "$ref": "#/components/schemas/app__modules__crm__records_router__LinkIn"
               }
             }
           },
@@ -15275,7 +17507,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LinkOut"
+                  "$ref": "#/components/schemas/app__modules__crm__records_router__LinkOut"
                 }
               }
             },
@@ -16423,6 +18655,167 @@
         "summary": "Update Product",
         "tags": [
           "deal setup"
+        ]
+      }
+    },
+    "/api/v1/public/links/{code}": {
+      "get": {
+        "operationId": "customer links-public_link",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Link",
+        "tags": [
+          "customer links"
+        ]
+      }
+    },
+    "/api/v1/public/links/{code}/documents/{document_id}/files": {
+      "post": {
+        "operationId": "customer links-public_upload",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Upload",
+        "tags": [
+          "customer links"
+        ]
+      }
+    },
+    "/api/v1/public/links/{code}/submit": {
+      "post": {
+        "operationId": "customer links-public_submit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Submit",
+        "tags": [
+          "customer links"
         ]
       }
     },
@@ -18315,6 +20708,32 @@
         "summary": "Update Sla Rule",
         "tags": [
           "routing"
+        ]
+      }
+    },
+    "/api/v1/storage": {
+      "get": {
+        "operationId": "customers-storage_use",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Storage Use",
+        "tags": [
+          "customers"
         ]
       }
     },

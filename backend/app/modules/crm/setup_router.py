@@ -364,8 +364,8 @@ async def _parent_options(
 
 
 async def _entity(db, entity: str) -> str:
-    """'lead', 'deal', or 'rt:<key>' for an existing record type."""
-    if entity in ("lead", "deal"):
+    """'lead', 'deal', 'customer', or 'rt:<key>' for an existing record type."""
+    if entity in ("lead", "deal", "customer"):
         return entity
     if entity.startswith("rt:"):
         exists_ = await db.scalar(select(RecordType.id).where(RecordType.key == entity[3:]))

@@ -54,16 +54,33 @@ async def rescore_job(ctx, tenant_id: str) -> int:
 
 
 async def nightly_job(ctx) -> dict:
-    """Once a night: engagement windows move, today() formulas move."""
+    """Once a night: engagement windows move, today() formulas move, owners get a task for
+    documents still missing, and files that lost their record are removed from disk."""
+    from app.core.tenancy import tenant_session
+    from app.modules.crm import customers
     from app.modules.crm.automation import _active_tenants
     from app.modules.crm.calc import recalc_tenant
     from app.modules.crm.scoring import rescore_tenant
 
-    rescored = recalced = 0
+    rescored = recalced = reminded = removed = 0
+    missing: dict[str, list[str]] = {}
     for t in await _active_tenants():
         rescored += await rescore_tenant(t)
         recalced += await recalc_tenant(t)
-    return {"rescored": rescored, "recalculated": recalced}
+        async with tenant_session(t) as db:
+            reminded += await customers.remind_pending(db)
+        async with tenant_session(t) as db:
+            report = await customers.clean_files(db, t)
+        removed += report["removed"]
+        if report["missing"]:
+            missing[str(t)] = report["missing"]
+    return {
+        "rescored": rescored,
+        "recalculated": recalced,
+        "document_reminders": reminded,
+        "files_removed": removed,
+        "files_missing": missing,
+    }
 
 
 async def webhook_job(ctx, tenant_id: str, automation_id: str, url: str, secret: str, body: str):
