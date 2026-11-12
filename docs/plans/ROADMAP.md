@@ -108,7 +108,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 - [x] 2.7 Activity timeline + custom activity types ("everything is an activity")
 - [x] 2.8 Tasks and follow-ups, follow-up SLAs and escalation, call logging with dispositions — *slice A + step 1 (response-time rules, escalation, in-app notifications)*
 - [x] 2.9 Pipelines, stages, deals, kanban moves, won/lost reasons, products / catalogue (step 3, Decision log #25)
-- [ ] 2.10 Convert lead → customer, registration form link, document checklist and vault (S3)
+- [ ] 2.10 Convert lead → customer, registration form link, document checklist and vault (files on our server, Decision log #29)
 - [x] 2.11 Tags, lists, smart views, bulk actions, rule-based lead scoring (step 4, Decision log #27; lists = tags + saved views)
 - [x] 2.11b Automation builder: WHEN event IF conditions THEN actions (task, field, owner, stage, webhook) — Decision log #16
 - [ ] 2.12 Dashboards: Salesperson ("My Day"), Sales Manager, Owner/Admin (non-money parts) — *My Day with the calling queue done in slice A*
@@ -169,6 +169,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 ## Parked ⏸
 
 - ⏸ Later items in the spec: ad lead forms, Google Workspace, Zapier/n8n, HubSpot/LeadSquared import, A/B testing, SMS, PWA, custom reports
+- ⏸ Future discussion (Decision log #29): outside file storage (S3 or similar), only when a big client or a second server needs it
 - ⏸ Not now (2026-11-07 review): single sign-on (Google / Microsoft), custom password rules
 
 ---

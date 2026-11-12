@@ -34,7 +34,7 @@ Exactly as in the approved data model. Only the parts slice A needs are built no
 | `lead_sources` | name, `is_active` | — |
 | `leads` | kind, person/org fields, display name, primary email/phone, owner, team, stage, follow-up, last activity/contact, last disposition, origin, source, created_via, UTM + attribution, language, city/region/country, custom_fields, unqualified_reason, created_by, version | `organisation_id` linking UI (C), score (E), intent (Phase 4), customer link (D), merged_into (C) |
 | `lead_identities` | email / phone / LinkedIn, normalized value, primary, label, is_whatsapp | duplicate matching uses its index in C |
-| `custom_field_definitions` | entity `lead` only; key (fixed) + label; types text, number, date, select, multi-select, phone, email, url; required; group; order | `file` type (needs S3, slice D); deal/customer entities (B, D) |
+| `custom_field_definitions` | entity `lead` only; key (fixed) + label; types text, number, date, select, multi-select, phone, email, url; required; group; order | `file` type (needs file storage, step 5 — Decision log #29); deal/customer entities (B, D) |
 | `activity_types` | system types (note, call, stage_changed, owner_changed, lead_created, field_changed) + tenant custom types ("Site visit done") with a small fields schema | message types arrive with Phase 3 |
 | `activities` | lead_id, type, actor (user/system/api), occurred_at, summary, data, disposition | deal/customer links (B, D) |
 | `tasks` | lead_id, title, due_at, owner, status, priority, created_from, completed_at | `sla_rules` in C |

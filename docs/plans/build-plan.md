@@ -265,7 +265,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 | # | Question | Recommendation |
 | --- | --- | --- |
-| C1 | Where does the uploaded CSV live until file storage (S3) is chosen? | In the database, up to 20 MB / 50,000 rows per file; moved to S3 in step 5 |
+| C1 | Where does the uploaded CSV live until file storage (S3) is chosen? | In the database, up to 20 MB / 50,000 rows per file; moves to the file store on our server in step 5 (Decision log #29) |
 | C2 | Round-robin: equal turns, or skip people who already have many open leads? | Equal turns now; "least loaded" as a later option |
 | C3 | Notifications: in-app only for now? | Yes; email copies arrive with step 8 |
 | C4 | Spam protection for forms | Secret key + rate limit + hidden trap field now; captcha later if needed |

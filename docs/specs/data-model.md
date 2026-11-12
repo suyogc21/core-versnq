@@ -130,7 +130,7 @@ Index on `(tenant_id, type, value_normalized)` for de-duplication lookups.
 | `deal_products` | deal_id, product_id, quantity, price_minor |
 | `customers` | lead_id (unique — conversion keeps full history), customer_since, status, custom_fields |
 | `document_requirements` | product_id or global, name (Aadhaar, Passport, Photo), required |
-| `documents` | customer_id / lead_id, requirement_id, file key (S3), filename, size, status (`pending` / `received` / `verified` / `rejected`), uploaded_via (`link` / `user`) |
+| `documents` | customer_id / lead_id, requirement_id, file path (on our server, Decision log #29), filename, size, status (`pending` / `received` / `verified` / `rejected`), uploaded_via (`link` / `user`) |
 | `form_links` | registration / document-upload links: token hash, expires_at, used_at |
 
 ## 4. Sequences, messaging, inbox (Phase 3) — outline

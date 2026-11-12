@@ -30,7 +30,7 @@ Email sequences, WhatsApp sequences, the unified inbox, tasks and every activity
 - Background jobs: Redis + a worker (Celery or RQ) for sends, retries, reminders and scheduled triggers
 - Frontend: Next.js (React, TypeScript)
 - Auth: per-tenant organisations with role-based access
-- File storage: S3-compatible object storage (documents, KYC, invoice PDFs)
+- File storage: our own server's disk, with the file record (path, name, size, type) in Postgres (Decision log #29). Outside object storage (S3 or similar) is a future discussion, not now.
 - Payments: Razorpay (India), Stripe (UAE/US), via their webhooks
 - Email: an ESP with multi-domain support
 - WhatsApp: WhatsApp Cloud API, using each tenant's own number and credentials
