@@ -69,7 +69,15 @@ LABEL = {
     "contacts": "[contact card]",
 }
 STATUS_ORDER = {"queued": 0, "sent": 1, "delivered": 2, "read": 3}
+# Payment reminders (W7): a utility template may also use these.
+INVOICE_VARS = frozenset(
+    {"invoice.number", "invoice.amount_due", "invoice.due_date", "invoice.pay_link"}
+)
 SAMPLE = {
+    "invoice.number": "INV-0042",
+    "invoice.amount_due": "₹12,000",
+    "invoice.due_date": "19 Nov",
+    "invoice.pay_link": "https://rzp.io/l/example",
     "lead.first_name": "Asha",
     "lead.last_name": "Rao",
     "lead.name": "Asha Rao",
@@ -330,6 +338,7 @@ async def send(
     step_id: uuid.UUID | None = None,
     auto: str | None = None,  # "welcome" / "away": the autoresponder
     raise_errors: bool = True,
+    extra_values: dict[str, str | None] | None = None,
 ) -> Message:
     """One message from the official number: free text (only inside the 24-hour window) or an
     approved template. Raises Invalid with a plain reason when a rule says no."""
@@ -340,7 +349,7 @@ async def send(
     if await _opted_out(db, lead) and (template is not None or open_until is None):
         raise Invalid(f"{lead.display_name} opted out of WhatsApp")
     tenant = await db.get(Tenant, lead.tenant_id)
-    values = await E.values_for(db, lead, tenant.name)
+    values = await E.values_for(db, lead, tenant.name) | (extra_values or {})
     if template is not None:
         if template.status != "approved":
             raise Invalid(f"The template {template.name} is not approved by WhatsApp yet")
@@ -558,6 +567,14 @@ async def _incoming(
         return None  # unknown number and the company keeps leads off (W3)
     conv = await conversation(db, acct, lead)
     first_ever = conv.last_inbound_at is None
+    answered = await db.scalar(
+        select(Message)
+        .where(Message.conversation_id == conv.id, Message.direction == "out")
+        .order_by(Message.created_at.desc())
+        .limit(1)
+    )
+    if answered is not None and answered.replied_at is None:
+        answered.replied_at = now()  # the sequence's results count it as replied
     text, media = _text_of(m)
     try:
         when = datetime.fromtimestamp(int(m.get("timestamp")), UTC)
@@ -791,6 +808,15 @@ async def _admins(db: AsyncSession) -> list[uuid.UUID]:
     )
 
 
+LIMITS = {"TIER_50": 50, "TIER_250": 250, "TIER_1K": 1000, "TIER_10K": 10000, "TIER_100K": 100000}
+
+
+async def daily_limit(db: AsyncSession) -> int:
+    """Meta's daily limit for the number (W5); 250 until Meta has told us."""
+    acct = await account(db)
+    return LIMITS.get((acct.messaging_limit or "") if acct else "", 250)
+
+
 async def sent_today(db: AsyncSession, tenant_id: uuid.UUID) -> int:
     """Templates sent today (business-started messages), for the daily cap."""
     start, _ = await L.day_bounds(db, tenant_id)
@@ -807,3 +833,55 @@ async def sent_today(db: AsyncSession, tenant_id: uuid.UUID) -> int:
         )
         or 0
     )
+
+
+# ---------- payment reminders (W7) ----------
+async def payment_reminder(
+    db: AsyncSession, lead: Lead, *, number: str, amount_due: str, due_date, invoice_id
+) -> Message | None:
+    """The company's chosen utility template, if any, on the nights an email reminder goes.
+    Quietly skipped when the number isn't connected or a rule says no (opted out…)."""
+    from app.modules.money.models import PaymentLink
+
+    ts = await db.get(TenantSettings, lead.tenant_id)
+    tpl_id = settings_of(ts).get("reminder_template_id")
+    if not tpl_id or await account(db) is None or not lead.primary_phone:
+        return None
+    tpl = await db.get(WhatsAppTemplate, uuid.UUID(tpl_id))
+    if tpl is None:
+        return None
+    link = await db.scalar(
+        select(PaymentLink.url)
+        .where(PaymentLink.invoice_id == invoice_id, PaymentLink.status == "active")
+        .order_by(PaymentLink.created_at.desc())
+        .limit(1)
+    )
+    try:
+        return await send(
+            db,
+            lead,
+            template=tpl,
+            raise_errors=False,
+            extra_values={
+                "invoice.number": number,
+                "invoice.amount_due": amount_due,
+                "invoice.due_date": f"{due_date:%d %b}",
+                "invoice.pay_link": link,
+            },
+        )
+    except Invalid:
+        return None
+
+
+async def health_all(tenant_ids: list[uuid.UUID]) -> int:
+    """Daily: quality rating and limit for every connected number."""
+    from app.core.tenancy import tenant_session
+
+    checked = 0
+    for tenant_id in tenant_ids:
+        async with tenant_session(tenant_id) as db:
+            acct = await account(db)
+            if acct is not None:
+                await refresh_health(db, acct)
+                checked += 1
+    return checked

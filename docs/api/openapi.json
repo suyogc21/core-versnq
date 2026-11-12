@@ -14464,6 +14464,18 @@
             "title": "Create Leads",
             "type": "boolean"
           },
+          "reminder_template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminder Template Id"
+          },
           "source_id": {
             "anyOf": [
               {
@@ -15399,6 +15411,7 @@
           "kind": {
             "enum": [
               "email",
+              "whatsapp",
               "task",
               "wait",
               "check"

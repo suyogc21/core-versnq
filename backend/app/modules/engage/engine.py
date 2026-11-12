@@ -439,6 +439,45 @@ async def _email(
     return "sent"
 
 
+async def _whatsapp(
+    db: AsyncSession, e: Enrolment, seq: Sequence, step: SequenceStep, lead: Lead
+) -> str:
+    """Send one WhatsApp step (an approved template from the company number). A step that a
+    rule refuses (no number, opted out, no opt-in for marketing, not approved) is skipped and
+    logged; the sequence carries on with its other steps."""
+    from app.modules.engage import whatsapp as WA
+    from app.modules.engage.models import WhatsAppTemplate
+
+    async def skip(why: str) -> str:
+        await L.log(
+            db,
+            lead,
+            "whatsapp_sent",
+            f"{seq.name}: WhatsApp skipped — {why}",
+            None,
+            {"sequence_id": str(seq.id), "skipped": True},
+        )
+        return "skipped"
+
+    tpl = await db.get(WhatsAppTemplate, uuid.UUID(step.config["template_id"]))
+    if tpl is None:
+        return await skip("its template was deleted")
+    try:
+        msg = await WA.send(
+            db, lead, template=tpl, enrolment_id=e.id, step_id=step.id, raise_errors=False
+        )
+    except Invalid as err:
+        return await skip(str(err.detail)[:200])
+    if msg.status != "failed":
+        return "sent"
+    tries = await db.scalar(
+        select(func.count())
+        .select_from(Message)
+        .where(Message.enrolment_id == e.id, Message.step_id == step.id, Message.status == "failed")
+    )
+    return await skip(msg.error or "not sent") if tries >= MAX_SEND_TRIES else "retry"
+
+
 async def _task(db: AsyncSession, seq: Sequence, step: SequenceStep, lead: Lead) -> None:
     cfg = step.config
     if not lead.owner_user_id:
@@ -526,7 +565,23 @@ async def advance(db: AsyncSession, e: Enrolment, tenant: Tenant, settings: Tena
                 return
             e.position += 1
             continue
-        e.position += 1  # a step kind this slice does not run (WhatsApp arrives in step 10)
+        if step.kind == "whatsapp":
+            opens = next_open(now(), engage, tz)
+            if opens > now():
+                e.next_run_at = opens
+                return
+            from app.modules.engage import whatsapp as WA  # it builds on this module
+
+            if await WA.sent_today(db, tenant.id) >= await WA.daily_limit(db):
+                e.next_run_at = _tomorrow_open(engage, tz)
+                return
+            outcome = await _whatsapp(db, e, seq, step, lead)
+            if outcome == "retry":
+                e.next_run_at = now() + RETRY_AFTER
+                return
+            e.position += 1
+            continue
+        e.position += 1  # a step kind this engine does not know
     e.next_run_at = now()  # many quick steps: carry on next run
 
 

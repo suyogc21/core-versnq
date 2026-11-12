@@ -149,6 +149,14 @@ async def mailboxes_job(ctx) -> int:
     return await run_all(await _active_tenants())
 
 
+async def whatsapp_health_job(ctx) -> int:
+    """Daily: the official WhatsApp numbers' quality and limit (step 10b)."""
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.engage.whatsapp import health_all
+
+    return await health_all(await _active_tenants())
+
+
 async def money_mail_sweep_job(ctx) -> int:
     from app.modules.crm.automation import _active_tenants
     from app.modules.money.worker import sweep

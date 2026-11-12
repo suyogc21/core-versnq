@@ -18,6 +18,7 @@ from app.workers.jobs import (
     sequences_job,
     webhook_job,
     webhooks_job,
+    whatsapp_health_job,
 )
 
 
@@ -38,6 +39,7 @@ class WorkerSettings:
         webhooks_job,
         sequences_job,
         mailboxes_job,
+        whatsapp_health_job,
         money_mail_job,
         money_mail_sweep_job,
     ]
@@ -52,6 +54,7 @@ class WorkerSettings:
         cron(sequences_job, second={15, 45}, unique=True),  # every 30 seconds
         cron(mailboxes_job, second=25, unique=True),
         cron(nightly_job, hour=21, minute=30, second=10),  # 03:00 in India
+        cron(whatsapp_health_job, hour=2, minute=0, second=40),  # 07:30 in India
     ]
     max_tries = 3
     job_timeout = 1800  # a 50,000-row import

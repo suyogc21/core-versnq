@@ -90,6 +90,12 @@ async def remind(db: AsyncSession) -> int:
         if inv.id not in emailed:
             emailed.add(inv.id)
             await messages.auto(db, inv, "reminder")
+            from app.modules.engage import whatsapp as WA  # step 10b (W7)
+
+            await WA.payment_reminder(
+                db, lead, number=inv.number, amount_due=money, due_date=inst.due_date,
+                invoice_id=inv.id,
+            )  # fmt: skip
     await db.flush()
     return sent
 

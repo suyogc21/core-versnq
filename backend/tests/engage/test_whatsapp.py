@@ -427,3 +427,108 @@ async def test_a_pdf_sent_on_whatsapp_is_kept_on_the_lead(ws, tmp_path, monkeypa
         assert await db.scalar(
             select(MessageAttachment.id).where(MessageAttachment.message_id == msg.id)
         )
+
+
+# ---------- 10b-2: sequences, reminders, health ----------
+async def _sequence(c, h, steps):
+    s = (
+        await c.post("/api/v1/sequences", json={"name": f"S{uuid.uuid4().hex[:4]}"}, headers=h)
+    ).json()
+    r = await c.put(f"/api/v1/sequences/{s['id']}/steps", json=steps, headers=h)
+    assert r.status_code == 200, r.text
+    await c.patch(f"/api/v1/sequences/{s['id']}", json={"is_active": True}, headers=h)
+    return s
+
+
+async def test_whatsapp_steps_send_templates_and_skip_when_a_rule_says_no(ws):
+    from app.modules.engage import engine as E
+
+    tenant_id, c, admin = ws
+    ok_lead = await _lead(c, admin)
+    out_lead = await _lead(c, admin, phone="91234 56789")
+    async with tenant_session(tenant_id) as db:
+        (await db.get(Lead, uuid.UUID(out_lead["id"]))).whatsapp_consent = "opted_out"
+    tpl = await _template(c, admin)
+    promo = await _template(
+        c, admin, body="Hi {{lead.first_name}}, offer!", category="marketing", name="offer"
+    )
+    s = await _sequence(
+        c,
+        admin,
+        [
+            {"kind": "whatsapp", "template_id": tpl["id"]},
+            {"kind": "whatsapp", "template_id": promo["id"]},
+            {"kind": "task", "title": "Call them"},
+        ],
+    )
+    await c.post(
+        f"/api/v1/sequences/{s['id']}/enrol",
+        json={"lead_ids": [ok_lead["id"], out_lead["id"]]},
+        headers=admin,
+    )
+    await E.run_due(tenant_id)
+    # ok_lead: utility sent; marketing skipped (no opt-in); out_lead: both skipped; both finish
+    assert [p["to"] for p in Recorder.sent] == ["919876543210"]
+    assert Recorder.sent[0]["template"]["components"][0]["parameters"] == [
+        {"type": "text", "text": "Asha"}
+    ]
+    async with tenant_session(tenant_id) as db:
+        assert {e.status for e in (await db.scalars(select(Enrolment))).all()} == {"completed"}
+    stats = (await c.get(f"/api/v1/sequences/{s['id']}/stats", headers=admin)).json()
+    assert stats["steps"][0]["sent"] == 1
+    bad = await c.put(
+        f"/api/v1/sequences/{s['id']}/steps", json=[{"kind": "whatsapp"}], headers=admin
+    )
+    assert bad.status_code == 422
+
+
+async def test_payment_reminder_on_whatsapp_uses_invoice_details(ws):
+    tenant_id, c, admin = ws
+    lead = await _lead(c, admin)
+    body = (
+        "Hi {{lead.first_name}}, {{invoice.amount_due}} for {{invoice.number}} "
+        "is due on {{invoice.due_date}}. Thank you."
+    )
+    tpl = await _template(c, admin, name="pay reminder", body=body)
+    s = (await c.get("/api/v1/whatsapp/settings", headers=admin)).json()
+    promo = await _template(
+        c, admin, body="Hi {{lead.first_name}}, sale!", category="marketing", name="sale"
+    )
+    no = await c.put(
+        "/api/v1/whatsapp/settings", json=s | {"reminder_template_id": promo["id"]}, headers=admin
+    )
+    assert no.status_code == 422  # reminders need a utility template
+    await c.put(
+        "/api/v1/whatsapp/settings", json=s | {"reminder_template_id": tpl["id"]}, headers=admin
+    )
+    async with tenant_session(tenant_id) as db:
+        row = await db.get(Lead, uuid.UUID(lead["id"]))
+        msg = await WA.payment_reminder(
+            db,
+            row,
+            number="INV-7",
+            amount_due="₹5,000",
+            due_date=datetime(2026, 11, 19).date(),
+            invoice_id=uuid.uuid4(),
+        )
+        assert msg is not None and msg.status == "sent"
+    params = [p["text"] for p in Recorder.sent[-1]["template"]["components"][0]["parameters"]]
+    assert params == ["Asha", "₹5,000", "INV-7", "19 Nov"]
+
+
+async def test_health_check_warns_admins_when_quality_drops(ws, monkeypatch):
+    tenant_id, c, admin = ws
+
+    async def red(self):
+        return {
+            "display_phone_number": "+91 90000 00000",
+            "quality_rating": "RED",
+            "messaging_limit_tier": "TIER_250",
+        }
+
+    monkeypatch.setattr(Recorder, "phone_info", red)
+    out = (await c.post("/api/v1/whatsapp/account/check", headers=admin)).json()
+    assert out["quality_rating"] == "RED" and out["messaging_limit"] == "TIER_250"
+    async with tenant_session(tenant_id) as db:
+        assert await db.scalar(select(Notification.id).where(Notification.kind == "whatsapp"))
+        assert await WA.daily_limit(db) == 250

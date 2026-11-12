@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Query, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from app.core.errors import Conflict, Invalid, NotFound
 from app.modules.auth.deps import ActiveUser, CurrentUser, require
@@ -164,8 +164,8 @@ StopRule = Literal["reply", "customer", "deal_won", "payment", "closed"]
 
 
 class StepIn(BaseModel):
-    kind: Literal["email", "task", "wait", "check"]  # WhatsApp steps arrive in step 10
-    template_id: uuid.UUID | None = None  # email
+    kind: Literal["email", "whatsapp", "task", "wait", "check"]
+    template_id: uuid.UUID | None = None  # email: an email template; whatsapp: a WhatsApp one
     title: str | None = Field(default=None, max_length=200)  # task
     task_type: Literal["call", "linkedin_connect", "linkedin_message", "other"] = "other"
     due_in_hours: int = Field(default=0, ge=0, le=24 * 30)
@@ -337,6 +337,13 @@ async def set_steps(s_id: uuid.UUID, body: list[StepIn], db: CrmDb, actor: Manag
             t = await db.get(MessageTemplate, st.template_id) if st.template_id else None
             if t is None or t.channel != "email":
                 raise Invalid(f"Step {i}: choose an email template")
+            cfg = {"template_id": str(t.id)}
+        elif st.kind == "whatsapp":
+            from app.modules.engage.models import WhatsAppTemplate
+
+            t = await db.get(WhatsAppTemplate, st.template_id) if st.template_id else None
+            if t is None:
+                raise Invalid(f"Step {i}: choose a WhatsApp template")
             cfg = {"template_id": str(t.id)}
         elif st.kind == "task":
             title = " ".join((st.title or "").split())
@@ -606,7 +613,9 @@ async def sequence_stats(s_id: uuid.UUID, db: CrmDb, actor: Manager) -> Sequence
                 select(
                     Message.step_id,
                     func.count().filter(Message.sent_at.isnot(None)).label("sent"),
-                    func.count().filter(Message.status == "delivered").label("delivered"),
+                    func.count()
+                    .filter(or_(Message.status == "delivered", Message.delivered_at.isnot(None)))
+                    .label("delivered"),
                     func.count().filter(Message.opened_at.isnot(None)).label("opened"),
                     func.count().filter(Message.clicked_at.isnot(None)).label("clicked"),
                     func.count().filter(Message.replied_at.isnot(None)).label("replied"),

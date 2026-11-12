@@ -67,6 +67,7 @@ class SettingsIO(BaseModel):
     stop_words: list[str] = Field(default_factory=list, max_length=30)
     welcome: Toggle = Toggle()
     away: Toggle = Toggle()
+    reminder_template_id: uuid.UUID | None = None  # payment reminders on WhatsApp (utility)
 
 
 class TemplateIn(BaseModel):
@@ -207,6 +208,10 @@ async def put_settings(body: SettingsIO, db: CrmDb, actor: Manager) -> SettingsI
             words.append(w[:30])
     if not words:
         raise Invalid("Keep at least one STOP word")
+    if body.reminder_template_id:
+        tpl = await db.get(WhatsAppTemplate, body.reminder_template_id)
+        if tpl is None or tpl.category != "utility":
+            raise Invalid("Payment reminders need a utility template")
     keys = set(
         (
             await db.scalars(
@@ -247,7 +252,7 @@ async def create_template(body: TemplateIn, db: CrmDb, actor: Manager) -> Templa
             )
         ).all()
     )
-    R.check(body.body, keys)
+    R.check(body.body, keys, WA.INVOICE_VARS)
     text, _ = WA.meta_body(body.body)
     if text.strip().startswith("{{") or text.strip().endswith("}}"):
         raise Invalid("WhatsApp doesn't allow a template to start or end with a variable")

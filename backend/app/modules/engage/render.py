@@ -24,9 +24,9 @@ SIMPLE = {
 }  # fmt: skip
 
 
-def check(text: str, custom_keys: set[str]) -> None:
+def check(text: str, custom_keys: set[str], extra: frozenset[str] = frozenset()) -> None:
     for name, _ in VAR.findall(text or ""):
-        if name in SIMPLE:
+        if name in SIMPLE or name in extra:
             continue
         if name.startswith("lead.cf.") and name[8:] in custom_keys:
             continue
