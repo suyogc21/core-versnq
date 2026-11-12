@@ -169,6 +169,21 @@ async def _hook(c, admin, events=("lead.created",)) -> dict:
     return r.json()
 
 
+async def test_at_most_ten_webhooks(ws, monkeypatch):
+    _, c, admin = ws
+    from app.modules.integrations import router as R
+
+    monkeypatch.setattr(R, "MAX_WEBHOOKS", 2)
+    await _hook(c, admin)
+    await _hook(c, admin)
+    r = await c.post(
+        "/api/v1/integrations/webhooks",
+        json={"name": "Third", "url": HOOK, "events": ["*"]},
+        headers=admin,
+    )
+    assert r.status_code == 422 and "up to 2" in r.json()["detail"]
+
+
 async def test_private_addresses_are_refused(ws):
     _, c, admin = ws
     for url in ("http://hooks.example.com", "https://127.0.0.1/x", "https://localhost/x"):

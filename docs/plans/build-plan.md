@@ -804,7 +804,7 @@ Already built and reused: the event outbox (every important change is already wr
 
 ### 12.2 Outbound webhooks (spec §11)
 
-- Admin adds an endpoint: an `https://` public address (same check as automations, re-checked at every send so a name cannot later point inside our network), picks events from the catalogue (or "all"), gets a signing secret (encrypted at rest).
+- Admin adds an endpoint (up to 10 per company): an `https://` public address (same check as automations, re-checked at every send so a name cannot later point inside our network), picks events from the catalogue (or "all"), gets a signing secret (encrypted at rest).
 - Every minute the worker turns new events into deliveries for each matching endpoint. Body: `{id, type, occurred_at, data}`; headers `Versnq-Event`, `Versnq-Delivery`, `Versnq-Signature: t=<time>,v1=<HMAC-SHA256 of "t.body">` (the receiver checks it and rejects old timestamps).
 - 10-second timeout, no redirects followed. Any 2xx is success. Otherwise retried with backoff: 1 min, 5 min, 30 min, 2 h, 6 h, 12 h, 24 h (8 tries over about two days), then marked failed. An endpoint failing for 3 days in a row is switched off and admins are notified.
 - The same event is never delivered twice as new: the event id is in the body so receivers can ignore repeats.

@@ -25,6 +25,7 @@ from app.modules.roles.models import Role
 from app.modules.users.models import User
 
 router = APIRouter(prefix="/api/v1/integrations", tags=["integrations"], dependencies=CRM)
+MAX_WEBHOOKS = 10  # per company (Suyog, Nov 12)
 
 
 async def _manager(actor: Annotated[CurrentUser, require("integrations.manage")]) -> CurrentUser:
@@ -171,6 +172,10 @@ async def list_webhooks(db: CrmDb, actor: Manager) -> list[WebhookEndpoint]:
 
 @router.post("/webhooks", response_model=EndpointWithSecret, status_code=status.HTTP_201_CREATED)
 async def create_webhook(body: EndpointIn, db: CrmDb, actor: Manager) -> EndpointWithSecret:
+    if await db.scalar(select(func.count()).select_from(WebhookEndpoint)) >= MAX_WEBHOOKS:
+        raise Invalid(
+            f"A company can have up to {MAX_WEBHOOKS} webhooks. Delete one you no longer use."
+        )
     secret = "whsec_" + secrets.token_urlsafe(32)
     ep = WebhookEndpoint(
         id=uuid.uuid4(),
