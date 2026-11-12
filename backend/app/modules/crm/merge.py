@@ -9,7 +9,7 @@ An opt-out on either lead wins.
 
 import uuid
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Invalid
@@ -20,12 +20,17 @@ from app.modules.crm.intake import PLAIN_FIELDS
 from app.modules.crm.models import (
     Activity,
     Consent,
+    Customer,
     CustomFieldUniqueValue,
+    Deal,
     ExternalRef,
     Lead,
     LeadIdentity,
     LeadMerge,
+    Link,
     Notification,
+    StoredFile,
+    Tagging,
     Task,
 )
 from app.modules.users.models import User
@@ -57,6 +62,13 @@ async def merge(
         raise Invalid("Choose two different leads")
     if survivor.kind != other.kind:
         raise Invalid("Merge two people or two organisations, not one of each")
+    both = await db.scalar(
+        select(func.count())
+        .select_from(Customer)
+        .where(Customer.lead_id.in_([survivor.id, other.id]))
+    )
+    if both == 2:
+        raise Invalid("Both are already customers, with their own documents; they cannot be merged")
     unknown = [f for f in take_from_other if f not in CHOOSABLE and not f.startswith("custom:")]
     if unknown:
         raise Invalid(f"Unknown field: {unknown[0]}")
@@ -117,8 +129,20 @@ async def merge(
         .values(status="cancelled", completed_at=L.now())
     )
     # History and work move over.
-    for model in (Activity, Task, Consent, ExternalRef, Notification):
+    for model in (Activity, Task, Consent, ExternalRef, Notification, Deal, StoredFile):
         await db.execute(update(model).where(model.lead_id == other.id).values(lead_id=survivor.id))
+    await db.execute(
+        update(Customer).where(Customer.lead_id == other.id).values(lead_id=survivor.id)
+    )
+    # Tags: the survivor ends with both sets (a tag both had is kept once).
+    await db.execute(
+        delete(Tagging).where(
+            Tagging.lead_id == other.id,
+            Tagging.tag_id.in_(select(Tagging.tag_id).where(Tagging.lead_id == survivor.id)),
+        )
+    )
+    await db.execute(update(Tagging).where(Tagging.lead_id == other.id).values(lead_id=survivor.id))
+    await _move_links(db, other.id, survivor.id)
     await db.execute(
         update(Lead).where(Lead.organisation_id == other.id).values(organisation_id=survivor.id)
     )
@@ -198,6 +222,28 @@ async def merge(
     await audit(db, actor, "lead.merged", "lead", survivor.id, {"merged_lead_id": str(other_id)})
     survivor.version += 1
     return survivor
+
+
+async def _move_links(db: AsyncSession, other_id: uuid.UUID, survivor_id: uuid.UUID) -> None:
+    """The other lead's links point at the survivor. Links between the two, and links the
+    survivor already has (same kind, same other end), are dropped instead of doubled."""
+    ends = ("lead", "record", "deal")
+
+    def key(link: Link, far: str) -> tuple:
+        return (link.link_type_id, *(getattr(link, f"{far}_{e}_id") for e in ends))
+
+    for near, far in (("from", "to"), ("to", "from")):
+        near_col = getattr(Link, f"{near}_lead_id")
+        have = {
+            key(x, far) for x in (await db.scalars(select(Link).where(near_col == survivor_id)))
+        }
+        for link in (await db.scalars(select(Link).where(near_col == other_id))).all():
+            if getattr(link, f"{far}_lead_id") in (survivor_id, other_id) or key(link, far) in have:
+                await db.delete(link)
+            else:
+                setattr(link, f"{near}_lead_id", survivor_id)
+                have.add(key(link, far))
+    await db.flush()
 
 
 async def merged_into(db: AsyncSession, lead_id: uuid.UUID) -> uuid.UUID | None:

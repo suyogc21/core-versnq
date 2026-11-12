@@ -181,3 +181,29 @@ async def test_merge_drops_the_other_leads_response_time_tasks(ws):
             )
         ).all()
     assert [t[0] for t in open_tasks] == [a_owner]
+
+
+async def test_merge_keeps_the_other_leads_deals_and_tags(ws):
+    """Regression: deals, tags and links of the merged-away lead used to be deleted with it."""
+    tenant_id, c = ws
+    mgr, h = await login_as(tenant_id, "sales_manager")
+    a, b = await _pair(tenant_id, owner=mgr)
+    r = await c.post("/api/v1/deals", json={"lead_id": str(b), "name": "B's deal"}, headers=h)
+    assert r.status_code == 201, r.text
+    deal_id = r.json()["id"]
+    for lead_id, tags in ((a, ["VIP"]), (b, ["VIP", "EMI"])):
+        r = await c.put(f"/api/v1/leads/{lead_id}/tags", json={"new": tags}, headers=h)
+        assert r.status_code == 200, r.text
+    la, lb = await lead(tenant_id, a), await lead(tenant_id, b)
+    body = {
+        "survivor_id": str(a),
+        "survivor_version": la.version,
+        "other_id": str(b),
+        "other_version": lb.version,
+        "take_from_other": [],
+    }
+    merged = await c.post("/api/v1/leads/merge", json=body, headers=h)
+    assert merged.status_code == 200, merged.text
+    assert {t["name"] for t in merged.json()["tags"]} == {"VIP", "EMI"}
+    r = await c.get(f"/api/v1/deals/{deal_id}", headers=h)
+    assert r.status_code == 200 and r.json()["lead_id"] == str(a)
