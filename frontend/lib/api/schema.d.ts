@@ -2968,6 +2968,83 @@ export interface paths {
         patch: operations["deal setup-update_lost_reason"];
         trace?: never;
     };
+    "/api/v1/mailboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Mailboxes */
+        get: operations["mailboxes-list_mailboxes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mailboxes/exclusions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exclusions */
+        get: operations["mailboxes-get_exclusions"];
+        /**
+         * Set Exclusions
+         * @description Addresses (name@firm.com) and domains (firm.com or @firm.com) never synced from anyone's
+         *     mailbox: lawyers, family, the company's own banks.
+         */
+        put: operations["mailboxes-set_exclusions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mailboxes/{mb_id}/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disconnect One */
+        post: operations["mailboxes-disconnect_one"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mailboxes/{mb_id}/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Synced
+         * @description Removes the emails a disconnected mailbox synced in from mail apps, with their timeline
+         *     entries. Emails written in Core stay: they are the company's own record.
+         */
+        delete: operations["mailboxes-remove_synced"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/day": {
         parameters: {
             query?: never;
@@ -2982,6 +3059,48 @@ export interface paths {
         get: operations["work-my_day"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Mailbox */
+        get: operations["mailboxes-my_mailbox"];
+        /**
+         * Connect Mailbox
+         * @description Connects (or updates) the user's mailbox after signing in to both sides.
+         */
+        put: operations["mailboxes-connect_mailbox"];
+        post?: never;
+        /**
+         * Disconnect Mine
+         * @description Stops syncing and forgets the password. Emails already synced stay on the leads (I5).
+         */
+        delete: operations["mailboxes-disconnect_mine"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/mailbox/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Now */
+        post: operations["mailboxes-sync_now"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6591,6 +6710,11 @@ export interface components {
             /** Type */
             type: string;
         };
+        /** Exclusions */
+        Exclusions: {
+            /** Items */
+            items: string[];
+        };
         /** FieldIn */
         FieldIn: {
             /** Depends On */
@@ -8042,6 +8166,77 @@ export interface components {
             /** Username */
             username: string;
         };
+        /** MailboxIn */
+        MailboxIn: {
+            /** Email Address */
+            email_address: string;
+            /** Imap Host */
+            imap_host: string;
+            /**
+             * Imap Port
+             * @default 993
+             */
+            imap_port: number;
+            /** Password */
+            password?: string | null;
+            /** Smtp Host */
+            smtp_host: string;
+            /**
+             * Smtp Port
+             * @default 587
+             */
+            smtp_port: number;
+            /**
+             * Smtp Security
+             * @default starttls
+             * @enum {string}
+             */
+            smtp_security: "ssl" | "starttls";
+            /** Username */
+            username?: string | null;
+        };
+        /** MailboxOut */
+        MailboxOut: {
+            /**
+             * Connected At
+             * Format: date-time
+             */
+            connected_at: string;
+            /** Email Address */
+            email_address: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Imap Host */
+            imap_host: string;
+            /** Imap Port */
+            imap_port: number;
+            /** Last Error */
+            last_error: string | null;
+            /** Last Sync At */
+            last_sync_at: string | null;
+            /** Smtp Host */
+            smtp_host: string;
+            /** Smtp Port */
+            smtp_port: number;
+            /** Smtp Security */
+            smtp_security: string;
+            /** Status */
+            status: string;
+            /** Synced */
+            synced: number;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name: string;
+            /** Username */
+            username: string;
+        };
         /** MakeIn */
         MakeIn: {
             /** Deal Id */
@@ -8923,6 +9118,11 @@ export interface components {
         RejectIn: {
             /** Reason */
             reason: string;
+        };
+        /** RemovedOut */
+        RemovedOut: {
+            /** Removed */
+            removed: number;
         };
         /** RepeatIn */
         RepeatIn: {
@@ -17974,6 +18174,141 @@ export interface operations {
             };
         };
     };
+    "mailboxes-list_mailboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailboxOut"][];
+                };
+            };
+        };
+    };
+    "mailboxes-get_exclusions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Exclusions"];
+                };
+            };
+        };
+    };
+    "mailboxes-set_exclusions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Exclusions"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Exclusions"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "mailboxes-disconnect_one": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "mailboxes-remove_synced": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemovedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "work-my_day": {
         parameters: {
             query?: never;
@@ -17990,6 +18325,97 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MyDayOut"];
+                };
+            };
+        };
+    };
+    "mailboxes-my_mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailboxOut"] | null;
+                };
+            };
+        };
+    };
+    "mailboxes-connect_mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailboxIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "mailboxes-disconnect_mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "mailboxes-sync_now": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailboxOut"];
                 };
             };
         };

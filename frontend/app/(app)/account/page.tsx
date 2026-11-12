@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/app/app-shell";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { TwoFactorSetupForm } from "@/components/app/restriction-screens";
+import { MyMailbox } from "@/components/crm/my-mailbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
@@ -29,7 +30,7 @@ function Section({ title, description, children }: { title: string; description?
 }
 
 export default function AccountPage() {
-  const { me, logout } = useAuth();
+  const { me, logout, can } = useAuth();
   if (!me) return null;
   return (
     <>
@@ -46,6 +47,7 @@ export default function AccountPage() {
           </dl>
           <p className="text-xs text-muted-foreground">To change your name or role, ask an admin in your workspace.</p>
         </Section>
+        {can("inbox.reply") && <MyMailbox />}
         <ChangePassword onDone={logout} />
         <TwoFactor />
         <Section
