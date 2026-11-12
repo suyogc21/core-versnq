@@ -103,6 +103,19 @@ class PackDocument(BaseModel):
     product_codes: list[str] = []
 
 
+class PackTaxRate(BaseModel):
+    name: str
+    parts: list[dict] = []  # [{"name": "CGST", "rate_bp": 900}]
+
+
+class PackMoney(BaseModel):
+    """Starting tax rates and tax-id label by the company's country ("*" = anywhere else)."""
+
+    tax_labels: dict[str, str] = {}
+    tax_rates: dict[str, list[PackTaxRate]] = {}
+    yearly_reset: list[str] = []  # countries whose invoice numbers restart each financial year
+
+
 class CrmPack(BaseModel):
     """Starting CRM setup for a new company. Configuration only; every company can edit it."""
 
@@ -117,6 +130,7 @@ class CrmPack(BaseModel):
     lost_reasons: list[str] = []
     products: list[PackProduct] = []
     documents: list[PackDocument] = []
+    money: PackMoney = PackMoney()
 
 
 class IndustryPack(BaseModel):

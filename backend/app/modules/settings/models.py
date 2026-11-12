@@ -38,3 +38,10 @@ class TenantSettings(TimestampMixin, Base):
     next_customer_number: Mapped[int] = mapped_column(Integer, default=1)
     document_reminder_days: Mapped[int] = mapped_column(Integer, default=3)
     storage_quota_bytes: Mapped[int] = mapped_column(BigInteger, default=2 * 1024**3)
+    # Money (step 6, Decision log #34).
+    money_reminder_before_days: Mapped[int] = mapped_column(Integer, default=3)
+    money_overdue_every_days: Mapped[int] = mapped_column(Integer, default=7)
+    money_default_pay: Mapped[str] = mapped_column(String(6), default="both")  # link/direct/both
+    money_emails: Mapped[dict] = mapped_column(
+        JSONB, default=lambda: {"invoice": True, "receipt": True, "reminder": True, "void": True}
+    )

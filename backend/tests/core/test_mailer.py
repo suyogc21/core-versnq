@@ -33,6 +33,7 @@ async def test_outbox_dir_saves_each_email_as_a_json_file(monkeypatch, tmp_path)
 def test_outbox_is_refused_in_production(monkeypatch, tmp_path):
     monkeypatch.setenv("MAIL_OUTBOX_DIR", str(tmp_path))
     monkeypatch.setenv("ENVIRONMENT", "prod")
+    monkeypatch.setenv("SECRETS_ENCRYPTION_KEY", "x" * 44)
     get_settings.cache_clear()
     try:
         assert isinstance(get_mailer(), ConsoleMailer)

@@ -39,7 +39,9 @@ CATALOGUE: dict[str, str] = {
     "document.received": "crm",  # step 5 (Decision log #32)
     "document.verified": "crm",
     "document.rejected": "crm",
-    "invoice.created": "money",
+    "invoice.created": "money",  # step 6 (Decision log #34): fired when issued
+    "invoice.voided": "money",
+    "payment.reversed": "money",
     "payment.due": "money",
     "payment.received": "money",
     "payment.overdue": "money",

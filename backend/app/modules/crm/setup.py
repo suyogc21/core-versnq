@@ -99,6 +99,18 @@ STEP5_SYSTEM_TYPES = [
         ("document_deleted", "Document file deleted", "trash"),
     )
 ]
+# Money (step 6, Decision log #34); frozen copy in migration 0017.
+STEP6_SYSTEM_TYPES = [
+    {"key": key, "label": label, "icon": icon, "loggable": False}
+    for key, label, icon in (
+        ("invoice_issued", "Invoice issued", "receipt"),
+        ("invoice_voided", "Invoice voided", "receipt-x"),
+        ("payment_received", "Payment received", "indian-rupee"),
+        ("payment_reversed", "Payment reversed", "undo"),
+        ("payment_link_sent", "Payment link sent", "link"),
+        ("invoice_emailed", "Invoice emailed", "mail"),
+    )
+]
 
 
 def system_activity_types(dispositions: list[str]) -> list[dict]:
@@ -116,6 +128,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP3_SYSTEM_TYPES,
         *STEP4_SYSTEM_TYPES,
         *STEP5_SYSTEM_TYPES,
+        *STEP6_SYSTEM_TYPES,
     ]
 
 

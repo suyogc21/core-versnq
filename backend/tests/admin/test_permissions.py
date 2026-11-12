@@ -47,11 +47,14 @@ async def test_me_lists_the_users_permissions(ws):
         "deals.create",
         "deals.edit",
         "documents.verify",
+        "invoices.create",
+        "invoices.read",
         "leads.assign",
         "leads.create",
         "leads.edit",
         "leads.import",
         "leads.merge",
+        "payments.record",
         "users.read",
     ]
     assert set((await c.get("/api/v1/auth/me", headers=owner)).json()["permissions"]) == set(

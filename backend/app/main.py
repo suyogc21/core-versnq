@@ -21,6 +21,8 @@ from app.modules.crm.records_router import router as records_router
 from app.modules.crm.rules_router import router as rules_router
 from app.modules.crm.setup_router import router as crm_setup_router
 from app.modules.crm.work_router import router as work_router
+from app.modules.money.router import public as money_webhooks_router
+from app.modules.money.router import router as money_router
 from app.modules.roles.router import router as roles_router
 from app.modules.settings.router import router as settings_router
 from app.modules.teams.router import router as teams_router
@@ -54,6 +56,8 @@ app.include_router(notifications_router)
 app.include_router(capture_router)
 app.include_router(capture_public_router)
 app.include_router(customers_router)
+app.include_router(money_router)
+app.include_router(money_webhooks_router)
 app.include_router(imports_router)
 app.include_router(record_types_router)
 app.include_router(records_router)

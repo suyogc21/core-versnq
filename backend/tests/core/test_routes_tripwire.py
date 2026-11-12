@@ -22,6 +22,8 @@ PUBLIC = {
     # Web forms post leads here; protected by the per-form secret key + rate limits (#22).
     ("POST", "/api/v1/capture/{key}"),
     ("OPTIONS", "/api/v1/capture/{key}"),
+    # Payment gateways tell Core a link was paid; only a valid signature is accepted (#34).
+    ("POST", "/api/v1/webhooks/{gateway_name}/{account_id}"),
 }
 
 

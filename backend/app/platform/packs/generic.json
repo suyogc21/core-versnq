@@ -143,6 +143,81 @@
         "name": "Signed agreement",
         "is_required": false
       }
-    ]
+    ],
+    "money": {
+      "tax_labels": {
+        "IN": "GSTIN",
+        "AE": "TRN",
+        "US": "EIN",
+        "*": "Tax ID"
+      },
+      "tax_rates": {
+        "IN": [
+          {
+            "name": "GST 18%",
+            "parts": [
+              {
+                "name": "CGST",
+                "rate_bp": 900
+              },
+              {
+                "name": "SGST",
+                "rate_bp": 900
+              }
+            ]
+          },
+          {
+            "name": "IGST 18%",
+            "parts": [
+              {
+                "name": "IGST",
+                "rate_bp": 1800
+              }
+            ]
+          },
+          {
+            "name": "GST 5%",
+            "parts": [
+              {
+                "name": "CGST",
+                "rate_bp": 250
+              },
+              {
+                "name": "SGST",
+                "rate_bp": 250
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "AE": [
+          {
+            "name": "VAT 5%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 500
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "*": [
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ]
+      },
+      "yearly_reset": [
+        "IN"
+      ]
+    }
   }
 }

@@ -68,3 +68,21 @@ def line_total(quantity: int, unit_price_minor: int, discount_minor: int) -> int
 def weighted(amount_minor: int, probability: int) -> int:
     """amount × probability %, rounded half up to a whole minor unit."""
     return (amount_minor * probability * 2 + 100) // 200
+
+
+def plain(minor: int, code: str) -> str:
+    """Minor units as a plain decimal string: 333334 INR -> '3333.34' (for UPI and gateways)."""
+    exp = EXPONENT[code]
+    sign, minor = ("-" if minor < 0 else ""), abs(minor)
+    if exp == 0:
+        return f"{sign}{minor}"
+    whole, frac = divmod(minor, 10**exp)
+    return f"{sign}{whole}.{frac:0{exp}d}"
+
+
+def display(minor: int, code: str) -> str:
+    """For people: 'INR 3,333.34'. Uses the code, not a symbol, so every PDF font shows it."""
+    whole, _, frac = plain(minor, code).partition(".")
+    sign = "-" if whole.startswith("-") else ""
+    grouped = f"{int(whole.lstrip('-')):,}"
+    return f"{code} {sign}{grouped}{'.' + frac if frac else ''}"

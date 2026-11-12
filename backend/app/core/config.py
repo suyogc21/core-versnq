@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     redis_url: str
     jwt_secret: str = Field(min_length=32)
     totp_encryption_key: str  # Fernet key: encrypts 2FA secrets at rest
+    # Fernet key for company secrets (gateway keys, mailbox passwords). Required in production.
+    secrets_encryption_key: str | None = None
     base_domain: str  # client workspaces live at <slug>.<base_domain>
     # Read the workspace from X-Forwarded-Host. Only when a trusted proxy (Next dev server,
     # nginx) always overwrites that header; otherwise clients could spoof it.
@@ -35,6 +37,8 @@ class Settings(BaseSettings):
     def _no_demo_switches_in_prod(self) -> "Settings":
         if self.environment == "prod" and self.demo_skip_2fa:
             raise ValueError("DEMO_SKIP_2FA must never be on in production")
+        if self.environment == "prod" and not self.secrets_encryption_key:
+            raise ValueError("SECRETS_ENCRYPTION_KEY is required in production")
         return self
 
 

@@ -1,6 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
-# code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015).
+# code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
+# 0017).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -21,7 +22,14 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "customers.read": ("crm", "See customers and their documents"),
     "customers.create": ("crm", "Make leads into customers"),
     "documents.verify": ("crm", "Verify or reject customers' documents"),
+    "invoices.read": ("money", "See invoices, payments and balances"),
+    "invoices.create": ("money", "Create and issue invoices and send payment links"),
+    "invoices.void": ("money", "Void issued invoices"),
+    "payments.record": ("money", "Record payments received outside the gateway"),
+    "payments.reverse": ("money", "Reverse recorded payments"),
+    "money.settings": ("money", "Set up billing entities, taxes, gateways and the mailbox"),
 }
+MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money"}
 ALL_CODES = frozenset(CATALOGUE)
 
 DEFAULT_GRANTS: dict[str, set[str]] = {
@@ -38,6 +46,9 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "customers.read",
         "customers.create",
         "documents.verify",
+        "invoices.read",
+        "invoices.create",
+        "payments.record",
     },
     "sales_user": {
         "leads.create",
@@ -46,6 +57,9 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "deals.edit",
         "customers.read",
         "customers.create",
+        "invoices.read",
+        "invoices.create",
+        "payments.record",
     },
-    "finance": {"audit.read", "customers.read"},
+    "finance": {"audit.read", "customers.read", *MONEY_CODES},
 }

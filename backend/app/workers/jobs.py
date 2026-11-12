@@ -55,15 +55,18 @@ async def rescore_job(ctx, tenant_id: str) -> int:
 
 async def nightly_job(ctx) -> dict:
     """Once a night: engagement windows move, today() formulas move, owners get a task for
-    documents still missing, and files that lost their record are removed from disk."""
+    documents still missing, files that lost their record are removed from disk, and money:
+    repeat invoices, payment reminders, and payment links whose webhook was missed."""
     from app.core.tenancy import tenant_session
     from app.modules.crm import customers
     from app.modules.crm.automation import _active_tenants
     from app.modules.crm.calc import recalc_tenant
     from app.modules.crm.scoring import rescore_tenant
+    from app.modules.money.worker import nightly_tenant
 
     rescored = recalced = reminded = removed = 0
     missing: dict[str, list[str]] = {}
+    money: dict[str, dict] = {}
     for t in await _active_tenants():
         rescored += await rescore_tenant(t)
         recalced += await recalc_tenant(t)
@@ -74,7 +77,10 @@ async def nightly_job(ctx) -> dict:
         removed += report["removed"]
         if report["missing"]:
             missing[str(t)] = report["missing"]
+        if done := await nightly_tenant(t):
+            money[str(t)] = done
     return {
+        "money": money,
         "rescored": rescored,
         "recalculated": recalced,
         "document_reminders": reminded,
@@ -96,3 +102,26 @@ async def webhook_job(ctx, tenant_id: str, automation_id: str, url: str, secret:
         if tries < 3:
             raise Retry(defer=60 if tries == 1 else 300) from e
         return f"failed after {tries} tries: {type(e).__name__}"
+
+
+async def money_mail_job(ctx, tenant_id: str, message_id: str) -> str:
+    """Send one invoice / receipt / reminder email; 3 tries, then it is marked failed."""
+    import uuid
+
+    from arq import Retry
+
+    from app.core.errors import Invalid
+    from app.modules.money.worker import MAX_TRIES, send_one
+
+    tries = ctx.get("job_try", 1)
+    try:
+        return await send_one(uuid.UUID(tenant_id), uuid.UUID(message_id), tries >= MAX_TRIES)
+    except Invalid:
+        raise Retry(defer=60 * tries) from None
+
+
+async def money_mail_sweep_job(ctx) -> int:
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.money.worker import sweep
+
+    return await sweep(await _active_tenants())

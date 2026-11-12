@@ -6,6 +6,8 @@ from app.workers.jobs import (
     automation_job,
     import_job,
     import_sweep_job,
+    money_mail_job,
+    money_mail_sweep_job,
     nightly_job,
     no_response_job,
     notify_due_tasks_job,
@@ -30,12 +32,15 @@ class WorkerSettings:
         rescore_job,
         nightly_job,
         webhook_job,
+        money_mail_job,
+        money_mail_sweep_job,
     ]
     cron_jobs = [  # once a minute each, spread out
         cron(notify_due_tasks_job, second=0),
         cron(routing_checks_job, second=20),
         cron(import_sweep_job, second=40),
         cron(no_response_job, second=50),
+        cron(money_mail_sweep_job, second=30),
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
         cron(nightly_job, hour=21, minute=30, second=10),  # 03:00 in India
     ]
