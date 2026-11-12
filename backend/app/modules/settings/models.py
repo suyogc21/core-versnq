@@ -7,6 +7,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base
 from app.core.models import TimestampMixin
 
+# Frozen copy in migration 0028.
+WHATSAPP_DEFAULTS = {
+    "create_leads": True,
+    "source_id": None,
+    "stop_words": ["STOP", "UNSUBSCRIBE", "STOP ALL", "बंद"],
+    "welcome": {"on": False, "text": ""},
+    "away": {"on": False, "text": ""},
+}
+
 
 class TenantSettings(TimestampMixin, Base):
     """One row per tenant: labels, locale and defaults."""
@@ -38,6 +47,8 @@ class TenantSettings(TimestampMixin, Base):
     copy_in: Mapped[dict] = mapped_column(
         JSONB, default=lambda: {"create_leads": False, "source_id": None}
     )
+    # Official WhatsApp number (step 10b): unknown number → lead, STOP words, autoresponder.
+    whatsapp: Mapped[dict] = mapped_column(JSONB, default=lambda: dict(WHATSAPP_DEFAULTS))
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)
     # Duplicates on automatic capture (R5): update the existing lead / flag / always create.

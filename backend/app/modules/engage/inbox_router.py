@@ -21,6 +21,7 @@ from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.models import Lead, LeadStage, StoredFile
 from app.modules.crm.notify import notify
 from app.modules.engage import inbox as IB
+from app.modules.engage import whatsapp as WA
 from app.modules.engage.models import (
     CannedReply,
     Conversation,
@@ -105,6 +106,8 @@ class LeadBasics(BaseModel):
 class ConversationDetail(BaseModel):
     id: uuid.UUID
     channel: str
+    official: bool  # WhatsApp on the company number (not a rep's own WhatsApp)
+    window_ends_at: datetime | None  # WhatsApp: free text allowed until then
     subject: str | None
     status: str
     is_private: bool
@@ -324,6 +327,8 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
         subject=conv.subject,
         status=conv.status,
         channel=conv.channel,
+        official=conv.whatsapp_account_id is not None,
+        window_ends_at=WA.window_ends(conv),
         is_private=conv.is_private,
         assignee_id=assignee,
         assignee_name=names.get(assignee),
@@ -362,7 +367,7 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
             NoteOut(id=n.id, user_name=names.get(n.user_id), body=n.body, created_at=n.created_at)
             for n in notes
         ],
-        can_reply=conv.channel == "email",
+        can_reply=conv.channel == "email" or conv.whatsapp_account_id is not None,
         can_manage=await IB.can_manage(db, actor, conv),
     )
 
@@ -400,13 +405,41 @@ class NewEmailIn(ReplyIn):
 @router.post("/conversations/{conv_id}/reply", response_model=ConversationDetail)
 async def reply(conv_id: uuid.UUID, body: ReplyIn, db: CrmDb, actor: Replier) -> ConversationDetail:
     conv = await IB.get_visible(db, actor, conv_id)
-    if conv.channel != "email":  # WhatsApp is answered from the rep's own WhatsApp (#41)
-        raise Invalid("Answer this on WhatsApp; it is logged here automatically")
     lead = await db.get(Lead, conv.lead_id)
+    if conv.channel == "whatsapp":
+        if conv.whatsapp_account_id is None:  # a rep's own WhatsApp, logged by the extension
+            raise Invalid("Answer this on WhatsApp; it is logged here automatically")
+        await WA.send(db, lead, text=body.body, actor=actor)  # the 24-hour window applies
+        await _mark_read(db, actor, conv)
+        await db.flush()
+        return await _detail(db, actor, conv)
     subject = conv.subject or "(no subject)"
     if not subject.lower().startswith("re:"):
         subject = f"Re: {subject}"
     await IB.send(db, actor, lead, conv, subject=subject, body=body.body, cc=body.cc)
+    await _mark_read(db, actor, conv)
+    await db.flush()
+    return await _detail(db, actor, conv)
+
+
+class TemplateSendIn(BaseModel):
+    template_id: uuid.UUID
+
+
+@router.post("/conversations/{conv_id}/whatsapp-template", response_model=ConversationDetail)
+async def send_template(
+    conv_id: uuid.UUID, body: TemplateSendIn, db: CrmDb, actor: Replier
+) -> ConversationDetail:
+    """An approved template on the company number: the way to write after 24 hours of silence."""
+    from app.modules.engage.models import WhatsAppTemplate
+
+    conv = await IB.get_visible(db, actor, conv_id)
+    if conv.whatsapp_account_id is None:
+        raise Invalid("Templates are for the company's WhatsApp number")
+    tpl = await db.get(WhatsAppTemplate, body.template_id)
+    if tpl is None:
+        raise NotFound("Template not found")
+    await WA.send(db, await db.get(Lead, conv.lead_id), template=tpl, actor=actor)
     await _mark_read(db, actor, conv)
     await db.flush()
     return await _detail(db, actor, conv)

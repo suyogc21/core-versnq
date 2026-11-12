@@ -308,77 +308,144 @@
         "title": "AccountDetail",
         "type": "object"
       },
-      "AccountIn": {
+      "AccountOut": {
         "properties": {
-          "org_lead_id": {
-            "format": "uuid",
-            "title": "Org Lead Id",
-            "type": "string"
+          "connected": {
+            "title": "Connected",
+            "type": "boolean"
           },
-          "owner_user_id": {
+          "display_number": {
             "anyOf": [
               {
-                "format": "uuid",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Owner User Id"
+            "title": "Display Number"
           },
-          "parent_id": {
+          "health_checked_at": {
             "anyOf": [
               {
-                "format": "uuid",
+                "format": "date-time",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Parent Id"
+            "title": "Health Checked At"
           },
-          "target_currency": {
+          "last_error": {
             "anyOf": [
               {
-                "maxLength": 3,
-                "minLength": 3,
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Target Currency"
+            "title": "Last Error"
           },
-          "target_minor": {
+          "messaging_limit": {
             "anyOf": [
               {
-                "minimum": 0.0,
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Target Minor"
+            "title": "Messaging Limit"
           },
-          "tier": {
-            "default": "growth",
-            "enum": [
-              "strategic",
-              "growth",
-              "maintain"
+          "phone_number_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Tier",
-            "type": "string"
+            "title": "Phone Number Id"
+          },
+          "quality_rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality Rating"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "test_mode": {
+            "title": "Test Mode",
+            "type": "boolean"
+          },
+          "verified_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Name"
+          },
+          "verify_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verify Token"
+          },
+          "waba_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waba Id"
+          },
+          "webhook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Url"
           }
         },
         "required": [
-          "org_lead_id"
+          "connected",
+          "test_mode"
         ],
-        "title": "AccountIn",
+        "title": "AccountOut",
         "type": "object"
       },
       "AccountPatch": {
@@ -2840,6 +2907,10 @@
             "title": "Notes",
             "type": "array"
           },
+          "official": {
+            "title": "Official",
+            "type": "boolean"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -2854,11 +2925,25 @@
               }
             ],
             "title": "Subject"
+          },
+          "window_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Ends At"
           }
         },
         "required": [
           "id",
           "channel",
+          "official",
+          "window_ends_at",
           "subject",
           "status",
           "is_private",
@@ -13997,6 +14082,36 @@
         "title": "Section",
         "type": "object"
       },
+      "SendIn": {
+        "properties": {
+          "template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "maxLength": 4096,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "title": "SendIn",
+        "type": "object"
+      },
       "SendingSettings": {
         "properties": {
           "daily_cap": {
@@ -14032,6 +14147,31 @@
           "daily_cap"
         ],
         "title": "SendingSettings",
+        "type": "object"
+      },
+      "SentOut": {
+        "properties": {
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "message_id": {
+            "format": "uuid",
+            "title": "Message Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conversation_id",
+          "message_id",
+          "status"
+        ],
+        "title": "SentOut",
         "type": "object"
       },
       "SequenceIn": {
@@ -14308,6 +14448,51 @@
           }
         },
         "title": "SetTags",
+        "type": "object"
+      },
+      "SettingsIO": {
+        "properties": {
+          "away": {
+            "$ref": "#/components/schemas/Toggle",
+            "default": {
+              "on": false,
+              "text": ""
+            }
+          },
+          "create_leads": {
+            "default": true,
+            "title": "Create Leads",
+            "type": "boolean"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "stop_words": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Stop Words",
+            "type": "array"
+          },
+          "welcome": {
+            "$ref": "#/components/schemas/Toggle",
+            "default": {
+              "on": false,
+              "text": ""
+            }
+          }
+        },
+        "title": "SettingsIO",
         "type": "object"
       },
       "SettingsOut": {
@@ -16189,98 +16374,6 @@
         "title": "TeamPatch",
         "type": "object"
       },
-      "TemplateIn": {
-        "properties": {
-          "body": {
-            "maxLength": 20000,
-            "minLength": 1,
-            "title": "Body",
-            "type": "string"
-          },
-          "channel": {
-            "const": "email",
-            "default": "email",
-            "title": "Channel",
-            "type": "string"
-          },
-          "is_active": {
-            "default": true,
-            "title": "Is Active",
-            "type": "boolean"
-          },
-          "name": {
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Name",
-            "type": "string"
-          },
-          "subject": {
-            "maxLength": 300,
-            "minLength": 1,
-            "title": "Subject",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "subject",
-          "body"
-        ],
-        "title": "TemplateIn",
-        "type": "object"
-      },
-      "TemplateOut": {
-        "properties": {
-          "body": {
-            "title": "Body",
-            "type": "string"
-          },
-          "channel": {
-            "title": "Channel",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "is_active": {
-            "title": "Is Active",
-            "type": "boolean"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "subject": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Subject"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "title": "Updated At",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "channel",
-          "subject",
-          "body",
-          "is_active",
-          "updated_at"
-        ],
-        "title": "TemplateOut",
-        "type": "object"
-      },
       "TemplatePatch": {
         "properties": {
           "body": {
@@ -16335,6 +16428,20 @@
           }
         },
         "title": "TemplatePatch",
+        "type": "object"
+      },
+      "TemplateSendIn": {
+        "properties": {
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template_id"
+        ],
+        "title": "TemplateSendIn",
         "type": "object"
       },
       "TemporaryPasswordOut": {
@@ -16582,6 +16689,23 @@
           "document_id"
         ],
         "title": "ToDocumentIn",
+        "type": "object"
+      },
+      "Toggle": {
+        "properties": {
+          "on": {
+            "default": false,
+            "title": "On",
+            "type": "boolean"
+          },
+          "text": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "title": "Toggle",
         "type": "object"
       },
       "TreeNode": {
@@ -17973,6 +18097,92 @@
         "title": "WaMessageIn",
         "type": "object"
       },
+      "WebhookResult": {
+        "properties": {
+          "kept": {
+            "title": "Kept",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kept"
+        ],
+        "title": "WebhookResult",
+        "type": "object"
+      },
+      "app__modules__accounts__router__AccountIn": {
+        "properties": {
+          "org_lead_id": {
+            "format": "uuid",
+            "title": "Org Lead Id",
+            "type": "string"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "target_currency": {
+            "anyOf": [
+              {
+                "maxLength": 3,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Currency"
+          },
+          "target_minor": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Minor"
+          },
+          "tier": {
+            "default": "growth",
+            "enum": [
+              "strategic",
+              "growth",
+              "maintain"
+            ],
+            "title": "Tier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "org_lead_id"
+        ],
+        "title": "AccountIn",
+        "type": "object"
+      },
       "app__modules__audit__router__AuditOut": {
         "properties": {
           "action": {
@@ -19052,6 +19262,260 @@
           "body"
         ],
         "title": "NoteIn",
+        "type": "object"
+      },
+      "app__modules__engage__router__TemplateIn": {
+        "properties": {
+          "body": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "channel": {
+            "const": "email",
+            "default": "email",
+            "title": "Channel",
+            "type": "string"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "subject",
+          "body"
+        ],
+        "title": "TemplateIn",
+        "type": "object"
+      },
+      "app__modules__engage__router__TemplateOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "channel",
+          "subject",
+          "body",
+          "is_active",
+          "updated_at"
+        ],
+        "title": "TemplateOut",
+        "type": "object"
+      },
+      "app__modules__engage__whatsapp_router__AccountIn": {
+        "properties": {
+          "access_token": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "app_secret": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Secret"
+          },
+          "phone_number_id": {
+            "pattern": "^\\d{5,30}$",
+            "title": "Phone Number Id",
+            "type": "string"
+          },
+          "waba_id": {
+            "pattern": "^\\d{5,30}$",
+            "title": "Waba Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number_id",
+          "waba_id"
+        ],
+        "title": "AccountIn",
+        "type": "object"
+      },
+      "app__modules__engage__whatsapp_router__TemplateIn": {
+        "properties": {
+          "body": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "marketing",
+              "utility"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "footer": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer"
+          },
+          "language": {
+            "default": "en",
+            "pattern": "^[a-z]{2,3}(_[A-Z]{2})?$",
+            "title": "Language",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "body"
+        ],
+        "title": "TemplateIn",
+        "type": "object"
+      },
+      "app__modules__engage__whatsapp_router__TemplateOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "footer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "language",
+          "category",
+          "body",
+          "footer",
+          "status",
+          "reason",
+          "created_at"
+        ],
+        "title": "TemplateOut",
         "type": "object"
       },
       "app__modules__money__router__MessageOut": {
@@ -21695,6 +22159,65 @@
           }
         ],
         "summary": "Reply",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/whatsapp-template": {
+      "post": {
+        "description": "An approved template on the company number: the way to write after 24 hours of silence.",
+        "operationId": "inbox-send_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateSendIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send Template",
         "tags": [
           "inbox"
         ]
@@ -28160,7 +28683,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountIn"
+                "$ref": "#/components/schemas/app__modules__accounts__router__AccountIn"
               }
             }
           },
@@ -31868,6 +32391,65 @@
         "summary": "Set Lead Tags",
         "tags": [
           "organise"
+        ]
+      }
+    },
+    "/api/v1/leads/{lead_id}/whatsapp": {
+      "post": {
+        "description": "From the company number: a template (always allowed if approved and the person may get\nit) or free text (only inside the 24-hour window).",
+        "operationId": "whatsapp-send_to_lead",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send To Lead",
+        "tags": [
+          "whatsapp"
         ]
       }
     },
@@ -37978,7 +38560,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/TemplateOut"
+                    "$ref": "#/components/schemas/app__modules__engage__router__TemplateOut"
                   },
                   "title": "Response Sequences-List Templates",
                   "type": "array"
@@ -38004,7 +38586,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TemplateIn"
+                "$ref": "#/components/schemas/app__modules__engage__router__TemplateIn"
               }
             }
           },
@@ -38015,7 +38597,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TemplateOut"
+                  "$ref": "#/components/schemas/app__modules__engage__router__TemplateOut"
                 }
               }
             },
@@ -38112,7 +38694,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TemplateOut"
+                  "$ref": "#/components/schemas/app__modules__engage__router__TemplateOut"
                 }
               }
             },
@@ -39119,6 +39701,469 @@
         "summary": "Gateway Webhook",
         "tags": [
           "money"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/account": {
+      "get": {
+        "operationId": "whatsapp-get_account",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Account",
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "put": {
+        "description": "Connect (or update) the company's number with its Meta keys. Checked with Meta first.",
+        "operationId": "whatsapp-connect",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__engage__whatsapp_router__AccountIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Connect",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/account/check": {
+      "post": {
+        "description": "Quality rating and daily limit, fresh from Meta.",
+        "operationId": "whatsapp-check",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Check",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/settings": {
+      "get": {
+        "operationId": "whatsapp-get_settings_",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsIO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Settings ",
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "put": {
+        "operationId": "whatsapp-put_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsIO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsIO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Settings",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/templates": {
+      "get": {
+        "operationId": "whatsapp-list_templates",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__modules__engage__whatsapp_router__TemplateOut"
+                  },
+                  "title": "Response Whatsapp-List Templates",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Templates",
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "description": "Written with our variables; sent to Meta for approval straight away.",
+        "operationId": "whatsapp-create_template",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__engage__whatsapp_router__TemplateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__engage__whatsapp_router__TemplateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Template",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/templates/{tpl_id}": {
+      "delete": {
+        "description": "Removed from Core (messages already sent keep their text). Remove it in Meta's\nWhatsApp Manager too if it should go there.",
+        "operationId": "whatsapp-delete_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tpl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tpl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Template",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/templates/{tpl_id}/refresh": {
+      "post": {
+        "operationId": "whatsapp-refresh_template",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tpl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tpl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__engage__whatsapp_router__TemplateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Refresh Template",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/test-webhook": {
+      "post": {
+        "description": "Outside production only: deliver a webhook body as if Meta had sent it (no signature),\nso incoming WhatsApp can be tried before the number is live.",
+        "operationId": "whatsapp-test_webhook",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Webhook",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/webhook": {
+      "get": {
+        "description": "Meta checks the callback address once, when the company sets it up.",
+        "operationId": "whatsapp-verify",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "hub.mode",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hub.Mode"
+            }
+          },
+          {
+            "in": "query",
+            "name": "hub.verify_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hub.Verify Token"
+            }
+          },
+          {
+            "in": "query",
+            "name": "hub.challenge",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hub.Challenge"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify",
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "description": "Messages, delivery receipts and template decisions from Meta, signed with the company's\napp secret. Anything unsigned or wrongly signed is refused.",
+        "operationId": "whatsapp-webhook",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Webhook",
+        "tags": [
+          "whatsapp"
         ]
       }
     },

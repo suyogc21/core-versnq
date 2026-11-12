@@ -55,6 +55,7 @@ REASONS = STOP_RULES | {
     "sequence_off": "the sequence was switched off",
     "lead_deleted": "the lead was deleted",
     "merged": "the lead was merged into another",
+    "whatsapp_stop": "they sent STOP on WhatsApp",
 }
 STEPS_PER_RUN = 10  # check and task steps run straight on; this bounds one run
 MAX_SEND_TRIES = 3

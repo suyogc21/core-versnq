@@ -507,7 +507,11 @@ async def create_lead(request: Request, body: NewLeadIn, db: TenantDb, actor: Re
 async def _conversation(db: AsyncSession, lead: Lead, actor: CurrentUser) -> Conversation:
     conv = await db.scalar(
         select(Conversation)
-        .where(Conversation.lead_id == lead.id, Conversation.channel == "whatsapp")
+        .where(
+            Conversation.lead_id == lead.id,
+            Conversation.channel == "whatsapp",
+            Conversation.whatsapp_account_id.is_(None),  # not the company number's chat
+        )
         .order_by(Conversation.created_at)
         .limit(1)
     )

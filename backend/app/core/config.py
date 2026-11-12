@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # working when inbound mail for that domain reaches Core (Amazon SES, at go-live).
     inbound_email_domain: str = "copy.versnq.in"
     inbound_email_live: bool = False
+    # Official WhatsApp number (step 10b): test (kept in Core, nothing sent to Meta) or meta
+    # (Meta's Cloud API with the company's own keys).
+    whatsapp_sender: Literal["test", "meta"] = "test"
+    meta_graph_version: str = "v21.0"
     # sequence emails (step 9a): "test" keeps them in Core; "mailbox" sends through the
     # company's own mailbox; Amazon SES is added at go-live (Decision log #39)
     email_sender: Literal["test", "mailbox"] = "test"

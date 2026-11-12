@@ -111,6 +111,10 @@ class Message(TenantScoped, TimestampMixin, Base):
     mailbox_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     # step 10a: WhatsApp's own message id (from the extension), so nothing is logged twice
     external_id: Mapped[str | None] = mapped_column(String(200))
+    # step 10b: the official number's template, and Meta's delivery receipts
+    whatsapp_template_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class MessageEvent(TenantScoped, Base):
@@ -143,6 +147,9 @@ class Conversation(TenantScoped, TimestampMixin, Base):
     last_inbound_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_direction: Mapped[str | None] = mapped_column(String(3))
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    # step 10b: the official number this WhatsApp conversation is on (empty: logged by the
+    # reps' extension from their own WhatsApp)
+    whatsapp_account_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
 
 
 class ConversationMember(TenantScoped, Base):
@@ -280,3 +287,39 @@ class WhatsAppChatLink(TenantScoped, Base):
     chat_key: Mapped[str] = mapped_column(String(200))
     lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class WhatsAppAccount(TenantScoped, TimestampMixin, Base):
+    """The company's official WhatsApp number on Meta's Cloud API (step 10b). One per company."""
+
+    __tablename__ = "whatsapp_accounts"
+
+    phone_number_id: Mapped[str] = mapped_column(String(40))
+    waba_id: Mapped[str] = mapped_column(String(40))
+    display_number: Mapped[str | None] = mapped_column(String(40))
+    verified_name: Mapped[str | None] = mapped_column(String(200))
+    access_token_enc: Mapped[str] = mapped_column(Text)
+    app_secret_enc: Mapped[str] = mapped_column(Text)
+    verify_token: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(8), default="active")
+    last_error: Mapped[str | None] = mapped_column(String(500))
+    quality_rating: Mapped[str | None] = mapped_column(String(20))
+    messaging_limit: Mapped[str | None] = mapped_column(String(40))
+    health_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class WhatsAppTemplate(TenantScoped, TimestampMixin, Base):
+    """A message template on the official number: written with our variables, approved by Meta."""
+
+    __tablename__ = "whatsapp_templates"
+
+    name: Mapped[str] = mapped_column(String(120))
+    language: Mapped[str] = mapped_column(String(10))
+    category: Mapped[str] = mapped_column(String(14))  # marketing / utility
+    body: Mapped[str] = mapped_column(Text)
+    variables: Mapped[list] = mapped_column(JSONB, default=list)  # {{1}}, {{2}}… in order
+    footer: Mapped[str | None] = mapped_column(String(60))
+    meta_id: Mapped[str | None] = mapped_column(String(60))
+    status: Mapped[str] = mapped_column(String(10), default="pending")
+    reason: Mapped[str | None] = mapped_column(String(500))
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)

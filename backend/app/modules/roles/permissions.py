@@ -41,6 +41,7 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "inbox.reply": ("crm", "Read and answer conversations of leads you can see"),
     "inbox.take_over": ("crm", "Take over or hand on any conversation you can see"),
     "mailboxes.manage": ("settings", "See connected inboxes, set the exclusion list"),
+    "whatsapp.manage": ("settings", "Connect the WhatsApp number, write its templates"),
 }
 # Finance: all of money except exporting, which the admin grants (Decision log #35).
 MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money" and not c.endswith(".export")}

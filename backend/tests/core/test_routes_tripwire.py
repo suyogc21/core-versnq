@@ -33,6 +33,10 @@ PUBLIC = {
     # The WhatsApp extension trades a one-time code (made in My account) for its token (#41).
     # Rate-limited per address and per company.
     ("POST", "/api/v1/extension/connect"),
+    # Meta's WhatsApp webhook (#41): the GET answers Meta's one-time check with the company's
+    # verify token; the POST is refused unless signed with the company's app secret.
+    ("GET", "/api/v1/whatsapp/webhook"),
+    ("POST", "/api/v1/whatsapp/webhook"),
 }
 
 
