@@ -787,3 +787,63 @@ Answered 2026-11-12 (Decision log #36): all as recommended.
 | K3 | Health: set by hand or worked out? | **Set by the owner**, with a hint from data (no touch in 30 days, overdue money, lost deals) |
 | K4 | Paid add-on? | Yes, priced separately (your call on the price) |
 | K5 | Demo industry | HR and payroll software ("Brightlane"), unless you prefer another |
+
+## 12. Milestone 4 in detail: API, webhooks and the ACE endpoints
+
+What it is for: other software talks to Core safely. A company's developer (or Zapier, n8n, their website) reads and writes leads, deals, invoices and payments; Core tells their systems the moment something happens; ACE plugs in through exactly the same doors (rule 4: ACE uses Core's API and events, nothing special inside Core).
+
+Already built and reused: the event outbox (every important change is already written as an event, with a `published_at` waiting for this step), form capture keys (spec "inbound webhooks" — step 1), signed webhook sending and the public-address check (step 4 automations), the lead `intent` field and the `outbound_ace` lead origin.
+
+### 12.1 API keys (spec §11 "REST API")
+
+- An admin creates a key in Settings → Developers: a name ("Website", "ACE", "Zapier") and a **role** (one of the company's roles, e.g. Admin, or a narrower custom role). The key can do exactly what that role can do, through the same `/api/v1` endpoints people use, so there is one API, one set of permission and visibility rules, and nothing duplicated.
+- Behind the key sits an **integration user** (cannot sign in, has no password, never counts as a seat), so records it creates have an owner trail, timeline entries read "by API · Website", and the audit log names the key.
+- The key is shown once (`vq_live_…`), stored only as a hash, can be revoked at any time, records when it was last used. Sent as `Authorization: Bearer vq_live_…`.
+- Rate limit per key (default 100 requests a minute, using the Redis limiter we already have); `429` with `Retry-After` when exceeded.
+- Two-factor and login rules do not apply to keys; revoking is instant.
+
+### 12.2 Outbound webhooks (spec §11)
+
+- Admin adds an endpoint: an `https://` public address (same check as automations, re-checked at every send so a name cannot later point inside our network), picks events from the catalogue (or "all"), gets a signing secret (encrypted at rest).
+- Every minute the worker turns new events into deliveries for each matching endpoint. Body: `{id, type, occurred_at, data}`; headers `Versnq-Event`, `Versnq-Delivery`, `Versnq-Signature: t=<time>,v1=<HMAC-SHA256 of "t.body">` (the receiver checks it and rejects old timestamps).
+- 10-second timeout, no redirects followed. Any 2xx is success. Otherwise retried with backoff: 1 min, 5 min, 30 min, 2 h, 6 h, 12 h, 24 h (8 tries over about two days), then marked failed. An endpoint failing for 3 days in a row is switched off and admins are notified.
+- The same event is never delivered twice as new: the event id is in the body so receivers can ignore repeats.
+- "Send test" and "Resend" buttons.
+
+### 12.3 Logs (spec §11 "API & webhook logs")
+
+- **API log:** every request made with a key: time, key, method, path, status, duration, IP. **Webhook log:** every delivery attempt: event, endpoint, status code, duration, response snippet, with a payload viewer.
+- Live in the app for 30 days; then archived nightly to a compressed file per company on our server (kept 12 months, downloadable by the admin, erased when a company leaves) and removed from the database (Decision log #37).
+
+### 12.4 ACE endpoints (spec §11, Decision log #4, #5)
+
+ACE gets an ordinary API key with a role allowing these; nothing special in Core's code.
+- `POST /api/v1/leads/upsert` — find by phone or email (the identities we already de-duplicate on); if found, return it untouched; if new, create it with origin `outbound_ace`, routed by the normal routing rules. Optional intent and conversation in the same call.
+- `POST /api/v1/leads/{id}/conversation` — append a conversation (channel, messages, AI summary) as one activity on the timeline (rule 5); the next step's inbox will hold the message-by-message view.
+- `PUT /api/v1/leads/{id}/intent` — hot / warm / cold / not interested, with a reason; writes an activity and emits `lead.intent_changed`.
+- `call.analyzed` stays defined in the catalogue; its endpoint is built with call analysis (parked, #36).
+- These are general enough for any outside tool, not only ACE.
+
+### 12.5 Tables (all with `tenant_id`, forced row-level security, same-company keys) — migration 0021
+
+`api_keys` (name, prefix, hash, integration user, created by, last used, revoked at) · `webhook_endpoints` (url, events, secret encrypted, active, failing since) · `webhook_deliveries` (event, endpoint, attempt count, next try at, status, last code, last error, duration) · `api_request_log` · users get a `kind` (person / integration). New permission `integrations.manage` (Owner and Admin by default). Activity types `api_conversation`, `intent_changed`.
+
+### 12.6 Screens
+
+Settings → **Developers**: API keys (create, copy once, revoke, last used) · Webhooks (add, pick events, send test, on / off, deliveries with status and payload viewer, resend) · API log (filter by key, status). A short "how to verify our signature" note with a code sample.
+
+### 12.7 Tests ("done" means these pass)
+
+A key reads only its own company (isolation) and only what its role allows (a Sales User key sees only its own leads); revoked key → 401 at once; rate limit → 429; integration users cannot sign in and are not seats; webhook signature verifies, retries follow the schedule, a private address is refused at save and at send, delivery after 3 days of failure switches off and notifies; event → delivery for only the endpoints that asked for it; upsert matches by phone and by email and never duplicates; conversation and intent write activities and emit events; logs cleaned after 30 days; browser walk of Settings → Developers.
+
+### 12.8 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| W1 | What can a key do? | **Pick a role** (reuses roles and visibility; no separate scope list to learn) |
+| W2 | Who manages keys and webhooks? | **Owner and Admin** (`integrations.manage`, grantable in Roles) |
+| W3 | Retry schedule and switch-off | **8 tries over ~2 days; switch off after 3 days failing**, admins notified |
+| W4 | Log retention | **30 days** for API and webhook logs |
+| W5 | ACE conversation on the timeline | **One activity per conversation** (messages + summary), not one per message |
+| W6 | Rate limit | **100 requests a minute per key** (Suyog, Nov 12), raise per company later if needed |
+| W7 | `call.analyzed` endpoint | **Later, with call analysis** (parked, #36); event stays in the catalogue |
