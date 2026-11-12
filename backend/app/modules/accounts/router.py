@@ -7,7 +7,7 @@ from typing import Literal
 
 from fastapi import APIRouter, status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 
 from app.core.errors import Conflict, Invalid, NotFound
 from app.core.modules import require_module
@@ -384,7 +384,10 @@ async def list_accounts(
             select(KeyAccount, Lead)
             .join(Lead, Lead.id == KeyAccount.org_lead_id)
             .where(*where)
-            .order_by(KeyAccount.tier, Lead.display_name)
+            .order_by(
+                case({"strategic": 0, "growth": 1, "maintain": 2}, value=KeyAccount.tier),
+                Lead.display_name,
+            )
             .limit(500)
         )
     ).all()

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Popover, PopoverHeading, PopoverItem } from "@/components/data-table/popover";
 import { Avatar, StagePill } from "@/components/crm/bits";
 import { CustomerSection } from "@/components/crm/customers";
+import { KeyAccountBadge } from "@/components/crm/key-accounts";
 import { DealsCard } from "@/components/crm/deals";
 import { ScoreBadge, TagEditor } from "@/components/crm/tags";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
@@ -231,6 +232,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
             </div>
           </div>
           <ScoreBadge leadId={l.id} band={l.score_band} score={l.score} />
+          <KeyAccountBadge leadId={l.id} kind={l.kind} />
           <div className="ml-auto">
             <ContactActions lead={l} onLog={setLogType} />
           </div>

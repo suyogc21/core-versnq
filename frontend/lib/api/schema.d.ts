@@ -506,6 +506,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/competitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Competitors */
+        get: operations["key accounts-list_competitors"];
+        put?: never;
+        /** Add Competitor */
+        post: operations["key accounts-add_competitor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/competitors/{competitor_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Competitor */
+        put: operations["key accounts-update_competitor"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/crm-rules": {
         parameters: {
             query?: never;
@@ -1422,6 +1457,242 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/key-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Accounts */
+        get: operations["key accounts-list_accounts"];
+        put?: never;
+        /** Mark Account */
+        post: operations["key accounts-mark_account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Account */
+        get: operations["key accounts-get_account"];
+        put?: never;
+        post?: never;
+        /**
+         * Unmark Account
+         * @description The organisation and its deals stay; only the key-account plan goes.
+         */
+        delete: operations["key accounts-unmark_account"];
+        options?: never;
+        head?: never;
+        /** Update Account */
+        patch: operations["key accounts-update_account"];
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Account Deals */
+        get: operations["key accounts-account_deals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/deals/{deal_id}/unit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Deal Unit
+         * @description Say which department a deal of this account is for (it then shows on the grid).
+         */
+        put: operations["key accounts-set_deal_unit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Goal */
+        post: operations["key accounts-add_goal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/goals/{goal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Goal */
+        put: operations["key accounts-update_goal"];
+        post?: never;
+        /** Remove Goal */
+        delete: operations["key accounts-remove_goal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/grid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Grid */
+        get: operations["key accounts-get_grid"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/grid/deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Deal
+         * @description A new deal for this department and product, straight from the grid.
+         */
+        post: operations["key accounts-start_deal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/grid/{unit_id}/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Cell */
+        put: operations["key accounts-set_cell"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get People */
+        get: operations["key accounts-get_people"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/people/{lead_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Person */
+        put: operations["key accounts-set_person"];
+        post?: never;
+        /** Remove Person */
+        delete: operations["key accounts-remove_person"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Unit */
+        post: operations["key accounts-add_unit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/key-accounts/{account_id}/units/{unit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Unit */
+        put: operations["key accounts-update_unit"];
+        post?: never;
+        /** Remove Unit */
+        delete: operations["key accounts-remove_unit"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lead-sources": {
         parameters: {
             query?: never;
@@ -1714,6 +1985,23 @@ export interface paths {
          * @description Other leads (that you can see) sharing a phone or email with this one.
          */
         get: operations["leads-duplicates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/key-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Account Of Lead */
+        get: operations["key accounts-account_of_lead"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3624,6 +3912,150 @@ export interface components {
             /** View */
             view: boolean;
         };
+        /** AccountDetail */
+        AccountDetail: {
+            /** Actions */
+            actions: components["schemas"]["TaskRef"][];
+            /** Can Edit */
+            can_edit: boolean;
+            /** Goals */
+            goals: components["schemas"]["GoalOut"][];
+            group: components["schemas"]["Rollup"];
+            /** Health */
+            health: string;
+            /** Health Note */
+            health_note: string | null;
+            /** Hints */
+            hints: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Industry */
+            industry: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Org Lead Id
+             * Format: uuid
+             */
+            org_lead_id: string;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Parent Name */
+            parent_name: string | null;
+            rollup: components["schemas"]["Rollup"];
+            /** Target Currency */
+            target_currency: string | null;
+            /** Target Minor */
+            target_minor: number | null;
+            /** Tier */
+            tier: string;
+            /** Tree */
+            tree: components["schemas"]["TreeNode"][];
+            /** Units */
+            units: components["schemas"]["UnitOut"][];
+            /** Version */
+            version: number;
+        };
+        /** AccountIn */
+        AccountIn: {
+            /**
+             * Org Lead Id
+             * Format: uuid
+             */
+            org_lead_id: string;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Parent Id */
+            parent_id?: string | null;
+            /** Target Currency */
+            target_currency?: string | null;
+            /** Target Minor */
+            target_minor?: number | null;
+            /**
+             * Tier
+             * @default growth
+             * @enum {string}
+             */
+            tier: "strategic" | "growth" | "maintain";
+        };
+        /** AccountPatch */
+        AccountPatch: {
+            /** Health */
+            health?: ("on_track" | "at_risk" | "off_track") | null;
+            /** Health Note */
+            health_note?: string | null;
+            /**
+             * No Parent
+             * @default false
+             */
+            no_parent: boolean;
+            /**
+             * No Target
+             * @default false
+             */
+            no_target: boolean;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Parent Id */
+            parent_id?: string | null;
+            /** Target Currency */
+            target_currency?: string | null;
+            /** Target Minor */
+            target_minor?: number | null;
+            /** Tier */
+            tier?: ("strategic" | "growth" | "maintain") | null;
+            /** Version */
+            version: number;
+        };
+        /** AccountRow */
+        AccountRow: {
+            /** Can Edit */
+            can_edit: boolean;
+            /** Health */
+            health: string;
+            /** Health Note */
+            health_note: string | null;
+            /** Hints */
+            hints: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Industry */
+            industry: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Org Lead Id
+             * Format: uuid
+             */
+            org_lead_id: string;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Parent Name */
+            parent_name: string | null;
+            rollup: components["schemas"]["Rollup"];
+            /** Target Currency */
+            target_currency: string | null;
+            /** Target Minor */
+            target_minor: number | null;
+            /** Tier */
+            tier: string;
+            /** Version */
+            version: number;
+        };
         /** ActivityIn */
         ActivityIn: {
             /** Body */
@@ -4079,6 +4511,36 @@ export interface components {
             /** Stage Id */
             stage_id: string | null;
         };
+        /** CellIn */
+        CellIn: {
+            /** Competitor Id */
+            competitor_id?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Status */
+            status: ("competitor" | "not_fit") | null;
+        };
+        /** CellOut */
+        CellOut: {
+            /** Competitor Id */
+            competitor_id: string | null;
+            /** Deals */
+            deals: components["schemas"]["DealRef"][];
+            /** Note */
+            note: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** State */
+            state: string;
+            /**
+             * Unit Id
+             * Format: uuid
+             */
+            unit_id: string;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
@@ -4094,6 +4556,32 @@ export interface components {
             done: number;
             /** Required */
             required: number;
+        };
+        /** CompetitorIn */
+        CompetitorIn: {
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Website */
+            website?: string | null;
+        };
+        /** CompetitorOut */
+        CompetitorOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Website */
+            website: string | null;
         };
         /** Condition */
         Condition: {
@@ -4436,6 +4924,27 @@ export interface components {
             stage_id?: string | null;
             /** Version */
             version: number;
+        };
+        /** DealRef */
+        DealRef: {
+            /** Amount Minor */
+            amount_minor: number;
+            /** Currency */
+            currency: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+        };
+        /** DealUnitIn */
+        DealUnitIn: {
+            /** Unit Id */
+            unit_id: string | null;
         };
         /** DealWithLines */
         DealWithLines: {
@@ -4864,6 +5373,52 @@ export interface components {
             secret_hint: string;
             /** Webhook Url */
             webhook_url: string;
+        };
+        /** GoalIn */
+        GoalIn: {
+            /** Currency */
+            currency?: string | null;
+            /** Due On */
+            due_on?: string | null;
+            /**
+             * Status
+             * @default open
+             * @enum {string}
+             */
+            status: "open" | "done" | "missed";
+            /** Target Minor */
+            target_minor?: number | null;
+            /** Title */
+            title: string;
+        };
+        /** GoalOut */
+        GoalOut: {
+            /** Currency */
+            currency: string | null;
+            /** Due On */
+            due_on: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Position */
+            position: number;
+            /** Status */
+            status: string;
+            /** Target Minor */
+            target_minor: number | null;
+            /** Title */
+            title: string;
+        };
+        /** GridOut */
+        GridOut: {
+            /** Cells */
+            cells: components["schemas"]["CellOut"][];
+            /** Products */
+            products: components["schemas"]["ProductRef"][];
+            /** Units */
+            units: components["schemas"]["UnitOut"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -6350,6 +6905,58 @@ export interface components {
             /** Module */
             module: string;
         };
+        /** PersonIn */
+        PersonIn: {
+            /** Note */
+            note?: string | null;
+            /**
+             * Role
+             * @default influencer
+             * @enum {string}
+             */
+            role: "decision_maker" | "influencer" | "user" | "gatekeeper";
+            /**
+             * Stance
+             * @default neutral
+             * @enum {string}
+             */
+            stance: "champion" | "supporter" | "neutral" | "blocker";
+            /**
+             * Strength
+             * @default 3
+             */
+            strength: number;
+            /** Unit Id */
+            unit_id?: string | null;
+        };
+        /** PersonOut */
+        PersonOut: {
+            /** Email */
+            email: string | null;
+            /** Last Touch */
+            last_touch: string | null;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Name */
+            name: string;
+            /** Note */
+            note: string | null;
+            /** On Map */
+            on_map: boolean;
+            /** Phone */
+            phone: string | null;
+            /** Role */
+            role: string | null;
+            /** Stance */
+            stance: string | null;
+            /** Strength */
+            strength: number | null;
+            /** Unit Id */
+            unit_id: string | null;
+        };
         /** PipelineIn */
         PipelineIn: {
             /** Currency */
@@ -6498,6 +7105,18 @@ export interface components {
             name?: string | null;
             /** Price Minor */
             price_minor?: number | null;
+        };
+        /** ProductRef */
+        ProductRef: {
+            /** Code */
+            code: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** ReadIn */
         ReadIn: {
@@ -6870,6 +7489,23 @@ export interface components {
             permissions?: string[] | null;
             /** Scope */
             scope?: ("own" | "team" | "all") | null;
+        };
+        /** Rollup */
+        Rollup: {
+            /** Collected This Year */
+            collected_this_year: components["schemas"]["Amount"][];
+            /** Last Touch */
+            last_touch: string | null;
+            /** Lost Last 90 Days */
+            lost_last_90_days: number;
+            /** Open Deals */
+            open_deals: number;
+            /** Overdue */
+            overdue: components["schemas"]["Amount"][];
+            /** Pipeline */
+            pipeline: components["schemas"]["Amount"][];
+            /** Won This Year */
+            won_this_year: components["schemas"]["Amount"][];
         };
         /** RunOut */
         RunOut: {
@@ -7311,6 +7947,19 @@ export interface components {
             /** Required Fields */
             required_fields: string[];
         };
+        /** StartDealIn */
+        StartDealIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Unit Id
+             * Format: uuid
+             */
+            unit_id: string;
+        };
         /** StartIn */
         StartIn: {
             /**
@@ -7474,6 +8123,23 @@ export interface components {
             status?: ("open" | "done" | "cancelled") | null;
             /** Title */
             title?: string | null;
+        };
+        /** TaskRef */
+        TaskRef: {
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Title */
+            title: string;
         };
         /** TaxIn */
         TaxIn: {
@@ -7656,6 +8322,23 @@ export interface components {
             /** Matches */
             matches: boolean;
         };
+        /** TreeNode */
+        TreeNode: {
+            /** Health */
+            health: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id: string | null;
+            rollup: components["schemas"]["Rollup"];
+            /** Tier */
+            tier: string;
+        };
         /** TrendMonth */
         TrendMonth: {
             /** Booked */
@@ -7749,6 +8432,37 @@ export interface components {
             is_active?: boolean | null;
             /** Label */
             label?: string | null;
+        };
+        /** UnitIn */
+        UnitIn: {
+            /** Budget Currency */
+            budget_currency?: string | null;
+            /** Budget Holder Lead Id */
+            budget_holder_lead_id?: string | null;
+            /** Budget Minor */
+            budget_minor?: number | null;
+            /** Name */
+            name: string;
+        };
+        /** UnitOut */
+        UnitOut: {
+            /** Budget Currency */
+            budget_currency: string | null;
+            /** Budget Holder Lead Id */
+            budget_holder_lead_id: string | null;
+            /** Budget Holder Name */
+            budget_holder_name?: string | null;
+            /** Budget Minor */
+            budget_minor: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Position */
+            position: number;
         };
         /** UploadIn */
         UploadIn: {
@@ -9375,6 +10089,94 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-list_competitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompetitorOut"][];
+                };
+            };
+        };
+    };
+    "key accounts-add_competitor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompetitorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompetitorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-update_competitor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                competitor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompetitorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompetitorOut"];
                 };
             };
             /** @description Validation Error */
@@ -11616,6 +12418,641 @@ export interface operations {
             };
         };
     };
+    "key accounts-list_accounts": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                tier?: ("strategic" | "growth" | "maintain") | null;
+                health?: ("on_track" | "at_risk" | "off_track") | null;
+                mine?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-mark_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-get_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-unmark_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-update_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-account_deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealRef"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-set_deal_unit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealUnitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-add_goal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoalIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-update_goal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                goal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoalIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-remove_goal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                goal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-get_grid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GridOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-start_deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartDealIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GridOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-set_cell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                unit_id: string;
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CellIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GridOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-get_people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-set_person": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-remove_person": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-add_unit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-update_unit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                unit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-remove_unit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+                unit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "crm-setup-list_sources": {
         parameters: {
             query?: never;
@@ -12447,6 +13884,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LeadBrief"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "key accounts-account_of_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountRow"] | null;
                 };
             };
             /** @description Validation Error */

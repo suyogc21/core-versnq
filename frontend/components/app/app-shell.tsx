@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, LogOut, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import { NotificationBell } from "@/components/app/notification-bell";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useKeyAccountsOn } from "@/lib/accounts";
 import { useMoneyOn } from "@/lib/money";
 import { useRecordTypes } from "@/lib/records";
 import { SETTINGS_PAGES, settingsPageFor } from "@/lib/settings-nav";
@@ -56,9 +57,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const label = useLabels();
   const recordTypes = useRecordTypes();
   const moneyOn = useMoneyOn();
+  const keyOn = useKeyAccountsOn();
   if (!me) return null;
   const mainItems = [
     ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/" ? i : { ...i, label: label(i.label, true) })),
+    ...(keyOn && can("leads.edit") ? [{ href: "/key-accounts", label: "Key accounts", icon: Star }] : []),
     ...(moneyOn && can("invoices.read") ? [{ href: "/money", label: "Money", icon: ReceiptText }] : []),
     ...(["leads.edit", "dashboards.team", "dashboards.business", "dashboards.money"].some((c) => can(c))
       ? [{ href: "/dashboards", label: "Dashboards", icon: ChartColumn }]

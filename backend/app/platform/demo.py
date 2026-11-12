@@ -27,7 +27,7 @@ from app.modules.roles.service import _set_permissions
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team, TeamMember
 from app.modules.users.models import User
-from app.platform.demo_b2b import seed_companies
+from app.platform.demo_b2b import seed_companies, seed_key_accounts
 from app.platform.demo_crm import (
     seed_batches,
     seed_customers,
@@ -646,6 +646,8 @@ async def seed_demo(prefix: str = "") -> DemoResult:
             "due_days": 15,
         },
     )
+    # Step 7b: key accounts for Brightlane (Decision log #36).
+    await seed_key_accounts(bright_id, seed=57)
 
     # Sunrise Coaching: the Owner never accepted the invite, and the company is suspended.
     async with platform_session() as db:
