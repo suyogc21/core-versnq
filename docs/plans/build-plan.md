@@ -571,3 +571,100 @@ Changes to existing tables (through a migration):
 | E8 | Reminders for missing documents | In-app now: owner gets a task when documents are still pending after N days (default 3). Message reminders come with sequences (step 9) |
 | E9 | A "File" custom field type (attach a file to any field) | Not now; the documents checklist covers it. Add later if asked |
 | E10 | Deleting files and old documents (data protection) | Only Admin deletes; every delete is in the audit log. Retention rules (auto-delete after X years) with the security work in step 11 |
+
+---
+
+## 9. Step 6 in detail: money
+
+Goal: after a sale, the team bills the customer, collects by payment link or bank transfer, and always knows what is paid, due and overdue, without a spreadsheet. Rule 7 throughout: every amount is a whole number in minor units (paise, fils, cents) with its currency code; no floats anywhere, in the database, the API or the screens. The `money` module switch (built in phase 1, off by default) turns this on per company.
+
+### 9.1 How money works
+
+- **Billing entity:** the legal company that issues the invoice (e.g. "Acme Learning Pvt Ltd, India, INR, GSTIN …" and "Acme FZ-LLC, Dubai, AED, TRN …"). A company has one or more; any country and any currency (Decision log #2). Each entity has its own invoice and receipt numbering, tax ids, address, bank details printed on invoices, and its own gateway account.
+- **Invoice:** belongs to one customer (and usually the deal it came from), one entity, one currency. Lines come from the deal's products (editable) or are typed. **Draft** (editable, no number) → **Issued** (gets the next number, locked) → **Partly paid** → **Paid**. An issued invoice is never deleted or edited; it is **Voided** with a reason (the number stays used, as tax law expects).
+- **Taxes:** the company keeps a list of tax rates, each made of parts (e.g. "GST 18%" = CGST 9% + SGST 9%; "IGST 18%"; "VAT 5%"; "No tax"). Each line picks one. Tax is worked out per line and rounded half-up to the minor unit; the invoice shows each part. No country rules in code: India, UAE and US are just different rate lists in the industry packs.
+- **Installment plan:** an invoice can be split into installments, each an amount and a due date. The installments must add up to the invoice total exactly (checked by the backend). An invoice with no plan has one installment: the total, due on its due date.
+- **Payment:** money received against one invoice — by gateway (automatic) or manually (bank transfer, cash, cheque, UPI) with proof attached (spec rule). A payment is applied to the oldest unpaid installment first. A payment larger than the balance is refused (credit notes and refunds come later). A wrong manual payment is reversed with a reason, never deleted.
+- **Balance:** per invoice and per customer, per currency: total, paid, due, overdue. Currencies are never added together.
+- **Receipt:** every payment gets a receipt number (per entity) and a receipt page/PDF.
+
+### 9.2 Payment links and gateways
+
+- Each entity connects its own **Razorpay** (India) or **Stripe** (UAE/US and others) account in Settings; keys are stored encrypted, never shown again in full.
+- "Send payment link" on an installment (or the whole balance) creates a link on the gateway's own hosted payment page. **The customer pays on Razorpay's / Stripe's page, not on ours** — nothing of ours is open to the public except the gateway webhook address (#33 still holds: customers send nothing into Core).
+- The link is copied or opened in WhatsApp (as with other links before step 9/10 exist).
+- **Gateway webhooks** mark the installment paid: the signature is checked, the gateway's payment id makes a repeated webhook harmless, and the amount and currency must match. A nightly check asks the gateway about links still open, in case a webhook was missed.
+- No gateway connected yet? Everything else works; payments are recorded manually.
+
+### 9.3 Reminders, receipts, aging
+
+- **Reminders (in-app now):** N days before due (default 3), on the due day, and every N days while overdue (default 7): the customer's owner gets a notification and a task; Finance sees the overdue list. Events `payment.due` and `payment.overdue` fire so automations and later email (step 9) / WhatsApp (step 10) can send to the customer.
+- **Receipts:** made on every payment, in-app now, sent by email from step 9.
+- **Collections aging:** overdue amounts in 0–30 / 31–60 / 61–90 / 90+ days, per entity and currency, with a list behind each bucket; the dashboard tile comes in step 7.
+
+### 9.4 Tables (all with `tenant_id`, forced row-level security, same-company keys)
+
+| Table | Purpose |
+| --- | --- |
+| `billing_entities` | Legal name, country, currency, tax ids, address, bank details, invoice prefix and next number, receipt prefix and next number, number reset each financial year (yes/no, start month), active |
+| `tax_rates` | Name, parts (name + rate in basis points, e.g. 900 = 9%), active, order |
+| `invoices` | Customer, deal (optional), entity, currency, number (null while draft), status, issue date, due date, notes, totals (subtotal, discount, tax, total — minor units), void reason, created by |
+| `invoice_lines` | Product (optional), description, quantity, unit price, discount, tax rate (copied at issue so later rate changes never change old invoices), line totals (checked by the database) |
+| `installments` | Invoice, position, amount, due date, paid amount, status (due / partly paid / paid / overdue — worked out, not typed) |
+| `payments` | Invoice, entity, amount, currency, method (gateway / bank / cash / cheque / UPI / other), paid on, reference, gateway payment id (unique), proof file, receipt number, recorded by, reversed (by, at, reason) |
+| `payment_allocations` | Which part of a payment went to which installment |
+| `payment_links` | Installment (or invoice), gateway, gateway link id, amount, status, url, expires at |
+| `gateway_accounts` | Entity, gateway, keys (encrypted), webhook secret (encrypted), mode (test / live) |
+| `gateway_events` | Every webhook received: gateway, event id (unique), payload, result — for safe retries and support |
+
+Changes to existing tables: `tenant_settings` gets reminder days (before / overdue repeat). New permissions: `invoices.read`, `invoices.create`, `invoices.void`, `payments.record`, `payments.reverse`, `money.settings`. New activity types: Invoice issued, Invoice voided, Payment received, Payment reversed, Payment link sent. Industry packs get tax rates and a starting entity (India GST for EdTech; generic gets "No tax").
+
+### 9.5 Rules the backend enforces
+
+- Every sum is integer arithmetic; line total = quantity × unit price − discount; tax per line rounded half-up; invoice total = sum of lines; installments add up to the total exactly; allocations add up to the payment exactly. All checked again by the database where possible.
+- Numbering is gapless per entity (locked row, like customer numbers); voided numbers stay used.
+- Issued invoices and recorded payments never change; only void / reverse with a reason. Every action is an activity on the customer's timeline and in the audit log.
+- Visibility follows customers: a rep sees invoices of customers they can see; Finance sees all money and no leads (Decision log #21, #32).
+- A customer with any issued invoice cannot be set Inactive while money is due (it shows why).
+- Gateway webhooks: signature checked, duplicates ignored, amount/currency mismatch flagged for Finance instead of applied.
+- **Events:** `invoice.created` (on issue), `payment.received`, `payment.due`, `payment.overdue` (already in the catalogue), plus new `invoice.voided` and `payment.reversed`. Automation triggers: invoice issued, payment received, payment overdue.
+
+### 9.6 Endpoints (under `/api/v1`)
+
+- Entities, tax rates, gateway accounts: CRUD under Settings (`money.settings`).
+- `GET /invoices` (filters: status, entity, customer, owner, overdue, dates), `POST /invoices` (draft, optionally from a deal), `GET/PATCH /invoices/{id}` (draft only), `POST /invoices/{id}/issue`, `POST /invoices/{id}/void`, `PUT /invoices/{id}/installments`, `GET /invoices/{id}/pdf`.
+- `POST /invoices/{id}/payments` (manual, with proof upload), `POST /payments/{id}/reverse`, `GET /payments`, `GET /payments/{id}/receipt`.
+- `POST /installments/{id}/payment-link`, `DELETE /payment-links/{id}`.
+- Public, no login: `POST /webhooks/razorpay/{entity}`, `POST /webhooks/stripe/{entity}` (signature-checked only).
+- `GET /customers/{id}/balance`, `GET /money/aging`.
+
+### 9.7 Screens
+
+- **Money** in the sidebar (Finance, Admin, Owner; reps see it for their own customers): tabs Invoices, Payments, Overdue, Aging.
+- **Customer / lead page:** a Money card — balance per currency, invoices, next installment due, "New invoice", "Record payment", "Send payment link".
+- **Won deal:** "Create invoice" next to "Make customer", lines pre-filled from the deal.
+- **Invoice editor:** lines, tax per line, live totals, installment schedule (split equally / custom), preview, Issue.
+- **Invoice page and PDF:** entity details, customer, lines, tax parts, totals, installments, bank details, payment link.
+- **Settings → Money:** billing entities, numbering, tax rates, gateways (connect, test, webhook address to paste), reminder days.
+
+### 9.8 Tests ("done" means these pass)
+
+- **Every money calculation** (rule 7): line totals, discounts, tax rounding, multi-part tax, invoice totals, installment splits (e.g. ₹10,000 in 3 = 3,333.34 + 3,333.33 + 3,333.33), allocations across installments, partial payments, balances per currency, aging buckets, zero-decimal and three-decimal currencies (JPY, KWD).
+- **Isolation and visibility:** invoices, payments, links, gateway keys across companies; a webhook for company A can never touch company B; reps only their customers; Finance everything, read and record.
+- **Lifecycle:** draft edits, issue numbering (gapless under parallel issues), void, reverse, locked issued invoices, inactive-with-dues rule.
+- **Gateways (no real money):** signed test webhooks for Razorpay and Stripe — valid, bad signature, repeated, wrong amount, unknown link; the missed-webhook nightly check with a fake gateway.
+- **Browser walk:** win a deal → make customer → create invoice from the deal → 3 installments → issue → PDF → record a bank transfer with proof → balance updates → payment link created (test mode) → simulated webhook marks it paid → receipt → move a due date into the past → overdue reminder and aging.
+
+### 9.9 Open questions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| M1 | Invoice PDFs need a PDF library (new dependency) | Approve **`reportlab`** (BSD licence, pure Python, no system packages). The alternative is a print-ready invoice page saved as PDF from the browser, but then emails in step 9 cannot attach it |
+| M2 | Talking to Razorpay / Stripe needs an HTTP client in production | Move **`httpx`** from dev-only to the main dependencies (already used by the automation webhook action, which today only works because the dev tools are installed — a gap worth closing anyway). No Razorpay / Stripe SDKs: direct, small calls |
+| M3 | Who can create invoices and record payments? | Reps: create and issue invoices and send links for their own customers; record manual payments with proof. Finance: everything, including void and reverse. Sales Manager: their team's. Changeable in Roles |
+| M4 | Discount and special-plan approval (spec: "if the admin requires approval") | Not in step 6. Add later as an optional setting if a client asks |
+| M5 | Overpayments, refunds, credit notes | Refuse overpayment now; credit notes and refunds later (with bank-statement import) |
+| M6 | Recurring invoices (SaaS / retainers, spec "recurring billing") | Include a simple **repeat** on an invoice: every 1 / 3 / 12 months, creates the next issued invoice on schedule. Keeps Core fit for B2B SaaS without subscriptions logic |
+| M7 | Number reset each financial year (India: April) | Per entity setting, on by default for India packs (e.g. INV/2026-27/0001) |
+| M8 | Demo data | Acme (India, INR, GST 18%) and Bluewave (Dubai, AED, VAT 5%) get invoices at every state: paid, partly paid, due soon, overdue 0–90+ days; gateways in test mode only |
+| M9 | Real gateway test | Built and tested with signed fake webhooks; a real test-mode run needs your Razorpay / Stripe **test** keys, entered in Settings (never in code). Can be done any time after |
