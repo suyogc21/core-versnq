@@ -107,6 +107,8 @@ class Message(TenantScoped, TimestampMixin, Base):
     in_reply_to: Mapped[str | None] = mapped_column(String(300))
     references: Mapped[str | None] = mapped_column(Text)
     cc: Mapped[list] = mapped_column(JSONB, default=list)
+    # step 9b-3: the user's own mailbox it was synced from or sent through
+    mailbox_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
 
 
 class MessageEvent(TenantScoped, Base):
@@ -207,3 +209,27 @@ class CannedReply(TenantScoped, TimestampMixin, Base):
     body: Mapped[str] = mapped_column(Text)
     is_shared: Mapped[bool] = mapped_column(Boolean, default=False)
     user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class Mailbox(TenantScoped, TimestampMixin, Base):
+    """A user's own mailbox, connected by IMAP + SMTP with an app password (step 9b-3)."""
+
+    __tablename__ = "mailboxes"
+    __table_args__ = (_fk("user_id", "users", "fk_mailboxes_user_same_tenant", "CASCADE"),)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    email_address: Mapped[str] = mapped_column(String(254))
+    username: Mapped[str] = mapped_column(String(254))
+    password_enc: Mapped[str | None] = mapped_column(Text)
+    imap_host: Mapped[str] = mapped_column(String(255))
+    imap_port: Mapped[int] = mapped_column(Integer)
+    smtp_host: Mapped[str] = mapped_column(String(255))
+    smtp_port: Mapped[int] = mapped_column(Integer)
+    smtp_security: Mapped[str] = mapped_column(String(8))  # ssl / starttls
+    status: Mapped[str] = mapped_column(String(8), default="active")  # active / error / off
+    last_error: Mapped[str | None] = mapped_column(String(500))
+    connected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    sync_requested: Mapped[bool] = mapped_column(Boolean, default=False)
+    # per folder: {"INBOX": {"v": uidvalidity, "last": highest uid seen}}
+    sync_state: Mapped[dict] = mapped_column(JSONB, default=dict)

@@ -391,7 +391,7 @@ async def _email(
     db.add(msg)
     await db.flush()
     try:
-        msg.provider_id = await S.send(
+        sent = await S.send(
             db,
             to=to,
             subject=subject,
@@ -402,6 +402,7 @@ async def _email(
             unsubscribe_url=unsubscribe,
             message_id=header_id,
         )
+        msg.provider_id = sent["Message-ID"]
     except Invalid as err:
         msg.status, msg.error = "failed", str(err.detail)[:300]
         tries = await db.scalar(

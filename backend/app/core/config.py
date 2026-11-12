@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     trust_proxy_headers: bool = False
     # Dev/e2e only: save outgoing emails as files here instead of logging them. Ignored in prod.
     mail_outbox_dir: str | None = None
+    # Outside production: connected inboxes (step 9b-3) are read from <dir>/<address>/<folder>/
+    # <uid>.eml instead of a real IMAP server, so mailbox sync can be tried without one.
+    mailbox_test_dir: str | None = None
     # sequence emails (step 9a): "test" keeps them in Core; "mailbox" sends through the
     # company's own mailbox; Amazon SES is added at go-live (Decision log #39)
     email_sender: Literal["test", "mailbox"] = "test"

@@ -5387,6 +5387,23 @@
         "title": "EventTypeOut",
         "type": "object"
       },
+      "Exclusions": {
+        "properties": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Exclusions",
+        "type": "object"
+      },
       "FieldIn": {
         "properties": {
           "depends_on": {
@@ -9760,6 +9777,179 @@
         "title": "MailOut",
         "type": "object"
       },
+      "MailboxIn": {
+        "properties": {
+          "email_address": {
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email Address",
+            "type": "string"
+          },
+          "imap_host": {
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            "title": "Imap Host",
+            "type": "string"
+          },
+          "imap_port": {
+            "default": 993,
+            "title": "Imap Port",
+            "type": "integer"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "smtp_host": {
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            "title": "Smtp Host",
+            "type": "string"
+          },
+          "smtp_port": {
+            "default": 587,
+            "title": "Smtp Port",
+            "type": "integer"
+          },
+          "smtp_security": {
+            "default": "starttls",
+            "enum": [
+              "ssl",
+              "starttls"
+            ],
+            "title": "Smtp Security",
+            "type": "string"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          }
+        },
+        "required": [
+          "email_address",
+          "imap_host",
+          "smtp_host"
+        ],
+        "title": "MailboxIn",
+        "type": "object"
+      },
+      "MailboxOut": {
+        "properties": {
+          "connected_at": {
+            "format": "date-time",
+            "title": "Connected At",
+            "type": "string"
+          },
+          "email_address": {
+            "title": "Email Address",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "imap_host": {
+            "title": "Imap Host",
+            "type": "string"
+          },
+          "imap_port": {
+            "title": "Imap Port",
+            "type": "integer"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_sync_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sync At"
+          },
+          "smtp_host": {
+            "title": "Smtp Host",
+            "type": "string"
+          },
+          "smtp_port": {
+            "title": "Smtp Port",
+            "type": "integer"
+          },
+          "smtp_security": {
+            "title": "Smtp Security",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synced": {
+            "title": "Synced",
+            "type": "integer"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "user_name",
+          "email_address",
+          "username",
+          "imap_host",
+          "imap_port",
+          "smtp_host",
+          "smtp_port",
+          "smtp_security",
+          "status",
+          "last_error",
+          "connected_at",
+          "last_sync_at",
+          "synced"
+        ],
+        "title": "MailboxOut",
+        "type": "object"
+      },
       "MakeIn": {
         "properties": {
           "deal_id": {
@@ -12269,6 +12459,19 @@
           "reason"
         ],
         "title": "RejectIn",
+        "type": "object"
+      },
+      "RemovedOut": {
+        "properties": {
+          "removed": {
+            "title": "Removed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "removed"
+        ],
+        "title": "RemovedOut",
         "type": "object"
       },
       "RepeatIn": {
@@ -30830,6 +31033,204 @@
         ]
       }
     },
+    "/api/v1/mailboxes": {
+      "get": {
+        "operationId": "mailboxes-list_mailboxes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MailboxOut"
+                  },
+                  "title": "Response Mailboxes-List Mailboxes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Mailboxes",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/mailboxes/exclusions": {
+      "get": {
+        "operationId": "mailboxes-get_exclusions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Exclusions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Exclusions",
+        "tags": [
+          "mailboxes"
+        ]
+      },
+      "put": {
+        "description": "Addresses (name@firm.com) and domains (firm.com or @firm.com) never synced from anyone's\nmailbox: lawyers, family, the company's own banks.",
+        "operationId": "mailboxes-set_exclusions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Exclusions"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Exclusions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Exclusions",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/mailboxes/{mb_id}/disconnect": {
+      "post": {
+        "operationId": "mailboxes-disconnect_one",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disconnect One",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/mailboxes/{mb_id}/emails": {
+      "delete": {
+        "description": "Removes the emails a disconnected mailbox synced in from mail apps, with their timeline\nentries. Emails written in Core stay: they are the company's own record.",
+        "operationId": "mailboxes-remove_synced",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemovedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Synced",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
     "/api/v1/me/day": {
       "get": {
         "description": "Overdue first, then today: the order the calling queue works through (#21).",
@@ -30854,6 +31255,129 @@
         "summary": "My Day",
         "tags": [
           "work"
+        ]
+      }
+    },
+    "/api/v1/me/mailbox": {
+      "delete": {
+        "description": "Stops syncing and forgets the password. Emails already synced stay on the leads (I5).",
+        "operationId": "mailboxes-disconnect_mine",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disconnect Mine",
+        "tags": [
+          "mailboxes"
+        ]
+      },
+      "get": {
+        "operationId": "mailboxes-my_mailbox",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/MailboxOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Mailboxes-My Mailbox"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Mailbox",
+        "tags": [
+          "mailboxes"
+        ]
+      },
+      "put": {
+        "description": "Connects (or updates) the user's mailbox after signing in to both sides.",
+        "operationId": "mailboxes-connect_mailbox",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailboxIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Connect Mailbox",
+        "tags": [
+          "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/me/mailbox/sync": {
+      "post": {
+        "operationId": "mailboxes-sync_now",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sync Now",
+        "tags": [
+          "mailboxes"
         ]
       }
     },

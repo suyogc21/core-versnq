@@ -16,7 +16,8 @@ import email.policy
 import re
 import secrets
 import uuid
-from email.utils import getaddresses, parseaddr
+from datetime import UTC, datetime
+from email.utils import getaddresses, parseaddr, parsedate_to_datetime
 
 from sqlalchemy import and_, or_, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,6 +38,7 @@ from app.modules.engage.models import (
     Conversation,
     ConversationMember,
     Enrolment,
+    Mailbox,
     Message,
     MessageAttachment,
     Sequence,
@@ -172,38 +174,37 @@ async def _lead_for_address(db: AsyncSession, address: str) -> Lead | None:
     )
 
 
-async def ingest(db: AsyncSession, tenant_id: uuid.UUID, raw: bytes) -> Message | None:
-    """One incoming email (from the test inbox now; the provider, a connected mailbox or the
-    copy-in address later). Returns the stored message, or None if it matches no lead."""
-    parsed = email.message_from_bytes(raw, policy=email.policy.default)
-    header_id = (parsed.get("Message-ID") or "").strip()[:300] or None
-    if header_id and await db.scalar(
-        select(Message.id).where(Message.message_id_header == header_id)
-    ):
-        return None  # already have it (the same email seen twice)
-    from_addr = parseaddr(parsed.get("From", ""))[1].lower()
-    in_reply_to = (parsed.get("In-Reply-To") or "").strip()[:300] or None
-    refs = parsed.get("References") or ""
-    thread_ids = _ids(in_reply_to) + _ids(refs)
+def _date_of(parsed) -> datetime | None:
+    try:
+        when = parsedate_to_datetime(parsed.get("Date", ""))
+    except (TypeError, ValueError):
+        return None
+    return when if when.tzinfo else when.replace(tzinfo=UTC)
 
-    answered = None
-    if thread_ids:
-        answered = await db.scalar(
-            select(Message)
-            .where(Message.message_id_header.in_(thread_ids))
-            .order_by(Message.created_at.desc())
-            .limit(1)
-        )
-    lead = await db.get(Lead, answered.lead_id) if answered and answered.lead_id else None
-    if lead is None and from_addr:
-        lead = await _lead_for_address(db, from_addr)
-    if lead is None:
-        return None  # unknown sender: not stored (Decision log #40, I3)
 
-    subject = (parsed.get("Subject") or "").strip()[:300]
+async def _answered(db: AsyncSession, parsed) -> Message | None:
+    """The email we already have that this one answers (by its thread headers)."""
+    thread_ids = _ids(parsed.get("In-Reply-To")) + _ids(parsed.get("References"))
+    if not thread_ids:
+        return None
+    return await db.scalar(
+        select(Message)
+        .where(Message.message_id_header.in_(thread_ids))
+        .order_by(Message.created_at.desc())
+        .limit(1)
+    )
+
+
+async def _conversation_for(
+    db: AsyncSession,
+    lead: Lead,
+    answered: Message | None,
+    subject: str,
+    by: uuid.UUID | None = None,
+) -> Conversation:
     conv = (
         await db.get(Conversation, answered.conversation_id)
-        if answered and answered.conversation_id
+        if answered and answered.conversation_id and answered.lead_id == lead.id
         else None
     )
     if conv is None:
@@ -215,8 +216,46 @@ async def ingest(db: AsyncSession, tenant_id: uuid.UUID, raw: bytes) -> Message 
         )
         if conv is not None and base_subject(conv.subject) != base_subject(subject):
             conv = None
-    if conv is None:
-        conv = await open_conversation(db, lead, subject)
+    return conv or await open_conversation(db, lead, subject, by=by)
+
+
+async def _seen(db: AsyncSession, header_id: str | None) -> bool:
+    return bool(
+        header_id
+        and await db.scalar(select(Message.id).where(Message.message_id_header == header_id))
+    )
+
+
+async def ingest(
+    db: AsyncSession,
+    tenant_id: uuid.UUID,
+    raw: bytes,
+    *,
+    mailbox: Mailbox | None = None,
+    quiet: bool = False,
+) -> Message | None:
+    """One incoming email (the test inbox, a user's connected mailbox (step 9b-3); the provider
+    and the copy-in address later). Returns the stored message, or None if it matches no lead.
+    `quiet` (older emails pulled in when a mailbox is first connected): kept on the trail, but
+    nobody is notified and no sequence is stopped."""
+    parsed = email.message_from_bytes(raw, policy=email.policy.default)
+    header_id = (parsed.get("Message-ID") or "").strip()[:300] or None
+    if await _seen(db, header_id):
+        return None  # already have it (the same email seen twice)
+    from_addr = parseaddr(parsed.get("From", ""))[1].lower()
+    in_reply_to = (parsed.get("In-Reply-To") or "").strip()[:300] or None
+    refs = parsed.get("References") or ""
+
+    answered = await _answered(db, parsed)
+    lead = await db.get(Lead, answered.lead_id) if answered and answered.lead_id else None
+    if lead is None and from_addr:
+        lead = await _lead_for_address(db, from_addr)
+    if lead is None:
+        return None  # unknown sender: not stored (Decision log #40, I3)
+
+    subject = (parsed.get("Subject") or "").strip()[:300]
+    conv = await _conversation_for(db, lead, answered, subject)
+    when = (_date_of(parsed) if mailbox else None) or L.now()
 
     to_addrs = [a for _, a in getaddresses(parsed.get_all("To", []))]
     cc = [a for _, a in getaddresses(parsed.get_all("Cc", [])) if a]
@@ -238,12 +277,14 @@ async def ingest(db: AsyncSession, tenant_id: uuid.UUID, raw: bytes) -> Message 
         in_reply_to=in_reply_to,
         references=refs[:5000] or None,
         cc=cc[:50],
-        sent_at=L.now(),
+        sent_at=when,
+        mailbox_id=mailbox.id if mailbox else None,
     )
     db.add(msg)
     await db.flush()
     await _attachments(db, tenant_id, lead, msg, parsed)
-    _touch(conv, msg)
+    if not quiet or conv.last_message_at is None or when > conv.last_message_at:
+        _touch(conv, msg)
 
     if answered and answered.direction == "out" and answered.replied_at is None:
         answered.replied_at = L.now()
@@ -255,7 +296,10 @@ async def ingest(db: AsyncSession, tenant_id: uuid.UUID, raw: bytes) -> Message 
         None,
         {"message_id": str(msg.id), "conversation_id": str(conv.id), "from": from_addr},
         body=msg.body[:2000],
+        occurred_at=when,
     )
+    if quiet:
+        return msg
     lead.last_activity_at = L.now()
     await _replied(db, lead, msg)
     people = [await assignee_of(db, conv)] + list(
@@ -275,6 +319,69 @@ async def ingest(db: AsyncSession, tenant_id: uuid.UUID, raw: bytes) -> Message 
         f"New email from {lead.display_name}: {subject or '(no subject)'}",
         lead.id,
     )
+    return msg
+
+
+async def ingest_sent(
+    db: AsyncSession, mailbox: Mailbox, raw: bytes, lead: Lead, *, quiet: bool = False
+) -> Message | None:
+    """An email the user sent to a lead from their own mail app (found in their Sent folder,
+    step 9b-3). Emails sent from Core are already kept and are skipped by their Message-ID."""
+    parsed = email.message_from_bytes(raw, policy=email.policy.default)
+    header_id = (parsed.get("Message-ID") or "").strip()[:300] or None
+    if await _seen(db, header_id):
+        return None
+    subject = (parsed.get("Subject") or "").strip()[:300]
+    answered = await _answered(db, parsed)
+    conv = await _conversation_for(db, lead, answered, subject, by=mailbox.user_id)
+    when = _date_of(parsed) or L.now()
+    to = (lead.primary_email or "").lower()
+    others = [
+        a.lower()
+        for _, a in getaddresses(parsed.get_all("To", []) + parsed.get_all("Cc", []))
+        if a and a.lower() != to
+    ]
+    msg = Message(
+        id=uuid.uuid4(),
+        tenant_id=lead.tenant_id,
+        lead_id=lead.id,
+        channel="email",
+        direction="out",
+        conversation_id=conv.id,
+        to_address=to[:320],
+        from_address=mailbox.email_address,
+        subject=subject or None,
+        body=_text_of(parsed)[:100000],
+        token=secrets.token_urlsafe(24),
+        status="sent",
+        message_id_header=header_id,
+        in_reply_to=(parsed.get("In-Reply-To") or "").strip()[:300] or None,
+        references=(parsed.get("References") or "")[:5000] or None,
+        cc=others[:50],
+        sent_at=when,
+        sent_by_user_id=mailbox.user_id,
+        mailbox_id=mailbox.id,
+    )
+    db.add(msg)
+    await db.flush()
+    await _attachments(db, lead.tenant_id, lead, msg, parsed)
+    if conv.last_message_at is None or when >= conv.last_message_at:
+        _touch(conv, msg)
+    await L.log(
+        db,
+        lead,
+        "email_sent",
+        f"Email sent from {mailbox.email_address}: {subject or '(no subject)'}",
+        None,
+        {"message_id": str(msg.id), "conversation_id": str(conv.id), "via": "mailbox"},
+        body=msg.body[:2000],
+        occurred_at=when,
+    )
+    if not quiet:
+        lead.last_activity_at = L.now()
+        lead.last_contacted_at = max(filter(None, [lead.last_contacted_at, when]))
+        lead.first_response_at = lead.first_response_at or when
+        await mark_contacted(db, lead)
     return msg
 
 
@@ -380,10 +487,16 @@ async def send(
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", c):
             raise Invalid(f"{c} is not an email address")
     tenant = await db.get(Tenant, lead.tenant_id)
-    from_name, from_email = await S.sender_address(db, tenant.name)
-    from_name = (
-        f"{actor.user.name} · {from_name}" if actor.user.status != "integration" else from_name
-    )
+    from app.modules.engage import mailsync as MS  # it uses this module
+
+    own = await MS.usable_mailbox(db, actor.user.id)
+    if own is not None:  # the user's own connected mailbox (step 9b-3)
+        from_name, from_email = actor.user.name, own.email_address
+    else:
+        from_name, from_email = await S.sender_address(db, tenant.name)
+        from_name = (
+            f"{actor.user.name} · {from_name}" if actor.user.status != "integration" else from_name
+        )
     token = secrets.token_urlsafe(24)
     built = R.build_email(
         body,
@@ -427,11 +540,12 @@ async def send(
         else None,
         cc=cc,
         sent_by_user_id=actor.user.id,
+        mailbox_id=own.id if own else None,
     )
     db.add(msg)
     await db.flush()
     try:
-        await S.send(
+        sent = await S.send(
             db,
             to=to,
             subject=msg.subject,
@@ -444,11 +558,14 @@ async def send(
             cc=cc,
             in_reply_to=msg.in_reply_to,
             references=previous.references if previous else None,
+            box=MS.box(own) if own else None,
         )
     except Invalid as err:
         msg.status, msg.error = "failed", str(err.detail)[:300]
         await db.flush()
         raise
+    if own is not None:
+        await MS.save_to_sent(own, sent.as_bytes())
     msg.status, msg.sent_at = "sent", L.now()
     _touch(conv, msg)
     await L.log(

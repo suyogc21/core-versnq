@@ -141,6 +141,14 @@ async def sequences_job(ctx) -> int:
     return await run_all(await _active_tenants())
 
 
+async def mailboxes_job(ctx) -> int:
+    """Every minute: read connected inboxes not read for a couple of minutes (step 9b-3)."""
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.engage.mailsync import run_all
+
+    return await run_all(await _active_tenants())
+
+
 async def money_mail_sweep_job(ctx) -> int:
     from app.modules.crm.automation import _active_tenants
     from app.modules.money.worker import sweep

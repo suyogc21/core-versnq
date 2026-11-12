@@ -47,10 +47,12 @@ async def send(
     cc: list[str] | None = None,
     in_reply_to: str | None = None,
     references: str | None = None,
-) -> str:
-    """Sends one email. Returns the provider's message id. Raises Invalid on failure.
-    Sequence emails carry a one-click unsubscribe; one-to-one replies (step 9b) don't, but
-    carry the thread headers so the answer lands in the same conversation."""
+    box: mailbox.Box | None = None,
+) -> EmailMessage:
+    """Sends one email and returns it (its Message-ID is the provider's id). Raises Invalid on
+    failure. Sequence emails carry a one-click unsubscribe; one-to-one replies (step 9b) don't,
+    but carry the thread headers so the answer lands in the same conversation. With `box` (the
+    user's own connected mailbox, step 9b-3) it goes out through that mailbox."""
     msg = EmailMessage()
     msg["From"] = formataddr((from_name, from_email))
     msg["To"] = to
@@ -68,15 +70,18 @@ async def send(
         msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
+    if box is not None:  # saved to MAIL_OUTBOX_DIR instead outside production, when set
+        await mailbox.send(box, msg)
+        return msg
     mode = get_settings().email_sender
     if mode == "test":
         folder = mailbox._outbox()
         if folder is not None:
             folder.mkdir(parents=True, exist_ok=True)
             (folder / f"seq-{uuid.uuid4().hex}.eml").write_bytes(msg.as_bytes())
-        return msg["Message-ID"]
+        return msg
     account = await db.scalar(select(MailAccount).where(MailAccount.is_active.is_(True)))
     if account is None:
         raise Invalid("Connect the company mailbox in Settings → Money first")
     await mailbox.send(box_of(account), msg)
-    return msg["Message-ID"]
+    return msg

@@ -32,6 +32,8 @@ class TenantSettings(TimestampMixin, Base):
             "daily_cap": 200,
         },  # fmt: skip
     )
+    # Connected inboxes (step 9b-3): addresses and @domains never synced from anyone's mailbox.
+    mail_exclusions: Mapped[list] = mapped_column(JSONB, default=list)
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)
     # Duplicates on automatic capture (R5): update the existing lead / flag / always create.

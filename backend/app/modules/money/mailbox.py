@@ -46,9 +46,9 @@ class Attachment:
     mime: str = "application/pdf"
 
 
-def _check_host(host: str, port: int) -> None:
-    if port not in PORTS:
-        raise Invalid(f"Use one of the usual mail ports: {', '.join(map(str, PORTS))}")
+def _check_host(host: str, port: int, ports: tuple[int, ...] = PORTS) -> None:
+    if port not in ports:
+        raise Invalid(f"Use one of the usual mail ports: {', '.join(map(str, ports))}")
     if get_settings().environment != "prod":
         return
     try:

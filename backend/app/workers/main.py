@@ -6,6 +6,7 @@ from app.workers.jobs import (
     automation_job,
     import_job,
     import_sweep_job,
+    mailboxes_job,
     money_mail_job,
     money_mail_sweep_job,
     nightly_job,
@@ -36,6 +37,7 @@ class WorkerSettings:
         webhook_job,
         webhooks_job,
         sequences_job,
+        mailboxes_job,
         money_mail_job,
         money_mail_sweep_job,
     ]
@@ -48,6 +50,7 @@ class WorkerSettings:
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
         cron(webhooks_job, second=set(range(7, 60, 10)), unique=True),  # every 10 seconds
         cron(sequences_job, second={15, 45}, unique=True),  # every 30 seconds
+        cron(mailboxes_job, second=25, unique=True),
         cron(nightly_job, hour=21, minute=30, second=10),  # 03:00 in India
     ]
     max_tries = 3

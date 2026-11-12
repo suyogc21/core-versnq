@@ -30,6 +30,7 @@ node_modules/
 
 # Saved emails (MAIL_OUTBOX_DIR) and end-to-end test output
 .outbox/
+.mailboxes/
 frontend/e2e/.state/
 frontend/test-results/
 frontend/playwright-report/
