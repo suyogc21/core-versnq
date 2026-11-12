@@ -1,0 +1,401 @@
+{
+  "key": "b2b_saas",
+  "name": "B2B / SaaS",
+  "labels": {
+    "lead": {
+      "singular": "Prospect",
+      "plural": "Prospects"
+    },
+    "contact": {
+      "singular": "Contact",
+      "plural": "Contacts"
+    },
+    "deal": {
+      "singular": "Opportunity",
+      "plural": "Opportunities"
+    },
+    "customer": {
+      "singular": "Client",
+      "plural": "Clients"
+    },
+    "pipeline": {
+      "singular": "Sales pipeline",
+      "plural": "Sales pipelines"
+    }
+  },
+  "crm": {
+    "stages": [
+      {
+        "name": "New",
+        "is_open": true,
+        "colour": "#64748b"
+      },
+      {
+        "name": "Contacted",
+        "is_open": true,
+        "colour": "#0ea5e9"
+      },
+      {
+        "name": "Discovery call",
+        "is_open": true,
+        "colour": "#6366f1"
+      },
+      {
+        "name": "Qualified",
+        "is_open": true,
+        "colour": "#8b5cf6",
+        "required_fields": [
+          "company_size"
+        ]
+      },
+      {
+        "name": "Nurture",
+        "is_open": true,
+        "colour": "#f59e0b"
+      },
+      {
+        "name": "Client",
+        "is_open": false,
+        "is_converted": true,
+        "colour": "#16a34a"
+      },
+      {
+        "name": "Unqualified",
+        "is_open": false,
+        "is_unqualified": true,
+        "colour": "#dc2626"
+      }
+    ],
+    "sources": [
+      "Website",
+      "LinkedIn",
+      "Referral",
+      "Event",
+      "Outbound",
+      "Partner",
+      "Other"
+    ],
+    "dispositions": [
+      "Interested",
+      "Call back later",
+      "Not reachable",
+      "Wrong person",
+      "Not interested"
+    ],
+    "custom_fields": [
+      {
+        "key": "company_size",
+        "label": "Company size",
+        "type": "select",
+        "options": [
+          {
+            "value": "1_50",
+            "label": "1–50"
+          },
+          {
+            "value": "51_200",
+            "label": "51–200"
+          },
+          {
+            "value": "201_1000",
+            "label": "201–1000"
+          },
+          {
+            "value": "1000plus",
+            "label": "1000+"
+          }
+        ],
+        "group_name": "Company"
+      },
+      {
+        "key": "industry_segment",
+        "label": "Industry",
+        "type": "select",
+        "options": [
+          {
+            "value": "manufacturing",
+            "label": "Manufacturing"
+          },
+          {
+            "value": "it_services",
+            "label": "IT services"
+          },
+          {
+            "value": "retail",
+            "label": "Retail"
+          },
+          {
+            "value": "healthcare",
+            "label": "Healthcare"
+          },
+          {
+            "value": "financial_services",
+            "label": "Financial services"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ],
+        "group_name": "Company"
+      },
+      {
+        "key": "seats",
+        "label": "Seats needed",
+        "type": "number",
+        "group_name": "Need"
+      },
+      {
+        "key": "current_tool",
+        "label": "Current tool",
+        "type": "text",
+        "group_name": "Need"
+      },
+      {
+        "key": "decision_timeline",
+        "label": "Decision timeline",
+        "type": "select",
+        "options": [
+          {
+            "value": "this_month",
+            "label": "This month"
+          },
+          {
+            "value": "this_quarter",
+            "label": "This quarter"
+          },
+          {
+            "value": "next_quarter",
+            "label": "Next quarter"
+          },
+          {
+            "value": "later",
+            "label": "Later"
+          }
+        ],
+        "group_name": "Need"
+      }
+    ],
+    "activity_types": [
+      {
+        "key": "product_demo",
+        "label": "Product demo",
+        "icon": "presentation",
+        "fields": [
+          {
+            "key": "attendees",
+            "label": "Attendees",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "key": "meeting",
+        "label": "Meeting",
+        "icon": "users",
+        "fields": [
+          {
+            "key": "mode",
+            "label": "Mode",
+            "type": "select",
+            "options": [
+              {
+                "value": "in_person",
+                "label": "In person"
+              },
+              {
+                "value": "video_call",
+                "label": "Video call"
+              },
+              {
+                "value": "phone",
+                "label": "Phone"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "pipelines": [
+      {
+        "name": "New business",
+        "stages": [
+          {
+            "name": "Discovery",
+            "kind": "open",
+            "probability": 10,
+            "colour": "#94a3b8"
+          },
+          {
+            "name": "Demo",
+            "kind": "open",
+            "probability": 25,
+            "colour": "#60a5fa"
+          },
+          {
+            "name": "Proposal",
+            "kind": "open",
+            "probability": 50,
+            "colour": "#a78bfa"
+          },
+          {
+            "name": "Negotiation",
+            "kind": "open",
+            "probability": 75,
+            "colour": "#f59e0b"
+          },
+          {
+            "name": "Won",
+            "kind": "won",
+            "probability": 100,
+            "colour": "#22c55e"
+          },
+          {
+            "name": "Lost",
+            "kind": "lost",
+            "probability": 0,
+            "colour": "#ef4444"
+          }
+        ]
+      }
+    ],
+    "lost_reasons": [
+      "Price too high",
+      "Chose a competitor",
+      "No budget",
+      "Timing",
+      "No decision",
+      "Other"
+    ],
+    "products": [
+      {
+        "name": "Core HR (per seat, yearly)",
+        "code": "HR-CORE",
+        "description": "Employee records, leave, attendance",
+        "prices": {
+          "INR": 240000,
+          "USD": 3600,
+          "AED": 13200
+        }
+      },
+      {
+        "name": "Payroll (per seat, yearly)",
+        "code": "PAYROLL",
+        "description": "Payroll, payslips, statutory filings",
+        "prices": {
+          "INR": 180000,
+          "USD": 2400,
+          "AED": 8800
+        }
+      },
+      {
+        "name": "Recruit (per seat, yearly)",
+        "code": "RECRUIT",
+        "description": "Jobs, applicants, interviews",
+        "prices": {
+          "INR": 120000,
+          "USD": 1800,
+          "AED": 6600
+        }
+      },
+      {
+        "name": "Implementation (one-time)",
+        "code": "IMPL",
+        "description": "Setup, data migration, training",
+        "prices": {
+          "INR": 15000000,
+          "USD": 200000,
+          "AED": 750000
+        }
+      }
+    ],
+    "documents": [
+      {
+        "name": "Signed MSA",
+        "hint": "Master services agreement, signed by both sides"
+      },
+      {
+        "name": "Purchase order"
+      },
+      {
+        "name": "GST certificate",
+        "is_required": false
+      }
+    ],
+    "money": {
+      "tax_labels": {
+        "IN": "GSTIN",
+        "AE": "TRN",
+        "US": "EIN",
+        "*": "Tax ID"
+      },
+      "tax_rates": {
+        "IN": [
+          {
+            "name": "GST 18%",
+            "parts": [
+              {
+                "name": "CGST",
+                "rate_bp": 900
+              },
+              {
+                "name": "SGST",
+                "rate_bp": 900
+              }
+            ]
+          },
+          {
+            "name": "IGST 18%",
+            "parts": [
+              {
+                "name": "IGST",
+                "rate_bp": 1800
+              }
+            ]
+          },
+          {
+            "name": "GST 5%",
+            "parts": [
+              {
+                "name": "CGST",
+                "rate_bp": 250
+              },
+              {
+                "name": "SGST",
+                "rate_bp": 250
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "AE": [
+          {
+            "name": "VAT 5%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 500
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "*": [
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ]
+      },
+      "yearly_reset": [
+        "IN"
+      ]
+    }
+  }
+}

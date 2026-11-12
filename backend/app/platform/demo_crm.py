@@ -568,7 +568,14 @@ async def seed_properties(db: AsyncSession, tenant_id: uuid.UUID) -> None:
 
 
 async def seed_deals(
-    db: AsyncSession, tenant_id: uuid.UUID, *, count: int, seed: int, link_property: bool = False
+    db: AsyncSession,
+    tenant_id: uuid.UUID,
+    *,
+    count: int,
+    seed: int,
+    link_property: bool = False,
+    lead_kind: str | None = None,
+    quantities: dict[str, tuple[int, int]] | None = None,
 ) -> None:
     """Deals across the first pipeline: open ones spread over the stages, some won, some lost
     with a reason. EdTech deals carry course lines; with link_property each deal is linked
@@ -609,7 +616,12 @@ async def seed_deals(
     leads = list(
         (
             await db.scalars(
-                select(Lead).where(Lead.owner_user_id.is_not(None)).order_by(Lead.created_at)
+                select(Lead)
+                .where(
+                    Lead.owner_user_id.is_not(None),
+                    Lead.kind == lead_kind if lead_kind else Lead.id.is_not(None),
+                )
+                .order_by(Lead.created_at)
             )
         ).all()
     )
@@ -664,13 +676,16 @@ async def seed_deals(
         if products:
             total = 0
             for i, p in enumerate(rng.sample(products, rng.choice([1, 1, 2]))):
+                # B2B: per-seat products get a seat count (quantities by product code)
+                lo, hi = (quantities or {}).get(p.code or "", (1, 1))
+                qty = rng.randint(lo, hi)
                 discount = rng.choice([0, 0, 500_000]) if p.price_minor > 1_000_000 else 0
-                line = money.line_total(1, p.price_minor, discount)
+                line = money.line_total(qty, p.price_minor, discount)
                 total += line
                 db.add(
                     DealProduct(
                         tenant_id=tenant_id, deal_id=deal.id, product_id=p.id, name=p.name,
-                        quantity=1, unit_price_minor=p.price_minor, discount_minor=discount,
+                        quantity=qty, unit_price_minor=p.price_minor, discount_minor=discount,
                         total_minor=line, position=i,
                     )
                 )  # fmt: skip

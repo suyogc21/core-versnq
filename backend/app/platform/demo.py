@@ -27,6 +27,7 @@ from app.modules.roles.service import _set_permissions
 from app.modules.settings.models import TenantSettings
 from app.modules.teams.models import Team, TeamMember
 from app.modules.users.models import User
+from app.platform.demo_b2b import seed_companies
 from app.platform.demo_crm import (
     seed_batches,
     seed_customers,
@@ -92,6 +93,23 @@ BLUEWAVE_PEOPLE = [
     ("Omar Haddad", "omar", "sales_user", "Dubai Marina", False, "active"),
     ("Lina George", "lina", "sales_user", "Dubai Marina", False, "active"),
 ]
+# Brightlane Software: a B2B SaaS seller (b2b_saas pack, Decision log #36). All invented.
+BRIGHTLANE_PEOPLE = [
+    ("Nikhil Verma", "nikhil", "sales_manager", "Enterprise Sales", True, "active"),
+    ("Ishita Kapoor", "ishita", "sales_user", "Enterprise Sales", False, "active"),
+    ("Rahul Menon", "rahul", "sales_user", "Enterprise Sales", False, "active"),
+    ("Sneha Iyer", "sneha", "sales_user", "Mid-market Sales", False, "active"),
+    ("Aditya Bose", "aditya", "sales_user", "Mid-market Sales", False, "active"),
+    ("Kavita Desai", "kavita", "finance", None, False, "active"),
+]
+BRIGHTLANE_TEAMS = [("Sales", None), ("Enterprise Sales", "Sales"), ("Mid-market Sales", "Sales")]
+BRIGHTLANE_FIELDS = {
+    "company_size": "pick",
+    "industry_segment": "pick",
+    "decision_timeline": "pick",
+}
+BRIGHTLANE_SEATS = {"HR-CORE": (50, 900), "PAYROLL": (50, 900), "RECRUIT": (10, 120)}
+
 # A generic workspace renamed to real-estate words: industry is configuration, not code.
 BLUEWAVE_LABELS = {
     "lead": {"singular": "Buyer enquiry", "plural": "Buyer enquiries"},
@@ -359,13 +377,16 @@ async def seed_demo(prefix: str = "") -> DemoResult:
     if get_settings().environment == "prod":
         raise DemoRefused("demo data never goes into production")
     acme_slug, blue_slug, sun_slug = f"{prefix}acme", f"{prefix}bluewave", f"{prefix}sunrise"
+    bright_slug = f"{prefix}brightlane"
     async with platform_session() as db:
         if await db.scalar(select(Tenant.id).where(Tenant.slug == acme_slug)):
             return DemoResult(created=False)
 
     password = secrets.token_urlsafe(9)  # 12 characters, shared by every demo account
     pw_hash = hash_password(password)
-    result = DemoResult(created=True, password=password, slugs=[acme_slug, blue_slug, sun_slug])
+    result = DemoResult(
+        created=True, password=password, slugs=[acme_slug, blue_slug, bright_slug, sun_slug]
+    )
     scored: list[uuid.UUID] = []  # companies whose lead scores are filled in at the end
 
     async with platform_session() as db:
@@ -496,9 +517,63 @@ async def seed_demo(prefix: str = "") -> DemoResult:
             Account("Bluewave Realty", "Sales Manager", "Farah Siddiqui", f"farah@{domain}")
         )
 
+    # Brightlane Software: B2B SaaS selling an HR and payroll suite to companies.
+    async with platform_session() as db:
+        domain = f"{bright_slug}.demo"
+        tenant, owner, roles = await _company(
+            db,
+            staff_id,
+            name="Brightlane Software",
+            slug=bright_slug,
+            pack="b2b_saas",
+            timezone="Asia/Kolkata",
+            country="IN",
+            owner=("Ananya Rao", f"owner@{domain}"),
+            password_hash=pw_hash,
+        )
+        settings = await db.get(TenantSettings, tenant.id)
+        settings.branding = {"primary_color": "#c2410c"}
+        teams = await _teams(db, tenant, owner, BRIGHTLANE_TEAMS, 30)
+        added = await _people(
+            db, tenant, owner, roles, teams, BRIGHTLANE_PEOPLE, domain, pw_hash, 28
+        )
+        reps = [u.id for u, k in added if u.status == "active" and k in SELLING_ROLES]
+        await seed_leads(
+            db,
+            tenant.id,
+            count=140,
+            country="IN",
+            reps=reps,
+            unassigned=5,
+            custom=BRIGHTLANE_FIELDS,
+            seed=13,
+        )
+        await seed_companies(db, tenant.id, reps=reps, seed=15)
+        await seed_deals(
+            db,
+            tenant.id,
+            count=26,
+            seed=27,
+            lead_kind="organisation",
+            quantities=BRIGHTLANE_SEATS,
+        )
+        await seed_organise(
+            db,
+            tenant.id,
+            owner_id=owner.id,
+            seed=39,
+            tags=["Enterprise", "Renewal due", "Champion found", "Security review"],
+        )
+        bright_id = tenant.id
+        result.accounts.append(Account("Brightlane Software", "Owner", owner.name, owner.email))
+        for user, role_key in added:
+            result.accounts.append(
+                Account("Brightlane Software", _title(role_key), user.name, user.email)
+            )
+
     from app.modules.crm.scoring import rescore_tenant  # scores need the saved activities
 
-    for tenant_id in scored:
+    for tenant_id in [*scored, bright_id]:
         await rescore_tenant(tenant_id)
     # Step 5: customers from won deals, with documents at every stage (as the company).
     acme_id, blue_id = scored
@@ -546,6 +621,29 @@ async def seed_demo(prefix: str = "") -> DemoResult:
             "email": "accounts@bluewave.demo",
             "bank_details": "Emirates NBD · IBAN AE07 0260 0010 1234 5678 901",
             "terms": "Booking amounts are adjusted against the final sale price.",
+        },
+    )
+    # Brightlane: won opportunities became clients, billed yearly or quarterly.
+    await seed_customers(
+        bright_id,
+        count=9,
+        seed=45,
+        fields=[("contract_id", "Contract ID"), ("renewal_date", "Renewal date")],
+    )
+    await seed_money(
+        bright_id,
+        seed=55,
+        item="Annual subscription",
+        entity={
+            "legal_name": "Brightlane Software Pvt Ltd",
+            "tax_id": "29AAKCB7731L1Z2",
+            "address": "12th floor, Orion Tech Park\nOuter Ring Road, Bengaluru 560103",
+            "email": "billing@brightlane.demo",
+            "phone": "+91 80 4100 2200",
+            "bank_details": "ICICI Bank · A/c 000405123456 · IFSC ICIC0000004",
+            "upi_id": "brightlane@icici",
+            "terms": "Subscriptions renew yearly. Payment due within 15 days of the invoice.",
+            "due_days": 15,
         },
     )
 
@@ -610,6 +708,9 @@ def main() -> None:
     print(
         f"  Bluewave Realty  http://bluewave.{base}:3000  generic pack relabelled for real estate"
     )
+    print(
+        f"  Brightlane       http://brightlane.{base}:3000  B2B SaaS (HR software), b2b_saas pack"
+    )
     print("  Sunrise Coaching (suspended; shows in the staff console only)")
     print(f"\nStaff console:     http://admincore.{base}:3001\n")
     for a in result.accounts:
@@ -642,6 +743,7 @@ def write_credentials_file(result: DemoResult, base: str, path: Path = CREDENTIA
         "",
         f"- Acme Academy (EdTech, 300 students): http://acme.{base}:3000/login",
         f"- Bluewave Realty (real estate setup, 60 enquiries): http://bluewave.{base}:3000/login",
+        f"- Brightlane Software (B2B SaaS, client companies): http://brightlane.{base}:3000/login",
         f"- Versnq staff console: http://admincore.{base}:3001/login",
         "- Sunrise Coaching is suspended (shows in the staff console only)",
         "",
