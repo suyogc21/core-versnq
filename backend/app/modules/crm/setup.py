@@ -86,6 +86,20 @@ STEP3_SYSTEM_TYPES = [
 # Added in step 4 (migration 0014 adds it for companies that already exist).
 STEP4_SYSTEM_TYPES = [{"key": "tagged", "label": "Tags changed", "icon": "tag", "loggable": False}]
 
+# Added in step 5 (migration 0015 adds them for companies that already exist).
+STEP5_SYSTEM_TYPES = [
+    {"key": key, "label": label, "icon": icon, "loggable": False}
+    for key, label, icon in (
+        ("became_customer", "Became a customer", "badge-check"),
+        ("customer_updated", "Customer changed", "pencil"),
+        ("document_uploaded", "Document uploaded", "file-up"),
+        ("document_verified", "Document verified", "file-check"),
+        ("document_rejected", "Document rejected", "file-x"),
+        ("document_deleted", "Document file deleted", "trash"),
+        ("customer_submitted", "Submitted by the customer", "send"),
+    )
+]
+
 
 def system_activity_types(dispositions: list[str]) -> list[dict]:
     """Built-in types every company has. Keys are fixed; labels and call outcomes are editable."""
@@ -101,6 +115,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP2_SYSTEM_TYPES,
         *STEP3_SYSTEM_TYPES,
         *STEP4_SYSTEM_TYPES,
+        *STEP5_SYSTEM_TYPES,
     ]
 
 

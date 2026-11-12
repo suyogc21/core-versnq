@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Uuid
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,3 +33,9 @@ class TenantSettings(TimestampMixin, Base):
     engagement_days: Mapped[int] = mapped_column(Integer, default=30)
     hot_score: Mapped[int] = mapped_column(Integer, default=50)
     warm_score: Mapped[int] = mapped_column(Integer, default=20)
+    # Customers and documents (step 5, Decision log #32).
+    customer_prefix: Mapped[str] = mapped_column(String(10), default="C-")
+    next_customer_number: Mapped[int] = mapped_column(Integer, default=1)
+    link_days: Mapped[int] = mapped_column(Integer, default=14)
+    document_reminder_days: Mapped[int] = mapped_column(Integer, default=3)
+    storage_quota_bytes: Mapped[int] = mapped_column(BigInteger, default=2 * 1024**3)

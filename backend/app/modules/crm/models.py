@@ -780,3 +780,111 @@ class AutomationRun(TenantScoped, Base):
     detail: Mapped[list] = mapped_column(JSONB, default=list)
     error: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+
+# ---------- step 5: customers and documents (migration 0015) ----------
+class Customer(TenantScoped, TimestampMixin, Base):
+    """A lead that became a customer: same record and timeline, plus what is new."""
+
+    __tablename__ = "customers"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_customers_tenant_id_id"),
+        UniqueConstraint("tenant_id", "lead_id", name="uq_customers_lead"),
+        UniqueConstraint("tenant_id", "number", name="uq_customers_number"),
+        _fk("lead_id", "leads", "fk_customers_lead_same_tenant", "CASCADE"),
+        _fk("won_deal_id", "deals", "fk_customers_deal_same_tenant"),
+        _fk("created_by_user_id", "users", "fk_customers_creator_same_tenant"),
+    )
+
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    number: Mapped[str] = mapped_column(String(30))
+    since: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(8), default="active")  # active / inactive
+    custom_fields: Mapped[dict] = mapped_column(JSONB, default=dict)
+    won_deal_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class DocumentRequirement(TenantScoped, TimestampMixin, Base):
+    """One item on the company's document checklist."""
+
+    __tablename__ = "document_requirements"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_document_requirements_tenant_id_id"),
+        UniqueConstraint("tenant_id", "name", name="uq_document_requirements_name"),
+    )
+
+    name: Mapped[str] = mapped_column(String(120))
+    hint: Mapped[str | None] = mapped_column(String(300))
+    is_required: Mapped[bool] = mapped_column(Boolean, default=True)
+    allow_office: Mapped[bool] = mapped_column(Boolean, default=False)  # Word / Excel too
+    product_ids: Mapped[list] = mapped_column(JSONB, default=list)  # empty = every customer
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class Document(TenantScoped, TimestampMixin, Base):
+    """One checklist item for one customer (or an "Other documents" entry)."""
+
+    __tablename__ = "documents"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_documents_tenant_id_id"),
+        _fk("customer_id", "customers", "fk_documents_customer_same_tenant", "CASCADE"),
+        _fk("requirement_id", "document_requirements", "fk_documents_req_same_tenant"),
+        _fk("reviewed_by_user_id", "users", "fk_documents_reviewer_same_tenant"),
+    )
+
+    customer_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    requirement_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    name: Mapped[str] = mapped_column(String(120))
+    status: Mapped[str] = mapped_column(String(8), default="pending")
+    reject_reason: Mapped[str | None] = mapped_column(String(500))
+    received_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class CustomerLink(TenantScoped, TimestampMixin, Base):
+    """A secure link the customer opens without logging in. Only the code's hash is kept."""
+
+    __tablename__ = "customer_links"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_customer_links_tenant_id_id"),
+        _fk("customer_id", "customers", "fk_customer_links_customer_same_tenant", "CASCADE"),
+        _fk("created_by_user_id", "users", "fk_customer_links_creator_same_tenant"),
+    )
+
+    customer_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    code_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    field_keys: Mapped[list] = mapped_column(JSONB, default=list)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+
+
+class StoredFile(TenantScoped, Base):
+    """A file on our own server's disk (Decision log #29). The bytes live at `path`."""
+
+    __tablename__ = "files"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_files_tenant_id_id"),
+        _fk("lead_id", "leads", "fk_files_lead_same_tenant", "CASCADE"),
+        _fk("document_id", "documents", "fk_files_document_same_tenant", "CASCADE"),
+        _fk("uploaded_by_user_id", "users", "fk_files_uploader_same_tenant"),
+        _fk("link_id", "customer_links", "fk_files_link_same_tenant"),
+    )
+
+    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    path: Mapped[str] = mapped_column(String(300), unique=True)
+    original_name: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(100))
+    size_bytes: Mapped[int] = mapped_column(BigInteger)
+    sha256: Mapped[str] = mapped_column(String(64))
+    uploaded_via: Mapped[str] = mapped_column(String(4))  # user / link
+    uploaded_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    link_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())

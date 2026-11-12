@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     trust_proxy_headers: bool = False
     # Dev/e2e only: save outgoing emails as files here instead of logging them. Ignored in prod.
     mail_outbox_dir: str | None = None
+    # Uploaded files (documents, later invoice PDFs) live here on our own server's disk
+    # (Decision log #29). Back this folder up nightly with the database.
+    files_dir: str = "var/files"
     # Dev demos only: invented demo accounts (emails ending in .demo or @demo.versnq.in) skip
     # the 2FA setup step. Real people always need 2FA. Refused in production.
     demo_skip_2fa: bool = False
