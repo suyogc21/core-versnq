@@ -210,6 +210,18 @@ async def test_team_counts_the_managers_team_and_admin_sees_everyone(ws):
     assert len(biz["trend"]) == 6 and biz["trend"][-1]["new_leads"] == 3
 
 
+async def test_trend_matches_the_headline_month_by_month(ws):
+    tenant_id, c = ws
+    x = await _company(tenant_id, c)
+    biz = (await c.get("/api/v1/dashboards/business", headers=x["admin"])).json()
+    month = (await c.get("/api/v1/dashboards/business?period=month", headers=x["admin"])).json()
+    last, cur = biz["trend"][-1], month["current"]
+    for k in ("new_leads", "converted", "booked", "collected"):
+        assert last[k] == cur[k], k
+    assert cur["booked"] and cur["collected"]  # the company has a won deal and a payment
+    assert all(m["new_leads"] == 0 for m in biz["trend"][:-1])
+
+
 async def test_money_dashboard_matches_the_invoices(ws):
     tenant_id, c = ws
     x = await _company(tenant_id, c)

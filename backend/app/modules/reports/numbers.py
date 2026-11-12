@@ -444,22 +444,75 @@ async def lost_reasons(db: AsyncSession, owners: set | None, p: Period) -> list[
 async def trend(
     db: AsyncSession, owners: set | None, today: date, tz: str, months: int = 6
 ) -> list[dict]:
-    out = []
+    """Same definitions as `headline`, one grouped query per number for all months at once."""
     first = _add_months(_month_start(today), -(months - 1))
-    for i in range(months):
-        start = _add_months(first, i)
-        p = Period("month", start, _add_months(start, 1), _add_months(start, -1), tz)
-        h = await headline(db, owners, p)
-        out.append(
-            {
-                "month": start.isoformat()[:7],
-                "new_leads": h["new_leads"],
-                "converted": h["converted"],
-                "booked": h["booked"],
-                "collected": h["collected"],
-            }
+    whole = Period("month", first, _add_months(first, months), first, tz)
+    s, e = whole.start, whole.end
+    keys = [_add_months(first, i).isoformat()[:7] for i in range(months)]
+
+    def month(col):  # 'YYYY-MM' in the company's time zone
+        return func.to_char(func.timezone(tz, col), "YYYY-MM")
+
+    reached = func.coalesce(Lead.assigned_at, Lead.created_at)
+    m = month(reached)
+    new_leads = dict(
+        (
+            await db.execute(
+                select(m, func.count())
+                .where(reached >= s, reached < e, _owned(Lead.owner_user_id, owners))
+                .group_by(m)
+            )
+        ).all()
+    )
+    m = month(Customer.since)
+    converted = dict(
+        (
+            await db.execute(
+                select(m, func.count())
+                .select_from(Customer)
+                .join(Lead, Lead.id == Customer.lead_id)
+                .where(Customer.since >= s, Customer.since < e, _owned(Lead.owner_user_id, owners))
+                .group_by(m)
+            )
+        ).all()
+    )
+    m = month(Deal.closed_at)
+    won = (
+        await db.execute(
+            select(m, Deal.currency, func.sum(Deal.amount_minor))
+            .where(
+                Deal.status == "won",
+                Deal.closed_at >= s,
+                Deal.closed_at < e,
+                _owned(Deal.owner_user_id, owners),
+            )
+            .group_by(m, Deal.currency)
         )
-    return out
+    ).all()
+    m = func.to_char(Payment.paid_on, "YYYY-MM")
+    paid = (
+        await db.execute(
+            select(m, Payment.currency, func.sum(Payment.amount_minor))
+            .join(Lead, Lead.id == Payment.lead_id)
+            .where(
+                Payment.status == "ok",
+                Payment.paid_on >= whole.start_day,
+                Payment.paid_on < whole.end_day,
+                _owned(Lead.owner_user_id, owners),
+            )
+            .group_by(m, Payment.currency)
+        )
+    ).all()
+    return [
+        {
+            "month": k,
+            "new_leads": int(new_leads.get(k, 0)),
+            "converted": int(converted.get(k, 0)),
+            "booked": _amounts((c, v) for mk, c, v in won if mk == k),
+            "collected": _amounts((c, v) for mk, c, v in paid if mk == k),
+        }
+        for k in keys
+    ]
 
 
 # ---------- Money ----------
