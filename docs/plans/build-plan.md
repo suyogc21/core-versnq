@@ -1007,3 +1007,37 @@ Isolation; replies thread onto the right conversation by headers and by address;
 | I4 | How far back to sync when a mailbox is connected | **30 days**, then live |
 | I5 | When a user disconnects | **Keep their synced emails on the leads**; an admin can remove them |
 | I6 | Who can read a synced email on a lead | **Whoever can see the lead**, unless the user marked the thread private |
+
+## 16. Step 10 in detail: WhatsApp (replaces 14.5)
+
+Agreed with Suyog (Nov 12) after comparing four ways in: Meta's official API alone (the number leaves the phone app), **official API + Coexistence** (one number on the WhatsApp Business app and the API at once), an unofficial gateway (WA-AKG / Baileys: against WhatsApp's terms, numbers can be banned, our server would hold their login) and a **Chrome extension on WhatsApp Web**. Decision: **B + D only.** WA-AKG is parked (only reconsidered if Coexistence is unavailable in India). **No group chats. No auto-replies on anyone's own WhatsApp** — autoresponding stays on the official company number only.
+
+| Way in | Who | What it gives |
+| --- | --- | --- |
+| Official company number (Meta Cloud API; later with Coexistence) | The company | Sequences, payment reminders, campaigns, the autoresponder; Meta's template and 24-hour rules enforced by Core |
+| The rep's own WhatsApp + the Versnq Chrome extension | Every salesperson, any number of them | Chats freely as today; a panel beside WhatsApp Web shows the lead; chats with known leads are logged to Core; nothing is ever sent by the extension |
+| Coexistence (10c) | Company number and any rep on WhatsApp Business | Same app on the phone, every chat (phone too) in Core, officially |
+
+### 16.1 Slices
+
+| Slice | What | Needs from Suyog |
+| --- | --- | --- |
+| **10a** Reps' WhatsApp (now) | WhatsApp as a channel in conversations, the inbox and the lead's trail; "Chat on WhatsApp" button on the lead (opens the rep's own WhatsApp); the Chrome extension: connect with a one-time code from My account, side panel with the lead (stage, owner, next follow-up, open deals, balance due), create lead from an unknown number, add a note or a follow-up date, saved replies put into the message box (the rep presses Send), automatic logging of chats with known leads, "Sync this chat"; admin list of connected extensions with last activity, revoke | Nothing to build; a Google developer account (one-time $5) to publish it unlisted later |
+| **10b** Official company number | Meta keys in Settings, templates sent for approval, the 24-hour window, STOP words, delivered / read, unknown number → lead, WhatsApp steps in sequences, payment reminders on WhatsApp, autoresponder (this number only), number health; built with a test sender | Meta Business verification |
+| **10c** Coexistence | One-click "Connect WhatsApp Business" (Embedded Signup) for the company and any rep on WhatsApp Business; the extension skips numbers connected this way | Versnq approved as a Meta Tech Provider; confirm Coexistence is available for Indian numbers |
+
+### 16.2 The extension (10a)
+
+- **Where:** `extension/` in this repo, TypeScript compiled with the TypeScript already in the frontend; no new libraries. Chrome, Edge, Brave (Manifest V3). Loaded by hand while piloting; published **unlisted** on the Chrome Web Store for customers.
+- **Connecting:** My account → WhatsApp extension → "Connect" shows a one-time code (10 minutes). The rep types the workspace address and the code into the extension; it gets its own token, which works only on the extension's endpoints and can be revoked by the rep or an admin. No password is ever typed into the extension.
+- **Reading:** only the open one-to-one chat; group chats skipped. The chat's number comes from WhatsApp Web's own message ids when present, otherwise the rep links the chat to a lead once ("Link to lead") and Core remembers it. Each message's own id means nothing is logged twice; sent or received is read from WhatsApp itself. The code that reads WhatsApp Web lives in one file, so a WhatsApp change is a quick fix; the admin list shows each rep's last activity, so a break is noticed.
+- **Privacy:** messages of people who are not leads never leave the laptop; a number is sent only to ask "is this a lead?" and is not stored. Photos and files are logged as "[photo]" / "[document]" for now.
+- **Never:** sends by itself, bulk anything, reads groups, copies the contact list.
+
+### 16.3 Tables — migration 0027
+
+`extension_tokens` (user, token hash, one-time connect code hash + expiry, device name, version, last used, revoked); `whatsapp_chat_links` (chat key → lead, for chats without a number); `messages` gain `external_id` (WhatsApp's message id, unique per company). Timeline types `whatsapp_sent`, `whatsapp_received`. Connected extensions shown to holders of `mailboxes.manage` (Settings → Connected inboxes).
+
+### 16.4 Tests ("done" means these pass)
+
+Isolation; a connect code works once and expires; an extension token is refused on every other endpoint and after revoking; lookup finds only leads the rep may see; messages land on the right lead, in one WhatsApp conversation, once (same id twice → once); a received WhatsApp stops sequences that stop on replies; a sent one counts as contacting the lead; create lead from the panel goes through intake and duplicate rules; reps see only conversations of leads they can see; the extension's reader on a saved WhatsApp Web page; browser walk desktop and phone.
