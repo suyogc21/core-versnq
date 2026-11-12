@@ -38,6 +38,8 @@ import { useLeadCustomer } from "@/lib/customers";
 import { useUsers } from "@/lib/directory";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+import { NewInvoiceButton } from "@/components/crm/money";
+import { useMoneyOn } from "@/lib/money";
 
 export default function DealPage() {
   const { id } = useParams<{ id: string }>();
@@ -556,12 +558,16 @@ function WonCustomer({ leadId, dealId }: { leadId: string; dealId: string }) {
   const { can } = useAuth();
   const label = useLabels();
   const customer = useLeadCustomer(leadId, can("customers.read"));
+  const moneyOn = useMoneyOn();
   if (customer.isLoading || !can("customers.read")) return null;
   if (customer.data) {
     return (
-      <Link href={`/leads/${leadId}`} className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300">
-        {label("customer")} {customer.data.number}
-      </Link>
+      <>
+        <Link href={`/leads/${leadId}`} className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300">
+          {label("customer")} {customer.data.number}
+        </Link>
+        {moneyOn && can("invoices.create") && <NewInvoiceButton customerId={customer.data.id} dealId={dealId} variant="outline" />}
+      </>
     );
   }
   return can("customers.create") && can("leads.edit") ? <MakeCustomerButton leadId={leadId} dealId={dealId} /> : null;

@@ -132,7 +132,9 @@ def invoice(doc: InvoiceDoc) -> bytes:
                 [
                     _p(
                         doc.title.upper(),
-                        ParagraphStyle("t", parent=RIGHT, fontSize=14, fontName="Helvetica-Bold"),
+                        ParagraphStyle(
+                            "t", parent=RIGHT, fontSize=14, leading=20, fontName="Helvetica-Bold"
+                        ),
                     ),
                     _p(doc.number, RIGHT),
                     _p(f"Date: {_fmt(doc.issue_date)}", RIGHT),

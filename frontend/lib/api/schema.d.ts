@@ -723,6 +723,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customers/{customer_id}/money": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Customer Money */
+        get: operations["money-customer_money"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/deals": {
         parameters: {
             query?: never;
@@ -1084,6 +1101,202 @@ export interface paths {
         put?: never;
         /** Start */
         post: operations["imports-start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invoices */
+        get: operations["money-list_invoices"];
+        put?: never;
+        /** Create Invoice */
+        post: operations["money-create_invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Invoice */
+        get: operations["money-get_invoice"];
+        put?: never;
+        post?: never;
+        /** Delete Invoice */
+        delete: operations["money-delete_invoice"];
+        options?: never;
+        head?: never;
+        /** Update Invoice */
+        patch: operations["money-update_invoice"];
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Email Invoice */
+        post: operations["money-email_invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/installments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Installments */
+        put: operations["money-set_installments"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue Invoice */
+        post: operations["money-issue_invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Payment Link */
+        post: operations["money-create_payment_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Payment
+         * @description The request body is the proof (a photo or PDF of the transfer, up to 10 MB).
+         */
+        post: operations["money-record_payment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Invoice Pdf */
+        get: operations["money-invoice_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/repeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Repeat Invoice */
+        post: operations["money-repeat_invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/shared": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invoice Shared
+         * @description The rep sent the invoice or its link themselves (WhatsApp on their phone, or copied).
+         */
+        post: operations["money-invoice_shared"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void Invoice */
+        post: operations["money-void_invoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1679,6 +1892,186 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/money/aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Aging
+         * @description Overdue money by how late it is (0–30 / 31–60 / 61–90 / 90+ days), per entity and
+         *     currency, plus what is due but not yet late.
+         */
+        get: operations["money-aging"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Entities */
+        get: operations["money-list_entities"];
+        put?: never;
+        /** Create Entity */
+        post: operations["money-create_entity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/entities/{entity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Entity */
+        patch: operations["money-update_entity"];
+        trace?: never;
+    };
+    "/api/v1/money/gateways": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Gateways */
+        get: operations["money-list_gateways"];
+        put?: never;
+        /** Connect Gateway */
+        post: operations["money-connect_gateway"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/gateways/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Disconnect Gateway */
+        delete: operations["money-disconnect_gateway"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/gateways/{account_id}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check Gateway */
+        post: operations["money-check_gateway"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Mailbox */
+        get: operations["money-get_mailbox"];
+        /** Save Mailbox */
+        put: operations["money-save_mailbox"];
+        post?: never;
+        /** Remove Mailbox */
+        delete: operations["money-remove_mailbox"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Money Settings */
+        get: operations["money-get_money_settings"];
+        /** Save Money Settings */
+        put: operations["money-save_money_settings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/tax-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tax Rates */
+        get: operations["money-list_tax_rates"];
+        put?: never;
+        /** Create Tax Rate */
+        post: operations["money-create_tax_rate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/tax-rates/{rate_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Tax Rate */
+        patch: operations["money-update_tax_rate"];
+        trace?: never;
+    };
     "/api/v1/notifications": {
         parameters: {
             query?: never;
@@ -1707,6 +2100,91 @@ export interface paths {
         put?: never;
         /** Mark Read */
         post: operations["notifications-mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payment-links/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Cancel Payment Link */
+        delete: operations["money-cancel_payment_link"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Payments */
+        get: operations["money-list_payments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/{payment_id}/proof": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Payment Proof */
+        get: operations["money-payment_proof"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/{payment_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Receipt Pdf */
+        get: operations["money-receipt_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/{payment_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reverse Payment */
+        post: operations["money-reverse_payment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2612,6 +3090,27 @@ export interface paths {
         patch: operations["organise-update_view"];
         trace?: never;
     };
+    "/api/v1/webhooks/{gateway_name}/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gateway Webhook
+         * @description Public, signature-checked: the gateway tells Core a link was paid. Answers 200 for
+         *     anything handled (including repeats), so the gateway stops retrying.
+         */
+        post: operations["money-gateway_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -3028,6 +3527,26 @@ export interface components {
             /** Type Key */
             type_key: string;
         };
+        /** AgingRow */
+        AgingRow: {
+            /** Buckets */
+            buckets: {
+                [key: string]: number;
+            };
+            /** Currency */
+            currency: string;
+            /** Due Later Minor */
+            due_later_minor: number;
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /** Entity Name */
+            entity_name: string;
+            /** Total Minor */
+            total_minor: number;
+        };
         /** AssignmentRuleIn */
         AssignmentRuleIn: {
             /**
@@ -3189,6 +3708,19 @@ export interface components {
             trigger?: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** Balance */
+        Balance: {
+            /** Billed Minor */
+            billed_minor: number;
+            /** Currency */
+            currency: string;
+            /** Due Minor */
+            due_minor: number;
+            /** Overdue Minor */
+            overdue_minor: number;
+            /** Paid Minor */
+            paid_minor: number;
         };
         /** BoardColumn */
         BoardColumn: {
@@ -3461,6 +3993,13 @@ export interface components {
             leakage_hours?: number | null;
             /** Org Grouping */
             org_grouping?: ("off" | "suggest" | "auto") | null;
+        };
+        /** CustomerMoney */
+        CustomerMoney: {
+            /** Balances */
+            balances: components["schemas"]["Balance"][];
+            /** Invoices */
+            invoices: components["schemas"]["InvoiceRow"][];
         };
         /** CustomerOut */
         CustomerOut: {
@@ -3750,6 +4289,170 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** EntityIn */
+        EntityIn: {
+            /** Address */
+            address?: string | null;
+            /** Bank Details */
+            bank_details?: string | null;
+            /** Country */
+            country: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Due Days
+             * @default 7
+             */
+            due_days: number;
+            /** Email */
+            email?: string | null;
+            /**
+             * Invoice Prefix
+             * @default INV-
+             */
+            invoice_prefix: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /**
+             * Is Default
+             * @default false
+             */
+            is_default: boolean;
+            /** Legal Name */
+            legal_name: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone?: string | null;
+            /**
+             * Receipt Prefix
+             * @default RCT-
+             */
+            receipt_prefix: string;
+            /** Tax Id */
+            tax_id?: string | null;
+            /** Tax Label */
+            tax_label?: string | null;
+            /** Terms */
+            terms?: string | null;
+            /** Upi Id */
+            upi_id?: string | null;
+            /**
+             * Year Start Month
+             * @default 4
+             */
+            year_start_month: number;
+            /**
+             * Yearly Reset
+             * @default false
+             */
+            yearly_reset: boolean;
+        };
+        /** EntityOut */
+        EntityOut: {
+            /** Address */
+            address: string | null;
+            /** Bank Details */
+            bank_details: string | null;
+            /** Country */
+            country: string;
+            /** Currency */
+            currency: string;
+            /** Due Days */
+            due_days: number;
+            /** Email */
+            email: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Invoice Prefix */
+            invoice_prefix: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Is Default */
+            is_default: boolean;
+            /** Legal Name */
+            legal_name: string;
+            /** Name */
+            name: string;
+            /** Next Invoice Number */
+            next_invoice_number: number;
+            /**
+             * Next Number
+             * @default
+             */
+            next_number: string;
+            /** Next Receipt Number */
+            next_receipt_number: number;
+            /** Number Period */
+            number_period: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Receipt Prefix */
+            receipt_prefix: string;
+            /** Tax Id */
+            tax_id: string | null;
+            /** Tax Label */
+            tax_label: string | null;
+            /** Terms */
+            terms: string | null;
+            /** Upi Id */
+            upi_id: string | null;
+            /** Year Start Month */
+            year_start_month: number;
+            /** Yearly Reset */
+            yearly_reset: boolean;
+        };
+        /** EntityPatch */
+        EntityPatch: {
+            /** Address */
+            address?: string | null;
+            /** Bank Details */
+            bank_details?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Due Days */
+            due_days?: number | null;
+            /** Email */
+            email?: string | null;
+            /** Invoice Prefix */
+            invoice_prefix?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Is Default */
+            is_default?: boolean | null;
+            /** Legal Name */
+            legal_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Next Invoice Number */
+            next_invoice_number?: number | null;
+            /** Next Receipt Number */
+            next_receipt_number?: number | null;
+            /** Phone */
+            phone?: string | null;
+            /** Receipt Prefix */
+            receipt_prefix?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
+            /** Tax Label */
+            tax_label?: string | null;
+            /** Terms */
+            terms?: string | null;
+            /** Upi Id */
+            upi_id?: string | null;
+            /** Year Start Month */
+            year_start_month?: number | null;
+            /** Yearly Reset */
+            yearly_reset?: boolean | null;
+        };
         /** FieldIn */
         FieldIn: {
             /** Depends On */
@@ -3889,6 +4592,60 @@ export interface components {
             /** Ok */
             ok: boolean;
         };
+        /** GatewayIn */
+        GatewayIn: {
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /**
+             * Gateway
+             * @enum {string}
+             */
+            gateway: "razorpay" | "stripe";
+            /** Key Id */
+            key_id?: string | null;
+            /**
+             * Mode
+             * @default test
+             * @enum {string}
+             */
+            mode: "test" | "live";
+            /** Secret */
+            secret: string;
+            /** Webhook Secret */
+            webhook_secret: string;
+        };
+        /** GatewayOut */
+        GatewayOut: {
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /** Gateway */
+            gateway: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Key Id */
+            key_id: string | null;
+            /** Last Checked At */
+            last_checked_at: string | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Mode */
+            mode: string;
+            /** Secret Hint */
+            secret_hint: string;
+            /** Webhook Url */
+            webhook_url: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -3977,6 +4734,30 @@ export interface components {
             /** Updated Count */
             updated_count: number;
         };
+        /** InstallmentOut */
+        InstallmentOut: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Paid Minor */
+            paid_minor: number;
+            /** Position */
+            position: number;
+            /**
+             * State
+             * @default due
+             */
+            state: string;
+        };
         /** InviteIn */
         InviteIn: {
             /**
@@ -4021,6 +4802,245 @@ export interface components {
             status: string;
             /** Totp Enabled */
             totp_enabled: boolean;
+        };
+        /** InvoiceDetail */
+        InvoiceDetail: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Customer Email */
+            customer_email?: string | null;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer Name */
+            customer_name?: string | null;
+            /** Customer Number */
+            customer_number?: string | null;
+            /** Customer Phone */
+            customer_phone?: string | null;
+            /** Deal Id */
+            deal_id: string | null;
+            /** Discount Minor */
+            discount_minor: number;
+            /** Due Date */
+            due_date: string | null;
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /** Entity Name */
+            entity_name?: string | null;
+            /** Gateway */
+            gateway?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Installments
+             * @default []
+             */
+            installments: components["schemas"]["InstallmentOut"][];
+            /** Issue Date */
+            issue_date: string | null;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /**
+             * Lines
+             * @default []
+             */
+            lines: components["schemas"]["InvoiceLineOut"][];
+            /**
+             * Links
+             * @default []
+             */
+            links: components["schemas"]["PaymentLinkOut"][];
+            /**
+             * Messages
+             * @default []
+             */
+            messages: components["schemas"]["MessageOut"][];
+            /** Next Due Date */
+            next_due_date?: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Number */
+            number: string | null;
+            /**
+             * Overdue Minor
+             * @default 0
+             */
+            overdue_minor: number;
+            /** Owner Name */
+            owner_name?: string | null;
+            /** Paid Minor */
+            paid_minor: number;
+            /** Pay Direct */
+            pay_direct: boolean;
+            /** Pay Link */
+            pay_link: boolean;
+            /**
+             * Payments
+             * @default []
+             */
+            payments: components["schemas"]["PaymentOut"][];
+            /** Repeat Months */
+            repeat_months: number | null;
+            /** Repeat Next Date */
+            repeat_next_date: string | null;
+            /** Status */
+            status: string;
+            /** Subtotal Minor */
+            subtotal_minor: number;
+            /** Tax Breakdown */
+            tax_breakdown: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Minor */
+            tax_minor: number;
+            /** Total Minor */
+            total_minor: number;
+            /** Version */
+            version: number;
+            /** Void Reason */
+            void_reason: string | null;
+        };
+        /** InvoiceLineOut */
+        InvoiceLineOut: {
+            /** Description */
+            description: string;
+            /** Discount Minor */
+            discount_minor: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Net Minor */
+            net_minor: number;
+            /** Position */
+            position: number;
+            /** Product Id */
+            product_id: string | null;
+            /** Quantity */
+            quantity: number;
+            /** Tax Minor */
+            tax_minor: number;
+            /** Tax Name */
+            tax_name: string | null;
+            /** Tax Rate Id */
+            tax_rate_id: string | null;
+            /** Total Minor */
+            total_minor: number;
+            /** Unit Price Minor */
+            unit_price_minor: number;
+        };
+        /** InvoicePage */
+        InvoicePage: {
+            /** Items */
+            items: components["schemas"]["InvoiceRow"][];
+            /** Total */
+            total: number;
+        };
+        /** InvoicePatch */
+        InvoicePatch: {
+            /** Due Date */
+            due_date?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
+            /** Lines */
+            lines?: components["schemas"]["LineBody"][] | null;
+            /**
+             * No Repeat
+             * @default false
+             */
+            no_repeat: boolean;
+            /** Notes */
+            notes?: string | null;
+            /** Pay Direct */
+            pay_direct?: boolean | null;
+            /** Pay Link */
+            pay_link?: boolean | null;
+            /** Repeat Months */
+            repeat_months?: (1 | 3 | 6 | 12) | null;
+            /** Version */
+            version: number;
+        };
+        /** InvoiceRow */
+        InvoiceRow: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer Name */
+            customer_name?: string | null;
+            /** Customer Number */
+            customer_number?: string | null;
+            /** Deal Id */
+            deal_id: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Issue Date */
+            issue_date: string | null;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Next Due Date */
+            next_due_date?: string | null;
+            /** Number */
+            number: string | null;
+            /**
+             * Overdue Minor
+             * @default 0
+             */
+            overdue_minor: number;
+            /** Owner Name */
+            owner_name?: string | null;
+            /** Paid Minor */
+            paid_minor: number;
+            /** Status */
+            status: string;
+            /** Total Minor */
+            total_minor: number;
+        };
+        /** IssueIn */
+        IssueIn: {
+            /** Due Date */
+            due_date?: string | null;
+            /** Issue Date */
+            issue_date?: string | null;
         };
         /** Label */
         Label: {
@@ -4358,6 +5378,24 @@ export interface components {
             /** Website */
             website?: string | null;
         };
+        /** LineBody */
+        LineBody: {
+            /** Description */
+            description: string;
+            /**
+             * Discount Minor
+             * @default 0
+             */
+            discount_minor: number;
+            /** Product Id */
+            product_id?: string | null;
+            /** Quantity */
+            quantity: number;
+            /** Tax Rate Id */
+            tax_rate_id?: string | null;
+            /** Unit Price Minor */
+            unit_price_minor: number;
+        };
         /** LineIn */
         LineIn: {
             /**
@@ -4595,6 +5633,58 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** MailIn */
+        MailIn: {
+            /** From Email */
+            from_email: string;
+            /** From Name */
+            from_name: string;
+            /** Host */
+            host: string;
+            /** Password */
+            password?: string | null;
+            /**
+             * Port
+             * @default 587
+             * @enum {integer}
+             */
+            port: 25 | 465 | 587 | 2525;
+            /** Reply To */
+            reply_to?: string | null;
+            /**
+             * Security
+             * @default starttls
+             * @enum {string}
+             */
+            security: "ssl" | "starttls";
+            /** Username */
+            username: string;
+        };
+        /** MailOut */
+        MailOut: {
+            /** From Email */
+            from_email: string;
+            /** From Name */
+            from_name: string;
+            /** Host */
+            host: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Checked At */
+            last_checked_at: string | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Password Hint */
+            password_hint: string;
+            /** Port */
+            port: number;
+            /** Reply To */
+            reply_to: string | null;
+            /** Security */
+            security: string;
+            /** Username */
+            username: string;
+        };
         /** MakeIn */
         MakeIn: {
             /** Deal Id */
@@ -4668,6 +5758,29 @@ export interface components {
              */
             take_from_other: string[];
         };
+        /** MessageOut */
+        MessageOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error */
+            error: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Sent At */
+            sent_at: string | null;
+            /** Status */
+            status: string;
+            /** To Address */
+            to_address: string;
+        };
         /** ModuleOut */
         ModuleOut: {
             /** Core */
@@ -4678,6 +5791,22 @@ export interface components {
             key: string;
             /** Name */
             name: string;
+        };
+        /** MoneySettings */
+        MoneySettings: {
+            /**
+             * Money Default Pay
+             * @enum {string}
+             */
+            money_default_pay: "link" | "direct" | "both";
+            /** Money Emails */
+            money_emails: {
+                [key: string]: boolean;
+            };
+            /** Money Overdue Every Days */
+            money_overdue_every_days: number;
+            /** Money Reminder Before Days */
+            money_reminder_before_days: number;
         };
         /** MoveIn */
         MoveIn: {
@@ -4705,6 +5834,18 @@ export interface components {
             unassigned_count: number | null;
             /** Upcoming */
             upcoming: components["schemas"]["TaskOut"][];
+        };
+        /** NewInvoice */
+        NewInvoice: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Deal Id */
+            deal_id?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
         };
         /** NoteIn */
         NoteIn: {
@@ -4772,6 +5913,84 @@ export interface components {
             key: string;
             /** Name */
             name: string;
+        };
+        /** PaymentLinkIn */
+        PaymentLinkIn: {
+            /** Installment Id */
+            installment_id?: string | null;
+        };
+        /** PaymentLinkOut */
+        PaymentLinkOut: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Gateway */
+            gateway: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Installment Id */
+            installment_id: string | null;
+            /** Status */
+            status: string;
+            /** Url */
+            url: string;
+        };
+        /** PaymentOut */
+        PaymentOut: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Customer Name */
+            customer_name?: string | null;
+            /**
+             * Has Proof
+             * @default false
+             */
+            has_proof: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Invoice Number */
+            invoice_number?: string | null;
+            /** Method */
+            method: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /** Receipt Number */
+            receipt_number: string;
+            /** Recorded By Name */
+            recorded_by_name?: string | null;
+            /** Reference */
+            reference: string | null;
+            /** Reverse Reason */
+            reverse_reason: string | null;
+            /** Status */
+            status: string;
         };
         /** PermissionOut */
         PermissionOut: {
@@ -4935,6 +6154,11 @@ export interface components {
         ReadIn: {
             /** Ids */
             ids?: string[] | null;
+        };
+        /** ReasonIn */
+        ReasonIn: {
+            /** Reason */
+            reason: string;
         };
         /** RecordActivityOut */
         RecordActivityOut: {
@@ -5161,6 +6385,11 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** RepeatIn */
+        RepeatIn: {
+            /** Months */
+            months: (1 | 3 | 6 | 12) | null;
+        };
         /** RequirementIn */
         RequirementIn: {
             /**
@@ -5302,6 +6531,38 @@ export interface components {
             status: string;
             /** Subject Name */
             subject_name?: string | null;
+        };
+        /**
+         * ScheduleIn
+         * @description Either equal parts (count, first due date, months between) or custom items.
+         */
+        ScheduleIn: {
+            /** Count */
+            count?: number | null;
+            /**
+             * Days Between
+             * @default 0
+             */
+            days_between: number;
+            /** First Due Date */
+            first_due_date?: string | null;
+            /** Items */
+            items?: components["schemas"]["ScheduleItem"][] | null;
+            /**
+             * Months Between
+             * @default 1
+             */
+            months_between: number;
+        };
+        /** ScheduleItem */
+        ScheduleItem: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
         };
         /** ScoreLine */
         ScoreLine: {
@@ -5455,6 +6716,14 @@ export interface components {
             locale?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /** SharedIn */
+        SharedIn: {
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "whatsapp" | "copy";
         };
         /** Skipped */
         Skipped: {
@@ -5824,6 +7093,45 @@ export interface components {
             status?: ("open" | "done" | "cancelled") | null;
             /** Title */
             title?: string | null;
+        };
+        /** TaxIn */
+        TaxIn: {
+            /** Name */
+            name: string;
+            /** Parts */
+            parts?: components["schemas"]["TaxPart"][];
+        };
+        /** TaxOut */
+        TaxOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Parts */
+            parts: components["schemas"]["TaxPart"][];
+            /** Position */
+            position: number;
+        };
+        /** TaxPart */
+        TaxPart: {
+            /** Name */
+            name: string;
+            /** Rate Bp */
+            rate_bp: number;
+        };
+        /** TaxPatch */
+        TaxPatch: {
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Parts */
+            parts?: components["schemas"]["TaxPart"][] | null;
         };
         /** TeamIn */
         TeamIn: {
@@ -8277,6 +9585,37 @@ export interface operations {
             };
         };
     };
+    "money-customer_money": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerMoney"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "deals-list_deals": {
         parameters: {
             query?: {
@@ -9130,6 +10469,486 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-list_invoices": {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: ("draft" | "issued" | "partly_paid" | "paid" | "void")[];
+                entity_id?: string | null;
+                customer_id?: string | null;
+                owner?: string[];
+                overdue?: boolean;
+                sort?: "-created" | "due" | "-total" | "number";
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoicePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-create_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewInvoice"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-get_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-delete_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-update_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoicePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-email_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-set_installments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-issue_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-create_payment_link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentLinkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentLinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-record_payment": {
+        parameters: {
+            query: {
+                amount_minor: number;
+                method: "bank" | "upi" | "cash" | "cheque" | "card" | "other";
+                paid_on: string;
+                name: string;
+                reference?: string | null;
+            };
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-invoice_pdf": {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-repeat_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepeatIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-invoice_shared": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharedIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-void_invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
                 };
             };
             /** @description Validation Error */
@@ -10598,6 +12417,439 @@ export interface operations {
             };
         };
     };
+    "money-aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgingRow"][];
+                };
+            };
+        };
+    };
+    "money-list_entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityOut"][];
+                };
+            };
+        };
+    };
+    "money-create_entity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-update_entity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntityPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-list_gateways": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatewayOut"][];
+                };
+            };
+        };
+    };
+    "money-connect_gateway": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GatewayIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatewayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-disconnect_gateway": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-check_gateway": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatewayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-get_mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailOut"] | null;
+                };
+            };
+        };
+    };
+    "money-save_mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-remove_mailbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "money-get_money_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoneySettings"];
+                };
+            };
+        };
+    };
+    "money-save_money_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoneySettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoneySettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-list_tax_rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxOut"][];
+                };
+            };
+        };
+    };
+    "money-create_tax_rate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-update_tax_rate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "notifications-list_notifications": {
         parameters: {
             query?: {
@@ -10649,6 +12901,170 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-cancel_payment_link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-list_payments": {
+        parameters: {
+            query?: {
+                entity_id?: string | null;
+                since?: string | null;
+                until?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-payment_proof": {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-receipt_pdf": {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-reverse_payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -13162,6 +15578,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-gateway_webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gateway_name: "razorpay" | "stripe";
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

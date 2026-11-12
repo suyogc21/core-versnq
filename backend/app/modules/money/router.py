@@ -547,7 +547,7 @@ class LineBody(BaseModel):
     product_id: uuid.UUID | None = None
 
 
-class LineOut(BaseModel):
+class InvoiceLineOut(BaseModel):
     model_config = {"from_attributes": True}
     id: uuid.UUID
     position: int
@@ -592,7 +592,7 @@ class PaymentOut(BaseModel):
     created_at: datetime
 
 
-class LinkOut(BaseModel):
+class PaymentLinkOut(BaseModel):
     model_config = {"from_attributes": True}
     id: uuid.UUID
     installment_id: uuid.UUID | None
@@ -649,10 +649,10 @@ class InvoiceDetail(InvoiceRow):
     repeat_next_date: date | None
     void_reason: str | None
     version: int
-    lines: list[LineOut] = []
+    lines: list[InvoiceLineOut] = []
     installments: list[InstallmentOut] = []
     payments: list[PaymentOut] = []
-    links: list[LinkOut] = []
+    links: list[PaymentLinkOut] = []
     messages: list[MessageOut] = []
     customer_email: str | None = None
     customer_phone: str | None = None
@@ -711,7 +711,7 @@ class RepeatIn(BaseModel):
     months: Literal[1, 3, 6, 12] | None
 
 
-class LinkIn(BaseModel):
+class PaymentLinkIn(BaseModel):
     installment_id: uuid.UUID | None = None
 
 
@@ -867,7 +867,7 @@ async def _detail(db, inv: Invoice) -> InvoiceDetail:
         repeat_next_date=inv.repeat_next_date,
         void_reason=inv.void_reason,
         version=inv.version,
-        lines=[LineOut.model_validate(x) for x in lines],
+        lines=[InvoiceLineOut.model_validate(x) for x in lines],
         installments=[
             InstallmentOut.model_validate(i).model_copy(
                 update={"state": S.installment_state(i, day)}
@@ -875,7 +875,7 @@ async def _detail(db, inv: Invoice) -> InvoiceDetail:
             for i in plan
         ],
         payments=await _payments_out(db, list(pays)),
-        links=[LinkOut.model_validate(x) for x in lks],
+        links=[PaymentLinkOut.model_validate(x) for x in lks],
         messages=[MessageOut.model_validate(m) for m in msgs],
         customer_email=lead.primary_email,
         customer_phone=lead.primary_phone,
@@ -1134,6 +1134,14 @@ async def invoice_shared(invoice_id: uuid.UUID, body: SharedIn, db: MoneyDb, act
     "/invoices/{invoice_id}/payments",
     response_model=InvoiceDetail,
     status_code=status.HTTP_201_CREATED,
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+            },
+        }
+    },
 )
 async def record_payment(
     invoice_id: uuid.UUID,
@@ -1279,9 +1287,13 @@ async def payment_proof(
 
 # ---------- payment links ----------
 @router.post(
-    "/invoices/{invoice_id}/links", response_model=LinkOut, status_code=status.HTTP_201_CREATED
+    "/invoices/{invoice_id}/links",
+    response_model=PaymentLinkOut,
+    status_code=status.HTTP_201_CREATED,
 )
-async def create_payment_link(invoice_id: uuid.UUID, body: LinkIn, db: MoneyDb, actor: ActiveUser):
+async def create_payment_link(
+    invoice_id: uuid.UUID, body: PaymentLinkIn, db: MoneyDb, actor: ActiveUser
+):
     inv = await S.get_invoice(db, actor, invoice_id)
     link = await links.create_link(db, actor, inv, body.installment_id)
     return link

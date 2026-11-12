@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CustomFieldsEditor } from "@/components/crm/bits";
+import { MoneyCard } from "@/components/crm/money";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,7 @@ export function CustomerSection({ leadId }: { leadId: string }) {
   return (
     <>
       <CustomerCard customer={customer.data} />
+      <MoneyCard customerId={customer.data.id} />
       <DocumentsCard customer={customer.data} />
     </>
   );

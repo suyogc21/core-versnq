@@ -2255,7 +2255,7 @@
           },
           "lines": {
             "items": {
-              "$ref": "#/components/schemas/app__modules__crm__deals_router__LineOut"
+              "$ref": "#/components/schemas/LineOut"
             },
             "title": "Lines",
             "type": "array"
@@ -4021,7 +4021,7 @@
           "lines": {
             "default": [],
             "items": {
-              "$ref": "#/components/schemas/app__modules__money__router__LineOut"
+              "$ref": "#/components/schemas/InvoiceLineOut"
             },
             "title": "Lines",
             "type": "array"
@@ -4029,7 +4029,7 @@
           "links": {
             "default": [],
             "items": {
-              "$ref": "#/components/schemas/app__modules__money__router__LinkOut"
+              "$ref": "#/components/schemas/PaymentLinkOut"
             },
             "title": "Links",
             "type": "array"
@@ -4202,6 +4202,98 @@
           "version"
         ],
         "title": "InvoiceDetail",
+        "type": "object"
+      },
+      "InvoiceLineOut": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "discount_minor": {
+            "title": "Discount Minor",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "net_minor": {
+            "title": "Net Minor",
+            "type": "integer"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "tax_minor": {
+            "title": "Tax Minor",
+            "type": "integer"
+          },
+          "tax_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Name"
+          },
+          "tax_rate_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Rate Id"
+          },
+          "total_minor": {
+            "title": "Total Minor",
+            "type": "integer"
+          },
+          "unit_price_minor": {
+            "title": "Unit Price Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "product_id",
+          "description",
+          "quantity",
+          "unit_price_minor",
+          "discount_minor",
+          "net_minor",
+          "tax_rate_id",
+          "tax_name",
+          "tax_minor",
+          "total_minor"
+        ],
+        "title": "InvoiceLineOut",
         "type": "object"
       },
       "InvoicePage": {
@@ -5843,6 +5935,58 @@
         "title": "LineIn",
         "type": "object"
       },
+      "LineOut": {
+        "properties": {
+          "discount_minor": {
+            "title": "Discount Minor",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "total_minor": {
+            "title": "Total Minor",
+            "type": "integer"
+          },
+          "unit_price_minor": {
+            "title": "Unit Price Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "product_id",
+          "name",
+          "quantity",
+          "unit_price_minor",
+          "discount_minor",
+          "total_minor"
+        ],
+        "title": "LineOut",
+        "type": "object"
+      },
       "LinesIn": {
         "properties": {
           "lines": {
@@ -5899,6 +6043,136 @@
           "type_key"
         ],
         "title": "LinkEnd",
+        "type": "object"
+      },
+      "LinkIn": {
+        "properties": {
+          "from_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Deal Id"
+          },
+          "from_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Lead Id"
+          },
+          "from_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Record Id"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "to_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Deal Id"
+          },
+          "to_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Lead Id"
+          },
+          "to_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Record Id"
+          }
+        },
+        "required": [
+          "link_type_id"
+        ],
+        "title": "LinkIn",
+        "type": "object"
+      },
+      "LinkOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "out",
+              "in"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "other": {
+            "$ref": "#/components/schemas/LinkEnd"
+          }
+        },
+        "required": [
+          "id",
+          "link_type_id",
+          "label",
+          "direction",
+          "other",
+          "created_at"
+        ],
+        "title": "LinkOut",
         "type": "object"
       },
       "LinkTypeIn": {
@@ -7072,6 +7346,82 @@
           "name"
         ],
         "title": "PackOut",
+        "type": "object"
+      },
+      "PaymentLinkIn": {
+        "properties": {
+          "installment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Installment Id"
+          }
+        },
+        "title": "PaymentLinkIn",
+        "type": "object"
+      },
+      "PaymentLinkOut": {
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "gateway": {
+            "title": "Gateway",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "installment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Installment Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "installment_id",
+          "gateway",
+          "amount_minor",
+          "currency",
+          "url",
+          "status",
+          "created_at"
+        ],
+        "title": "PaymentLinkOut",
         "type": "object"
       },
       "PaymentOut": {
@@ -12101,58 +12451,6 @@
         "title": "BulkIn",
         "type": "object"
       },
-      "app__modules__crm__deals_router__LineOut": {
-        "properties": {
-          "discount_minor": {
-            "title": "Discount Minor",
-            "type": "integer"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "product_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Product Id"
-          },
-          "quantity": {
-            "title": "Quantity",
-            "type": "integer"
-          },
-          "total_minor": {
-            "title": "Total Minor",
-            "type": "integer"
-          },
-          "unit_price_minor": {
-            "title": "Unit Price Minor",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "id",
-          "product_id",
-          "name",
-          "quantity",
-          "unit_price_minor",
-          "discount_minor",
-          "total_minor"
-        ],
-        "title": "LineOut",
-        "type": "object"
-      },
       "app__modules__crm__leads_router__BulkIn": {
         "description": "Act on the ticked leads (ids) or on everything matching a filter.",
         "properties": {
@@ -12466,136 +12764,6 @@
         "title": "BulkIn",
         "type": "object"
       },
-      "app__modules__crm__records_router__LinkIn": {
-        "properties": {
-          "from_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Deal Id"
-          },
-          "from_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Lead Id"
-          },
-          "from_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Record Id"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "to_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Deal Id"
-          },
-          "to_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Lead Id"
-          },
-          "to_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Record Id"
-          }
-        },
-        "required": [
-          "link_type_id"
-        ],
-        "title": "LinkIn",
-        "type": "object"
-      },
-      "app__modules__crm__records_router__LinkOut": {
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "direction": {
-            "enum": [
-              "out",
-              "in"
-            ],
-            "title": "Direction",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "other": {
-            "$ref": "#/components/schemas/LinkEnd"
-          }
-        },
-        "required": [
-          "id",
-          "link_type_id",
-          "label",
-          "direction",
-          "other",
-          "created_at"
-        ],
-        "title": "LinkOut",
-        "type": "object"
-      },
       "app__modules__crm__rules_router__OrderIn": {
         "properties": {
           "ids": {
@@ -12758,174 +12926,6 @@
           }
         },
         "title": "StagePatch",
-        "type": "object"
-      },
-      "app__modules__money__router__LineOut": {
-        "properties": {
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
-          "discount_minor": {
-            "title": "Discount Minor",
-            "type": "integer"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "net_minor": {
-            "title": "Net Minor",
-            "type": "integer"
-          },
-          "position": {
-            "title": "Position",
-            "type": "integer"
-          },
-          "product_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Product Id"
-          },
-          "quantity": {
-            "title": "Quantity",
-            "type": "integer"
-          },
-          "tax_minor": {
-            "title": "Tax Minor",
-            "type": "integer"
-          },
-          "tax_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tax Name"
-          },
-          "tax_rate_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tax Rate Id"
-          },
-          "total_minor": {
-            "title": "Total Minor",
-            "type": "integer"
-          },
-          "unit_price_minor": {
-            "title": "Unit Price Minor",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "id",
-          "position",
-          "product_id",
-          "description",
-          "quantity",
-          "unit_price_minor",
-          "discount_minor",
-          "net_minor",
-          "tax_rate_id",
-          "tax_name",
-          "tax_minor",
-          "total_minor"
-        ],
-        "title": "LineOut",
-        "type": "object"
-      },
-      "app__modules__money__router__LinkIn": {
-        "properties": {
-          "installment_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Installment Id"
-          }
-        },
-        "title": "LinkIn",
-        "type": "object"
-      },
-      "app__modules__money__router__LinkOut": {
-        "properties": {
-          "amount_minor": {
-            "title": "Amount Minor",
-            "type": "integer"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "currency": {
-            "title": "Currency",
-            "type": "string"
-          },
-          "gateway": {
-            "title": "Gateway",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "installment_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Installment Id"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "url": {
-            "title": "Url",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "installment_id",
-          "gateway",
-          "amount_minor",
-          "currency",
-          "url",
-          "status",
-          "created_at"
-        ],
-        "title": "LinkOut",
         "type": "object"
       },
       "app__modules__roles__router__RoleOut": {
@@ -16696,7 +16696,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/app__modules__crm__deals_router__LineOut"
+                    "$ref": "#/components/schemas/LineOut"
                   },
                   "title": "Response Deals-Get Lines",
                   "type": "array"
@@ -17973,7 +17973,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__modules__money__router__LinkIn"
+                "$ref": "#/components/schemas/PaymentLinkIn"
               }
             }
           },
@@ -17984,7 +17984,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__money__router__LinkOut"
+                  "$ref": "#/components/schemas/PaymentLinkOut"
                 }
               }
             },
@@ -18093,6 +18093,17 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "201": {
             "content": {
@@ -20422,7 +20433,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/app__modules__crm__records_router__LinkOut"
+                    "$ref": "#/components/schemas/LinkOut"
                   },
                   "title": "Response Records-List Links",
                   "type": "array"
@@ -20458,7 +20469,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__modules__crm__records_router__LinkIn"
+                "$ref": "#/components/schemas/LinkIn"
               }
             }
           },
@@ -20469,7 +20480,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__crm__records_router__LinkOut"
+                  "$ref": "#/components/schemas/LinkOut"
                 }
               }
             },

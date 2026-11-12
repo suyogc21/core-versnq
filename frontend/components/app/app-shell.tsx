@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import { NotificationBell } from "@/components/app/notification-bell";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useMoneyOn } from "@/lib/money";
 import { useRecordTypes } from "@/lib/records";
 import { SETTINGS_PAGES, settingsPageFor } from "@/lib/settings-nav";
 import { useLabels, useWorkspaceSettings } from "@/lib/settings";
@@ -54,9 +55,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useWorkspaceSettings(); // loads labels and applies the workspace colour
   const label = useLabels();
   const recordTypes = useRecordTypes();
+  const moneyOn = useMoneyOn();
   if (!me) return null;
   const mainItems = [
     ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/" ? i : { ...i, label: label(i.label, true) })),
+    ...(moneyOn && can("invoices.read") ? [{ href: "/money", label: "Money", icon: ReceiptText }] : []),
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
   ];

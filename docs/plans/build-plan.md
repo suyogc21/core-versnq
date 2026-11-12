@@ -162,16 +162,16 @@ Unparked 2026-11-10 (Decision log #24) — **step 6**, after customers. Every ro
 
 | Feature | Status |
 | --- | --- |
-| Invoices: line items, tax fields (GST), PDF, numbering per entity | Planned — step 6 (PDF storage needs the step 5 file-storage decision) |
-| Installment plans: amount and due date per installment | Planned — step 6 |
-| Payment links: Razorpay (India), Stripe (UAE/US) | Planned — step 6 |
-| Payment status sync from gateway webhooks | Planned — step 6 |
-| Manual payment entry with proof upload | Planned — step 6 |
-| Balance tracking: paid, due, overdue per customer | Planned — step 6 |
-| Auto reminders before due, on due, overdue | Planned — step 6 (in-app at first; email from step 9, WhatsApp from step 10) |
-| Multi-entity, any currency (Decision log #2) | Planned — step 6 |
-| Receipts sent on payment | Planned — step 6 (by email from step 9) |
-| Collections aging report 0–30 / 30–60 / 60+ | Planned — step 6 report, step 7 dashboard |
+| Invoices: line items, tax fields (GST), PDF, numbering per entity | Done — step 6 |
+| Installment plans: amount and due date per installment | Done — step 6 |
+| Payment links: Razorpay (India), Stripe (UAE/US) | Done — step 6 |
+| Payment status sync from gateway webhooks | Done — step 6 |
+| Manual payment entry with proof upload | Done — step 6 |
+| Balance tracking: paid, due, overdue per customer | Done — step 6 |
+| Auto reminders before due, on due, overdue | Done — step 6: in-app + email from the company's mailbox (#34); WhatsApp from step 10 |
+| Multi-entity, any currency (Decision log #2) | Done — step 6 |
+| Receipts sent on payment | Done — step 6, by email (#34) |
+| Collections aging report 0–30 / 30–60 / 60+ | Done — step 6 report; dashboard tile in step 7 |
 | Bank statement import | Later |
 
 Rule 7 applies throughout: amounts are integers in minor units with a currency code; never floats.
@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, staff uploads, review; customer link removed (#33) (376 backend tests, 6 e2e, 30-check walk). Next: step 6, money.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, staff uploads, review; customer link removed (#33) (376 backend tests, 6 e2e, 30-check walk). Step 6 done 2026-11-12 (Decision log #34): invoices, installments, payments, Razorpay / Stripe links, pay-directly with UPI QR, emails from the company's mailbox, reminders, repeat invoices, aging (406 backend tests, 6 e2e, 30-check walk). Next: step 7, dashboards.
 
 | Step | What | Why here |
 | --- | --- | --- |
@@ -659,6 +659,9 @@ Changes to existing tables: `tenant_settings` gets reminder days (before / overd
 
 ### 9.9 Open questions
 
+Answered 2026-11-12 (Decision log #34): all as recommended. Added: emails to the customer (invoice, receipt, reminders, cancellation) from the company's own mailbox in step 6, and a "Send on WhatsApp" button; automatic WhatsApp in step 10.
+
+
 | # | Question | Recommendation |
 | --- | --- | --- |
 | M1 | Invoice PDFs need a PDF library (new dependency) | Approve **`reportlab`** (BSD licence, pure Python, no system packages). The alternative is a print-ready invoice page saved as PDF from the browser, but then emails in step 9 cannot attach it |
@@ -669,6 +672,6 @@ Changes to existing tables: `tenant_settings` gets reminder days (before / overd
 | M6 | Recurring invoices (SaaS / retainers, spec "recurring billing") | Include a simple **repeat** on an invoice: every 1 / 3 / 12 months, creates the next issued invoice on schedule. Keeps Core fit for B2B SaaS without subscriptions logic |
 | M7 | Number reset each financial year (India: April) | Per entity setting, on by default for India packs (e.g. INV/2026-27/0001) |
 | M8 | Demo data | Acme (India, INR, GST 18%) and Bluewave (Dubai, AED, VAT 5%) get invoices at every state: paid, partly paid, due soon, overdue 0–90+ days; gateways in test mode only |
-| M10 | UPI QR on the invoice needs a QR-code library (new dependency) | Approve **`segno`** (BSD licence, pure Python, no other packages) |
+| M10 | UPI QR on the invoice needs a QR-code library (new dependency) | ~~Approve `segno`~~ Not needed: `reportlab` draws QR codes itself (#34) |
 | M11 | Open-source gateways | Researched: Hyperswitch (Apache 2.0) is a router that still needs Razorpay / Stripe underneath; running a gateway that holds clients' money needs an RBI payment-aggregator licence (₹15 crore net worth at application). Not in step 6; can plug into the gateway module later |
 | M9 | Real gateway test | Built and tested with signed fake webhooks; a real test-mode run needs your Razorpay / Stripe **test** keys, entered in Settings (never in code). Can be done any time after |

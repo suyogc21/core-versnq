@@ -145,13 +145,13 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 
 ## Money (unparked 2026-11-10, Decision log #24; build step 6, after customers)
 
-- [ ] M.1 Billing entities (legal company, country, tax ids, invoice numbering) and currencies (any ISO 4217, Decision log #2)
-- [ ] M.2 Invoices: line items from the deal's products, tax fields (GST), totals in minor units, numbering per entity, PDF
-- [ ] M.3 Installment plans: schedule of amounts and due dates per customer or deal
-- [ ] M.4 Payment links and gateway webhooks: Razorpay (India), Stripe (UAE/US); paid automatically on webhook; duplicate webhooks safe
-- [ ] M.5 Manual payments (bank transfer) with proof upload; balances paid / due / overdue
-- [ ] M.6 Receipts, reminders (before due, on due, overdue), collections aging; events invoice.created, payment.due, payment.received, payment.overdue
-- [ ] M.7 Finance role: sees invoices, payments, reminders (spec Roles); every money calculation tested
+- [x] M.1 Billing entities (legal company, country, tax ids, invoice numbering) and currencies (any ISO 4217, Decision log #2)
+- [x] M.2 Invoices: line items from the deal's products, tax fields (GST), totals in minor units, numbering per entity, PDF
+- [x] M.3 Installment plans: schedule of amounts and due dates per customer or deal
+- [x] M.4 Payment links and gateway webhooks: Razorpay (India), Stripe (UAE/US); paid automatically on webhook; duplicate webhooks safe
+- [x] M.5 Manual payments (bank transfer) with proof upload; balances paid / due / overdue
+- [x] M.6 Receipts, reminders (before due, on due, overdue), collections aging; events invoice.created, payment.due, payment.received, payment.overdue
+- [x] M.7 Finance role: sees invoices, payments, reminders (spec Roles); every money calculation tested
 - [ ] **Gate M:** all tests green (every money calculation), Suyog approves
 
 ## Add-ons in the lineup
@@ -236,3 +236,4 @@ CORE/
 | 2026-11-11 | 4 | Tags (leads, deals; bulk), saved views (private/team/everyone, live counts), fit + engagement scoring with Hot/Warm/Cold and a breakdown, calculated fields (safe formula parser, exact money), automation builder (WHEN/IF/THEN, worker every 5 s, run history, test on a lead, loop guard, auto switch-off, signed webhooks). Message tracking and a Smartlead connector added to the lineup (#28). 366 backend tests + 6 e2e + 26-check walk green |
 | 2026-11-12 | UI | New look (Decision log #30): grey page with white panels, soft shadows, Inter, big titles and numbers; lead, deal and record pages as cards; My Day with number tiles; frosted top bar; dark mode matched; lists and board stay compact. Files on our server (#29); Key accounts in the lineup (#31). 6 e2e + 26-check walk green |
 | 2026-11-12 | 5 | Customers and documents: make customer (won deal or lead), numbered per company, same record and timeline; Customers list; checklist per company or per product (packs ship one); upload, preview, verify / reject with reason; staff-only uploads (customer link removed, #33); photos shrunk in the browser; files on our server with 2 GB quota; Finance reads all customers; nightly reminders and file clean-up. Also fixed: merging leads deleted the other lead's deals, tags and links. 376 backend tests + 6 e2e + 30-check walk (step 4 walk still green) |
+| 2026-11-12 | 6 | Money (Decision log #34): billing entities with gapless numbering (yearly reset), tax rates with parts from the pack, invoices draft → issued → paid / void, exact installments, payments oldest first with proof, reversals, balances per currency, aging; Razorpay / Stripe links with signed webhooks and a nightly check; pay directly with bank details and a UPI QR; invoice, receipt, reminder and cancellation emails from the company's own mailbox; reminders, overdue tasks, repeat invoices. 406 backend tests + 6 e2e + 30-check walk green |
