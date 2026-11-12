@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Next: step 5, customers and documents — plan in §8, waiting for approval.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 approved 2026-11-12 (Decision log #32); in progress.
 
 | Step | What | Why here |
 | --- | --- | --- |
@@ -505,7 +505,7 @@ Goal: a won deal turns into a customer without losing anything, and the paperwor
 ### 8.4 Files on our server (Decision log #29)
 
 - One storage module saves and reads every file: `FILES_DIR/<company-id>/<year>/<month>/<random-name>`. Postgres keeps the record (original name, size, type, checksum, who uploaded, what it belongs to).
-- **Limits:** 10 MB per file; 5 GB per company (company plan setting later). Allowed: PDF, JPG, PNG, WEBP, HEIC; Word and Excel only if the checklist item allows them. The real file type is checked from its contents, not just the name.
+- **Limits:** 10 MB per file; **2 GB per company included**, more as a paid add-on (Decision log #32). Photos are shrunk in the browser before upload (about 2000 px, good quality); PDFs are untouched. Settings shows usage, with a warning at 80%. Allowed: PDF, JPG, PNG, WEBP, HEIC; Word and Excel only if the checklist item allows them. The real file type is checked from its contents, not just the name.
 - **Safety:** files are never served straight from the folder; they are sent with "download" headers so a file cannot run as a web page. A half-finished upload leaves nothing behind (saved to a temporary name, then moved). A nightly job removes files that lost their record and flags records whose file is missing.
 - **Backups:** the nightly backup (go-live, step 12) must include the files folder. On your Mac the folder is `backend/var/files/` and is kept out of git.
 
@@ -571,7 +571,7 @@ Changes to existing tables (through a migration):
 | E4 | Who verifies documents? | New `documents.verify`; default Admin and Sales Manager; companies change it in Roles |
 | E5 | How does the customer get the link before email/WhatsApp exist? | Copy link + "Open in WhatsApp" share from the rep's phone; Core sends it itself from steps 9 and 10 |
 | E6 | Link validity | 14 days by default, editable per company; can be cancelled any time |
-| E7 | File limits | 10 MB per file, 5 GB per company; PDF and images always, Word/Excel only where an item allows them |
+| E7 | File limits | 10 MB per file, **2 GB per company, extra storage paid** (#32); photos shrunk in the browser; PDF and images always, Word/Excel only where an item allows them |
 | E8 | Reminders for missing documents | In-app now: owner gets a task when documents are still pending after N days (default 3). Message reminders come with sequences (step 9) |
 | E9 | A "File" custom field type (attach a file to any field) | Not now; the documents checklist covers it. Add later if asked |
 | E10 | Deleting files and old documents (data protection) | Only Admin deletes; every delete is in the audit log. Retention rules (auto-delete after X years) with the security work in step 11 |
