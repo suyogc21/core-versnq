@@ -26,6 +26,7 @@ import {
 } from "@/lib/sequences";
 import { useTags } from "@/lib/organise";
 import { cn } from "@/lib/utils";
+import { useWaTemplates, WA_STATUS } from "@/lib/whatsapp";
 
 type Tab = "steps" | "results" | "people" | "settings";
 
@@ -117,6 +118,7 @@ function fromSaved(seq: Sequence): Draft[] {
 
 const NEW: Record<StepIn["kind"], Partial<StepIn>> = {
   email: {},
+  whatsapp: {},
   wait: { hours: 48 },
   task: { title: "Call them", task_type: "call", due_in_hours: 0 },
   check: { check_if: "opened" },
@@ -124,6 +126,7 @@ const NEW: Record<StepIn["kind"], Partial<StepIn>> = {
 
 function Steps({ seq }: { seq: Sequence }) {
   const templates = useTemplates();
+  const waTemplates = useWaTemplates();
   const tags = useTags();
   const fields = useFields();
   const refresh = useRefreshSequences();
@@ -169,6 +172,18 @@ function Steps({ seq }: { seq: Sequence }) {
                 {(templates.data ?? []).filter((t) => t.is_active).map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            )}
+            {st.kind === "whatsapp" && (
+              <NativeSelect aria-label={`Step ${i + 1} WhatsApp template`} className="h-8 w-60" value={st.template_id ?? ""} onChange={(e) => set(i, { template_id: e.target.value || null })}>
+                <option value="">Choose a WhatsApp template…</option>
+                {(waTemplates.data ?? []).map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                    {t.status !== "approved" ? ` (${WA_STATUS[t.status]?.[0] ?? t.status})` : ""}
+                    {t.category === "marketing" ? " · marketing: opted-in people only" : ""}
                   </option>
                 ))}
               </NativeSelect>
@@ -256,11 +271,13 @@ function Steps({ seq }: { seq: Sequence }) {
       </ol>
       {steps.length === 0 && <p className="text-sm text-muted-foreground">No steps yet. Add the first one below.</p>}
       <div className="flex flex-wrap gap-2">
-        {(["email", "wait", "task", "check"] as const).map((k) => (
-          <Button key={k} size="sm" variant="outline" onClick={() => add(k)}>
-            <Plus /> {k === "email" ? "Email" : k === "wait" ? "Wait" : k === "task" ? "Task" : "Check"}
-          </Button>
-        ))}
+        {(["email", "whatsapp", "wait", "task", "check"] as const)
+          .filter((k) => k !== "whatsapp" || (waTemplates.data ?? []).length > 0)
+          .map((k) => (
+            <Button key={k} size="sm" variant="outline" onClick={() => add(k)}>
+              <Plus /> {{ email: "Email", whatsapp: "WhatsApp", wait: "Wait", task: "Task", check: "Check" }[k]}
+            </Button>
+          ))}
         <Button size="sm" className="ml-auto" onClick={save}>
           Save steps
         </Button>
@@ -275,6 +292,7 @@ function Steps({ seq }: { seq: Sequence }) {
 // ---------- results ----------
 function Results({ seq }: { seq: Sequence }) {
   const stats = useSequenceStats(seq.id);
+  const waTemplates = useWaTemplates();
   const templates = useTemplates();
   if (!stats.data) return <p className="text-sm text-muted-foreground">Loading…</p>;
   const d = stats.data;
@@ -315,8 +333,15 @@ function Results({ seq }: { seq: Sequence }) {
           <tbody className="divide-y">
             {d.steps.map((st) => {
               const saved = seq.steps.find((x) => x.position === st.position);
-              const label = saved?.kind === "email" ? (templates.data?.find((t) => t.id === (saved.config as { template_id?: string }).template_id)?.name ?? "Email") : st.kind;
+              const tid = (saved?.config as { template_id?: string } | undefined)?.template_id;
+              const label =
+                saved?.kind === "email"
+                  ? (templates.data?.find((t) => t.id === tid)?.name ?? "Email")
+                  : saved?.kind === "whatsapp"
+                    ? `WhatsApp: ${waTemplates.data?.find((t) => t.id === tid)?.name ?? "template"}`
+                    : st.kind;
               const email = st.kind === "email";
+              const wa = st.kind === "whatsapp";
               return (
                 <tr key={st.position}>
                   <td className="px-3 py-1.5 whitespace-nowrap">
@@ -330,6 +355,16 @@ function Results({ seq }: { seq: Sequence }) {
                       <td className="px-2 text-right tabular-nums">{pct(st.replied, st.sent)}</td>
                       <td className="px-2 text-right tabular-nums">{st.bounced}</td>
                       <td className="px-2 text-right tabular-nums">{st.unsubscribed}</td>
+                    </>
+                  ) : wa ? (
+                    <>
+                      <td className="px-2 text-right tabular-nums">{st.sent}</td>
+                      <td className="px-2 text-right tabular-nums" title="Read (WhatsApp tells us exactly)">
+                        {pct(st.opened, st.sent)} read
+                      </td>
+                      <td className="px-2 text-right text-muted-foreground">—</td>
+                      <td className="px-2 text-right tabular-nums">{pct(st.replied, st.sent)}</td>
+                      <td colSpan={2} className="px-2 text-right text-muted-foreground">—</td>
                     </>
                   ) : (
                     <td colSpan={6} className="px-2 text-xs text-muted-foreground">

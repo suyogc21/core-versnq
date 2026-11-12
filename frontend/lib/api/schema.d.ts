@@ -726,6 +726,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations/{conv_id}/whatsapp-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Template
+         * @description An approved template on the company number: the way to write after 24 hours of silence.
+         */
+        post: operations["inbox-send_template"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/copy-in": {
         parameters: {
             query?: never;
@@ -3150,6 +3170,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/whatsapp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send To Lead
+         * @description From the company number: a template (always allowed if approved and the person may get
+         *     it) or free text (only inside the 24-hour window).
+         */
+        post: operations["whatsapp-send_to_lead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/link-types": {
         parameters: {
             query?: never;
@@ -4974,6 +5015,170 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/whatsapp/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Account */
+        get: operations["whatsapp-get_account"];
+        /**
+         * Connect
+         * @description Connect (or update) the company's number with its Meta keys. Checked with Meta first.
+         */
+        put: operations["whatsapp-connect"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/account/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check
+         * @description Quality rating and daily limit, fresh from Meta.
+         */
+        post: operations["whatsapp-check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings */
+        get: operations["whatsapp-get_settings_"];
+        /** Put Settings */
+        put: operations["whatsapp-put_settings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Templates */
+        get: operations["whatsapp-list_templates"];
+        put?: never;
+        /**
+         * Create Template
+         * @description Written with our variables; sent to Meta for approval straight away.
+         */
+        post: operations["whatsapp-create_template"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/templates/{tpl_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Template
+         * @description Removed from Core (messages already sent keep their text). Remove it in Meta's
+         *     WhatsApp Manager too if it should go there.
+         */
+        delete: operations["whatsapp-delete_template"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/templates/{tpl_id}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Template */
+        post: operations["whatsapp-refresh_template"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/test-webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Webhook
+         * @description Outside production only: deliver a webhook body as if Meta had sent it (no signature),
+         *     so incoming WhatsApp can be tried before the number is live.
+         */
+        post: operations["whatsapp-test_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Verify
+         * @description Meta checks the callback address once, when the company sets it up.
+         */
+        get: operations["whatsapp-verify"];
+        put?: never;
+        /**
+         * Webhook
+         * @description Messages, delivery receipts and template decisions from Meta, signed with the company's
+         *     app secret. Anything unsigned or wrongly signed is refused.
+         */
+        post: operations["whatsapp-webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -6304,10 +6509,14 @@ export interface components {
             messages: components["schemas"]["app__modules__engage__inbox_router__MessageOut"][];
             /** Notes */
             notes: components["schemas"]["NoteOut"][];
+            /** Official */
+            official: boolean;
             /** Status */
             status: string;
             /** Subject */
             subject: string | null;
+            /** Window Ends At */
+            window_ends_at: string | null;
         };
         /** ConversationIn */
         ConversationIn: {
@@ -10456,7 +10665,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "email" | "task" | "wait" | "check";
+            kind: "email" | "whatsapp" | "task" | "wait" | "check";
             /** Tag Id */
             tag_id?: string | null;
             /**
@@ -10828,6 +11037,14 @@ export interface components {
             name?: string | null;
             /** Subject */
             subject?: string | null;
+        };
+        /** TemplateSendIn */
+        TemplateSendIn: {
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
         };
         /** TemporaryPasswordOut */
         TemporaryPasswordOut: {
@@ -11382,6 +11599,46 @@ export interface components {
             /** Team Id */
             team_id?: string | null;
         };
+        /** WaAccountIn */
+        WaAccountIn: {
+            /** Access Token */
+            access_token?: string | null;
+            /** App Secret */
+            app_secret?: string | null;
+            /** Phone Number Id */
+            phone_number_id: string;
+            /** Waba Id */
+            waba_id: string;
+        };
+        /** WaAccountOut */
+        WaAccountOut: {
+            /** Connected */
+            connected: boolean;
+            /** Display Number */
+            display_number?: string | null;
+            /** Health Checked At */
+            health_checked_at?: string | null;
+            /** Last Error */
+            last_error?: string | null;
+            /** Messaging Limit */
+            messaging_limit?: string | null;
+            /** Phone Number Id */
+            phone_number_id?: string | null;
+            /** Quality Rating */
+            quality_rating?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Test Mode */
+            test_mode: boolean;
+            /** Verified Name */
+            verified_name?: string | null;
+            /** Verify Token */
+            verify_token?: string | null;
+            /** Waba Id */
+            waba_id?: string | null;
+            /** Webhook Url */
+            webhook_url?: string | null;
+        };
         /** WaMessageIn */
         WaMessageIn: {
             /** At */
@@ -11401,6 +11658,120 @@ export interface components {
              * @default
              */
             text: string;
+        };
+        /** WaSendIn */
+        WaSendIn: {
+            /** Template Id */
+            template_id?: string | null;
+            /** Text */
+            text?: string | null;
+        };
+        /** WaSentOut */
+        WaSentOut: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /**
+             * Message Id
+             * Format: uuid
+             */
+            message_id: string;
+            /** Status */
+            status: string;
+        };
+        /** WaSettingsIO */
+        WaSettingsIO: {
+            /**
+             * @default {
+             *       "on": false,
+             *       "text": ""
+             *     }
+             */
+            away: components["schemas"]["WaToggle"];
+            /**
+             * Create Leads
+             * @default true
+             */
+            create_leads: boolean;
+            /** Reminder Template Id */
+            reminder_template_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Stop Words */
+            stop_words?: string[];
+            /**
+             * @default {
+             *       "on": false,
+             *       "text": ""
+             *     }
+             */
+            welcome: components["schemas"]["WaToggle"];
+        };
+        /** WaTemplateIn */
+        WaTemplateIn: {
+            /** Body */
+            body: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "marketing" | "utility";
+            /** Footer */
+            footer?: string | null;
+            /**
+             * Language
+             * @default en
+             */
+            language: string;
+            /** Name */
+            name: string;
+        };
+        /** WaTemplateOut */
+        WaTemplateOut: {
+            /** Body */
+            body: string;
+            /** Category */
+            category: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Footer */
+            footer: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Language */
+            language: string;
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string | null;
+            /** Status */
+            status: string;
+        };
+        /** WaToggle */
+        WaToggle: {
+            /**
+             * On
+             * @default false
+             */
+            on: boolean;
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+        };
+        /** WaWebhookResult */
+        WaWebhookResult: {
+            /** Kept */
+            kept: number;
         };
         /** AuditOut */
         app__modules__audit__router__AuditOut: {
@@ -13408,6 +13779,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-send_template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateSendIn"];
             };
         };
         responses: {
@@ -18912,6 +19318,41 @@ export interface operations {
             };
         };
     };
+    "whatsapp-send_to_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaSendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaSentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "record-types-list_link_types": {
         parameters: {
             query?: never;
@@ -23415,6 +23856,318 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-get_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaAccountOut"];
+                };
+            };
+        };
+    };
+    "whatsapp-connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaAccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaAccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaAccountOut"];
+                };
+            };
+        };
+    };
+    "whatsapp-get_settings_": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaSettingsIO"];
+                };
+            };
+        };
+    };
+    "whatsapp-put_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaSettingsIO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaSettingsIO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-list_templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaTemplateOut"][];
+                };
+            };
+        };
+    };
+    "whatsapp-create_template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaTemplateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaTemplateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-delete_template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tpl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-refresh_template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tpl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaTemplateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-test_webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaWebhookResult"];
+                };
+            };
+        };
+    };
+    "whatsapp-verify": {
+        parameters: {
+            query?: {
+                "hub.mode"?: string | null;
+                "hub.verify_token"?: string | null;
+                "hub.challenge"?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaWebhookResult"];
                 };
             };
         };

@@ -15,6 +15,7 @@ import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 import { relative } from "@/lib/crm";
 import { useLeadConversations, useRefreshInbox } from "@/lib/inbox";
+import { type WaTemplate, useWaTemplates } from "@/lib/whatsapp";
 
 /** The lead's conversations (email, and WhatsApp logged by the extension, step 10a) and a new
  * email from the CRM (step 9b). WhatsApp itself opens from the header's WhatsApp button. */
@@ -22,6 +23,9 @@ export function LeadEmails({ leadId, email, name }: { leadId: string; email: str
   const { can } = useAuth();
   const list = useLeadConversations(leadId);
   const [writing, setWriting] = useState(false);
+  const [templating, setTemplating] = useState(false);
+  const wa = useWaTemplates(can("inbox.reply"));
+  const approved = (wa.data ?? []).filter((t) => t.status === "approved");
   if (!can("inbox.reply")) return null;
   return (
     <div className="space-y-2 text-xs" data-lead-emails>
@@ -38,9 +42,17 @@ export function LeadEmails({ leadId, email, name }: { leadId: string; email: str
           </div>
         </Link>
       ))}
-      <Button size="sm" variant="outline" disabled={!email} title={email ? undefined : "Add an email address first"} onClick={() => setWriting(true)}>
-        <Mail /> New email
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" disabled={!email} title={email ? undefined : "Add an email address first"} onClick={() => setWriting(true)}>
+          <Mail /> New email
+        </Button>
+        {approved.length > 0 && (
+          <Button size="sm" variant="outline" onClick={() => setTemplating(true)} data-company-wa>
+            <MessageCircle /> Company WhatsApp
+          </Button>
+        )}
+      </div>
+      {templating && <CompanyWhatsApp leadId={leadId} name={name} templates={approved} onClose={() => setTemplating(false)} />}
       {writing && <NewEmail leadId={leadId} name={name} email={email!} onClose={() => setWriting(false)} />}
     </div>
   );
@@ -87,6 +99,58 @@ function NewEmail({ leadId, name, email, onClose }: { leadId: string; name: stri
                   }),
                 );
                 toast.success("Sent");
+                refresh();
+                onClose();
+              } catch (e) {
+                toast.error((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Send
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Send an approved template from the company's WhatsApp number (step 10b). */
+function CompanyWhatsApp({ leadId, name, templates, onClose }: { leadId: string; name: string; templates: WaTemplate[]; onClose: () => void }) {
+  const refresh = useRefreshInbox();
+  const [id, setId] = useState(templates[0]?.id ?? "");
+  const [busy, setBusy] = useState(false);
+  const tpl = templates.find((t) => t.id === id);
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>WhatsApp {name} from the company number</DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-muted-foreground">
+          WhatsApp lets a business start a chat only with an approved template. Once they answer, you can write freely for 24 hours from the inbox.
+        </p>
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-tpl">Template</Label>
+          <select id="cw-tpl" className="h-9 w-full rounded-md border bg-transparent px-2 text-sm" value={id} onChange={(e) => setId(e.target.value)}>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+                {t.category === "marketing" ? " (marketing: opted-in people only)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        {tpl && <p className="rounded-md bg-muted p-2 text-xs whitespace-pre-wrap">{tpl.body}</p>}
+        <DialogFooter>
+          <Button
+            disabled={!id || busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                unwrap(await api.POST("/api/v1/leads/{lead_id}/whatsapp", { params: { path: { lead_id: leadId } }, body: { template_id: id } }));
+                toast.success("Sent on WhatsApp");
                 refresh();
                 onClose();
               } catch (e) {

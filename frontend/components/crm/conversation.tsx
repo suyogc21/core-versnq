@@ -14,6 +14,7 @@ import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 import { when } from "@/lib/crm";
 import { type ConversationDetail, useCanned, useConversation, usePeople, useRefreshInbox, waLink } from "@/lib/inbox";
+import { useWaTemplates } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
 type Item = { at: string; kind: "message"; m: ConversationDetail["messages"][number] } | { at: string; kind: "note"; n: ConversationDetail["notes"][number] };
@@ -158,7 +159,9 @@ function MessageBubble({ c, m }: { c: ConversationDetail; m: ConversationDetail[
   return (
     <div className={cn("max-w-[92%] rounded-xl border p-3 text-sm", mine ? "ml-auto bg-primary/5" : "bg-card")} data-message={m.direction}>
       <div className="mb-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
-        <span className="font-medium text-foreground">{mine ? (m.sent_by_name ?? (m.from_sequence ? "Sequence" : "You")) : (m.from_address ?? c.lead.name)}</span>
+        <span className="font-medium text-foreground">
+          {mine ? (m.sent_by_name ?? (m.from_sequence ? "Sequence" : c.official ? "Automatic" : "You")) : (m.from_address ?? c.lead.name)}
+        </span>
         <span>→ {m.to_address}</span>
         {m.cc.length > 0 && <span>cc {m.cc.join(", ")}</span>}
         <span className="ml-auto">{when(m.sent_at ?? m.created_at)}</span>
@@ -172,11 +175,17 @@ function MessageBubble({ c, m }: { c: ConversationDetail; m: ConversationDetail[
           ))}
         </div>
       )}
-      {(m.error || (mine && (m.opened_at || m.status === "failed"))) && (
-        <div className={cn("mt-1 text-[11px]", m.status === "failed" ? "text-destructive" : "text-muted-foreground")}>
-          {m.status === "failed" ? `Not sent: ${m.error}` : m.error}
-          {mine && m.opened_at && `Opened ${when(m.opened_at)} (estimated)${m.clicked_at ? " · clicked a link" : ""}`}
+      {c.official && mine && m.status !== "failed" ? (
+        <div className="mt-1 text-[11px] text-muted-foreground" data-wa-status={m.status}>
+          {{ queued: "Sending…", sent: "Sent", delivered: "Delivered", read: "Read" }[m.status] ?? m.status}
         </div>
+      ) : (
+        (m.error || (mine && (m.opened_at || m.status === "failed"))) && (
+          <div className={cn("mt-1 text-[11px]", m.status === "failed" ? "text-destructive" : "text-muted-foreground")}>
+            {m.status === "failed" ? `Not sent: ${m.error}` : m.error}
+            {mine && m.opened_at && `Opened ${when(m.opened_at)} (estimated)${m.clicked_at ? " · clicked a link" : ""}`}
+          </div>
+        )
       )}
     </div>
   );
@@ -263,7 +272,11 @@ function Composer({ c }: { c: ConversationDetail }) {
   const refresh = useRefreshInbox();
   const canned = useCanned();
   const people = usePeople();
-  const wa = c.channel === "whatsapp"; // answered from the rep's own WhatsApp (step 10a)
+  const wa = c.channel === "whatsapp" && !c.official; // a rep's own WhatsApp (step 10a)
+  const official = c.official; // the company number: free text only inside the 24-hour window
+  const waTemplates = useWaTemplates(official);
+  const [tplId, setTplId] = useState("");
+  const windowOpen = !official || !!c.window_ends_at;
   const [mode, setMode] = useState<"reply" | "note">(wa ? "note" : "reply");
   const [body, setBody] = useState("");
   const [cc, setCc] = useState("");
@@ -312,7 +325,15 @@ function Composer({ c }: { c: ConversationDetail }) {
         </div>
         {mode === "reply" ? (
           <>
-            <Input aria-label="Cc" placeholder="Cc (comma separated)" className="h-7 w-56" value={cc} onChange={(e) => setCc(e.target.value)} />
+            {official ? (
+              <span className={cn("text-[11px]", windowOpen ? "text-muted-foreground" : "text-amber-700 dark:text-amber-300")} data-wa-window>
+                {windowOpen
+                  ? `WhatsApp: free text until ${new Date(c.window_ends_at!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                  : "24 hours since their last message: WhatsApp allows only an approved template"}
+              </span>
+            ) : (
+              <Input aria-label="Cc" placeholder="Cc (comma separated)" className="h-7 w-56" value={cc} onChange={(e) => setCc(e.target.value)} />
+            )}
             {(canned.data ?? []).length > 0 && (
               <NativeSelect aria-label="Saved reply" className="h-7 w-44" value="" onChange={(e) => { const r = canned.data?.find((x) => x.id === e.target.value); if (r) setBody((b) => (b ? `${b}\n\n${r.body}` : r.body)); }}>
                 <option value="">Saved replies…</option>
@@ -345,7 +366,41 @@ function Composer({ c }: { c: ConversationDetail }) {
           </NativeSelect>
         )}
       </div>
+      {official && mode === "reply" && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <NativeSelect aria-label="WhatsApp template" className="h-7 w-64" value={tplId} onChange={(e) => setTplId(e.target.value)}>
+            <option value="">{windowOpen ? "Or send a template…" : "Choose an approved template…"}</option>
+            {(waTemplates.data ?? []).filter((t) => t.status === "approved").map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+                {t.category === "marketing" ? " (marketing)" : ""}
+              </option>
+            ))}
+          </NativeSelect>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!tplId || busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                unwrap(await api.POST("/api/v1/conversations/{conv_id}/whatsapp-template", { ...path, body: { template_id: tplId } }));
+                toast.success("Template sent");
+                setTplId("");
+                refresh();
+              } catch (e) {
+                toast.error((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <Send /> Send template
+          </Button>
+        </div>
+      )}
       <Textarea
+        disabled={mode === "reply" && !windowOpen}
         aria-label={mode === "reply" ? "Your reply" : "Your note"}
         rows={4}
         placeholder={mode === "reply" ? `Write to ${c.lead.name}…` : "Only your team sees this"}
