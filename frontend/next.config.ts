@@ -14,6 +14,9 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Uploads pass through proxy.ts, which buffers bodies and silently cuts them at this size.
+  // Files are at most 10 MB (Decision log #32); the backend also refuses any cut-off body.
+  experimental: { proxyClientMaxBodySize: "11mb" },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

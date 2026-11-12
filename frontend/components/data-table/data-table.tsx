@@ -226,7 +226,7 @@ export function DataTable<T>({
                         key={c.key}
                         className={cn(
                           "sticky top-0 z-20 h-9 border-b bg-card px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground",
-                          c.pinned && "left-9 z-30 shadow-[1px_0_0_var(--border)]",
+                          c.pinned && cn(selectable ? "left-9" : "left-0 pl-4", "z-30 shadow-[1px_0_0_var(--border)]"),
                           c.sort && "cursor-pointer select-none hover:text-foreground",
                         )}
                         aria-sort={active ? (paging.dir === "asc" ? "ascending" : "descending") : undefined}
@@ -270,7 +270,7 @@ export function DataTable<T>({
                           className={cn(
                             "border-b px-3 whitespace-nowrap",
                             rowHeight,
-                            c.pinned && "sticky left-9 z-10 bg-inherit shadow-[1px_0_0_var(--border)]",
+                            c.pinned && cn("sticky z-10 bg-inherit shadow-[1px_0_0_var(--border)]", selectable ? "left-9" : "left-0 pl-4"),
                             c.className,
                           )}
                         >

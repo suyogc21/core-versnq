@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, Contact, Handshake, LogOut, type LucideIcon, Menu, Moon, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -19,6 +19,7 @@ const MAIN: NavItem[] = [
   { href: "/", label: "My Day", icon: Sunrise },
   { href: "/leads", label: "lead", icon: Contact, permission: "leads.edit" }, // label from settings
   { href: "/deals", label: "deal", icon: Handshake, permission: "deals.edit" },
+  { href: "/customers", label: "customer", icon: BadgeCheck, permission: "customers.read" },
 ];
 
 

@@ -37,6 +37,8 @@ const TRIGGERS: [string, string, "lead" | "deal"][] = [
   ["deal.stage_changed", "A deal moves stage", "deal"],
   ["deal.won", "A deal is won", "deal"],
   ["deal.lost", "A deal is lost", "deal"],
+  ["customer.created", "A lead becomes a customer", "lead"],
+  ["document.received", "A customer sends a document", "lead"],
 ];
 const ACTIONS: [string, string][] = [
   ["create_task", "Create a task"],
@@ -243,7 +245,11 @@ function Step({ title, children }: { title: string; children: React.ReactNode })
 /** "A lead is added" in the company's own words ("A student is added"). */
 function useWords() {
   const label = useLabels();
-  return (text: string) => text.replace(/\blead\b/g, label("lead").toLowerCase()).replace(/\bdeal\b/g, label("deal").toLowerCase());
+  return (text: string) =>
+    text
+      .replace(/\blead\b/g, label("lead").toLowerCase())
+      .replace(/\bdeal\b/g, label("deal").toLowerCase())
+      .replace(/\bcustomer\b/g, label("customer").toLowerCase());
 }
 
 function TriggerEditor({ value, onChange }: { value: Draft["trigger"]; onChange: (t: Draft["trigger"]) => void }) {

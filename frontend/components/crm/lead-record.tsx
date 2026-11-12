@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { Popover, PopoverHeading, PopoverItem } from "@/components/data-table/popover";
 import { Avatar, StagePill } from "@/components/crm/bits";
+import { CustomerSection } from "@/components/crm/customers";
 import { DealsCard } from "@/components/crm/deals";
 import { ScoreBadge, TagEditor } from "@/components/crm/tags";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
@@ -280,6 +281,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
               <DealsCard leadId={l.id} leadName={l.display_name} />
             </Section>
           )}
+          <CustomerSection leadId={l.id} phone={l.primary_phone} />
           <Section title="Tasks">
             <LeadTasks lead={l} />
           </Section>

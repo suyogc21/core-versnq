@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { CustomFieldsEditor } from "@/components/crm/bits";
+import { MakeCustomerButton } from "@/components/crm/customers";
 import { LostDialog, MoneyInput, StatusBadge, moveDeal } from "@/components/crm/deals";
 import { AddFieldButton } from "@/components/crm/field-settings";
 import { TagEditor } from "@/components/crm/tags";
@@ -33,6 +34,7 @@ import {
   useProducts,
   useRefreshDeals,
 } from "@/lib/deals";
+import { useLeadCustomer } from "@/lib/customers";
 import { useUsers } from "@/lib/directory";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
@@ -92,6 +94,7 @@ function DealView({ deal }: { deal: Deal }) {
           <span className="text-2xl font-semibold tracking-tight tabular-nums">{formatMoney(deal.amount_minor, deal.currency)}</span>
           <span className="text-xs text-muted-foreground">added {relative(deal.created_at)}</span>
           <TagEditor kind="deal" id={deal.id} tags={deal.tags ?? []} editable={editable} />
+          {deal.status === "won" && <WonCustomer leadId={deal.lead_id} dealId={deal.id} />}
           {can("deals.delete") && (
             <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={remove}>
               Delete
@@ -546,4 +549,20 @@ function Tasks({ deal, editable }: { deal: Deal; editable: boolean }) {
       )}
     </div>
   );
+}
+
+/** After a win: one step to make the lead a customer (or a link to it if it already is). */
+function WonCustomer({ leadId, dealId }: { leadId: string; dealId: string }) {
+  const { can } = useAuth();
+  const label = useLabels();
+  const customer = useLeadCustomer(leadId, can("customers.read"));
+  if (customer.isLoading || !can("customers.read")) return null;
+  if (customer.data) {
+    return (
+      <Link href={`/leads/${leadId}`} className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300">
+        {label("customer")} {customer.data.number}
+      </Link>
+    );
+  }
+  return can("customers.create") && can("leads.edit") ? <MakeCustomerButton leadId={leadId} dealId={dealId} /> : null;
 }

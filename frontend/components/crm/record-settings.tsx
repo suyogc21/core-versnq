@@ -65,6 +65,11 @@ export function RecordsIndex() {
             <span className="font-medium">{label("deal", true)}</span>
             <span className="text-xs text-muted-foreground">built in · pipelines, stages, lost reasons, products, fields</span>
           </Link>
+          <Link href="/settings/records/customer" className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent">
+            <span className="w-3" />
+            <span className="font-medium">{label("customer", true)}</span>
+            <span className="text-xs text-muted-foreground">built in · document checklist, fields, customer links</span>
+          </Link>
           <Link href="/settings/records/tags" className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent">
             <span className="w-3" />
             <span className="font-medium">Tags</span>
