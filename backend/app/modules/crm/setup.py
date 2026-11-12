@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.crm.models import (
     ActivityType,
     CustomFieldDefinition,
+    DocumentRequirement,
     LeadSource,
     LeadStage,
     LinkType,
@@ -160,6 +161,7 @@ async def seed_crm(db: AsyncSession, tenant_id: uuid.UUID, pack: IndustryPack) -
     await db.flush()
     await seed_record_types(db, tenant_id, pack)
     await seed_deals(db, tenant_id, pack)
+    await seed_documents(db, tenant_id, pack)
 
 
 async def seed_deals(db: AsyncSession, tenant_id: uuid.UUID, pack: IndustryPack) -> None:
@@ -198,6 +200,28 @@ async def seed_deals(db: AsyncSession, tenant_id: uuid.UUID, pack: IndustryPack)
                     currency=currency,
                 )
             )
+    await db.flush()
+
+
+async def seed_documents(db: AsyncSession, tenant_id: uuid.UUID, pack: IndustryPack) -> None:
+    """The pack's starting document checklist (step 5). Product codes become product ids."""
+    products = {
+        p.code: str(p.id)
+        for p in (await db.scalars(select(Product).where(Product.tenant_id == tenant_id))).all()
+        if p.code
+    }
+    for i, doc in enumerate(pack.crm.documents):
+        db.add(
+            DocumentRequirement(
+                tenant_id=tenant_id,
+                name=doc.name,
+                hint=doc.hint,
+                is_required=doc.is_required,
+                allow_office=doc.allow_office,
+                product_ids=[products[c] for c in doc.product_codes if c in products],
+                position=i,
+            )
+        )
     await db.flush()
 
 

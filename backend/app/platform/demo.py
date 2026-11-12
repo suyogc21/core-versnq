@@ -29,6 +29,7 @@ from app.modules.teams.models import Team, TeamMember
 from app.modules.users.models import User
 from app.platform.demo_crm import (
     seed_batches,
+    seed_customers,
     seed_deals,
     seed_leads,
     seed_organise,
@@ -498,6 +499,25 @@ async def seed_demo(prefix: str = "") -> DemoResult:
 
     for tenant_id in scored:
         await rescore_tenant(tenant_id)
+    # Step 5: customers from won deals, with documents at every stage (as the company).
+    acme_id, blue_id = scored
+    await seed_customers(
+        acme_id,
+        count=14,
+        seed=41,
+        fields=[("admission_no", "Admission number"), ("guardian_phone", "Guardian's phone")],
+    )
+    await seed_customers(
+        blue_id,
+        count=8,
+        seed=43,
+        fields=[("passport_no", "Passport number"), ("emirates_id", "Emirates ID number")],
+        rename={
+            "ID proof": "Passport copy",
+            "Proof of address": "Emirates ID",
+            "Signed agreement": "Signed MoU (Form F)",
+        },
+    )
 
     # Sunrise Coaching: the Owner never accepted the invite, and the company is suspended.
     async with platform_session() as db:
@@ -532,6 +552,11 @@ def _reset_dev_database() -> None:
     cfg.set_main_option("script_location", str(backend / "migrations"))
     command.downgrade(cfg, "base")
     command.upgrade(cfg, "head")
+    import shutil
+
+    from app.core import storage
+
+    shutil.rmtree(storage.root(), ignore_errors=True)  # uploaded files of the old companies
 
 
 def main() -> None:

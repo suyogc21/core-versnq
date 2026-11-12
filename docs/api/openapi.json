@@ -1443,6 +1443,85 @@
         "title": "CrmRulesPatch",
         "type": "object"
       },
+      "CustomerLinkIn": {
+        "properties": {
+          "field_keys": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Field Keys",
+            "type": "array"
+          }
+        },
+        "title": "CustomerLinkIn",
+        "type": "object"
+      },
+      "CustomerLinkOut": {
+        "properties": {
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "field_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field Keys",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          }
+        },
+        "required": [
+          "id",
+          "field_keys",
+          "expires_at",
+          "submitted_at",
+          "cancelled_at",
+          "created_at"
+        ],
+        "title": "CustomerLinkOut",
+        "type": "object"
+      },
       "CustomerOut": {
         "properties": {
           "custom_fields": {
@@ -4348,6 +4427,136 @@
         "title": "LinkEnd",
         "type": "object"
       },
+      "LinkIn": {
+        "properties": {
+          "from_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Deal Id"
+          },
+          "from_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Lead Id"
+          },
+          "from_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Record Id"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "to_deal_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Deal Id"
+          },
+          "to_lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Lead Id"
+          },
+          "to_record_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Record Id"
+          }
+        },
+        "required": [
+          "link_type_id"
+        ],
+        "title": "LinkIn",
+        "type": "object"
+      },
+      "LinkOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "out",
+              "in"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "link_type_id": {
+            "format": "uuid",
+            "title": "Link Type Id",
+            "type": "string"
+          },
+          "other": {
+            "$ref": "#/components/schemas/LinkEnd"
+          }
+        },
+        "required": [
+          "id",
+          "link_type_id",
+          "label",
+          "direction",
+          "other",
+          "created_at"
+        ],
+        "title": "LinkOut",
+        "type": "object"
+      },
       "LinkTypeIn": {
         "properties": {
           "from_kind": {
@@ -5018,7 +5227,7 @@
         "title": "MyDayOut",
         "type": "object"
       },
-      "NewLinkOut": {
+      "NewCustomerLinkOut": {
         "properties": {
           "cancelled_at": {
             "anyOf": [
@@ -5085,7 +5294,7 @@
           "created_at",
           "code"
         ],
-        "title": "NewLinkOut",
+        "title": "NewCustomerLinkOut",
         "type": "object"
       },
       "NoteIn": {
@@ -6629,6 +6838,23 @@
           "name"
         ],
         "title": "RequirementIn",
+        "type": "object"
+      },
+      "RequirementOrderIn": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "title": "RequirementOrderIn",
         "type": "object"
       },
       "RequirementOut": {
@@ -9981,102 +10207,6 @@
         "title": "RoleOut",
         "type": "object"
       },
-      "app__modules__crm__customers_router__LinkIn": {
-        "properties": {
-          "field_keys": {
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 50,
-            "title": "Field Keys",
-            "type": "array"
-          }
-        },
-        "title": "LinkIn",
-        "type": "object"
-      },
-      "app__modules__crm__customers_router__LinkOut": {
-        "properties": {
-          "cancelled_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cancelled At"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "expires_at": {
-            "format": "date-time",
-            "title": "Expires At",
-            "type": "string"
-          },
-          "field_keys": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Field Keys",
-            "type": "array"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "state": {
-            "default": "open",
-            "title": "State",
-            "type": "string"
-          },
-          "submitted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Submitted At"
-          }
-        },
-        "required": [
-          "id",
-          "field_keys",
-          "expires_at",
-          "submitted_at",
-          "cancelled_at",
-          "created_at"
-        ],
-        "title": "LinkOut",
-        "type": "object"
-      },
-      "app__modules__crm__customers_router__OrderIn": {
-        "properties": {
-          "ids": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "title": "Ids",
-            "type": "array"
-          }
-        },
-        "required": [
-          "ids"
-        ],
-        "title": "OrderIn",
-        "type": "object"
-      },
       "app__modules__crm__deals_router__BulkIn": {
         "properties": {
           "action": {
@@ -10474,136 +10604,6 @@
           "ids"
         ],
         "title": "BulkIn",
-        "type": "object"
-      },
-      "app__modules__crm__records_router__LinkIn": {
-        "properties": {
-          "from_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Deal Id"
-          },
-          "from_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Lead Id"
-          },
-          "from_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Record Id"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "to_deal_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Deal Id"
-          },
-          "to_lead_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Lead Id"
-          },
-          "to_record_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Record Id"
-          }
-        },
-        "required": [
-          "link_type_id"
-        ],
-        "title": "LinkIn",
-        "type": "object"
-      },
-      "app__modules__crm__records_router__LinkOut": {
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "direction": {
-            "enum": [
-              "out",
-              "in"
-            ],
-            "title": "Direction",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "link_type_id": {
-            "format": "uuid",
-            "title": "Link Type Id",
-            "type": "string"
-          },
-          "other": {
-            "$ref": "#/components/schemas/LinkEnd"
-          }
-        },
-        "required": [
-          "id",
-          "link_type_id",
-          "label",
-          "direction",
-          "other",
-          "created_at"
-        ],
-        "title": "LinkOut",
         "type": "object"
       },
       "app__modules__crm__rules_router__OrderIn": {
@@ -13680,7 +13680,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/app__modules__crm__customers_router__LinkOut"
+                    "$ref": "#/components/schemas/CustomerLinkOut"
                   },
                   "title": "Response Customers-List Links",
                   "type": "array"
@@ -13728,7 +13728,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__modules__crm__customers_router__LinkIn"
+                "$ref": "#/components/schemas/CustomerLinkIn"
               }
             }
           },
@@ -13739,7 +13739,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NewLinkOut"
+                  "$ref": "#/components/schemas/NewCustomerLinkOut"
                 }
               }
             },
@@ -14880,7 +14880,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__modules__crm__customers_router__OrderIn"
+                "$ref": "#/components/schemas/RequirementOrderIn"
               }
             }
           },
@@ -17460,7 +17460,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/app__modules__crm__records_router__LinkOut"
+                    "$ref": "#/components/schemas/LinkOut"
                   },
                   "title": "Response Records-List Links",
                   "type": "array"
@@ -17496,7 +17496,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__modules__crm__records_router__LinkIn"
+                "$ref": "#/components/schemas/LinkIn"
               }
             }
           },
@@ -17507,7 +17507,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__crm__records_router__LinkOut"
+                  "$ref": "#/components/schemas/LinkOut"
                 }
               }
             },

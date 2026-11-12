@@ -43,6 +43,12 @@ def fresh_schema(app_engine_is_on_test_database):
     command.upgrade(cfg, "head")
 
 
+@pytest.fixture(scope="session", autouse=True)
+def files_in_temp_folder(tmp_path_factory):
+    """Uploaded files from tests never land in the dev files folder (Decision log #29)."""
+    get_settings().files_dir = str(tmp_path_factory.mktemp("files"))
+
+
 @pytest.fixture(autouse=True)
 def clean_rate_limits():
     """Every test starts with empty rate-limit counters."""

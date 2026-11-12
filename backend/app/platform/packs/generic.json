@@ -129,6 +129,20 @@
       "Bad timing",
       "Other"
     ],
-    "products": []
+    "products": [],
+    "documents": [
+      {
+        "name": "ID proof",
+        "hint": "Passport or national ID card"
+      },
+      {
+        "name": "Proof of address",
+        "hint": "A utility bill or bank statement from the last 3 months"
+      },
+      {
+        "name": "Signed agreement",
+        "is_required": false
+      }
+    ]
   }
 }

@@ -338,6 +338,29 @@
           "USD": 12900
         }
       }
+    ],
+    "documents": [
+      {
+        "name": "Aadhaar card",
+        "hint": "Front and back, both clearly readable"
+      },
+      {
+        "name": "10th marksheet"
+      },
+      {
+        "name": "12th marksheet or degree certificate"
+      },
+      {
+        "name": "Passport-size photo",
+        "hint": "A clear photo on a plain background"
+      },
+      {
+        "name": "Signed placement agreement",
+        "allow_office": true,
+        "product_codes": [
+          "PLACE"
+        ]
+      }
     ]
   }
 }

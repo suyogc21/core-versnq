@@ -93,6 +93,16 @@ class PackProduct(BaseModel):
     prices: dict[str, int] = {}  # currency -> minor units; seeded only in the company's currency
 
 
+class PackDocument(BaseModel):
+    """A document every new customer is asked for (or only buyers of these product codes)."""
+
+    name: str
+    hint: str | None = None
+    is_required: bool = True
+    allow_office: bool = False
+    product_codes: list[str] = []
+
+
 class CrmPack(BaseModel):
     """Starting CRM setup for a new company. Configuration only; every company can edit it."""
 
@@ -106,6 +116,7 @@ class CrmPack(BaseModel):
     pipelines: list[PackPipeline] = []
     lost_reasons: list[str] = []
     products: list[PackProduct] = []
+    documents: list[PackDocument] = []
 
 
 class IndustryPack(BaseModel):

@@ -812,3 +812,113 @@ async def seed_organise(
         )
     )
     await db.flush()
+
+
+def sample_pdf(title: str, line: str) -> bytes:
+    """A small, valid one-page PDF with two lines of text (demo documents only)."""
+    text = f"BT /F1 20 Tf 72 720 Td ({title}) Tj /F1 12 Tf 0 -28 Td ({line}) Tj ET".encode()
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+        b"/Resources << /Font << /F1 5 0 R >> >> >>",
+        b"<< /Length %d >>\nstream\n" % len(text) + text + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    out, offsets = bytearray(b"%PDF-1.4\n"), []
+    for i, body in enumerate(objects, 1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n" % i + body + b"\nendobj\n"
+    xref = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1)
+    out += b"".join(b"%010d 00000 n \n" % o for o in offsets)
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        len(objects) + 1,
+        xref,
+    )
+    return bytes(out)
+
+
+async def seed_customers(
+    tenant_id: uuid.UUID,
+    *,
+    count: int,
+    seed: int,
+    fields: list[tuple[str, str]],
+    rename: dict[str, str] | None = None,
+) -> int:
+    """Step 5 demo: won deals become customers; their documents sit at every stage (verified,
+    waiting for review, rejected with a reason, still pending). Runs as the company (RLS)."""
+    from app.core.tenancy import tenant_session
+    from app.modules.crm import customers as C
+    from app.modules.crm.models import CustomFieldDefinition, Deal, DocumentRequirement, Lead
+
+    rng = random.Random(seed)
+    async with tenant_session(tenant_id) as db:
+        for req in (await db.scalars(select(DocumentRequirement))).all():
+            req.name = (rename or {}).get(req.name, req.name)
+        for i, (key, label) in enumerate(fields):
+            db.add(
+                CustomFieldDefinition(
+                    tenant_id=tenant_id,
+                    entity="customer",
+                    key=key,
+                    label=label,
+                    type="text",
+                    options=[],
+                    position=i,
+                )
+            )
+        await db.flush()
+        won = (
+            await db.execute(
+                select(Deal, Lead)
+                .join(Lead, Lead.id == Deal.lead_id)
+                .where(Deal.status == "won")
+                .order_by(Deal.closed_at.desc())
+            )
+        ).all()
+        # Topped up with leads made customers directly (walk-ins, Decision log #32 E2).
+        direct = (
+            await db.scalars(
+                select(Lead)
+                .where(Lead.owner_user_id.isnot(None), Lead.kind == "person")
+                .order_by(Lead.created_at)
+                .limit(count * 2)
+            )
+        ).all()
+        rows = [(d, ld) for d, ld in won] + [(None, ld) for ld in direct]
+        plans = ["all", "review", "rejected", "most", "none"]
+        made = 0
+        for deal, lead in rows:
+            if made >= count or await C.of_lead(db, lead.id):
+                continue
+            customer = await C.make(db, None, lead, deal)
+            customer.since = (
+                deal.closed_at if deal else C.L.now() - timedelta(days=rng.randint(1, 40))
+            )
+            customer.custom_fields = {fields[0][0]: f"{rng.randint(100000, 999999)}"}
+            items = await C.checklist(db, customer)
+            plan = plans[made % len(plans)]
+            for n, (doc, _req, _files) in enumerate(items):
+                if plan == "none" or (plan == "most" and n == len(items) - 1):
+                    continue
+                data = sample_pdf(doc.name, f"{lead.display_name} - demo document")
+                await C.upload(
+                    db,
+                    customer=customer,
+                    lead=lead,
+                    doc=doc,
+                    data=data,
+                    name=f"{doc.name.split(' ')[0].lower()}.pdf",
+                )
+                if plan in ("all", "most") or (plan == "rejected" and n > 0):
+                    doc.status, doc.reviewed_at = "verified", customer.since
+                elif plan == "rejected":
+                    doc.status, doc.reviewed_at = "rejected", customer.since
+                    doc.reject_reason = "The photo is blurry. Please send a clearer one."
+                if doc.status in ("verified", "rejected"):
+                    doc.reviewed_by_user_id = lead.owner_user_id
+            made += 1
+        await db.flush()
+    return made

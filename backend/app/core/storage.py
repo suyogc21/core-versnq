@@ -101,6 +101,8 @@ async def read_upload(request: Request, limit: int = MAX_FILE_BYTES) -> bytes:
     data = b"".join(chunks)
     if not data:
         raise Invalid("The file is empty")
+    if declared and declared.isdigit() and int(declared) != len(data):
+        raise Invalid("The upload did not arrive complete. Please try again.")
     return data
 
 

@@ -115,11 +115,11 @@ class RejectIn(BaseModel):
     reason: str = Field(min_length=1, max_length=500)
 
 
-class LinkIn(BaseModel):
+class CustomerLinkIn(BaseModel):
     field_keys: list[str] = Field(default_factory=list, max_length=50)
 
 
-class LinkOut(BaseModel):
+class CustomerLinkOut(BaseModel):
     model_config = {"from_attributes": True}
     id: uuid.UUID
     state: str = "open"
@@ -130,7 +130,7 @@ class LinkOut(BaseModel):
     created_at: datetime
 
 
-class NewLinkOut(LinkOut):
+class NewCustomerLinkOut(CustomerLinkOut):
     code: str  # shown once; the address is <workspace>/c/<code>
 
 
@@ -163,7 +163,7 @@ class RequirementOut(BaseModel):
     position: int
 
 
-class OrderIn(BaseModel):
+class RequirementOrderIn(BaseModel):
     ids: list[uuid.UUID]
 
 
@@ -246,8 +246,8 @@ async def _checklist(db, customer: Customer) -> ChecklistOut:
     return ChecklistOut(documents=docs, done=done, required=required)
 
 
-def _link_out(link: CustomerLink) -> LinkOut:
-    return LinkOut.model_validate(link).model_copy(update={"state": C.link_state(link)})
+def _link_out(link: CustomerLink) -> CustomerLinkOut:
+    return CustomerLinkOut.model_validate(link).model_copy(update={"state": C.link_state(link)})
 
 
 async def _check_products(db, ids: list[uuid.UUID]) -> list[str]:
@@ -499,7 +499,7 @@ async def delete_file(customer_id: uuid.UUID, file_id: uuid.UUID, db: CrmDb, act
 
 
 # ---------- secure links ----------
-@router.get("/customers/{customer_id}/links", response_model=list[LinkOut])
+@router.get("/customers/{customer_id}/links", response_model=list[CustomerLinkOut])
 async def list_links(customer_id: uuid.UUID, db: CrmDb, actor: ActiveUser):
     customer, _ = await C.get_visible(db, actor, customer_id)
     links = await db.scalars(
@@ -512,15 +512,17 @@ async def list_links(customer_id: uuid.UUID, db: CrmDb, actor: ActiveUser):
 
 
 @router.post(
-    "/customers/{customer_id}/links", response_model=NewLinkOut, status_code=status.HTTP_201_CREATED
+    "/customers/{customer_id}/links",
+    response_model=NewCustomerLinkOut,
+    status_code=status.HTTP_201_CREATED,
 )
-async def create_link(customer_id: uuid.UUID, body: LinkIn, db: CrmDb, actor: ActiveUser):
+async def create_link(customer_id: uuid.UUID, body: CustomerLinkIn, db: CrmDb, actor: ActiveUser):
     customer, lead = await C.get_editable(db, actor, customer_id)
     if customer.status != "active":
         raise Invalid("This customer is inactive")
     link, code = await C.create_link(db, actor, customer, body.field_keys)
     await audit(db, actor, "customer_link.created", "customer", customer.id)
-    return NewLinkOut(**_link_out(link).model_dump(), code=code)
+    return NewCustomerLinkOut(**_link_out(link).model_dump(), code=code)
 
 
 @router.delete("/customers/{customer_id}/links/{link_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -627,7 +629,7 @@ async def delete_requirement(req_id: uuid.UUID, db: CrmDb, actor: Configurer):
 
 
 @router.put("/document-requirements/order", response_model=list[RequirementOut])
-async def order_requirements(body: OrderIn, db: CrmDb, _: Configurer):
+async def order_requirements(body: RequirementOrderIn, db: CrmDb, _: Configurer):
     reqs = {r.id: r for r in (await db.scalars(select(DocumentRequirement))).all()}
     if set(body.ids) != set(reqs) or len(body.ids) != len(reqs):
         raise Invalid("Send every checklist item once")

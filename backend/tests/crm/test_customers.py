@@ -3,14 +3,14 @@
 import os
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.core import storage
 from app.core.config import get_settings
 from app.core.events_model import Event
 from app.core.tenancy import tenant_session
 from app.modules.crm import customers as C
-from app.modules.crm.models import Notification, StoredFile, Task
+from app.modules.crm.models import DocumentRequirement, Notification, StoredFile, Task
 from app.modules.settings.models import TenantSettings
 from tests.crm.helpers import make_team, new_lead, setup_ids
 from tests.factories import login_as, make_workspace
@@ -28,6 +28,12 @@ def files_dir(tmp_path):
     settings.files_dir = str(tmp_path / "files")
     yield tmp_path / "files"
     settings.files_dir = old
+
+
+async def _empty_checklist(tenant_id):
+    """New companies get their pack's checklist; these tests build their own."""
+    async with tenant_session(tenant_id) as db:
+        await db.execute(delete(DocumentRequirement))
 
 
 async def _lead(c, h, phone="98765 43210", **extra):
@@ -67,6 +73,7 @@ def _up(c, h, customer_id, doc_id, data, name="file.pdf"):
 # ---------- becoming a customer ----------
 async def test_make_customer_numbers_timeline_events_and_checklist(ws):
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     _, h = await login_as(tenant_id, "admin")
     await _req(c, h, "Aadhaar")
     await _req(c, h, "Photo", is_required=False)
@@ -100,6 +107,7 @@ async def test_make_customer_numbers_timeline_events_and_checklist(ws):
 
 async def test_product_items_apply_only_with_a_won_deal_for_that_product(ws):
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     _, h = await login_as(tenant_id, "admin")
     prod = (
         await c.post(
@@ -135,6 +143,7 @@ async def test_product_items_apply_only_with_a_won_deal_for_that_product(ws):
 # ---------- who sees and does what ----------
 async def test_visibility_finance_reads_all_and_only_verifiers_review(ws):
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     mgr_id, mgr = await login_as(tenant_id, "sales_manager")
     rep_id, rep = await login_as(tenant_id, "sales_user")
     other_id, other = await login_as(tenant_id, "sales_user")
@@ -182,6 +191,7 @@ async def test_visibility_finance_reads_all_and_only_verifiers_review(ws):
 # ---------- files ----------
 async def test_files_type_size_quota_download_and_cleanup(ws, files_dir):
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     _, h = await login_as(tenant_id, "admin")
     await _req(c, h, "Aadhaar")
     await _req(c, h, "Agreement", allow_office=True)
@@ -236,6 +246,8 @@ async def test_files_type_size_quota_download_and_cleanup(ws, files_dir):
 async def test_files_never_cross_companies(client_for):
     a_id, a_slug = await make_workspace()
     b_id, b_slug = await make_workspace()
+    await _empty_checklist(a_id)
+    await _empty_checklist(b_id)
     a, b = client_for(a_slug), client_for(b_slug)
     _, ah = await login_as(a_id, "admin")
     _, bh = await login_as(b_id, "admin")
@@ -268,6 +280,7 @@ async def test_files_never_cross_companies(client_for):
 # ---------- the customer's link ----------
 async def test_link_page_upload_submit_and_every_dead_link(ws):
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     owner_id, h = await login_as(tenant_id, "sales_user")
     _, admin = await login_as(tenant_id, "admin")
     await _req(c, admin, "Aadhaar", hint="Front and back")
@@ -355,6 +368,7 @@ async def test_link_page_upload_submit_and_every_dead_link(ws):
 # ---------- rules ----------
 async def test_two_customers_cannot_merge_and_reminders_are_created_once(ws):
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     _, h = await login_as(tenant_id, "admin")
     await _req(c, h, "Aadhaar")
     a = await _lead(c, h, owner_user_id=None)
@@ -396,6 +410,7 @@ async def test_automation_runs_when_a_lead_becomes_a_customer(ws):
     from app.modules.crm import automation as A
 
     tenant_id, c = ws
+    await _empty_checklist(tenant_id)
     _, h = await login_as(tenant_id, "admin")
     tag = (await c.post("/api/v1/tags", json={"name": "Enrolled"}, headers=h)).json()
     r = await c.post(
@@ -414,3 +429,10 @@ async def test_automation_runs_when_a_lead_becomes_a_customer(ws):
     assert await A.process_tenant(tenant_id) >= 1
     got = (await c.get(f"/api/v1/leads/{lead['id']}", headers=h)).json()
     assert [t["name"] for t in got["tags"]] == ["Enrolled"]
+
+
+async def test_new_companies_start_with_their_packs_checklist(ws):
+    tenant_id, c = ws
+    _, h = await login_as(tenant_id, "admin")
+    names = [r["name"] for r in (await c.get("/api/v1/document-requirements", headers=h)).json()]
+    assert names == ["ID proof", "Proof of address", "Signed agreement"]
