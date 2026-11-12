@@ -1,0 +1,4 @@
+# Fake values in tests (not real keys) - reviewed 2026-11-12
+5de83cf59aa6ca774b87c68213148b0d2fb8e54c:backend/tests/money/test_money.py:generic-api-key:190
+5de83cf59aa6ca774b87c68213148b0d2fb8e54c:backend/tests/money/test_money.py:generic-api-key:503
+d1ced9c885ef45f3abbd1c902ba0cae37f76ec0f:backend/tests/platform/test_demo_seed.py:generic-api-key:80

@@ -39,9 +39,7 @@ SYSTEM_TYPES = [
     ("sequence_enrolled", "Added to a sequence", "list-start"),
     ("sequence_ended", "Sequence ended", "list-end"),
 ]
-ENGAGE_DEFAULT = (
-    '{"from": "09:00", "to": "20:00", "days": [0, 1, 2, 3, 4, 5], "daily_cap": 200}'
-)
+ENGAGE_DEFAULT = '{"from": "09:00", "to": "20:00", "days": [0, 1, 2, 3, 4, 5], "daily_cap": 200}'
 
 
 def _ts() -> list[sa.Column]:
@@ -82,7 +80,9 @@ def upgrade() -> None:
     )
     op.add_column(
         "tenant_settings",
-        sa.Column("engage", JSONB, nullable=False, server_default=sa.text(f"'{ENGAGE_DEFAULT}'::jsonb")),
+        sa.Column(
+            "engage", JSONB, nullable=False, server_default=sa.text(f"'{ENGAGE_DEFAULT}'::jsonb")
+        ),
     )
 
     op.create_table(
@@ -120,8 +120,12 @@ def upgrade() -> None:
         sa.Column("kind", sa.String(10), nullable=False),
         sa.Column("config", JSONB, nullable=False),
         *_ts(),
-        sa.CheckConstraint("kind IN ('email', 'whatsapp', 'task', 'wait', 'check')", name="kind_valid"),
-        _same_tenant("sequence_id", "sequences", "fk_sequence_steps_sequence_same_tenant", "CASCADE"),
+        sa.CheckConstraint(
+            "kind IN ('email', 'whatsapp', 'task', 'wait', 'check')", name="kind_valid"
+        ),
+        _same_tenant(
+            "sequence_id", "sequences", "fk_sequence_steps_sequence_same_tenant", "CASCADE"
+        ),
     )
     op.create_index("ix_sequence_steps_sequence", "sequence_steps", ["sequence_id", "position"])
 
@@ -135,7 +139,9 @@ def upgrade() -> None:
         sa.Column("next_run_at", sa.DateTime(timezone=True)),
         sa.Column("ended_reason", sa.String(40)),
         sa.Column("enrolled_by_user_id", sa.Uuid),
-        sa.Column("started_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "started_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         sa.Column("ended_at", sa.DateTime(timezone=True)),
         *_ts(),
         sa.CheckConstraint("status IN ('active', 'completed', 'stopped')", name="status_valid"),

@@ -72,9 +72,7 @@ def upgrade() -> None:
     )
     op.add_column(
         "custom_field_definitions",
-        sa.Column(
-            "show_with_hidden_inputs", sa.Boolean, nullable=False, server_default=sa.false()
-        ),
+        sa.Column("show_with_hidden_inputs", sa.Boolean, nullable=False, server_default=sa.false()),
     )
     for table in TABLES:
         enable_tenant_rls(table)
