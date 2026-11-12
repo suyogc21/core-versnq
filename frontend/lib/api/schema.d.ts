@@ -723,41 +723,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/customers/{customer_id}/links": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Links */
-        get: operations["customers-list_links"];
-        put?: never;
-        /** Create Link */
-        post: operations["customers-create_link"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/customers/{customer_id}/links/{link_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Cancel Link */
-        delete: operations["customers-cancel_link"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/deals": {
         parameters: {
             query?: never;
@@ -1910,57 +1875,6 @@ export interface paths {
          * @description Price changes apply to new deal lines only; existing lines keep their price.
          */
         patch: operations["deal setup-update_product"];
-        trace?: never;
-    };
-    "/api/v1/public/links/{code}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Public Link */
-        get: operations["customer links-public_link"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/links/{code}/documents/{document_id}/files": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Public Upload */
-        post: operations["customer links-public_upload"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/links/{code}/submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Public Submit */
-        post: operations["customer links-public_submit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/v1/record-types": {
@@ -3548,40 +3462,6 @@ export interface components {
             /** Org Grouping */
             org_grouping?: ("off" | "suggest" | "auto") | null;
         };
-        /** CustomerLinkIn */
-        CustomerLinkIn: {
-            /** Field Keys */
-            field_keys?: string[];
-        };
-        /** CustomerLinkOut */
-        CustomerLinkOut: {
-            /** Cancelled At */
-            cancelled_at: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Field Keys */
-            field_keys: string[];
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * State
-             * @default open
-             */
-            state: string;
-            /** Submitted At */
-            submitted_at: string | null;
-        };
         /** CustomerOut */
         CustomerOut: {
             /** Custom Fields */
@@ -3656,8 +3536,6 @@ export interface components {
             customer_prefix: string;
             /** Document Reminder Days */
             document_reminder_days: number;
-            /** Link Days */
-            link_days: number;
         };
         /** DealActivityOut */
         DealActivityOut: {
@@ -3979,8 +3857,6 @@ export interface components {
             size_bytes: number;
             /** Uploaded By User Id */
             uploaded_by_user_id: string | null;
-            /** Uploaded Via */
-            uploaded_via: string;
         };
         /** ForgotIn */
         ForgotIn: {
@@ -4830,37 +4706,6 @@ export interface components {
             /** Upcoming */
             upcoming: components["schemas"]["TaskOut"][];
         };
-        /** NewCustomerLinkOut */
-        NewCustomerLinkOut: {
-            /** Cancelled At */
-            cancelled_at: string | null;
-            /** Code */
-            code: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Field Keys */
-            field_keys: string[];
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * State
-             * @default open
-             */
-            state: string;
-            /** Submitted At */
-            submitted_at: string | null;
-        };
         /** NoteIn */
         NoteIn: {
             /** Body */
@@ -5085,61 +4930,6 @@ export interface components {
             name?: string | null;
             /** Price Minor */
             price_minor?: number | null;
-        };
-        /** PublicDocument */
-        PublicDocument: {
-            /** Allow Office */
-            allow_office: boolean;
-            /** Files */
-            files: number;
-            /** Hint */
-            hint: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Is Required */
-            is_required: boolean;
-            /** Name */
-            name: string;
-            /** Reject Reason */
-            reject_reason: string | null;
-            /** Status */
-            status: string;
-        };
-        /** PublicField */
-        PublicField: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /** Options */
-            options: unknown[];
-            /** Required */
-            required: boolean;
-            /** Type */
-            type: string;
-            /** Value */
-            value?: unknown;
-        };
-        /** PublicLinkOut */
-        PublicLinkOut: {
-            /** Colour */
-            colour: string | null;
-            /** Company */
-            company: string;
-            /** Customer Name */
-            customer_name: string;
-            /** Documents */
-            documents: components["schemas"]["PublicDocument"][];
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Fields */
-            fields: components["schemas"]["PublicField"][];
         };
         /** ReadIn */
         ReadIn: {
@@ -5899,13 +5689,6 @@ export interface components {
             quota_bytes: number;
             /** Used Bytes */
             used_bytes: number;
-        };
-        /** SubmitIn */
-        SubmitIn: {
-            /** Values */
-            values?: {
-                [key: string]: unknown;
-            };
         };
         /** TagIn */
         TagIn: {
@@ -8471,102 +8254,6 @@ export interface operations {
             path: {
                 customer_id: string;
                 file_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    "customers-list_links": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                customer_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CustomerLinkOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    "customers-create_link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                customer_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CustomerLinkIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NewCustomerLinkOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    "customers-cancel_link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                customer_id: string;
-                link_id: string;
             };
             cookie?: never;
         };
@@ -11399,108 +11086,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ProductOut"];
                 };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    "customer links-public_link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicLinkOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    "customer links-public_upload": {
-        parameters: {
-            query: {
-                name: string;
-            };
-            header?: never;
-            path: {
-                code: string;
-                document_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/octet-stream": string;
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicLinkOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    "customer links-public_submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubmitIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Validation Error */
             422: {

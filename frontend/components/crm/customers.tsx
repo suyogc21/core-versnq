@@ -1,11 +1,11 @@
 "use client";
 
-import { BadgeCheck, Check, Copy, Download, FileText, Link2, MessageCircle, Paperclip, Plus, Trash2, Upload, X } from "lucide-react";
+import { BadgeCheck, Check, Download, FileText, Paperclip, Plus, Trash2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CustomFieldsEditor } from "@/components/crm/bits";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -20,11 +20,9 @@ import {
   type StoredFile,
   fileUrl,
   formatBytes,
-  linkAddress,
   uploadFile,
   useChecklist,
   useCustomerFields,
-  useCustomerLinks,
   useLeadCustomer,
   useRefreshCustomers,
 } from "@/lib/customers";
@@ -70,7 +68,7 @@ export function MakeCustomerButton({ leadId, dealId, size = "sm" }: { leadId: st
 }
 
 /** Everything customer on the lead page: details, documents and the customer's link. */
-export function CustomerSection({ leadId, phone }: { leadId: string; phone?: string | null }) {
+export function CustomerSection({ leadId }: { leadId: string }) {
   const { can } = useAuth();
   const label = useLabels();
   const customer = useLeadCustomer(leadId, can("customers.read"));
@@ -90,7 +88,6 @@ export function CustomerSection({ leadId, phone }: { leadId: string; phone?: str
     <>
       <CustomerCard customer={customer.data} />
       <DocumentsCard customer={customer.data} />
-      {can("leads.edit") && <LinkCard customer={customer.data} phone={phone} />}
     </>
   );
 }
@@ -333,7 +330,6 @@ function DocumentRow({ customerId, doc, editable, onChange }: { customerId: stri
               </button>
               <span className="shrink-0 text-muted-foreground">
                 {formatBytes(f.size_bytes)}
-                {f.uploaded_via === "link" ? " · by the customer" : ""}
               </span>
               <button aria-label={`Download ${f.original_name}`} className="ml-auto p-0.5 text-muted-foreground hover:text-foreground" onClick={() => open(f, true)}>
                 <Download className="size-3.5" />
@@ -427,127 +423,5 @@ function DocumentRow({ customerId, doc, editable, onChange }: { customerId: stri
         </Dialog>
       )}
     </li>
-  );
-}
-
-export function LinkCard({ customer, phone }: { customer: Customer; phone?: string | null }) {
-  const links = useCustomerLinks(customer.id);
-  const fields = useCustomerFields();
-  const refresh = useRefreshCustomers();
-  const [choosing, setChoosing] = useState<string[] | null>(null);
-  const [fresh, setFresh] = useState<{ id: string; url: string } | null>(null);
-  const live = (links.data ?? []).find((l) => l.state === "open");
-  const last = (links.data ?? [])[0];
-  const list = ((fields.data ?? []) as FieldDef[]).filter((f) => f.type !== "calculated");
-  const message = (url: string) => `Hello ${customer.name ?? ""}, please share your details and documents here: ${url}`;
-  const wa = (url: string) => {
-    const digits = (phone ?? "").replace(/\D/g, "");
-    return `https://wa.me/${digits}?text=${encodeURIComponent(message(url))}`;
-  };
-
-  async function create() {
-    try {
-      const link = unwrap(await api.POST("/api/v1/customers/{customer_id}/links", { params: { path: { customer_id: customer.id } }, body: { field_keys: choosing ?? [] } }));
-      setFresh({ id: link.id, url: linkAddress(link.code) });
-      setChoosing(null);
-      refresh();
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
-  }
-
-  return (
-    <Card title="Link for the customer">
-      <p className="text-xs text-muted-foreground">They open it on their phone, fill in details and upload documents. No login needed.</p>
-      {fresh && live?.id === fresh.id ? (
-        <div className="space-y-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5">
-          <div className="truncate font-mono text-[11px]" title={fresh.url}>
-            {fresh.url}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <Button
-              size="xs"
-              variant="outline"
-              onClick={async () => {
-                await navigator.clipboard.writeText(fresh.url);
-                toast.success("Link copied");
-              }}
-            >
-              <Copy /> Copy link
-            </Button>
-            <a href={wa(fresh.url)} target="_blank" rel="noreferrer" className={buttonVariants({ size: "xs", variant: "outline" })}>
-              <MessageCircle /> Open in WhatsApp
-            </a>
-          </div>
-          <p className="text-[11px] text-muted-foreground">Copy it now: for safety, the full link is shown only once.</p>
-        </div>
-      ) : live ? (
-        <p className="text-xs">
-          <Link2 className="mr-1 inline size-3.5" />A link is open until {when(live.expires_at)}.
-        </p>
-      ) : last ? (
-        <p className="text-xs text-muted-foreground">
-          Last link: {last.state === "submitted" ? `sent back ${relative(last.submitted_at)}` : last.state}.
-        </p>
-      ) : null}
-      {choosing === null ? (
-        <div className="flex flex-wrap gap-1.5">
-          <Button size="sm" variant="outline" onClick={() => setChoosing([])}>
-            <Link2 /> {live ? "New link" : "Create link"}
-          </Button>
-          {live && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={async () => {
-                try {
-                  unwrap(await api.DELETE("/api/v1/customers/{customer_id}/links/{link_id}", { params: { path: { customer_id: customer.id, link_id: live.id } } }));
-                  setFresh(null);
-                  refresh();
-                } catch (e) {
-                  toast.error((e as Error).message);
-                }
-              }}
-            >
-              Cancel link
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-2 rounded-lg border p-2.5">
-          {list.length > 0 ? (
-            <>
-              <div className="text-xs font-medium">Details to ask for</div>
-              <div className="flex flex-wrap gap-1.5">
-                {list.map((f) => {
-                  const on = choosing.includes(f.key);
-                  return (
-                    <button
-                      key={f.key}
-                      type="button"
-                      onClick={() => setChoosing(on ? choosing.filter((k) => k !== f.key) : [...choosing, f.key])}
-                      className={cn("rounded-full border px-2 py-0.5 text-xs", on && "border-primary bg-primary/10")}
-                    >
-                      {f.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">The link asks for the pending documents.</p>
-          )}
-          <div className="flex gap-1.5">
-            <Button size="sm" onClick={create}>
-              Create link
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setChoosing(null)}>
-              Cancel
-            </Button>
-          </div>
-          {live && <p className="text-[11px] text-muted-foreground">The open link stops working when you create a new one.</p>}
-        </div>
-      )}
-    </Card>
   );
 }

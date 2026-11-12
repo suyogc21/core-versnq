@@ -97,7 +97,6 @@ STEP5_SYSTEM_TYPES = [
         ("document_verified", "Document verified", "file-check"),
         ("document_rejected", "Document rejected", "file-x"),
         ("document_deleted", "Document file deleted", "trash"),
-        ("customer_submitted", "Submitted by the customer", "send"),
     )
 ]
 

@@ -11,9 +11,7 @@ export type Checklist = components["schemas"]["ChecklistOut"];
 export type CustomerDocument = components["schemas"]["DocumentOut"];
 export type StoredFile = components["schemas"]["FileOut"];
 export type Requirement = components["schemas"]["RequirementOut"];
-export type CustomerLink = components["schemas"]["CustomerLinkOut"];
 export type CustomerSettings = components["schemas"]["CustomerSettings"];
-export type PublicLink = components["schemas"]["PublicLinkOut"];
 export type CustomerQuery = NonNullable<paths["/api/v1/customers"]["get"]["parameters"]["query"]>;
 
 export function useCustomers(query: CustomerQuery, enabled = true) {
@@ -39,12 +37,6 @@ export function useChecklist(customerId: string) {
     queryFn: async () => unwrap(await api.GET("/api/v1/customers/{customer_id}/documents", { params: { path: { customer_id: customerId } } })),
   });
 }
-export function useCustomerLinks(customerId: string) {
-  return useQuery({
-    queryKey: ["customer-links", customerId],
-    queryFn: async () => unwrap(await api.GET("/api/v1/customers/{customer_id}/links", { params: { path: { customer_id: customerId } } })),
-  });
-}
 export function useRequirements() {
   return useQuery({ queryKey: ["requirements"], queryFn: async () => unwrap(await api.GET("/api/v1/document-requirements")) });
 }
@@ -62,7 +54,7 @@ export function useStorage(enabled = true) {
 export function useRefreshCustomers() {
   const qc = useQueryClient();
   return () => {
-    for (const key of ["customers", "customer", "checklist", "customer-links", "storage", "timeline", "lead", "leads", "tasks"]) {
+    for (const key of ["customers", "customer", "checklist", "storage", "timeline", "lead", "leads", "tasks"]) {
       qc.invalidateQueries({ queryKey: [key] });
     }
   };
@@ -135,35 +127,3 @@ export const DOC_STATUS: Record<string, { label: string; tone: string }> = {
   rejected: { label: "Rejected", tone: "bg-red-500/10 text-red-700 dark:text-red-300" },
 };
 
-/** The customer's page lives on the company's own address. */
-export function linkAddress(code: string): string {
-  return `${window.location.origin}/c/${code}`;
-}
-
-// ---------- public (no login): the customer's link page ----------
-async function publicCall<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api/v1/public/links/${path}`, init);
-  if (res.status === 204) return undefined as T;
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : "Something went wrong. Please try again.");
-  return body as T;
-}
-
-export const publicLink = {
-  get: (code: string) => publicCall<PublicLink>(encodeURIComponent(code)),
-  async upload(code: string, documentId: string, file: File) {
-    const ready = await shrinkPhoto(file);
-    if (ready.size > MAX_FILE_BYTES) throw new Error(`${file.name} is larger than 10 MB`);
-    return publicCall<PublicLink>(`${encodeURIComponent(code)}/documents/${documentId}/files?name=${encodeURIComponent(ready.name)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/octet-stream" },
-      body: ready,
-    });
-  },
-  submit: (code: string, values: Record<string, unknown>) =>
-    publicCall<void>(`${encodeURIComponent(code)}/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ values }),
-    }),
-};

@@ -281,7 +281,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
               <DealsCard leadId={l.id} leadName={l.display_name} />
             </Section>
           )}
-          <CustomerSection leadId={l.id} phone={l.primary_phone} />
+          <CustomerSection leadId={l.id} />
           <Section title="Tasks">
             <LeadTasks lead={l} />
           </Section>

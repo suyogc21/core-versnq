@@ -149,7 +149,7 @@ v1 = ship for the first client. Later = roadmap once v1 is stable.
 | Feature | Detail | Phase |
 | --- | --- | --- |
 | Convert lead → customer | Keeps full history | v1 |
-| Registration form link | Auto-sent on conversion; fills customer record | v1 |
+| Registration form link | ~~Auto-sent on conversion~~ Not built: staff enter details and upload documents (Decision log #33) | — |
 | Document checklist | Required docs per product (KYC, ID, photos) | v1 |
 | Document vault | Uploads auto-filed per customer | v1 |
 | Pending-document reminders | Automated via sequence | v1 |
@@ -242,7 +242,7 @@ Every lead carries an **origin** tag, so reports never mix them up.
 5. **Sets the next follow-up.** Core will not let an open lead sit without one. This is the anti-leakage rule.
 6. **Logs custom activities** the admin has defined for the business (see below).
 7. **Moves the deal** through stages; on a win, converts the lead to a customer.
-8. **Collects:** Core sends the registration form and document checklist, the rep creates the invoice or installment plan and sends the payment link.
+8. **Collects:** the rep gathers the documents on the checklist and uploads them (Decision log #33), creates the invoice or installment plan and sends the payment link.
 9. **Answers the inbox.** ACE has either replied already (inside the rules) or left a draft; the rep approves, edits or takes over.
 10. **Ends the day** with a summary: done, pending, at risk.
 
@@ -277,7 +277,7 @@ The admin creates activity types that match the business, each with its own fiel
 
 ### What the customer (student, buyer, client) sees
 
-- WhatsApp and email messages, the registration form, the document upload link, payment links, receipts and reminders. They never log in to Core in v1. A customer portal is a later option.
+- WhatsApp and email messages, payment links, receipts and reminders (they send documents to the rep, who uploads them, Decision log #33). They never log in to Core in v1. A customer portal is a later option.
 
 ### Where ACE shows up inside Core
 
@@ -356,5 +356,6 @@ Recommended order: **EdTech first** (your first client, a reference case), then 
 | 30 | **UI look (Nov 12):** Core takes the calm, Apple-like look of the Wondrlab CRM (ideas only, no code copied): grey page (#f5f5f7) with white rounded panels and soft shadows, Inter font, large bold titles and big numbers on record pages, My Day and settings; a frosted top bar; dark mode to match. Work screens (lists, board, My Day queue) keep the same density. Each client's `primary_color` still colours buttons and highlights. Done before step 5. | #19 "Linear / Attio style" |
 | 31 | **Wondrlab ideas (Nov 12):** a **Key accounts** add-on (opportunity grid by budget holder, competitor status, relationship depth, account plan, group tree) joins the lineup after step 7, to be planned then. A **client / sponsor portal** is not built now; end customers still do not log in (#12). | — |
 | 32 | **Step 5 — customers and documents (Nov 12):** plan in `docs/plans/build-plan.md` §8 approved ("go") with E1–E10 as recommended, except storage: **2 GB per company included**; more storage is a paid add-on (priced with the pricing tiers). Photos are shrunk in the browser before upload (PDFs untouched) so 2 GB holds far more; admins see usage and a warning at 80%. The B2B / SaaS demo company is built once steps 5–7 make Core demo-ready end to end. | #29 (quota detail) |
+| 33 | **No customer uploads (Nov 12):** customers do not upload files or fill forms in Core through any link: they could send anything. Only staff (the salesperson or team) upload documents and enter customer details; managers verify. The customer link, its page, its settings and the "submitted by the customer" entry were removed (migration 0016). Customers still never log in (#12). | §7 "Registration form link"; #32 E5–E6; build-plan §8.3 |
 
 Still open: pricing tiers; niche list (Hector SaaS); WhatsApp connection model (direct Meta Cloud API vs a BSP).

@@ -1,4 +1,4 @@
-"""Step 5: customers, the document checklist, files on our server, secure customer links."""
+"""Step 5: customers, the document checklist, files on our server (staff upload only, #33)."""
 
 import os
 
@@ -10,7 +10,7 @@ from app.core.config import get_settings
 from app.core.events_model import Event
 from app.core.tenancy import tenant_session
 from app.modules.crm import customers as C
-from app.modules.crm.models import DocumentRequirement, Notification, StoredFile, Task
+from app.modules.crm.models import DocumentRequirement, StoredFile, Task
 from app.modules.settings.models import TenantSettings
 from tests.crm.helpers import make_team, new_lead, setup_ids
 from tests.factories import login_as, make_workspace
@@ -259,7 +259,6 @@ async def test_files_never_cross_companies(client_for):
         f"/api/v1/customers/{cust['id']}",
         f"/api/v1/customers/{cust['id']}/documents",
         f"/api/v1/customers/{cust['id']}/files/{f['id']}",
-        f"/api/v1/customers/{cust['id']}/links",
     ):
         assert (await b.get(url, headers=bh)).status_code == 404, url
     assert (await _up(b, bh, cust["id"], doc["id"], PDF)).status_code == 404
@@ -269,100 +268,32 @@ async def test_files_never_cross_companies(client_for):
     assert (
         await b.get(f"/api/v1/customers/{cb['id']}/files/{f['id']}", headers=bh)
     ).status_code == 404
-    # A's link code does not open on B's address.
-    code = (await a.post(f"/api/v1/customers/{cust['id']}/links", json={}, headers=ah)).json()[
-        "code"
-    ]
-    assert (await b.get(f"/api/v1/public/links/{code}")).status_code == 404
-    assert (await a.get(f"/api/v1/public/links/{code}")).status_code == 200
 
 
-# ---------- the customer's link ----------
-async def test_link_page_upload_submit_and_every_dead_link(ws):
+# ---------- customers never upload (Decision log #33) ----------
+async def test_there_is_no_way_in_without_signing_in(ws):
+    """No customer link and no public upload: every document route needs a signed-in user."""
+    from app.main import app
+
     tenant_id, c = ws
+    _, h = await login_as(tenant_id, "admin")
     await _empty_checklist(tenant_id)
-    owner_id, h = await login_as(tenant_id, "sales_user")
-    _, admin = await login_as(tenant_id, "admin")
-    await _req(c, admin, "Aadhaar", hint="Front and back")
+    await _req(c, h, "Aadhaar")
+    cust = await _customer(c, h, (await _lead(c, h))["id"])
+    doc = (await _docs(c, h, cust["id"]))["Aadhaar"]
+    assert not [r.path for r in app.routes if "/public/" in getattr(r, "path", "")]
+    assert (await c.post(f"/api/v1/customers/{cust['id']}/links", json={})).status_code in (
+        401,
+        404,
+        405,
+    )
     r = await c.post(
-        "/api/v1/custom-fields",
-        params={"entity": "customer"},
-        json={"key": "passport_no", "label": "Passport number", "type": "text", "required": True},
-        headers=admin,
+        f"/api/v1/customers/{cust['id']}/documents/{doc['id']}/files",
+        params={"name": "a.pdf"},
+        content=PDF,
+        headers={"Content-Type": "application/octet-stream"},
     )
-    assert r.status_code == 201, r.text
-    lead = await _lead(c, h)
-    cust = await _customer(c, h, lead["id"])
-    other = await _customer(c, h, (await _lead(c, h, phone="98765 43219"))["id"])
-    other_doc = (await _docs(c, h, other["id"]))["Aadhaar"]
-
-    bad = await c.post(
-        f"/api/v1/customers/{cust['id']}/links", json={"field_keys": ["nope"]}, headers=h
-    )
-    assert bad.status_code == 422
-    first = (
-        await c.post(
-            f"/api/v1/customers/{cust['id']}/links", json={"field_keys": ["passport_no"]}, headers=h
-        )
-    ).json()
-    link = (
-        await c.post(
-            f"/api/v1/customers/{cust['id']}/links", json={"field_keys": ["passport_no"]}, headers=h
-        )
-    ).json()
-    # A new link cancels the earlier one.
-    assert (await c.get(f"/api/v1/public/links/{first['code']}")).status_code == 404
-    assert (await c.get("/api/v1/public/links/not-a-real-code")).status_code == 404
-
-    page = (await c.get(f"/api/v1/public/links/{link['code']}")).json()
-    assert page["customer_name"] == "Rahul" and page["fields"][0]["key"] == "passport_no"
-    doc = page["documents"][0]
-    assert (doc["name"], doc["hint"], doc["status"]) == ("Aadhaar", "Front and back", "pending")
-
-    up = f"/api/v1/public/links/{link['code']}/documents"
-    hdr = {"Content-Type": "application/octet-stream"}
-    r = await c.post(f"{up}/{doc['id']}/files", params={"name": "a.pdf"}, content=PDF, headers=hdr)
-    assert r.status_code == 201 and r.json()["documents"][0]["status"] == "received"
-    # The link reaches only its own customer's documents.
-    r = await c.post(
-        f"{up}/{other_doc['id']}/files", params={"name": "a.pdf"}, content=PDF, headers=hdr
-    )
-    assert r.status_code == 404
-
-    sub = f"/api/v1/public/links/{link['code']}/submit"
-    assert (await c.post(sub, json={"values": {}})).status_code == 422  # required field
-    assert (await c.post(sub, json={"values": {"secret": "x"}})).status_code == 422
-    assert (await c.post(sub, json={"values": {"passport_no": "P123"}})).status_code == 204
-    # Submitted: the link is closed, values are on the customer, the owner is told.
-    assert (await c.get(f"/api/v1/public/links/{link['code']}")).status_code == 404
-    got = (await c.get(f"/api/v1/customers/{cust['id']}", headers=h)).json()
-    assert got["custom_fields"] == {"passport_no": "P123"}
-    acts = (await c.get(f"/api/v1/leads/{lead['id']}/activities", headers=h)).json()
-    kinds = [a["type_key"] for a in acts]
-    assert "customer_submitted" in kinds and "document_uploaded" in kinds
-    async with tenant_session(tenant_id) as db:
-        note = await db.scalar(select(Notification).where(Notification.user_id == owner_id))
-    assert note is not None and note.kind == "customer_submitted"
-
-    # Cancelled and expired links are dead too.
-    third = (await c.post(f"/api/v1/customers/{cust['id']}/links", json={}, headers=h)).json()
-    assert (
-        await c.delete(f"/api/v1/customers/{cust['id']}/links/{third['id']}", headers=h)
-    ).status_code == 204
-    assert (await c.get(f"/api/v1/public/links/{third['code']}")).status_code == 404
-    fourth = (await c.post(f"/api/v1/customers/{cust['id']}/links", json={}, headers=h)).json()
-    async with tenant_session(tenant_id) as db:
-        from app.modules.crm.models import CustomerLink
-
-        row = await db.get(CustomerLink, fourth["id"])
-        row.expires_at = C.L.now()
-    assert (await c.get(f"/api/v1/public/links/{fourth['code']}")).status_code == 404
-    states = {
-        x["id"]: x["state"]
-        for x in (await c.get(f"/api/v1/customers/{cust['id']}/links", headers=h)).json()
-    }
-    assert states[link["id"]] == "submitted" and states[third["id"]] == "cancelled"
-    assert states[fourth["id"]] == "expired"
+    assert r.status_code == 401
 
 
 # ---------- rules ----------

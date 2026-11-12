@@ -41,14 +41,14 @@ export default function CustomerSetupPage() {
   const tabs: [Tab, string][] = [
     ["checklist", "Document checklist"],
     ["fields", "Custom fields"],
-    ["settings", "Links and numbers"],
+    ["settings", "Numbers and storage"],
   ];
   return (
     <>
       <PageHeader back={{ href: "/settings/records", label: "Records and fields" }} title={label("customer", true)} />
       <div className="mx-auto w-full max-w-3xl p-4 sm:p-8">
         <p className="mb-4 text-muted-foreground">
-          What you collect once someone becomes {label("customer").toLowerCase()}: the documents you need, extra details, and the secure link they use to send them.
+          What you collect once someone becomes {label("customer").toLowerCase()}: the documents your team gathers and uploads, and extra details.
         </p>
         <div className="mb-6 flex gap-4 overflow-x-auto border-b text-sm">
           {tabs.map(([key, name]) => (
@@ -63,7 +63,7 @@ export default function CustomerSetupPage() {
         </div>
         {tab === "checklist" && <Checklist />}
         {tab === "fields" && <FieldSettings entity="customer" />}
-        {tab === "settings" && <LinkSettings />}
+        {tab === "settings" && <NumberSettings />}
       </div>
     </>
   );
@@ -205,14 +205,14 @@ function RequirementRow({ req, first, last, onMove }: { req: Requirement; first:
   );
 }
 
-function LinkSettings() {
+function NumberSettings() {
   const settings = useCustomerSettings();
   const storage = useStorage();
   const save = useSave();
-  const [v, setV] = useState<{ customer_prefix: string; link_days: string; document_reminder_days: string } | null>(null);
+  const [v, setV] = useState<{ customer_prefix: string; document_reminder_days: string } | null>(null);
   const s = settings.data;
   if (!s) return null;
-  const cur = v ?? { customer_prefix: s.customer_prefix, link_days: String(s.link_days), document_reminder_days: String(s.document_reminder_days) };
+  const cur = v ?? { customer_prefix: s.customer_prefix, document_reminder_days: String(s.document_reminder_days) };
   const used = storage.data?.used_bytes ?? 0;
   const quota = storage.data?.quota_bytes ?? 1;
   const pct = Math.min(100, (used / quota) * 100);
@@ -226,7 +226,7 @@ function LinkSettings() {
             async () =>
               unwrap(
                 await api.PUT("/api/v1/customer-settings", {
-                  body: { customer_prefix: cur.customer_prefix, link_days: Number(cur.link_days), document_reminder_days: Number(cur.document_reminder_days) },
+                  body: { customer_prefix: cur.customer_prefix, document_reminder_days: Number(cur.document_reminder_days) },
                 }),
               ),
             "Saved",
@@ -234,15 +234,11 @@ function LinkSettings() {
           if (ok) setV(null);
         }}
       >
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="c-prefix">Number starts with</Label>
             <Input id="c-prefix" value={cur.customer_prefix} onChange={(e) => setV({ ...cur, customer_prefix: e.target.value })} />
             <p className="text-[11px] text-muted-foreground">e.g. {cur.customer_prefix || "C-"}0042</p>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="c-days">Links work for (days)</Label>
-            <Input id="c-days" type="number" min={1} max={90} value={cur.link_days} onChange={(e) => setV({ ...cur, link_days: e.target.value })} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="c-remind">Remind owner after (days)</Label>

@@ -8,8 +8,6 @@ Who sees what: customers follow the lead's visibility (own / team / all). A role
 customers but does not work leads (Finance) sees every customer, read-only.
 """
 
-import hashlib
-import secrets
 import uuid
 from datetime import timedelta
 
@@ -23,8 +21,6 @@ from app.modules.auth.deps import CurrentUser
 from app.modules.crm import leads as L
 from app.modules.crm.models import (
     Customer,
-    CustomerLink,
-    CustomFieldDefinition,
     Deal,
     DealProduct,
     Document,
@@ -34,7 +30,6 @@ from app.modules.crm.models import (
     StoredFile,
     Task,
 )
-from app.modules.crm.notify import notify
 from app.modules.settings.models import TenantSettings
 
 REVIEWED = ("verified", "rejected")
@@ -265,11 +260,9 @@ async def upload(
     data: bytes,
     name: str,
     actor: CurrentUser | None = None,
-    link: CustomerLink | None = None,
 ) -> StoredFile:
-    """Check, save to disk, then record. A failure after saving removes the file again."""
-    if link is not None and doc.status == "verified":
-        raise Invalid("This document is already verified")
+    """Check, save to disk, then record. A failure after saving removes the file again.
+    Only staff upload; customers never send files into Core themselves (Decision log #33)."""
     req = await db.get(DocumentRequirement, doc.requirement_id) if doc.requirement_id else None
     content_type, ext = storage.check_type(
         data, name, allow_office=req.allow_office if req else True
@@ -293,9 +286,7 @@ async def upload(
                 content_type=content_type,
                 size_bytes=saved.size_bytes,
                 sha256=saved.sha256,
-                uploaded_via="link" if link else "user",
                 uploaded_by_user_id=actor.user.id if actor else None,
-                link_id=link.id if link else None,
             )
             db.add(stored)
             doc.status, doc.received_at = "received", L.now()
@@ -304,12 +295,11 @@ async def upload(
     except Exception:
         storage.remove(saved.path)
         raise
-    who = " (sent by the customer)" if link else ""
     await L.log(
         db,
         lead,
         "document_uploaded",
-        f"{doc.name}: {stored.original_name}{who}",
+        f"{doc.name}: {stored.original_name}",
         actor,
         {"customer_id": str(customer.id), "document_id": str(doc.id), "file_id": str(stored.id)},
     )
@@ -396,111 +386,6 @@ async def get_file(db: AsyncSession, customer: Customer, file_id: uuid.UUID) -> 
     if stored is None:
         raise NotFound("File not found")
     return stored
-
-
-# ---------- secure links (the customer never logs in) ----------
-def code_hash(code: str) -> str:
-    return hashlib.sha256(code.encode()).hexdigest()
-
-
-async def customer_fields(db: AsyncSession) -> dict[str, CustomFieldDefinition]:
-    return {
-        k: d for k, d in (await L.lead_fields(db, "customer")).items() if d.type != "calculated"
-    }
-
-
-async def create_link(
-    db: AsyncSession, actor: CurrentUser, customer: Customer, field_keys: list[str]
-) -> tuple[CustomerLink, str]:
-    fields = await customer_fields(db)
-    unknown = [k for k in field_keys if k not in fields]
-    if unknown:
-        raise Invalid(f"Unknown field: {unknown[0]}")
-    now = L.now()
-    for old in (
-        await db.scalars(
-            select(CustomerLink).where(
-                CustomerLink.customer_id == customer.id,
-                CustomerLink.cancelled_at.is_(None),
-                CustomerLink.submitted_at.is_(None),
-                CustomerLink.expires_at > now,
-            )
-        )
-    ).all():
-        old.cancelled_at = now  # one live link per customer
-    settings = await db.get(TenantSettings, customer.tenant_id)
-    code = secrets.token_urlsafe(32)
-    link = CustomerLink(
-        tenant_id=customer.tenant_id,
-        customer_id=customer.id,
-        code_hash=code_hash(code),
-        field_keys=list(dict.fromkeys(field_keys)),
-        expires_at=now + timedelta(days=settings.link_days),
-        created_by_user_id=actor.user.id,
-    )
-    db.add(link)
-    await db.flush()
-    return link, code
-
-
-def link_state(link: CustomerLink) -> str:
-    if link.cancelled_at:
-        return "cancelled"
-    if link.submitted_at:
-        return "submitted"
-    if link.expires_at <= L.now():
-        return "expired"
-    return "open"
-
-
-async def open_link(db: AsyncSession, code: str) -> tuple[CustomerLink, Customer, Lead]:
-    """A link that still works, with its customer. Every other case looks the same."""
-    row = (
-        await db.execute(
-            select(CustomerLink, Customer, Lead)
-            .join(Customer, Customer.id == CustomerLink.customer_id)
-            .join(Lead, Lead.id == Customer.lead_id)
-            .where(CustomerLink.code_hash == code_hash(code))
-        )
-    ).first()
-    if row is None or link_state(row[0]) != "open":
-        raise NotFound("This link has expired or is no longer valid")
-    row[0].last_used_at = L.now()
-    return row[0], row[1], row[2]
-
-
-async def submit(
-    db: AsyncSession, link: CustomerLink, customer: Customer, lead: Lead, values: dict
-) -> None:
-    extra = [k for k in values if k not in link.field_keys]
-    if extra:
-        raise Invalid(f"Unknown field: {extra[0]}")
-    fields = await customer_fields(db)
-    for key in link.field_keys:
-        if key in fields and fields[key].required and values.get(key) in (None, "", []):
-            raise Invalid(f"{fields[key].label} is required")
-    if values:
-        await L.apply_custom_fields(db, customer, values, creating=False, entity="customer")
-        customer.version += 1
-    link.submitted_at = L.now()
-    await db.flush()
-    await L.log(
-        db,
-        lead,
-        "customer_submitted",
-        "The customer sent their details and documents",
-        None,
-        {"customer_id": str(customer.id), "fields": sorted(values)},
-    )
-    if lead.owner_user_id:
-        await notify(
-            db,
-            lead.tenant_id,
-            [lead.owner_user_id],
-            "customer_submitted",
-            f"{lead.display_name} sent their details and documents",
-            lead.id,
-        )
 
 
 # ---------- nightly ----------

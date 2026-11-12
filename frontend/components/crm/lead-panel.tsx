@@ -227,7 +227,7 @@ export const TIMELINE_FILTERS: Record<string, ((type: string) => boolean) | null
   Notes: (t) => t === "note",
   "Stage changes": (t) => t === "stage_changed",
   Tasks: (t) => t === "task_completed",
-  Documents: (t) => t.startsWith("document_") || t === "became_customer" || t === "customer_submitted" || t === "customer_updated",
+  Documents: (t) => t.startsWith("document_") || t === "became_customer" || t === "customer_updated",
   System: (t) => ["lead_created", "lead_updated", "owner_changed"].includes(t),
 };
 

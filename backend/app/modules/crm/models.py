@@ -845,26 +845,6 @@ class Document(TenantScoped, TimestampMixin, Base):
     reviewed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
 
 
-class CustomerLink(TenantScoped, TimestampMixin, Base):
-    """A secure link the customer opens without logging in. Only the code's hash is kept."""
-
-    __tablename__ = "customer_links"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "id", name="uq_customer_links_tenant_id_id"),
-        _fk("customer_id", "customers", "fk_customer_links_customer_same_tenant", "CASCADE"),
-        _fk("created_by_user_id", "users", "fk_customer_links_creator_same_tenant"),
-    )
-
-    customer_id: Mapped[uuid.UUID] = mapped_column(Uuid)
-    code_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    field_keys: Mapped[list] = mapped_column(JSONB, default=list)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
-
-
 class StoredFile(TenantScoped, Base):
     """A file on our own server's disk (Decision log #29). The bytes live at `path`."""
 
@@ -874,7 +854,6 @@ class StoredFile(TenantScoped, Base):
         _fk("lead_id", "leads", "fk_files_lead_same_tenant", "CASCADE"),
         _fk("document_id", "documents", "fk_files_document_same_tenant", "CASCADE"),
         _fk("uploaded_by_user_id", "users", "fk_files_uploader_same_tenant"),
-        _fk("link_id", "customer_links", "fk_files_link_same_tenant"),
     )
 
     lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
@@ -884,7 +863,5 @@ class StoredFile(TenantScoped, Base):
     content_type: Mapped[str] = mapped_column(String(100))
     size_bytes: Mapped[int] = mapped_column(BigInteger)
     sha256: Mapped[str] = mapped_column(String(64))
-    uploaded_via: Mapped[str] = mapped_column(String(4))  # user / link
     uploaded_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
-    link_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())

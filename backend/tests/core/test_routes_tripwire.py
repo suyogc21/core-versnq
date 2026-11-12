@@ -22,11 +22,6 @@ PUBLIC = {
     # Web forms post leads here; protected by the per-form secret key + rate limits (#22).
     ("POST", "/api/v1/capture/{key}"),
     ("OPTIONS", "/api/v1/capture/{key}"),
-    # The customer's secure link (step 5, #32): long random code (hash stored), expiry,
-    # one customer only, rate limits.
-    ("GET", "/api/v1/public/links/{code}"),
-    ("POST", "/api/v1/public/links/{code}/documents/{document_id}/files"),
-    ("POST", "/api/v1/public/links/{code}/submit"),
 }
 
 

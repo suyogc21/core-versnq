@@ -180,7 +180,7 @@ Rule 7 applies throughout: amounts are integers in minor units with a currency c
 
 ## 3. Build order
 
-**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, uploads, review, secure customer link (376 backend tests, 6 e2e, 34-check walk). Next: step 6, money.
+**Progress:** step 1 done 2026-11-09 (309 backend tests, 5 e2e, 23-check walk). Step 2 done 2026-11-09 (324 backend tests, 6 e2e, 20-check walk). Settings clean-up done 2026-11-10: the sidebar holds only places people work in; everything set up once is under one grouped Settings home (326 backend tests, 6 e2e, 34-check walk). Money unparked 2026-11-10 as step 6. Step 3 done 2026-11-10: deals and pipelines with a drag board, lost reasons, products and deal links (342 backend tests, 6 e2e, 26-check walk). Step 4 done 2026-11-11: tags, saved views, scoring, calculated fields and the automation builder (366 backend tests, 6 e2e, 26-check walk incl. a live automation run). UI restyle done 2026-11-12 (Decision log #30). Step 5 done 2026-11-12 (Decision log #32): customers, checklist, staff uploads, review; customer link removed (#33) (376 backend tests, 6 e2e, 30-check walk). Next: step 6, money.
 
 | Step | What | Why here |
 | --- | --- | --- |
@@ -494,13 +494,9 @@ Goal: a won deal turns into a customer without losing anything, and the paperwor
 - **Verifying:** a new permission `documents.verify` (default: Admin, Sales Manager). Every upload, verify, reject and delete writes an activity on the timeline and an audit entry.
 - **Viewing:** images and PDFs preview in the browser; everything else downloads. Every view and download goes through Core after a company + permission check.
 
-### 8.3 Registration and document link (the customer never logs in)
+### 8.3 ~~Registration and document link~~ Removed (Decision log #33)
 
-- From the customer page, staff create a **secure link**: it opens a simple page with the company's name and colour, asks for the registration fields the company chose, and lists the documents still pending, each with an upload button.
-- The link works for 14 days (company setting), only for that one customer, can be cancelled any time, and stops working once everything is submitted. The address holds a long random code; only its hash is stored.
-- **Sending it now:** "Copy link", and "Open in WhatsApp" with a ready message (a normal WhatsApp share link on the rep's own phone, no WhatsApp API needed). Email and WhatsApp sending from Core arrive in steps 9 and 10.
-- What the customer submits fills the customer's fields and the checklist, shows on the timeline as "Submitted by the customer", and notifies the owner.
-- Protection: rate limit per link and per address, file size and type checks, nothing about other customers is ever shown.
+Customers do not upload anything into Core. Only staff upload documents and enter customer details; managers verify. The secure link, its page and its settings were built and then removed before release (migration 0016).
 
 ### 8.4 Files on our server (Decision log #29)
 
@@ -531,7 +527,7 @@ Changes to existing tables (through a migration):
 
 - Only a lead the person can see and edit can be made a customer; once only.
 - Uploads: size, type (by content) and company quota checked before saving; the record is written only after the file is safely on disk.
-- A rejected document needs a reason; verifying needs `documents.verify`; a customer link can upload only to its own customer and only to items still pending or rejected.
+- A rejected document needs a reason; verifying needs `documents.verify`; only signed-in staff upload (#33).
 - Merging two leads moves customers' documents with them (if both are customers, the merge is refused with a clear message).
 - A lead that is a customer cannot be deleted (it will hold invoices from step 6); it can be set Inactive.
 - **Events:** `customer.created` and `document.received` (already in the catalogue), plus new `document.verified` and `document.rejected`. Automations get two new triggers: "becomes a customer" and "document received".
@@ -569,8 +565,8 @@ Changes to existing tables (through a migration):
 | E2 | Can a lead become a customer without a won deal? | Yes, from the lead page (e.g. walk-in admissions, old customers being imported) |
 | E3 | Checklist per product, or one for everyone? | Both: each item applies to everyone or only to chosen products |
 | E4 | Who verifies documents? | New `documents.verify`; default Admin and Sales Manager; companies change it in Roles |
-| E5 | How does the customer get the link before email/WhatsApp exist? | Copy link + "Open in WhatsApp" share from the rep's phone; Core sends it itself from steps 9 and 10 |
-| E6 | Link validity | 14 days by default, editable per company; can be cancelled any time |
+| E5 | How does the customer get the link before email/WhatsApp exist? | ~~Copy link + WhatsApp share~~ No customer link at all: staff upload (#33) |
+| E6 | Link validity | ~~14 days~~ No customer link (#33) |
 | E7 | File limits | 10 MB per file, **2 GB per company, extra storage paid** (#32); photos shrunk in the browser; PDF and images always, Word/Excel only where an item allows them |
 | E8 | Reminders for missing documents | In-app now: owner gets a task when documents are still pending after N days (default 3). Message reminders come with sequences (step 9) |
 | E9 | A "File" custom field type (attach a file to any field) | Not now; the documents checklist covers it. Add later if asked |

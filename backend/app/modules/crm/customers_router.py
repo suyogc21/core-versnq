@@ -1,27 +1,24 @@
 """Customers (step 5): make a customer, the customers list, one customer, the document
-checklist and its files, secure links for the customer, checklist settings, storage use.
-Public (no login): the customer's link page, uploads through it, and submitting it."""
+checklist and its files, checklist settings, storage use. Only staff upload files; customers
+never send anything into Core themselves (Decision log #33)."""
 
 import uuid
 from datetime import datetime
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Query, Request, Response, status
+from fastapi import APIRouter, Query, Request, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 
 from app.core import storage
-from app.core.client_ip import client_ip
-from app.core.errors import Conflict, DomainError, Forbidden, Invalid, NotFound
-from app.core.ratelimit import hit
-from app.modules.auth.deps import ActiveUser, CurrentUser, WorkspaceDep, require
+from app.core.errors import Conflict, Forbidden, Invalid, NotFound
+from app.modules.auth.deps import ActiveUser, CurrentUser, require
 from app.modules.crm import customers as C
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.models import (
     Customer,
-    CustomerLink,
     Deal,
     Document,
     DocumentRequirement,
@@ -33,7 +30,6 @@ from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 
 router = APIRouter(prefix="/api/v1", tags=["customers"], dependencies=CRM)
-public = APIRouter(prefix="/api/v1/public/links", tags=["customer links"], dependencies=CRM)
 Configurer = Annotated[CurrentUser, require("crm.configure")]
 # A file opened in the browser can never run scripts or load anything else.
 CSP = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
@@ -80,7 +76,6 @@ class FileOut(BaseModel):
     original_name: str
     content_type: str
     size_bytes: int
-    uploaded_via: str
     uploaded_by_user_id: uuid.UUID | None
     created_at: datetime
     previewable: bool = False
@@ -113,25 +108,6 @@ class OtherIn(BaseModel):
 
 class RejectIn(BaseModel):
     reason: str = Field(min_length=1, max_length=500)
-
-
-class CustomerLinkIn(BaseModel):
-    field_keys: list[str] = Field(default_factory=list, max_length=50)
-
-
-class CustomerLinkOut(BaseModel):
-    model_config = {"from_attributes": True}
-    id: uuid.UUID
-    state: str = "open"
-    field_keys: list[str]
-    expires_at: datetime
-    submitted_at: datetime | None
-    cancelled_at: datetime | None
-    created_at: datetime
-
-
-class NewCustomerLinkOut(CustomerLinkOut):
-    code: str  # shown once; the address is <workspace>/c/<code>
 
 
 class RequirementIn(BaseModel):
@@ -169,7 +145,6 @@ class RequirementOrderIn(BaseModel):
 
 class CustomerSettings(BaseModel):
     customer_prefix: str = Field(min_length=1, max_length=10)
-    link_days: int = Field(ge=1, le=90)
     document_reminder_days: int = Field(ge=1, le=60)
 
 
@@ -244,10 +219,6 @@ async def _checklist(db, customer: Customer) -> ChecklistOut:
     ]
     done, required = C.done_counts(items)
     return ChecklistOut(documents=docs, done=done, required=required)
-
-
-def _link_out(link: CustomerLink) -> CustomerLinkOut:
-    return CustomerLinkOut.model_validate(link).model_copy(update={"state": C.link_state(link)})
 
 
 async def _check_products(db, ids: list[uuid.UUID]) -> list[str]:
@@ -498,48 +469,6 @@ async def delete_file(customer_id: uuid.UUID, file_id: uuid.UUID, db: CrmDb, act
     await C.delete_file(db, actor, customer, lead, stored)
 
 
-# ---------- secure links ----------
-@router.get("/customers/{customer_id}/links", response_model=list[CustomerLinkOut])
-async def list_links(customer_id: uuid.UUID, db: CrmDb, actor: ActiveUser):
-    customer, _ = await C.get_visible(db, actor, customer_id)
-    links = await db.scalars(
-        select(CustomerLink)
-        .where(CustomerLink.customer_id == customer.id)
-        .order_by(CustomerLink.created_at.desc())
-        .limit(20)
-    )
-    return [_link_out(x) for x in links]
-
-
-@router.post(
-    "/customers/{customer_id}/links",
-    response_model=NewCustomerLinkOut,
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_link(customer_id: uuid.UUID, body: CustomerLinkIn, db: CrmDb, actor: ActiveUser):
-    customer, lead = await C.get_editable(db, actor, customer_id)
-    if customer.status != "active":
-        raise Invalid("This customer is inactive")
-    link, code = await C.create_link(db, actor, customer, body.field_keys)
-    await audit(db, actor, "customer_link.created", "customer", customer.id)
-    return NewCustomerLinkOut(**_link_out(link).model_dump(), code=code)
-
-
-@router.delete("/customers/{customer_id}/links/{link_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def cancel_link(customer_id: uuid.UUID, link_id: uuid.UUID, db: CrmDb, actor: ActiveUser):
-    customer, _ = await C.get_editable(db, actor, customer_id)
-    link = await db.scalar(
-        select(CustomerLink).where(
-            CustomerLink.id == link_id, CustomerLink.customer_id == customer.id
-        )
-    )
-    if link is None:
-        raise NotFound("Link not found")
-    if link.cancelled_at is None:
-        link.cancelled_at = L.now()
-        await audit(db, actor, "customer_link.cancelled", "customer", customer.id)
-
-
 # ---------- checklist settings ----------
 @router.get("/document-requirements", response_model=list[RequirementOut])
 async def list_requirements(db: CrmDb, _: ActiveUser):
@@ -663,133 +592,3 @@ async def put_customer_settings(body: CustomerSettings, db: CrmDb, actor: Config
 async def storage_use(db: CrmDb, actor: Configurer):
     s = await db.get(TenantSettings, actor.user.tenant_id)
     return StorageOut(used_bytes=await C.storage_used(db), quota_bytes=s.storage_quota_bytes)
-
-
-# ---------- public: the customer's link page ----------
-class PublicField(BaseModel):
-    key: str
-    label: str
-    type: str
-    required: bool
-    options: list
-    value: object = None
-
-
-class PublicDocument(BaseModel):
-    id: uuid.UUID
-    name: str
-    hint: str | None
-    is_required: bool
-    allow_office: bool
-    status: str
-    reject_reason: str | None
-    files: int
-
-
-class PublicLinkOut(BaseModel):
-    company: str
-    colour: str | None
-    customer_name: str
-    fields: list[PublicField]
-    documents: list[PublicDocument]
-    expires_at: datetime
-
-
-class SubmitIn(BaseModel):
-    values: dict = Field(default_factory=dict)
-
-
-class TooMany(DomainError):
-    status_code = 429
-
-
-async def _limited(request: Request, code: str) -> None:
-    ip = client_ip(request)
-    if not await hit(f"rl:link:{code[:16]}:{ip}", 120, 3600) or not await hit(
-        f"rl:link-ip:{ip}", 600, 3600
-    ):
-        raise TooMany("Too many tries. Please wait a little and try again.")
-
-
-async def _public_view(db, ws, link, customer, lead) -> PublicLinkOut:
-    settings = await db.get(TenantSettings, ws.id)
-    fields = await C.customer_fields(db)
-    items = await C.checklist(db, customer)
-    return PublicLinkOut(
-        company=ws.name,
-        colour=(settings.branding or {}).get("primary_color"),
-        customer_name=lead.first_name or lead.display_name,
-        fields=[
-            PublicField(
-                key=k,
-                label=fields[k].label,
-                type=fields[k].type,
-                required=fields[k].required,
-                options=fields[k].options or [],
-                value=(customer.custom_fields or {}).get(k),
-            )
-            for k in link.field_keys
-            if k in fields
-        ],
-        documents=[
-            PublicDocument(
-                id=d.id,
-                name=r.name if r else d.name,
-                hint=r.hint if r else None,
-                is_required=bool(r and r.is_required),
-                allow_office=r.allow_office if r else True,
-                status=d.status,
-                reject_reason=d.reject_reason,
-                files=len(files),
-            )
-            for d, r, files in items
-            if d.requirement_id is not None or files
-        ],
-        expires_at=link.expires_at,
-    )
-
-
-@public.get("/{code}", response_model=PublicLinkOut)
-async def public_link(code: str, request: Request, ws: WorkspaceDep, db: CrmDb):
-    await _limited(request, code)
-    link, customer, lead = await C.open_link(db, code)
-    return await _public_view(db, ws, link, customer, lead)
-
-
-@public.post(
-    "/{code}/documents/{document_id}/files",
-    response_model=PublicLinkOut,
-    status_code=status.HTTP_201_CREATED,
-    openapi_extra={
-        "requestBody": {
-            "required": True,
-            "content": {
-                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
-            },
-        }
-    },
-)
-async def public_upload(
-    code: str,
-    document_id: uuid.UUID,
-    request: Request,
-    ws: WorkspaceDep,
-    db: CrmDb,
-    name: Annotated[str, Query(min_length=1, max_length=255)],
-):
-    await _limited(request, code)
-    link, customer, lead = await C.open_link(db, code)
-    doc = await C.get_document(db, customer, document_id)
-    if doc.requirement_id is None:
-        raise NotFound("Document not found")
-    data = await storage.read_upload(request)
-    await C.upload(db, customer=customer, lead=lead, doc=doc, data=data, name=name, link=link)
-    return await _public_view(db, ws, link, customer, lead)
-
-
-@public.post("/{code}/submit", status_code=status.HTTP_204_NO_CONTENT)
-async def public_submit(code: str, body: SubmitIn, request: Request, ws: WorkspaceDep, db: CrmDb):
-    await _limited(request, code)
-    link, customer, lead = await C.open_link(db, code)
-    await C.submit(db, link, customer, lead, body.values)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)

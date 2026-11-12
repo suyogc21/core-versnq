@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { Avatar } from "@/components/crm/bits";
-import { CustomerCard, DocumentsCard, LinkCard } from "@/components/crm/customers";
+import { CustomerCard, DocumentsCard } from "@/components/crm/customers";
 import { useAuth } from "@/lib/auth";
 import { phone } from "@/lib/crm";
 import { useCustomer } from "@/lib/customers";
@@ -52,7 +52,6 @@ export default function CustomerPage() {
       <div className="grid items-start gap-4 p-4 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="space-y-4">
           <CustomerCard customer={c} />
-          {can("leads.edit") && <LinkCard customer={c} phone={c.phone} />}
         </div>
         <DocumentsCard customer={c} />
       </div>
