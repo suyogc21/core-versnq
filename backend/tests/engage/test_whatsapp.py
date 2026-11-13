@@ -589,10 +589,12 @@ async def test_company_number_messages_raise_message_events(ws):
     assert [t for t, _ in got] == ["message.received"]
     p = got[0][1]
     assert p["lead_id"] == lead["id"] and p["channel"] == "whatsapp" and p["official"] is True
+    assert p["_actor"]["actor_type"] == "system"  # Meta's webhook, right after an admin request
     r = await c.post(f"/api/v1/leads/{lead['id']}/whatsapp", json={"text": "Yes!"}, headers=admin)
     assert r.status_code == 201, r.text
     got = await events()
     assert [t for t, _ in got] == ["message.received", "message.sent"]
     assert got[1][1]["direction"] == "out" and got[1][1]["official"] is True
+    assert got[1][1]["_actor"]["actor_type"] == "user"
     await _deliver(c, _payload(_text("919876543210", "STOP")))  # ACE sees the STOP too
     assert [t for t, _ in await events()][-1] == "message.received"

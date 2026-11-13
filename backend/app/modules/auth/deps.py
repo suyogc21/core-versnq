@@ -9,6 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.events import request_actor
 from app.core.hosts import Workspace, get_workspace
 from app.core.security import InvalidToken, decode_access_token
 from app.core.tenancy import tenant_session
@@ -67,6 +68,7 @@ async def _key_user(request: Request, workspace: Workspace, db: AsyncSession, to
         raise _unauthorized()
     key, user = found
     request.state.api_key = (workspace.id, key.id)  # the API log middleware reads this
+    request_actor.set((user.id, "integration"))
     role = await db.get(Role, user.role_id)
     return CurrentUser(
         user=user, role=role, restrictions=[], permissions=await effective_permissions(db, role)
@@ -83,6 +85,7 @@ async def _extension_user(request: Request, db: AsyncSession, token: str):
     user = await extension.token_user(db, token, request.headers.get("x-versnq-extension"))
     if user is None:
         raise _unauthorized()
+    request_actor.set((user.id, "user"))  # the rep, through their extension
     role = await db.get(Role, user.role_id)
     return CurrentUser(
         user=user,
@@ -115,6 +118,7 @@ async def current_user_any(
     user = await db.get(User, claims.sub)
     if user is None or user.status != "active":
         raise _unauthorized()
+    request_actor.set((user.id, "user"))
     role = await db.get(Role, user.role_id)
     return CurrentUser(
         user=user,

@@ -431,6 +431,7 @@ async def test_emails_in_and_out_raise_one_message_event_each(ws, client_for):
     assert p["conversation_id"] == conv and p["lead_id"] == lead["id"]
     assert p["channel"] == "email" and p["direction"] == "in" and p["official"] is None
     assert set(p) == {
+        "_actor",
         "conversation_id", "lead_id", "message_id", "channel", "direction", "official"
     }  # fmt: skip
 

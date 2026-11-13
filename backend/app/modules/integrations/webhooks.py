@@ -47,7 +47,10 @@ def _client() -> httpx.AsyncClient:  # patched in tests
 
 
 def body_for(event: Event) -> str:
-    data = {k: v for k, v in (event.payload or {}).items() if k != "_via"}
+    payload = event.payload or {}
+    data = {k: v for k, v in payload.items() if k not in ("_via", "_actor")}
+    # who caused it, so a subscriber (ACE) can skip its own writes (Decision log #43)
+    data |= payload.get("_actor") or {"actor_user_id": None, "actor_type": "system"}
     return json.dumps(
         {
             "id": str(event.id),

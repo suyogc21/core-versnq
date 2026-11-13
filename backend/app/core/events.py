@@ -58,6 +58,19 @@ class UnknownEvent(ValueError):
 # Set while an automation runs its actions: {"id", "name", "chain": [ids], "depth"}. Events
 # written meanwhile carry it as "_via", so automations can stop loops (Decision log #27).
 automation_context: ContextVar[dict | None] = ContextVar("automation_context", default=None)
+# Who is signed in for this request: (user id, "user" | "integration"). Set by the auth
+# dependency; a request's own copy, so nothing carries over between requests (Decision log #43).
+request_actor: ContextVar[tuple[uuid.UUID, str] | None] = ContextVar("request_actor", default=None)
+
+
+def _actor() -> dict:
+    """Who caused the event: an automation, a signed-in person / API key, or Core itself."""
+    if automation_context.get():
+        return {"actor_user_id": None, "actor_type": "automation"}
+    who = request_actor.get()
+    if who:
+        return {"actor_user_id": str(who[0]), "actor_type": who[1]}
+    return {"actor_user_id": None, "actor_type": "system"}
 
 
 async def emit(db: AsyncSession, tenant_id: uuid.UUID, type_: str, payload: dict) -> bool:
@@ -71,6 +84,7 @@ async def emit(db: AsyncSession, tenant_id: uuid.UUID, type_: str, payload: dict
     via = automation_context.get()
     if via:
         payload = payload | {"_via": {k: via[k] for k in ("chain", "depth")}}
+    payload = payload | {"_actor": _actor()}
     db.add(Event(tenant_id=tenant_id, type=type_, payload=payload))
     await db.flush()
     return True

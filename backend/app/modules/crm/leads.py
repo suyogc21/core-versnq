@@ -313,9 +313,9 @@ async def check_source(db: AsyncSession, source_id: uuid.UUID) -> LeadSource:
 
 # ---------- timeline + events ----------
 def actor_type(actor: CurrentUser | None) -> str:
-    """user / automation (an automation acting) / system."""
+    """user / api (an API key's integration user) / automation (an automation acting) / system."""
     if actor:
-        return "user"
+        return "api" if actor.user.status == "integration" else "user"
     return "automation" if automation_context.get() else "system"
 
 

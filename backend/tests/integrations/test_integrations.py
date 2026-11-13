@@ -433,3 +433,50 @@ async def test_upsert_never_reveals_a_lead_the_key_cannot_see(ws):
         headers=bearer(rep),
     )
     assert r.json() == {"result": "existing", "lead_id": None, "name": None}
+
+
+async def test_deliveries_say_who_caused_the_event_and_key_writes_are_api(ws, receiver):
+    from app.core.events import automation_context, emit
+    from app.modules.crm.models import Activity
+
+    tenant_id, c, _ = ws
+    admin_id, admin = await login_as(tenant_id, "admin")
+    await _hook(c, admin, events=["lead.created", "lead.updated"])
+    key = await _key(c, admin, tenant_id)
+    _, sources = await setup_ids(c, admin)
+    by_person = (await new_lead(c, admin, sources["Website"], phone="98765 33333")).json()
+    r = await new_lead(
+        c, bearer(key), sources["Website"], phone="98765 44444", owner_user_id=str(admin_id)
+    )
+    assert r.status_code == 201, r.text
+    by_key = r.json()
+    async with tenant_session(tenant_id) as db:  # Core itself, then an automation
+        await emit(db, tenant_id, "lead.updated", {"lead_id": by_person["id"]})
+        t = automation_context.set({"id": "a", "name": "Auto", "chain": ["a"], "depth": 1})
+        try:
+            await emit(db, tenant_id, "lead.updated", {"lead_id": by_person["id"]})
+        finally:
+            automation_context.reset(t)
+    await W.run_all([tenant_id])
+    got = [json.loads(r.content)["data"] for r in receiver.calls]
+    who = {(d["lead_id"], d["actor_type"], d["actor_user_id"]) for d in got}
+    from app.modules.integrations.models import ApiKey
+
+    async with tenant_session(tenant_id) as db:
+        key_user = str(await db.scalar(select(ApiKey.user_id).where(ApiKey.id == key["id"])))
+    assert who == {
+        (by_person["id"], "user", str(admin_id)),
+        (by_key["id"], "integration", key_user),
+        (by_person["id"], "system", None),
+        (by_person["id"], "automation", None),
+    }
+    assert all("_actor" not in d and "_via" not in d for d in got)
+    async with tenant_session(tenant_id) as db:
+        kinds = set(
+            (
+                await db.scalars(
+                    select(Activity.actor_type).where(Activity.lead_id == uuid.UUID(by_key["id"]))
+                )
+            ).all()
+        )
+    assert kinds == {"api"}
