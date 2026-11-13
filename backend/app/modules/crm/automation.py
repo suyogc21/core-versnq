@@ -25,6 +25,7 @@ from urllib.parse import urlparse
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.errors import Invalid
 from app.core.events import automation_context, emit
 from app.core.events_model import Event
@@ -126,9 +127,21 @@ async def _tag(db, tag_id) -> Tag:
     return tag
 
 
+DEV_HOSTS = ("localhost", "127.0.0.1", "host.docker.internal")
+
+
 def check_url(url: str) -> str:
-    """Webhook targets: https on a public host (never this server's own network)."""
+    """Webhook targets: https on a public host (never this server's own network). On a
+    developer's machine (ENVIRONMENT=dev) only, this machine is allowed too, so an add-on
+    like ACE can receive webhooks locally without a tunnel. Never in test or prod."""
     parsed = urlparse(url or "")
+    if (
+        get_settings().environment == "dev"
+        and parsed.scheme in ("http", "https")
+        and parsed.hostname in DEV_HOSTS
+        and len(url) <= 500
+    ):
+        return url
     if parsed.scheme != "https" or not parsed.hostname or len(url) > 500:
         raise Invalid("Webhook address must start with https://")
     host = parsed.hostname

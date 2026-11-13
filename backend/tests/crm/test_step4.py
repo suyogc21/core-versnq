@@ -512,3 +512,24 @@ async def test_automations_stay_in_their_company(client_for):
     assert r.status_code == 422
     async with tenant_session(t2) as db:
         assert (await db.scalars(select(AutomationRun))).all() == []
+
+
+def test_this_machine_is_a_webhook_target_only_on_a_developers_machine(monkeypatch):
+    from app.core.config import get_settings
+
+    s = get_settings()
+    local = (
+        "http://localhost:8787/hooks",
+        "http://127.0.0.1:9000/x",
+        "http://host.docker.internal/x",
+    )
+    monkeypatch.setattr(s, "environment", "dev")
+    for url in local:
+        assert A.check_url(url) == url
+    with pytest.raises(Invalid):
+        A.check_url("http://10.0.0.5/x")  # other private addresses: still refused in dev
+    for env in ("test", "prod"):
+        monkeypatch.setattr(s, "environment", env)
+        for url in local:
+            with pytest.raises(Invalid):
+                A.check_url(url)
