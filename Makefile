@@ -3,7 +3,7 @@ SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(PATH)
 UV := cd backend && uv run --env-file ../.env
 
-.PHONY: help setup up down dev worker migrate test lint secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed demo-reset e2e-db e2e
+.PHONY: help setup up down dev worker migrate test lint requirements secrets-scan create-staff openapi fe-setup fe-dev admin-dev fe-check demo-seed demo-reset e2e-db e2e
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -33,8 +33,12 @@ migrate: ## Apply database migrations to the dev database
 test: ## Run the test suite against the versnq_test database
 	$(UV) pytest
 
-lint: ## Check code style and common bugs
+lint: ## Check code style and common bugs (and that the production requirements match uv.lock)
 	cd backend && uv run ruff check . && uv run ruff format --check .
+	cd backend && uv export --frozen --no-dev --no-emit-project --format requirements-txt --no-header --quiet | diff -q - requirements.lock.txt >/dev/null || { echo 'requirements.lock.txt is out of date: run make requirements'; exit 1; }
+
+requirements: ## Export backend/requirements.lock.txt from uv.lock (the production image installs it)
+	cd backend && uv export --frozen --no-dev --no-emit-project --format requirements-txt --no-header -o requirements.lock.txt --quiet
 
 secrets-scan: ## Scan the repository for committed secrets
 	docker run --rm -v "$(CURDIR)":/repo zricethezav/gitleaks:latest detect --source /repo --no-banner

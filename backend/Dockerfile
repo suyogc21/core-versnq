@@ -1,15 +1,12 @@
 # Versnq Core backend: the API and (same image, other command) the background worker.
 FROM python:3.12-slim
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 \
-    UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PROJECT_ENVIRONMENT=/app/.venv \
-    PATH="/app/.venv/bin:$PATH"
-# The same uv the project is developed with; installs exactly what uv.lock says.
-COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /usr/local/bin/uv
-
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+# requirements.lock.txt is exported from uv.lock (`make requirements`): exact versions and
+# checksums. pip with many retries because the server's network to PyPI is patchy.
+COPY requirements.lock.txt .
+RUN pip install --no-cache-dir --require-hashes --retries 15 --timeout 60 -r requirements.lock.txt
 COPY . .
 RUN chmod +x docker-entrypoint.sh && mkdir -p var/files
 

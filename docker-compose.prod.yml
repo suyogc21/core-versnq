@@ -31,7 +31,7 @@ x-backend-env: &backend-env
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16 # same image AMS uses (already on the server)
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -48,7 +48,7 @@ services:
       retries: 20
 
   redis:
-    image: redis:7-alpine
+    image: redis:7
     restart: unless-stopped
     volumes:
       - redisdata:/data
