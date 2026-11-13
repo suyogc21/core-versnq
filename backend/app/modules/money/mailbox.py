@@ -112,9 +112,13 @@ async def send(box: Box, msg: EmailMessage) -> None:
     try:
         await asyncio.to_thread(_send_now, box, msg)
     except smtplib.SMTPAuthenticationError:
-        raise Invalid("The mailbox refused the user name or password") from None
+        raise Invalid(
+            "The mailbox refused the user name or password", code="mailbox_auth_failed"
+        ) from None
     except (smtplib.SMTPException, OSError) as e:
-        raise Invalid(f"Could not send through the mailbox: {str(e)[:200]}") from None
+        raise Invalid(
+            f"Could not send through the mailbox: {str(e)[:200]}", code="email_send_failed"
+        ) from None
 
 
 async def check(box: Box) -> None:
@@ -125,6 +129,10 @@ async def check(box: Box) -> None:
     try:
         await asyncio.to_thread(_send_now, box, None)
     except smtplib.SMTPAuthenticationError:
-        raise Invalid("The mailbox refused the user name or password") from None
+        raise Invalid(
+            "The mailbox refused the user name or password", code="mailbox_auth_failed"
+        ) from None
     except (smtplib.SMTPException, OSError) as e:
-        raise Invalid(f"Could not reach the mailbox: {str(e)[:200]}") from None
+        raise Invalid(
+            f"Could not reach the mailbox: {str(e)[:200]}", code="mailbox_unreachable"
+        ) from None

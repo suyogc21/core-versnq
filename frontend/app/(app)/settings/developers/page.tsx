@@ -93,7 +93,7 @@ function Keys() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        A key lets another system use your records through the API. It can do exactly what its role allows, and makes up to 100 requests a minute.
+        A key lets another system use your records through the API. It can do exactly what its role allows, and makes up to 300 requests a minute.
       </p>
       <div className="divide-y surface">
         {(list.data ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">No keys yet.</p>}

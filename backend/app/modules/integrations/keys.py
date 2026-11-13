@@ -3,7 +3,7 @@
 A key is shown once, stored as a SHA-256 hash, and acts as its integration user: a user with
 status 'integration' that cannot sign in and is never listed as a team member. The user's role
 decides what the key may do, through the same endpoints and visibility rules people use.
-Each key may make 100 requests a minute.
+Each key may make 300 requests a minute.
 """
 
 import hashlib
@@ -22,7 +22,7 @@ from app.modules.roles.models import Role
 from app.modules.users.models import User
 
 PREFIX = "vq_live_"
-RATE_LIMIT = 100  # requests a minute per key
+RATE_LIMIT = 300  # requests a minute per key (was 100; raised for ACE, Nov 13)
 WINDOW = 60
 
 

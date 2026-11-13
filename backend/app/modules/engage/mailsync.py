@@ -212,9 +212,13 @@ async def connect(mb: Mailbox, password: str) -> Client:
     except Invalid:
         raise
     except imaplib.IMAP4.error:
-        raise Invalid("The mailbox refused the email or app password") from None
+        raise Invalid(
+            "The mailbox refused the email or app password", code="mailbox_auth_failed"
+        ) from None
     except (OSError, ssl.SSLError) as e:
-        raise Invalid(f"Could not reach the mailbox: {str(e)[:200]}") from None
+        raise Invalid(
+            f"Could not reach the mailbox: {str(e)[:200]}", code="mailbox_unreachable"
+        ) from None
 
 
 def box(mb: Mailbox) -> smtp.Box:
@@ -249,7 +253,10 @@ async def usable_mailbox(db: AsyncSession, user_id: uuid.UUID) -> Mailbox | None
     if mb is None or mb.status == "off":
         return None
     if mb.status == "error":
-        raise Invalid("Your mailbox needs reconnecting (My account → Connected inbox)")
+        raise Invalid(
+            "Your mailbox needs reconnecting (My account → Connected inbox)",
+            code="mailbox_needs_reconnect",
+        )
     return mb
 
 

@@ -466,7 +466,7 @@ async def send(
     """A person writes to a lead from the CRM (a new email or a reply)."""
     to = lead.primary_email
     if not to:
-        raise Invalid(f"{lead.display_name} has no email address")
+        raise Invalid(f"{lead.display_name} has no email address", code="no_email")
     reasons = set(
         (
             await db.scalars(
@@ -477,7 +477,10 @@ async def send(
         ).all()
     )
     if reasons & {"bounce", "complaint"}:
-        raise Invalid("This address bounced or complained before; it can't be emailed")
+        raise Invalid(
+            "This address bounced or complained before; it can't be emailed",
+            code="email_suppressed",
+        )
     opted_out = lead.email_consent == "opted_out" or "opt_out" in reasons
     last_in = None
     if conv is not None:
@@ -490,12 +493,13 @@ async def send(
     if opted_out and last_in is None:
         raise Invalid(
             f"{lead.display_name} opted out of email; "
-            "you can only answer them when they write to you"
+            "you can only answer them when they write to you",
+            code="email_opted_out",
         )
     cc = [c.strip() for c in cc if c.strip()][:20]
     for c in cc:
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", c):
-            raise Invalid(f"{c} is not an email address")
+            raise Invalid(f"{c} is not an email address", code="invalid_cc")
     tenant = await db.get(Tenant, lead.tenant_id)
     from app.modules.engage import mailsync as MS  # it uses this module
 

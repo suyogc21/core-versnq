@@ -78,7 +78,7 @@ class Outcome:
 
 
 class DuplicateFound(Conflict):
-    pass
+    code = "duplicate"
 
 
 def _consent_source(created_via: str) -> str:

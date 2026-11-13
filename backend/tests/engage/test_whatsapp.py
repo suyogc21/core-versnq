@@ -532,3 +532,36 @@ async def test_health_check_warns_admins_when_quality_drops(ws, monkeypatch):
     async with tenant_session(tenant_id) as db:
         assert await db.scalar(select(Notification.id).where(Notification.kind == "whatsapp"))
         assert await WA.daily_limit(db) == 250
+
+
+async def test_refusals_carry_a_stable_code_for_programs(ws):
+    """ACE (or any system) can tell the reasons apart without reading the sentence."""
+    from app.modules.integrations import keys as K
+
+    tenant_id, c, admin = ws
+    assert K.RATE_LIMIT == 300
+    lead = await _lead(c, admin)
+    r = await c.post(f"/api/v1/leads/{lead['id']}/whatsapp", json={"text": "hi"}, headers=admin)
+    assert r.status_code == 422 and r.json()["code"] == "whatsapp_window_closed"
+    promo = await _template(
+        c, admin, body="Hi {{lead.first_name}}, offer!", category="marketing", name="o2"
+    )
+    r = await c.post(
+        f"/api/v1/leads/{lead['id']}/whatsapp", json={"template_id": promo["id"]}, headers=admin
+    )
+    assert r.json()["code"] == "whatsapp_needs_opt_in"
+    await _deliver(c, _payload(_text("919876543210", "STOP")))
+    tpl = await _template(c, admin, name="u2")
+    r = await c.post(
+        f"/api/v1/leads/{lead['id']}/whatsapp", json={"template_id": tpl["id"]}, headers=admin
+    )
+    assert r.json()["code"] == "whatsapp_opted_out"
+    r = await c.post(
+        f"/api/v1/leads/{lead['id']}/whatsapp", json={"template_id": "nope"}, headers=admin
+    )
+    assert r.status_code == 422 and r.json()["code"] == "validation_error"
+    r = await c.get(f"/api/v1/leads/{uuid.uuid4()}", headers=admin)
+    assert r.status_code == 404 and r.json()["code"] == "not_found"
+    _, sources = await setup_ids(c, admin)
+    dup = await new_lead(c, admin, sources["Website"], phone="98765 43210", first_name="Again")
+    assert dup.status_code == 409 and dup.json()["code"] == "duplicate"

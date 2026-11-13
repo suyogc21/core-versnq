@@ -115,13 +115,14 @@ class MetaClient:
                     **kw,
                 )
             except httpx.HTTPError as e:
-                raise Invalid(f"Could not reach WhatsApp ({type(e).__name__})") from None
+                raise Invalid(
+                    f"Could not reach WhatsApp ({type(e).__name__})", code="whatsapp_send_failed"
+                ) from None
         data = r.json() if r.content else {}
         if r.status_code >= 400:
             err = (data or {}).get("error", {})
-            raise Invalid(
-                f"WhatsApp said: {err.get('error_user_msg') or err.get('message') or r.status_code}"
-            )
+            said = err.get("error_user_msg") or err.get("message") or r.status_code
+            raise Invalid(f"WhatsApp said: {said}", code="whatsapp_send_failed")
         return data
 
     async def phone_info(self) -> dict:
@@ -204,7 +205,10 @@ async def account(db: AsyncSession) -> WhatsAppAccount | None:
 async def require_account(db: AsyncSession) -> WhatsAppAccount:
     acct = await account(db)
     if acct is None:
-        raise Invalid("Connect the company's WhatsApp number first (Settings → WhatsApp)")
+        raise Invalid(
+            "Connect the company's WhatsApp number first (Settings → WhatsApp)",
+            code="whatsapp_not_connected",
+        )
     return acct
 
 
@@ -307,7 +311,7 @@ def window_ends(conv: Conversation | None) -> datetime | None:
 def _to(lead: Lead) -> str:
     digits = re.sub(r"\D", "", lead.primary_phone or "")
     if not digits:
-        raise Invalid(f"{lead.display_name} has no phone number")
+        raise Invalid(f"{lead.display_name} has no phone number", code="no_phone")
     return digits
 
 
@@ -347,16 +351,20 @@ async def send(
     conv = await conversation(db, acct, lead, by=actor.user.id if actor else None)
     open_until = window_ends(conv)
     if await _opted_out(db, lead) and (template is not None or open_until is None):
-        raise Invalid(f"{lead.display_name} opted out of WhatsApp")
+        raise Invalid(f"{lead.display_name} opted out of WhatsApp", code="whatsapp_opted_out")
     tenant = await db.get(Tenant, lead.tenant_id)
     values = await E.values_for(db, lead, tenant.name) | (extra_values or {})
     if template is not None:
         if template.status != "approved":
-            raise Invalid(f"The template {template.name} is not approved by WhatsApp yet")
+            raise Invalid(
+                f"The template {template.name} is not approved by WhatsApp yet",
+                code="whatsapp_template_not_approved",
+            )
         if template.category == "marketing" and lead.whatsapp_consent != "opted_in":
             raise Invalid(
                 f"{lead.display_name} hasn't opted in to WhatsApp; "
-                "marketing templates need an opt-in (use a utility template, or record consent)"
+                "marketing templates need an opt-in (use a utility template, or record consent)",
+                code="whatsapp_needs_opt_in",
             )
         params = params_for(template, values)
         body = R.fill(template.body, values)
@@ -376,11 +384,12 @@ async def send(
     else:
         if open_until is None:
             raise Invalid(
-                "The 24-hour window is closed: WhatsApp allows only an approved template now"
+                "The 24-hour window is closed: WhatsApp allows only an approved template now",
+                code="whatsapp_window_closed",
             )
         body = R.fill(text or "", values).strip()
         if not body:
-            raise Invalid("Write a message")
+            raise Invalid("Write a message", code="message_empty")
         payload = {"to": to, "type": "text", "text": {"body": body[:4096]}}
     msg = Message(
         id=uuid.uuid4(),

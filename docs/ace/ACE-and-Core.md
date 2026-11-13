@@ -97,10 +97,34 @@ Full feature history: `docs/plans/build-plan.md` and the spec's Decision log (`d
 | Header | `Authorization: Bearer vq_live_…` on every call, against the company's own workspace host |
 | Who ACE acts as | An **integration user** (not a person). Activities and sent messages show that user's name, e.g. "ACE". |
 | What ACE may do | Exactly what the key's role allows. Suggested role permissions: `leads.create`, `leads.edit`, `deals.edit` (if ACE moves deals), `customers.read`, `invoices.read` (to quote balances), `inbox.reply`, `inbox.take_over` (for hand-over), `sequences.manage` (only if ACE enrols leads). To see every lead, the role must not be limited to "own leads". |
-| Rate limit | **100 requests a minute per key** (HTTP 429 with `Retry-After`). Batch and cache. If ACE needs more, raise it in Core deliberately (planned, not built). |
+| Rate limit | **300 requests a minute per key** (raised from 100 on Nov 13 for ACE; HTTP 429 with `Retry-After`). A first pass over 5,000 leads at about 7 calls each takes about 2 hours: spread it, cache, and refresh only on webhooks. Bulk read endpoints are planned, not built. |
 | Logs | Every API call and webhook delivery is logged in Core (Settings → Developers → Logs), kept 30 days live, then archived for 12 months. |
-| Errors | 401 bad key · 403 role lacks permission · 404 not visible or not found · 409 duplicate · 422 a rule refused (the message says why) · 429 too fast |
+| Errors | 401 bad key · 403 role lacks permission · 404 not visible or not found · 409 conflict · 422 a rule refused · 429 too fast. Every refusal body is `{"detail": "<sentence for people>", "code": "<stable name for programs>"}`. **Branch on `code`, never on the sentence.** |
 | Contract | The full API is `docs/api/openapi.json` (OpenAPI 3), regenerated with every change. |
+
+### Refusal codes (built, Nov 13)
+
+Codes never change once published; new ones may be added. Unknown code → treat by HTTP status.
+
+| `code` | Meaning | What ACE should do |
+|---|---|---|
+| `whatsapp_window_closed` | More than 24 h since the person's last message | Send an approved template instead, or wait for them to write |
+| `whatsapp_needs_opt_in` | Marketing template to someone without WhatsApp opt-in | Use a utility template, or don't send |
+| `whatsapp_opted_out` | They opted out (STOP) | Never retry; stop WhatsApp for this person |
+| `whatsapp_template_not_approved` | The template isn't approved by Meta (yet) | Pick an approved one |
+| `whatsapp_not_connected` | The company has no official number connected | Fall back to email or a task for a person |
+| `whatsapp_reply_in_app` | The chat is a rep's own WhatsApp (extension), not the company number | Don't reply; a person answers on WhatsApp |
+| `whatsapp_not_company_number` | Templates asked for on a rep's WhatsApp chat | Same as above |
+| `whatsapp_send_failed` | Meta refused or couldn't be reached | Retry later with backoff |
+| `no_phone` / `no_email` | The lead has no number / address | Skip or create a task |
+| `email_opted_out` | Unsubscribed; only answering them is allowed | Don't start a new email |
+| `email_suppressed` | Bounced or complained before | Never email this address |
+| `invalid_cc` | A CC address is not valid | Fix the CC list |
+| `email_send_failed`, `mailbox_auth_failed`, `mailbox_unreachable`, `mailbox_needs_reconnect` | The company's or user's mailbox failed | Retry later; tell an admin |
+| `message_empty` | Nothing to send | Fix the request |
+| `duplicate` | That person already exists (on create) | Use `POST /leads/upsert` instead |
+| `validation_error` | The request body or a parameter is wrong (`detail` lists the fields) | Fix the request; don't retry |
+| `not_found`, `forbidden`, `conflict`, `invalid` | General cases | By HTTP status |
 
 ---
 

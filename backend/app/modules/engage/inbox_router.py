@@ -414,7 +414,10 @@ async def reply(conv_id: uuid.UUID, body: ReplyIn, db: CrmDb, actor: Replier) ->
     lead = await db.get(Lead, conv.lead_id)
     if conv.channel == "whatsapp":
         if conv.whatsapp_account_id is None:  # a rep's own WhatsApp, logged by the extension
-            raise Invalid("Answer this on WhatsApp; it is logged here automatically")
+            raise Invalid(
+                "Answer this on WhatsApp; it is logged here automatically",
+                code="whatsapp_reply_in_app",
+            )
         await WA.send(db, lead, text=body.body, actor=actor)  # the 24-hour window applies
         await _mark_read(db, actor, conv)
         await db.flush()
@@ -441,7 +444,9 @@ async def send_template(
 
     conv = await IB.get_visible(db, actor, conv_id)
     if conv.whatsapp_account_id is None:
-        raise Invalid("Templates are for the company's WhatsApp number")
+        raise Invalid(
+            "Templates are for the company's WhatsApp number", code="whatsapp_not_company_number"
+        )
     tpl = await db.get(WhatsAppTemplate, body.template_id)
     if tpl is None:
         raise NotFound("Template not found")
