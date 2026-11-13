@@ -372,9 +372,13 @@ def _title(role_key: str) -> str:
     return role_key.replace("_", " ").title()
 
 
-async def seed_demo(prefix: str = "") -> DemoResult:
-    """Create the demo companies. `prefix` keeps test runs apart (e.g. "t1-" -> t1-acme)."""
-    if get_settings().environment == "prod":
+async def seed_demo(prefix: str = "", *, server: bool = False) -> DemoResult:
+    """Create the demo companies. `prefix` keeps test runs apart (e.g. "t1-" -> t1-acme).
+    `server`: the shared server (production mode, ALLOW_DEMO_DATA=true). Only Acme, Bluewave and
+    Brightlane; no demo staff account (the companies are recorded as created by the first real
+    staff member) and no suspended Sunrise. Demo people sign in with 2FA like everyone else."""
+    settings = get_settings()
+    if settings.environment == "prod" and not (server and settings.allow_demo_data):
         raise DemoRefused("demo data never goes into production")
     acme_slug, blue_slug, sun_slug = f"{prefix}acme", f"{prefix}bluewave", f"{prefix}sunrise"
     bright_slug = f"{prefix}brightlane"
@@ -389,18 +393,28 @@ async def seed_demo(prefix: str = "") -> DemoResult:
     )
     scored: list[uuid.UUID] = []  # companies whose lead scores are filled in at the end
 
-    async with platform_session() as db:
-        staff = PlatformStaff(
-            email=f"staff@{prefix}demo.versnq.in", name="Demo Staff", password_hash=pw_hash
+    if server:  # never a shared-password staff account on a real staff console
+        result.slugs.remove(sun_slug)
+        async with platform_session() as db:
+            staff_id = await db.scalar(select(PlatformStaff.id).order_by(PlatformStaff.created_at))
+        if staff_id is None:
+            raise DemoRefused("Create your own staff account first (create-staff)")
+    else:
+        async with platform_session() as db:
+            staff = PlatformStaff(
+                email=f"staff@{prefix}demo.versnq.in", name="Demo Staff", password_hash=pw_hash
+            )
+            db.add(staff)
+            await db.flush()
+            staff_id = staff.id
+        result.accounts.append(
+            Account(
+                "Versnq (staff console)",
+                "Versnq staff",
+                "Demo Staff",
+                f"staff@{prefix}demo.versnq.in",
+            )
         )
-        db.add(staff)
-        await db.flush()
-        staff_id = staff.id
-    result.accounts.append(
-        Account(
-            "Versnq (staff console)", "Versnq staff", "Demo Staff", f"staff@{prefix}demo.versnq.in"
-        )
-    )
 
     # Acme Academy: an EdTech business with a full admissions team.
     async with platform_session() as db:
@@ -649,6 +663,8 @@ async def seed_demo(prefix: str = "") -> DemoResult:
     # Step 7b: key accounts for Brightlane (Decision log #36).
     await seed_key_accounts(bright_id, seed=57)
 
+    if server:
+        return result
     # Sunrise Coaching: the Owner never accepted the invite, and the company is suspended.
     async with platform_session() as db:
         tenant, _, _ = await _company(
@@ -694,9 +710,15 @@ def main() -> None:
     parser.add_argument(
         "--reset", action="store_true", help="wipe and rebuild the dev database first"
     )
+    parser.add_argument(
+        "--server", action="store_true", help="the shared server (needs ALLOW_DEMO_DATA=true)"
+    )
     args = parser.parse_args()
     if args.reset:
         _reset_dev_database()
+    if args.server:
+        _server_demo()
+        return
     result = asyncio.run(seed_demo())
     if not result.created:
         print(
@@ -724,6 +746,21 @@ def main() -> None:
     )
     path = write_credentials_file(result, base)
     print(f"Saved to {path} (local only, never committed).\n")
+
+
+def _server_demo() -> None:
+    result = asyncio.run(seed_demo(server=True))
+    if not result.created:
+        print("Demo companies already exist; nothing changed.")
+        return
+    base = get_settings().base_domain
+    print("\nDemo companies (all invented) — run add-company.sh for each slug for HTTPS:")
+    for slug in result.slugs:
+        print(f"  https://{slug}.{base}")
+    for a in result.accounts:
+        print(f"  {a.company:<24} {a.role:<14} {a.email}")
+    print(f"\nEvery account above uses this password: {result.password}")
+    print("Shown once; keep it in your password manager. Owner and Admin set up 2FA.\n")
 
 
 CREDENTIALS_FILE = Path(__file__).resolve().parents[3] / "DEMO_CREDENTIALS.md"

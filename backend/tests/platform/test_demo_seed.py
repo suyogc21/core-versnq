@@ -65,6 +65,29 @@ async def test_demo_seed_refuses_in_production(monkeypatch):
     monkeypatch.setattr(get_settings(), "environment", "prod")
     with pytest.raises(DemoRefused):
         await seed_demo(prefix="never-")
+    with pytest.raises(DemoRefused):  # --server needs ALLOW_DEMO_DATA too
+        await seed_demo(prefix="never-", server=True)
+
+
+async def test_the_shared_server_gets_three_demo_companies_and_no_demo_staff(monkeypatch):
+    from app.core.config import get_settings
+    from app.platform.staff.models import PlatformStaff
+
+    s = get_settings()
+    monkeypatch.setattr(s, "environment", "prod")
+    monkeypatch.setattr(s, "allow_demo_data", True)
+    monkeypatch.setattr(s, "secrets_encryption_key", s.secrets_encryption_key or "x" * 44)
+    async with platform_session() as db:  # the real staff member created first
+        db.add(PlatformStaff(email="first@srv.example", name="First", password_hash="x"))
+    result = await seed_demo(prefix="srv-", server=True)
+    assert result.slugs == ["srv-acme", "srv-bluewave", "srv-brightlane"]
+    assert not any("staff" in a.role.lower() for a in result.accounts)
+    async with platform_session() as db:
+        assert not await db.scalar(
+            select(PlatformStaff.id).where(PlatformStaff.email.like("%srv-demo%"))
+        )
+        assert not await db.scalar(select(Tenant.id).where(Tenant.slug == "srv-sunrise"))
+    assert (await _tenant("srv-brightlane")).status == "active"
 
 
 def test_demo_reset_never_touches_a_database_other_than_dev():

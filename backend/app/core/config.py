@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     # Dev demos only: invented demo accounts (emails ending in .demo or @demo.versnq.in) skip
     # the 2FA setup step. Real people always need 2FA. Refused in production.
     demo_skip_2fa: bool = False
+    # The shared server only: lets `python -m app.platform.demo --server` add the invented demo
+    # companies (Brightlane, Acme, Bluewave) next to real ones. 2FA stays on; no demo staff.
+    allow_demo_data: bool = False
 
     @model_validator(mode="after")
     def _no_demo_switches_in_prod(self) -> "Settings":
