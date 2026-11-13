@@ -1,6 +1,6 @@
 # Versnq ACE ↔ Versnq Core — integration brief
 
-Written 2026-11-12, updated 2026-11-13 with Suyog's direction for ACE (§10–§12), from the Core codebase as it stands (after step 10b). For whoever builds ACE: a developer, or an AI session given this file. Everything marked **Built** exists and is tested in Core. Everything marked **Planned** or **To decide** does not exist yet. Don't present planned items as available.
+Written 2026-11-12, updated 2026-11-13 with Suyog's direction for ACE (§10–§12) and the Core changes ACE asked for (message events, who caused an event, local webhooks; Decision #43), from the Core codebase as it stands (after step 10b). For whoever builds ACE: a developer, or an AI session given this file. Everything marked **Built** exists and is tested in Core. Everything marked **Planned** or **To decide** does not exist yet. Don't present planned items as available.
 
 ---
 
@@ -96,7 +96,9 @@ Full feature history: `docs/plans/build-plan.md` and the spec's Decision log (`d
 |---|---|
 | Header | `Authorization: Bearer vq_live_…` on every call, against the company's own workspace host |
 | Who ACE acts as | An **integration user** (not a person). Activities and sent messages show that user's name, e.g. "ACE". |
-| What ACE may do | Exactly what the key's role allows. Suggested role permissions: `leads.create`, `leads.edit`, `deals.edit` (if ACE moves deals), `customers.read`, `invoices.read` (to quote balances), `inbox.reply`, `inbox.take_over` (for hand-over), `sequences.manage` (only if ACE enrols leads). To see every lead, the role must not be limited to "own leads". |
+| What ACE may do | Exactly what the key's role allows. Suggested **"ACE" role** (a custom role, made in Settings → Roles): `leads.create`, `leads.edit`, `leads.assign` (tasks ACE creates go to the integration user unless assigned), `users.read` (needed for `GET /users`), `inbox.reply`, `inbox.take_over` (hand-over), `customers.read`, `invoices.read` (to quote balances), `deals.edit` (only if ACE moves deals), `sequences.manage` (only if ACE enrols leads). |
+| Lead scope | The role's scope **must be "all leads"**. With a narrower scope, `POST /leads/upsert` finds an existing lead the key can't see, returns `lead_id: null`, and silently drops the `intent` and `conversation` sent with it. |
+| Never Admin | Don't give the ACE key the Admin role: Admin also sees **private** conversations, which ACE must not read. |
 | Rate limit | **300 requests a minute per key** (raised from 100 on Nov 13 for ACE; HTTP 429 with `Retry-After`). A first pass over 5,000 leads at about 7 calls each takes about 2 hours: spread it, cache, and refresh only on webhooks. Bulk read endpoints are planned, not built. |
 | Logs | Every API call and webhook delivery is logged in Core (Settings → Developers → Logs), kept 30 days live, then archived for 12 months. |
 | Errors | 401 bad key · 403 role lacks permission · 404 not visible or not found · 409 conflict · 422 a rule refused · 429 too fast. Every refusal body is `{"detail": "<sentence for people>", "code": "<stable name for programs>"}`. **Branch on `code`, never on the sentence.** |
@@ -152,6 +154,8 @@ def verify(secret: str, headers: dict, raw: bytes) -> bool:
 - **Retries:** after 1 min, 5 min, 30 min, 2 h, 6 h, 12 h, 24 h (8 tries). An endpoint failing for 3 days is switched off. Answer **2xx fast** and do the work in a queue.
 - **Idempotency:** the same event may arrive twice. Ignore an `id` you have already handled.
 - **Data:** events carry ids and small details. **Fetch the rest through the API**; never trust a webhook as the full record.
+- **Who caused it (built, Nov 13):** every delivery's `data` also has `actor_user_id` and `actor_type`: `user` (a person, incl. through the extension), `integration` (an API key; `actor_user_id` is the key's integration user), `automation` or `system` (Core itself, e.g. Meta's or a mailbox's incoming message). **ACE skips events whose `actor_user_id` is its own integration user**, so it doesn't react to its own writes.
+- **Trying it locally (built, Nov 13):** on a developer's machine (`ENVIRONMENT=dev`) a webhook may point at `http://localhost:…`, `127.0.0.1` or `host.docker.internal`, so ACE receives webhooks without a tunnel. Test and production refuse these; there it must be public `https`.
 
 ### Events useful to ACE (Core's catalogue)
 
@@ -160,15 +164,31 @@ def verify(secret: str, headers: dict, raw: bytes) -> bool:
 | `lead.created`, `lead.updated`, `lead.assigned`, `lead.stage_changed`, `lead.merged` | keep its view of leads fresh; re-point data on merge |
 | `lead.intent_changed` | know when intent changed (ACE is usually the producer) |
 | `activity.logged` | see notes and calls people log (not every system activity) |
+| `message.received`, `message.sent` | **the main trigger**: a message arrived or went out; refresh that lead's summary and intent |
 | `sequence.enrolled`, `sequence.replied` | know a sequence got a reply |
 | `deal.created`, `deal.stage_changed`, `deal.won`, `deal.lost` | deal-at-risk flags, summaries |
 | `customer.created`, `payment.due`, `payment.received`, `payment.overdue` | money context for replies and flags |
 | `task.created`, `task.due` | follow-up awareness |
-| `call.recorded`, `call.analyzed` | **ACE is the producer** (Decision #5). Core defines them; ACE emits them through the API when call intelligence is built |
+| `call.recorded`, `call.analyzed` | **ACE is the producer** (Decision #5). Core defines them, but **there is no endpoint yet for ACE to emit them: Planned (C6)**, built when ACE's call step is |
 
-### Gap: incoming messages raise no event yet (Planned, needed for A2)
+### Message events (built, Nov 13; Decision #43)
 
-When an email or WhatsApp message **arrives** in Core's inbox, Core stores it, stops sequences and notifies people, but **does not emit an event**. Only `sequence.replied` fires, and only for people in a sequence. ACE's inbox replies need this. **Planned Core addition:** `message.received` and `message.sent`, with conversation id, lead id, channel and message id. Until then, ACE could poll `GET /api/v1/inbox`, but that's not recommended.
+`message.received` fires for every email or WhatsApp message that arrives; `message.sent` for every one that goes out. They are owned by the `inbox` module (none while it is switched off).
+
+```json
+{ "conversation_id": "…", "lead_id": "…", "message_id": "…",
+  "channel": "email | whatsapp | whatsapp_extension", "direction": "in | out",
+  "official": true, "actor_user_id": null, "actor_type": "system" }
+```
+
+| Fires | Source |
+|---|---|
+| `message.received` | inbound email (shared inbox, connected mailboxes, copy-in addresses), the company WhatsApp number (also for a STOP), a rep's chat logged by the extension |
+| `message.sent` | a reply or email from Core, an email the user sent from their own mail app (Sent folder or copy-in), the company number (incl. sequence steps and automatic replies), a rep's own message logged by the extension |
+
+- `official`: `true` the company number, `false` a rep's own WhatsApp (extension), `null` email.
+- **Not fired** for older emails pulled in when a mailbox is first connected (that would flood ACE), and never twice for the same message (an email or WhatsApp seen again is skipped).
+- Then fetch `GET /api/v1/conversations/{id}` (see the read warning in §7).
 
 ---
 
@@ -189,6 +209,14 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 | Sequences the lead is in | `GET /api/v1/leads/{id}/sequences` |
 | Company setup | `GET /api/v1/settings`, `/lead-stages`, `/lead-sources`, `/custom-fields`, `/pipelines`, `/users`, `/canned-replies`, `/whatsapp/templates` |
 
+### Watch out (side effects)
+
+- **`POST /leads/{id}/activities` is for people logging work, not for ACE summaries.** It marks the open follow-up task done, counts as contact (`last_contacted_at`, "contacted" status) for every type except `note`, and handles the next follow-up: without `next_follow_up_at` it **clears** the lead's follow-up date, and if the company requires follow-ups it is refused. Write summaries through `POST /leads/{id}/conversation` (`summary`) until the AI summary field is built (C3).
+- **`GET /conversations/{id}` marks the conversation read** for the caller. For the ACE key that only affects its own integration user, not people, but don't expect it to be "unread" for ACE afterwards.
+- **`POST /conversations/{id}/whatsapp-template` takes only `template_id`**: no variables of your own. The template's `{{lead.…}}` / `{{owner.…}}` fields are filled from the lead (custom values: Planned, C11).
+- **`POST /sequences/{id}/enrol` takes `{"lead_ids": [...]}`**, a list.
+- **`GET /leads/{id}/customer` answers `null` (not 403)** when the role lacks `customers.read` or the lead isn't a customer: don't read `null` as "not a customer" unless the role has the permission.
+
 ### Write back
 | Action | Endpoint | Notes |
 |---|---|---|
@@ -201,7 +229,7 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 | Hand over to a human | `PUT /api/v1/conversations/{id}/assignee` plus `POST /api/v1/conversations/{id}/notes` (internal note, with mentions) | needs `inbox.take_over` |
 | Create a follow-up task | `POST /api/v1/tasks` | |
 | Note on a deal | `POST /api/v1/deals/{id}/notes` | |
-| Put a lead in a sequence | `POST /api/v1/sequences/{id}/enrol` | |
+| Put a lead in a sequence | `POST /api/v1/sequences/{id}/enrol` | body `{"lead_ids": [...]}` |
 
 ---
 
@@ -215,7 +243,7 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 | The company's vocabulary: stages, sources, custom fields, industry labels, templates | Core | Setup endpoints |
 | **The company's knowledge base**: products, pricing, FAQs, policies, tone, languages | **ACE** | Uploaded and edited in ACE's console. Core doesn't store it. |
 | **Outbound audiences and campaigns** | **ACE** | ACE's own database (Decision #4) |
-| Call recordings and transcripts (Fireflies) | **ACE** (Fireflies) | ACE's call engine. Results written to Core as activities, tasks and `call.analyzed`. |
+| Call recordings and transcripts (any recorder: a dropped file, a pasted transcript, later a connector; Decision #42) | **ACE** | ACE's call engine. Results written to Core as activities and tasks; `call.recorded` / `call.analyzed` once Core's call-ingest endpoint exists (Planned, C6). |
 
 **Privacy:** client data is the client's. It is never sold or shared, and never used to train models. ACE should keep only what it needs, per company, and delete it when a company disconnects.
 
@@ -228,7 +256,7 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 | Who | Where | What |
 |---|---|---|
 | Sales reps, managers | **Inside Core** | The lead's intent and AI summary, ACE's draft replies to approve, red flags, hand-overs, and ACE's messages in the inbox. Reps work in one place. |
-| Admins, Versnq staff | **ACE console** | Connect a Core workspace; knowledge base (upload documents, FAQs, pricing); behaviour (auto-reply or drafts only, tone, languages, hand-over triggers, working hours); campaigns and audiences; Fireflies connection; a review log of every AI reply; usage and cost per company |
+| Admins, Versnq staff | **ACE console** | Connect a Core workspace; knowledge base (upload documents, FAQs, pricing); behaviour (auto-reply or drafts only, tone, languages, hand-over triggers, working hours); campaigns and audiences; recordings and transcripts in (any recorder); a review log of every AI reply; usage and cost per company |
 
 **Login:** ACE's own accounts at first. **Planned:** sign in with the Core account (single sign-on), not built.
 
@@ -236,7 +264,6 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 
 | Planned in Core | Why |
 |---|---|
-| `message.received` / `message.sent` events | ACE learns a reply arrived (A2). See §6 gap. |
 | **Draft replies** in the inbox: ACE proposes, a rep edits/approves/discards | A2 "drafts" mode. Today ACE can only send directly. |
 | **AI summary and next step** shown on the lead | A1. Today only `intent` has a home; a summary can only go in as a timeline entry. |
 | **Red-flag** marker on leads/conversations, with a manager filter | A6 |

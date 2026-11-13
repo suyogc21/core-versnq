@@ -31,7 +31,7 @@ Updated 2026-11-13. For Suyog. Plain list. "Built" means coded and tested; "live
 | 9b-4 — One-click Google / Microsoft mailbox sign-in (needed for Outlook users) | Your Google and Microsoft app registrations |
 | Security and go-live: 2FA recovery, nightly backups, the two small quirks, log clean-up, faster paging and exports for very big lists, putting Core on the server | Parked until the end, by your choice |
 | Small WhatsApp extras: sending photos/PDFs from the company number, templates with header images or buttons | Nothing; can be done any time |
-| Core additions ACE needs: "message arrived" events, AI draft approval in the inbox, AI summary on the lead, red flags, an "ACE off" switch per chat | Built when ACE is built (see `docs/ace/ACE-and-Core.md` §9) |
+| Core additions ACE needs (message events are built, Nov 13): AI draft approval in the inbox, AI summary on the lead, red flags, an "ACE off" switch per chat | Built when ACE is built (see `docs/ace/ACE-and-Core.md` §9) |
 | Telephony (click-to-call, call recording) | Your decision; out of scope until then |
 
 ## 2. Your list (accounts, decisions, checks)
