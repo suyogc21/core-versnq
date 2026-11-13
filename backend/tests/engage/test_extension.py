@@ -263,3 +263,27 @@ async def test_admin_sees_and_revokes_and_companies_are_apart(ws, client_for):
     )
     assert r.status_code == 404
     assert uuid.UUID(lead["id"])
+
+
+async def test_logged_chat_messages_raise_message_events_once(ws):
+    from app.core.events_model import Event
+
+    tenant_id, c, _ = ws
+    _, rep = await login_as(tenant_id, "sales_user")
+    lead = await _lead(c, rep)
+    ext = await _connect(c, rep)
+    batch = _msgs(("e1", False, "Hi there", 10), ("e2", True, "Hello!", 5))
+    for _ in range(2):  # the same chat read twice: logged and raised once
+        await c.post(
+            "/api/v1/extension/messages",
+            json={"lead_id": lead["id"], "messages": batch},
+            headers=ext,
+        )
+    async with tenant_session(tenant_id) as db:
+        rows = (await db.scalars(select(Event).where(Event.type.like("message.%")))).all()
+    got = sorted((e.type, e.payload["direction"], e.payload["channel"]) for e in rows)
+    assert got == [
+        ("message.received", "in", "whatsapp_extension"),
+        ("message.sent", "out", "whatsapp_extension"),
+    ]
+    assert all(e.payload["official"] is False and e.payload["lead_id"] == lead["id"] for e in rows)

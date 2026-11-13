@@ -565,3 +565,34 @@ async def test_refusals_carry_a_stable_code_for_programs(ws):
     _, sources = await setup_ids(c, admin)
     dup = await new_lead(c, admin, sources["Website"], phone="98765 43210", first_name="Again")
     assert dup.status_code == 409 and dup.json()["code"] == "duplicate"
+
+
+async def test_company_number_messages_raise_message_events(ws):
+    from app.core.events_model import Event
+
+    tenant_id, c, admin = ws
+    lead = await _lead(c, admin)
+
+    async def events():
+        async with tenant_session(tenant_id) as db:
+            rows = (
+                await db.scalars(
+                    select(Event).where(Event.type.like("message.%")).order_by(Event.occurred_at)
+                )
+            ).all()
+            return [(e.type, e.payload) for e in rows]
+
+    m = _text("919876543210", "Is the course still open?")
+    await _deliver(c, _payload(m))
+    await _deliver(c, _payload(m))  # Meta retries: one event
+    got = await events()
+    assert [t for t, _ in got] == ["message.received"]
+    p = got[0][1]
+    assert p["lead_id"] == lead["id"] and p["channel"] == "whatsapp" and p["official"] is True
+    r = await c.post(f"/api/v1/leads/{lead['id']}/whatsapp", json={"text": "Yes!"}, headers=admin)
+    assert r.status_code == 201, r.text
+    got = await events()
+    assert [t for t, _ in got] == ["message.received", "message.sent"]
+    assert got[1][1]["direction"] == "out" and got[1][1]["official"] is True
+    await _deliver(c, _payload(_text("919876543210", "STOP")))  # ACE sees the STOP too
+    assert [t for t, _ in await events()][-1] == "message.received"

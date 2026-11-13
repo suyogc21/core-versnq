@@ -590,6 +590,7 @@ async def log_messages(body: LogIn, db: TenantDb, actor: Rep) -> LogOut:
             body=text[:2000],
             occurred_at=when,
         )
+        await IB.message_event(db, msg, channel="whatsapp_extension", official=False)
         logged += 1
         if m.from_me:
             contacted = max(filter(None, [contacted, when]))

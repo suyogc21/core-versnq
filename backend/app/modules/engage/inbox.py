@@ -226,6 +226,26 @@ async def _seen(db: AsyncSession, header_id: str | None) -> bool:
     )
 
 
+async def message_event(
+    db: AsyncSession, msg: Message, *, channel: str, official: bool | None = None
+) -> None:
+    """message.received / message.sent (Decision log #43). Ids and small details only.
+    channel: email / whatsapp (company number) / whatsapp_extension (a rep's own WhatsApp)."""
+    await emit(
+        db,
+        msg.tenant_id,
+        "message.received" if msg.direction == "in" else "message.sent",
+        {
+            "conversation_id": str(msg.conversation_id),
+            "lead_id": str(msg.lead_id),
+            "message_id": str(msg.id),
+            "channel": channel,
+            "direction": msg.direction,
+            "official": official,
+        },
+    )
+
+
 async def ingest(
     db: AsyncSession,
     tenant_id: uuid.UUID,
@@ -301,6 +321,7 @@ async def ingest(
     )
     if quiet:
         return msg
+    await message_event(db, msg, channel="email")
     lead.last_activity_at = L.now()
     await _replied(db, lead, msg)
     people = [await assignee_of(db, conv)] + list(
@@ -388,6 +409,7 @@ async def ingest_sent(
         occurred_at=when,
     )
     if not quiet:
+        await message_event(db, msg, channel="email")
         lead.last_activity_at = L.now()
         lead.last_contacted_at = max(filter(None, [lead.last_contacted_at, when]))
         lead.first_response_at = lead.first_response_at or when
@@ -591,6 +613,7 @@ async def send(
         {"message_id": str(msg.id), "conversation_id": str(conv.id)},
         body=body[:2000],
     )
+    await message_event(db, msg, channel="email")
     now = L.now()
     lead.last_activity_at = now
     lead.last_contacted_at = max(filter(None, [lead.last_contacted_at, now]))

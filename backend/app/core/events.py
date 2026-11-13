@@ -29,6 +29,8 @@ CATALOGUE: dict[str, str] = {
     "task.due": "crm",
     "sequence.enrolled": "sequences",
     "sequence.replied": "sequences",
+    "message.received": "inbox",  # Decision log #43: every email / WhatsApp in or out
+    "message.sent": "inbox",
     "deal.created": "crm",  # step 3 (Decision log #25)
     "deal.updated": "crm",
     "deal.stage_changed": "crm",

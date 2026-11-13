@@ -4529,7 +4529,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 37,
+            "maxItems": 39,
             "minItems": 1,
             "title": "Events",
             "type": "array"
@@ -4636,7 +4636,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 37,
+                "maxItems": 39,
                 "minItems": 1,
                 "type": "array"
               },

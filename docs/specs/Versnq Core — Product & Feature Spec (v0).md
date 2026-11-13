@@ -212,7 +212,7 @@ v1 = ship for the first client. Later = roadmap once v1 is stable.
 | HubSpot / LeadSquared import | Migration tool for switchers | Later |
 | Versnq ACE | Native plug-in | ACE add-on |
 
-**Outbound event catalogue (v1):** `lead.created`, `lead.updated`, `lead.assigned`, `lead.stage_changed`, `lead.merged`, `record.created`, `record.updated`, `record.stage_changed`, `record.deleted`, `link.created`, `link.deleted`, `lead.intent_changed`, `activity.logged`, `call.recorded`, `call.analyzed`, `task.created`, `task.due`, `sequence.enrolled`, `sequence.replied`, `deal.created`, `deal.updated`, `deal.stage_changed`, `deal.deleted`, `deal.won`, `deal.lost`, `customer.created`, `account.updated`, `document.received`, `document.verified`, `document.rejected`, `invoice.created`, `invoice.voided`, `payment.due`, `payment.received`, `payment.reversed`, `payment.overdue`
+**Outbound event catalogue (v1):** `lead.created`, `lead.updated`, `lead.assigned`, `lead.stage_changed`, `lead.merged`, `record.created`, `record.updated`, `record.stage_changed`, `record.deleted`, `link.created`, `link.deleted`, `lead.intent_changed`, `activity.logged`, `call.recorded`, `call.analyzed`, `task.created`, `task.due`, `sequence.enrolled`, `sequence.replied`, `message.received`, `message.sent`, `deal.created`, `deal.updated`, `deal.stage_changed`, `deal.deleted`, `deal.won`, `deal.lost`, `customer.created`, `account.updated`, `document.received`, `document.verified`, `document.rejected`, `invoice.created`, `invoice.voided`, `payment.due`, `payment.received`, `payment.reversed`, `payment.overdue`
 
 ### 12. Access
 

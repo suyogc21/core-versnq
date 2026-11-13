@@ -9,7 +9,7 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.core.events_model import Event
 from app.core.tenancy import tenant_session
-from app.modules.crm.models import Notification
+from app.modules.crm.models import Lead, Notification
 from app.modules.engage import engine as E
 from app.modules.engage import inbox as IB
 from app.modules.engage.models import Enrolment, Message
@@ -404,3 +404,72 @@ async def test_test_inbound_and_isolation(ws, client_for):
     assert (
         await c.post("/api/v1/inbox/test-inbound", content=b"x", headers=rep)
     ).status_code == 403
+
+
+# ---------- message.received / message.sent (Decision log #43) ----------
+async def _message_events(tenant_id):
+    async with tenant_session(tenant_id) as db:
+        rows = (
+            await db.scalars(
+                select(Event).where(Event.type.like("message.%")).order_by(Event.occurred_at)
+            )
+        ).all()
+        return [(e.type, e.payload) for e in rows]
+
+
+async def test_emails_in_and_out_raise_one_message_event_each(ws, client_for):
+    from app.core.modules import set_module
+
+    tenant_id, c, admin = ws
+    lead = await _lead(c, admin)
+    raw = _email("asha@example.com", "Fees", msg_id="<ev-1@mail.example>")
+    conv = await _ingest(tenant_id, raw)
+    await _ingest(tenant_id, raw)  # the same email seen twice: no second event
+    events = await _message_events(tenant_id)
+    assert [t for t, _ in events] == ["message.received"]
+    p = events[0][1]
+    assert p["conversation_id"] == conv and p["lead_id"] == lead["id"]
+    assert p["channel"] == "email" and p["direction"] == "in" and p["official"] is None
+    assert set(p) == {
+        "conversation_id", "lead_id", "message_id", "channel", "direction", "official"
+    }  # fmt: skip
+
+    r = await c.post(f"/api/v1/conversations/{conv}/reply", json={"body": "80,000"}, headers=admin)
+    assert r.status_code == 200, r.text
+    events = await _message_events(tenant_id)
+    assert [t for t, _ in events] == ["message.received", "message.sent"]
+    assert events[1][1]["message_id"] == r.json()["messages"][-1]["id"]
+
+    # sent from the user's own mail app (Sent folder / copy-in): one message.sent
+    out = EmailMessage()
+    out["From"], out["To"], out["Subject"] = "admin@company.example", "asha@example.com", "Hi"
+    out["Message-ID"] = "<own-1@mail.example>"
+    out.set_content("Sent from Gmail")
+    async with tenant_session(tenant_id) as db:
+        lead_row = await db.get(Lead, uuid.UUID(lead["id"]))
+        await IB.ingest_sent(db, out.as_bytes(), lead_row, user_id=None, from_address="a@x")
+    assert [t for t, _ in await _message_events(tenant_id)][-1] == "message.sent"
+    n = len(await _message_events(tenant_id))
+
+    # older emails pulled in when a mailbox is first connected: no events
+    async with tenant_session(tenant_id) as db:
+        await IB.ingest(db, tenant_id, _email("asha@example.com", "Old"), quiet=True)
+        old = EmailMessage()
+        old["From"], old["To"], old["Subject"] = "a@x", "asha@example.com", "Old out"
+        old["Message-ID"] = "<own-old@mail.example>"
+        old.set_content("old")
+        lead_row = await db.get(Lead, uuid.UUID(lead["id"]))
+        await IB.ingest_sent(
+            db, old.as_bytes(), lead_row, user_id=None, from_address="a@x", quiet=True
+        )
+    assert len(await _message_events(tenant_id)) == n
+
+    # inbox module off: nothing is raised
+    async with tenant_session(tenant_id) as db:
+        await set_module(db, tenant_id, "inbox", False)
+    await _ingest(tenant_id, _email("asha@example.com", "While off"))
+    assert len(await _message_events(tenant_id)) == n
+
+    # another company never sees them
+    other_id, _ = await make_workspace()
+    assert await _message_events(other_id) == []

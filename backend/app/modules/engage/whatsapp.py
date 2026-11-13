@@ -437,6 +437,9 @@ async def send(
         },
         body=body[:2000],
     )
+    from app.modules.engage.inbox import message_event
+
+    await message_event(db, msg, channel="whatsapp", official=True)
     lead.last_activity_at = now()
     if actor is not None:
         lead.last_contacted_at = max(filter(None, [lead.last_contacted_at, now()]))
@@ -619,6 +622,9 @@ async def _incoming(
         body=msg.body[:2000],
         occurred_at=when,
     )
+    from app.modules.engage.inbox import message_event
+
+    await message_event(db, msg, channel="whatsapp", official=True)
     lead.last_activity_at = now()
 
     if _is_stop(text, cfg):
