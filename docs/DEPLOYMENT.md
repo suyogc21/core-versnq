@@ -94,10 +94,19 @@ for s in brightlane acme bluewave; do /opt/core/infra/nginx/add-company.sh $s; d
 
 It adds Brightlane Software (B2B SaaS), Acme Academy (EdTech) and Bluewave Realty (real estate, AED), prints every demo sign-in and one shared password **once**. There is no demo staff account and no 2FA shortcut on the server: Owner and Admin demo logins set up 2FA on first sign-in; sales reps don't need it. Each company is walled off from the others, including real ones.
 
-## Each new company
+## Each new company (automatic)
 
-1. Staff console → create the company (its slug, e.g. `brightlane`) and its owner.
-2. On the server: `/opt/core/infra/nginx/add-company.sh brightlane` — nginx block + HTTPS certificate for `brightlane.core.versnq.in` (the `*.core` DNS record already points here; certificates are per company because GoDaddy has no DNS API for a wildcard certificate).
+Create the company in the staff console. Within about 2 minutes, `https://<slug>.core.versnq.in` works: a timer on the server (`core-provision-companies.timer`, every 2 min) finds companies without HTTPS and runs `infra/nginx/add-company.sh` for them. The `*.core` DNS record already points here.
+
+- Watch it: `journalctl -u core-provision-companies -n 30`
+- A failure is retried after an hour, at most 3 times (Let's Encrypt limits repeated failures). To retry at once: `rm /var/lib/core-provision/<slug>.fail`
+- By hand, if ever needed: `/opt/core/infra/nginx/add-company.sh <slug>`
+
+One time, to install the timer:
+```bash
+cp /opt/core/infra/nginx/core-provision-companies.{service,timer} /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now core-provision-companies.timer
+```
 
 ## What works on the server today, and what waits
 

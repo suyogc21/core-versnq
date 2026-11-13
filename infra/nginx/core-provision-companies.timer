@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Versnq Core company provisioning every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Unit=core-provision-companies.service
+
+[Install]
+WantedBy=timers.target

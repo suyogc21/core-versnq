@@ -1,0 +1,9 @@
+[Unit]
+Description=Versnq Core — nginx + HTTPS for new companies (<slug>.core.versnq.in)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+# through bash, so a lost +x bit can't break it (AMS learned this the hard way)
+ExecStart=/bin/bash /opt/core/infra/nginx/provision-companies.sh
