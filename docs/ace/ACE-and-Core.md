@@ -1,6 +1,6 @@
 # Versnq ACE ↔ Versnq Core — integration brief
 
-Written 2026-11-12 from the Core codebase as it stands (Core commit after step 10b). For whoever builds ACE: a developer, or an AI session given this file. Everything marked **Built** exists and is tested in Core. Everything marked **Planned** or **To decide** does not exist yet. Don't present planned items as available.
+Written 2026-11-12, updated 2026-11-13 with Suyog's direction for ACE (§10–§12), from the Core codebase as it stands (after step 10b). For whoever builds ACE: a developer, or an AI session given this file. Everything marked **Built** exists and is tested in Core. Everything marked **Planned** or **To decide** does not exist yet. Don't present planned items as available.
 
 ---
 
@@ -41,7 +41,7 @@ Full feature history: `docs/plans/build-plan.md` and the spec's Decision log (`d
 | A1 | **Lead summary and intent** | One verdict per lead (Hot, Warm, Cold, Not interested) read across calls, chats and emails, plus a short summary and a suggested next step. | On the lead in Core |
 | A2 | **AI replies in the inbox** | Drafts a reply for a rep to approve, or replies by itself where allowed. Multilingual. Uses the company's own knowledge base. | Core's inbox |
 | A3 | **Hand-over to a human** | On negative sentiment, a complaint, price negotiation, or when the customer asks for a person: stops replying, assigns the conversation to a person, leaves an internal note. | Core's inbox |
-| A4 | **Call intelligence** | Fireflies-recorded calls matched to the lead and analysed (verdict, objections, commitments, next step). Action items become tasks. **A Versnq engine for this already exists**; its reference folder is still to be shared (Decision #3). | Lead timeline, tasks |
+| A4 | **Call intelligence** | A call is matched to the lead and analysed (verdict, objections, commitments, next step). Action items become tasks. **Recorder-agnostic** (Suyog, Nov 13): ACE is not tied to Fireflies or any one tool. A recording or transcript can come from any source (§12). | Lead timeline, tasks |
 | A5 | **Outbound campaigns** | **ACE's own audience database** (Decision #4). Campaigns on email and WhatsApp (LinkedIn later). On a real positive reply, ACE creates the lead in Core (`origin: outbound_ace`, intent hot/warm), or appends the conversation to the existing lead. Core never stores the audience. | ACE console; leads in Core |
 | A6 | **Red flags and campaign analytics** | Angry customer, deal at risk. Replies, positive responses, leads created, conversions. | Core (flags); ACE console (analytics) |
 
@@ -228,10 +228,11 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 |---|---|---|
 | D1 | Where ACE lives | A **separate project/service** with its own repo, database and deploy. It talks to Core only via API and webhooks. |
 | D2 | Which AI model | **Claude** (Anthropic API). New dependency; usage billed to clients at cost. Needs approval. |
-| D3 | Reference material | Share the **Fireflies call-intelligence engine** folder (Decision #3). Decide whether the "Versnq Desk" n8n WhatsApp agent is a starting point or stays separate. |
+| D3 | Reference material | **Decided (Nov 13):** the "Versnq Desk" n8n agent is **not** part of ACE. ACE is not tied to Fireflies. The older Fireflies engine may still be shared as reference for the analysis prompts only. |
 | D4 | Outbound sending | A Smartlead connector, or ACE's own sender. Still open. |
 | D5 | Build order | ① A1 summary + intent → ② A2 drafts a rep approves → ③ auto-replies with hand-over (company WhatsApp number and email) → ④ A4 call intelligence → ⑤ A5 outbound campaigns → ⑥ A6 analytics |
-| D6 | ACE's tech stack | Match Core where sensible (Python/FastAPI, Postgres, a queue worker; Next.js for the console). Decide with D1. |
+| D6 | ACE's tech stack | Match Core where sensible (Python/FastAPI, Postgres, a queue worker; Next.js for the console). Decide with D1. **No n8n inside ACE** (§12). |
+| D7 | Speech-to-text for dropped audio recordings | Needed only for A4 when someone uploads audio, not a transcript. The AI model reads text; turning audio into text needs a transcription service (for example Deepgram, AssemblyAI or OpenAI Whisper). New dependency and cost; needs approval. |
 
 ---
 
@@ -240,3 +241,54 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 - **Dev Core:** the demo company **Brightlane** at `brightlane.localhost:3000` (B2B HR software, Indian rupees) has leads, deals, customers, invoices, an email inbox and a test WhatsApp number. Demo logins are in `DEMO_CREDENTIALS.md` (kept out of git).
 - **Test senders:** email and WhatsApp in dev are saved, not sent. `POST /api/v1/inbox/test-inbound` delivers a raw email as if it arrived. `POST /api/v1/whatsapp/test-webhook` delivers a Meta webhook body as if Meta sent it. Both exist outside production only.
 - **Webhooks:** point a Core webhook at ACE's local receiver. `POST /api/v1/integrations/webhooks/{id}/test` sends a signed test delivery.
+
+
+---
+
+## 12. How ACE works (the design direction, Nov 13)
+
+### The loop, for every company
+
+```
+1. Something happens      Core webhook (message arrived, lead changed, payment overdue…),
+                          a recording/transcript dropped in, or a campaign reply
+2. Gather context         Core API: lead, timeline, conversation, deals, balance
+                          + ACE's knowledge base for this company (retrieved, not all of it)
+3. Decide                 the AI model reads context + company rules → one structured answer:
+                          intent, summary, reply text, hand over?, red flag?, tasks
+4. Check the guardrails   in code, not in the prompt: company mode (drafts only / auto),
+                          working hours, hand-over triggers, "ACE off" on this chat,
+                          only the company number on WhatsApp, cost cap per company
+5. Act through Core       set intent · log summary · send or draft the reply · hand over
+                          (assign a person + internal note) · create tasks
+                          Core still enforces its own rules (24 h window, opt-outs…)
+6. Record                 every AI decision and its inputs in ACE's review log
+                          (what it saw, what it did, cost), visible in the ACE console
+```
+
+**People stay in charge.** Every company starts in **drafts only**: ACE suggests and a rep approves. Automatic replies are switched on per company, per channel, by an admin. ACE hands over on anger, complaints, price negotiation, or a request for a person, and stops replying on that chat.
+
+### Calls: recorder-agnostic (A4)
+
+ACE accepts a call from **any** source and never depends on one vendor:
+1. **Drop a recording** (audio file) in the ACE console or on the lead. ACE turns it into text with a transcription service (D7), then analyses it.
+2. **Paste or upload a transcript** (text from any tool). ACE analyses it directly; no transcription needed.
+3. **Connectors** (later, one by one, only when a customer asks): meeting tools that can send a transcript by webhook or API, for example Fireflies, Fathom, Otter, tl;dv, Zoom or Google Meet recordings. Each connector only feeds step 2.
+
+The result goes to Core: a timeline entry with the summary, verdict, objections and next step; tasks for action items; intent if it changed; and the `call.analyzed` event.
+
+Note: Wispr Flow, as far as we know, is a voice-dictation tool, not a call recorder. Text dictated with it reaches ACE like any typed transcript. Check before promising it as a connector.
+
+### Why no n8n
+
+- ACE must keep companies' data apart, keep secrets safe, be tested and be versioned. Workflows in n8n spread secrets and logic outside the codebase and are hard to test and to keep tenant-safe.
+- Everything n8n would do here (receive webhooks, call APIs, call the AI) is a small amount of code in ACE's own service, with tests.
+- **Customers may still use n8n themselves:** Core already has API keys and signed webhooks, so any company can wire its own n8n or Zapier to Core. That is the customer's choice, not part of ACE.
+
+### Starting ACE in a new session
+
+Give the new session this file and this prompt:
+
+> You are building **Versnq ACE**, a separate product that plugs into **Versnq Core** (a multi-tenant CRM). Read `ACE-and-Core.md` fully first. It describes what Core already has, how ACE connects (API key + signed webhooks only, never Core's database), the rules ACE must respect, and the decisions made so far. ACE lives in its own project (D1). Do not change Core from the ACE project; list any Core changes ACE needs, and they are made in Core separately. Before writing code, propose ACE's plan for step ① (lead summary + intent): its data model, endpoints, console screens, how it receives Core webhooks and calls the Core API, AI prompts and guardrails, cost tracking, tests, and open questions. Wait for approval. Only built and tested features are described as available; everything else is "planned". Ask before adding any dependency. Client data is never sold, shared, or used to train models.
+
+The Core-side additions ACE needs (§9, "Core screens ACE needs") are built **in the Core project**, when ACE reaches the step that needs them.
