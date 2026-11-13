@@ -83,6 +83,17 @@ docker compose -f docker-compose.prod.yml exec backend python -m app.platform.cl
 
 Sign in at `https://admincore.versnq.in` (2FA is required; there are no demo shortcuts in production).
 
+## Demo companies (invented data)
+
+With `ALLOW_DEMO_DATA=true` in `.env.prod`, after the first staff account exists:
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod exec backend python -m app.platform.demo --server
+for s in brightlane acme bluewave; do /opt/core/infra/nginx/add-company.sh $s; done
+```
+
+It adds Brightlane Software (B2B SaaS), Acme Academy (EdTech) and Bluewave Realty (real estate, AED), prints every demo sign-in and one shared password **once**. There is no demo staff account and no 2FA shortcut on the server: Owner and Admin demo logins set up 2FA on first sign-in; sales reps don't need it. Each company is walled off from the others, including real ones.
+
 ## Each new company
 
 1. Staff console → create the company (its slug, e.g. `brightlane`) and its owner.
@@ -100,9 +111,26 @@ Sign in at `https://admincore.versnq.in` (2FA is required; there are no demo sho
 | Invite and password-reset emails | A system mailbox / SES. Until then they are written to the backend log (`docker compose … logs backend`). |
 | Payment links | Razorpay / Stripe keys |
 
+## Backups (nightly)
+
+```bash
+cp /opt/core/infra/backup/core-backup.cron /etc/cron.d/core-backup
+/opt/core/infra/backup/core-backup.sh        # run once now to check
+```
+
+Every night at 02:30: the database (`db-<date>.dump`, `pg_dump` custom format) and uploaded files (`files-<date>.tgz`) into `/opt/core-backups`, kept 14 days. Log: `/var/log/core-backup.log`.
+
+Restore the database (stops nothing else):
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T postgres \
+  pg_restore -U postgres -d versnq --clean --if-exists < /opt/core-backups/db-<date>.dump
+```
+
+**Still to do:** a copy off this server (another machine or storage), so a lost server doesn't lose the backups too.
+
 ## Not set up yet (the parked go-live work)
 
-- **Backups.** Nothing backs up Core's database or files yet. Before a real customer's data goes in: nightly `pg_dump` of `versnq` plus the `core_files` volume, kept off the server.
+- A backup copy off the server (above).
 - Error monitoring, log rotation, 2FA recovery codes (see `docs/OWNER-TODO.md`).
 
 ## Useful

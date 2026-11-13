@@ -1,0 +1,2 @@
+# Versnq Core nightly backup (02:30 server time). Copy to /etc/cron.d/core-backup.
+30 2 * * * root /opt/core/infra/backup/core-backup.sh >> /var/log/core-backup.log 2>&1
