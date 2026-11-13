@@ -1,0 +1,104 @@
+# Versnq Core on the shared server, its own space next to AMS (docs/DEPLOYMENT.md).
+# Every web service listens on 127.0.0.1 only; the host nginx terminates HTTPS:
+#   <slug>.core.versnq.in   /api/v1 -> 127.0.0.1:8100 (backend), the rest -> 127.0.0.1:3100
+#   admincore.versnq.in     /platform -> 127.0.0.1:8100, the rest -> 127.0.0.1:3101
+# Postgres and Redis are internal only (their own containers; AMS's are never touched).
+#
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+name: core
+
+x-backend-env: &backend-env
+  ENVIRONMENT: prod
+  DATABASE_URL: postgresql+asyncpg://versnq_app:${APP_DB_PASSWORD}@postgres:5432/versnq
+  MIGRATION_DATABASE_URL: postgresql+asyncpg://versnq_owner:${OWNER_DB_PASSWORD}@postgres:5432/versnq
+  # required by the settings, never used in production
+  TEST_DATABASE_URL: postgresql+asyncpg://versnq_app:${APP_DB_PASSWORD}@postgres:5432/versnq_test
+  TEST_MIGRATION_DATABASE_URL: postgresql+asyncpg://versnq_owner:${OWNER_DB_PASSWORD}@postgres:5432/versnq_test
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET: ${JWT_SECRET}
+  TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
+  SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY}
+  BASE_DOMAIN: ${BASE_DOMAIN:-core.versnq.in}
+  TRUST_PROXY_HEADERS: "true" # nginx always overwrites X-Forwarded-Host / -For
+  EMAIL_SENDER: ${EMAIL_SENDER:-mailbox}
+  INBOUND_EMAIL_DOMAIN: ${INBOUND_EMAIL_DOMAIN:-copy.versnq.in}
+  INBOUND_EMAIL_LIVE: ${INBOUND_EMAIL_LIVE:-false}
+  WHATSAPP_SENDER: ${WHATSAPP_SENDER:-test}
+  FILES_DIR: /app/var/files
+  DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+  DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-10}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.prod}
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD:?set OWNER_DB_PASSWORD in .env.prod}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env.prod}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d versnq"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+      RUN_MIGRATIONS: "1"
+    ports:
+      - "127.0.0.1:8100:8000"
+    volumes:
+      - files:/app/var/files
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    command: ["arq", "app.workers.main.WorkerSettings"]
+    environment: *backend-env
+    volumes:
+      - files:/app/var/files
+    depends_on:
+      - backend
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:3100:3000"
+    depends_on:
+      - backend
+
+  frontend-admin:
+    build: ./frontend-admin
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:3101:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  redisdata:
+  files: # uploaded documents: back up with the database

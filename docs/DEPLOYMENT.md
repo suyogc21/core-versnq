@@ -1,0 +1,117 @@
+# Versnq Core — deployment (the shared server)
+
+Core runs on the same server as AMS (`222.167.207.64`, hostname `versnq.in`), **in its own space**: its own folder, containers, database, Redis, files and ports. AMS, the website, n8n and suyogsalgo are never touched. The one thing they share is the host nginx, which Core adds its own files to.
+
+| | AMS | Core |
+|---|---|---|
+| Folder | `/opt/ams` | `/opt/core` |
+| Containers | `ams-*` | `core-*` (postgres, redis, backend, worker, frontend, frontend-admin) |
+| Ports (127.0.0.1 only) | 3000, 3001, 8000 | 3100 (app), 3101 (staff console), 8100 (API) |
+| Addresses | `<company>.ams.versnq.in`, `admin.versnq.in` | `<company>.core.versnq.in`, `admincore.versnq.in` |
+| nginx files | `ams-*`, `admin.versnq.in.conf`, `api.ams…` | `admincore.versnq.in.conf`, `core-company-<slug>.conf` |
+
+```
+browser ──https──> host nginx ──> <slug>.core.versnq.in   /api/v1 → 127.0.0.1:8100 (backend)
+                                                          the rest → 127.0.0.1:3100 (app)
+                                  admincore.versnq.in     /platform → 127.0.0.1:8100
+                                                          the rest → 127.0.0.1:3101 (staff console)
+backend + worker ──> core postgres, core redis (internal only)
+```
+
+API calls go **straight from nginx to the backend**, so rate limits and audit rows see each visitor's own address (nginx sets `X-Forwarded-For $remote_addr`, overwriting whatever the visitor sent).
+
+## One time: DNS (GoDaddy) — done Nov 13
+
+| Type | Name | Value |
+|---|---|---|
+| A | `*.core` | `222.167.207.64` |
+| A | `admincore` | `222.167.207.64` |
+
+## One time: get the code
+
+GitHub repo `suyogc21/core-versnq` is private, so the server pulls with its own **read-only deploy key**:
+
+```bash
+ssh-keygen -t ed25519 -N "" -C "core-deploy@versnq.in" -f /root/.ssh/core_deploy
+cat >> /root/.ssh/config <<'EOF'
+Host github-core
+  HostName github.com
+  User git
+  IdentityFile /root/.ssh/core_deploy
+  IdentitiesOnly yes
+EOF
+cat /root/.ssh/core_deploy.pub   # GitHub → repo → Settings → Deploy keys → Add (read-only)
+git clone git@github-core:suyogc21/core-versnq.git /opt/core
+```
+
+## One time: secrets
+
+```bash
+cd /opt/core && cp .env.prod.example .env.prod && chmod 600 .env.prod
+# fill every empty value with a fresh secret (commands at the top of the file)
+```
+
+`.env.prod` lives only on the server. Never commit it; never paste it into chat.
+
+## Start, or update after a `git push`
+
+```bash
+cd /opt/core
+git pull
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f docker-compose.prod.yml ps
+curl -s http://127.0.0.1:8100/health
+```
+
+The backend applies database migrations when it starts. The worker (sequences, reminders, mailbox sync, webhooks, WhatsApp health) starts with it.
+
+## One time: nginx + HTTPS for the staff console
+
+```bash
+cp /opt/core/infra/nginx/admincore.versnq.in.conf /etc/nginx/sites-available/
+ln -sf /etc/nginx/sites-available/admincore.versnq.in.conf /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+certbot --nginx -d admincore.versnq.in --non-interactive --agree-tos -m admin@versnq.in --redirect
+```
+
+## One time: the first Versnq staff account
+
+```bash
+cd /opt/core
+docker compose -f docker-compose.prod.yml exec backend python -m app.platform.cli create-staff
+```
+
+Sign in at `https://admincore.versnq.in` (2FA is required; there are no demo shortcuts in production).
+
+## Each new company
+
+1. Staff console → create the company (its slug, e.g. `brightlane`) and its owner.
+2. On the server: `/opt/core/infra/nginx/add-company.sh brightlane` — nginx block + HTTPS certificate for `brightlane.core.versnq.in` (the `*.core` DNS record already points here; certificates are per company because GoDaddy has no DNS API for a wildcard certificate).
+
+## What works on the server today, and what waits
+
+| Works | Waits on |
+|---|---|
+| Everything in the app, staff console, sign-in with 2FA | — |
+| Sending/receiving email through a **connected mailbox** (Gmail / Google Workspace / Zoho / any IMAP+SMTP, with an app password) | — |
+| WhatsApp **Chrome extension** for reps' own WhatsApp (load `extension/dist`; set its address to the company's `https://<slug>.core.versnq.in`) | — |
+| Company WhatsApp number | Meta Business verification; then `WHATSAPP_SENDER=meta` |
+| Copy-in addresses, company-wide sending | Amazon SES; then `INBOUND_EMAIL_LIVE=true` |
+| Invite and password-reset emails | A system mailbox / SES. Until then they are written to the backend log (`docker compose … logs backend`). |
+| Payment links | Razorpay / Stripe keys |
+
+## Not set up yet (the parked go-live work)
+
+- **Backups.** Nothing backs up Core's database or files yet. Before a real customer's data goes in: nightly `pg_dump` of `versnq` plus the `core_files` volume, kept off the server.
+- Error monitoring, log rotation, 2FA recovery codes (see `docs/OWNER-TODO.md`).
+
+## Useful
+
+```bash
+cd /opt/core
+docker compose -f docker-compose.prod.yml logs -f backend worker     # what's happening
+docker compose -f docker-compose.prod.yml restart backend worker
+docker compose -f docker-compose.prod.yml down                       # stops Core only; data kept
+```
+
+Never run `docker system prune --volumes` on this server: it would delete AMS's and Core's data.

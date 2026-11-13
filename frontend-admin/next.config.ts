@@ -14,6 +14,7 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone", // the production image (Dockerfile) runs the standalone server
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

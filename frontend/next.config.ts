@@ -14,6 +14,7 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone", // the production image (Dockerfile) runs the standalone server
   // Uploads pass through proxy.ts, which buffers bodies and silently cuts them at this size.
   // Files are at most 10 MB (Decision log #32); the backend also refuses any cut-off body.
   experimental: { proxyClientMaxBodySize: "11mb" },
