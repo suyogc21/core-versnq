@@ -30,6 +30,15 @@ class Settings(BaseSettings):
     trust_proxy_headers: bool = False
     # Dev/e2e only: save outgoing emails as files here instead of logging them. Ignored in prod.
     mail_outbox_dir: str | None = None
+    # Core's own emails (invites, password resets) go out through this mailbox (SMTP). Empty:
+    # they are only written to the log. On the server: the same no-reply mailbox AMS uses.
+    system_smtp_host: str | None = None
+    system_smtp_port: int = 587
+    system_smtp_security: Literal["ssl", "starttls"] = "starttls"
+    system_smtp_username: str | None = None
+    system_smtp_password: str | None = None
+    system_email_from: str | None = None
+    system_email_from_name: str = "Versnq"
     # Outside production: connected inboxes (step 9b-3) are read from <dir>/<address>/<folder>/
     # <uid>.eml instead of a real IMAP server, so mailbox sync can be tried without one.
     mailbox_test_dir: str | None = None

@@ -117,7 +117,7 @@ systemctl daemon-reload && systemctl enable --now core-provision-companies.timer
 | WhatsApp **Chrome extension** for reps' own WhatsApp (load `extension/dist`; set its address to the company's `https://<slug>.core.versnq.in`) | — |
 | Company WhatsApp number | Meta Business verification; then `WHATSAPP_SENDER=meta` |
 | Copy-in addresses, company-wide sending | Amazon SES; then `INBOUND_EMAIL_LIVE=true` |
-| Invite and password-reset emails | A system mailbox / SES. Until then they are written to the backend log (`docker compose … logs backend`). |
+| Invite and password-reset emails | Sent through the no-reply mailbox (`SYSTEM_SMTP_*` in `.env.prod`, the same Zoho mailbox AMS uses) |
 | Payment links | Razorpay / Stripe keys |
 
 ## Backups (nightly)

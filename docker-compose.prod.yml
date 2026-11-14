@@ -25,6 +25,14 @@ x-backend-env: &backend-env
   INBOUND_EMAIL_LIVE: ${INBOUND_EMAIL_LIVE:-false}
   WHATSAPP_SENDER: ${WHATSAPP_SENDER:-test}
   FILES_DIR: /app/var/files
+  # Core's own emails (invites, password resets): the no-reply mailbox (the same one AMS uses)
+  SYSTEM_SMTP_HOST: ${SYSTEM_SMTP_HOST:-}
+  SYSTEM_SMTP_PORT: ${SYSTEM_SMTP_PORT:-587}
+  SYSTEM_SMTP_SECURITY: ${SYSTEM_SMTP_SECURITY:-starttls}
+  SYSTEM_SMTP_USERNAME: ${SYSTEM_SMTP_USERNAME:-}
+  SYSTEM_SMTP_PASSWORD: ${SYSTEM_SMTP_PASSWORD:-}
+  SYSTEM_EMAIL_FROM: ${SYSTEM_EMAIL_FROM:-}
+  SYSTEM_EMAIL_FROM_NAME: ${SYSTEM_EMAIL_FROM_NAME:-Versnq}
   ALLOW_DEMO_DATA: ${ALLOW_DEMO_DATA:-false} # true: the invented demo companies may be added
   DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
   DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-10}
