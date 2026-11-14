@@ -343,3 +343,44 @@ Give the new session this file and this prompt:
 > You are building **Versnq ACE**, a separate product that plugs into **Versnq Core** (a multi-tenant CRM). Read `ACE-and-Core.md` fully first. It describes what Core already has, how ACE connects (API key + signed webhooks only, never Core's database), the rules ACE must respect, and the decisions made so far. ACE lives in its own project (D1). Do not change Core from the ACE project; list any Core changes ACE needs, and they are made in Core separately. Before writing code, propose ACE's plan for step ① (lead summary + intent): its data model, endpoints, console screens, how it receives Core webhooks and calls the Core API, AI prompts and guardrails, cost tracking, tests, and open questions. Wait for approval. Only built and tested features are described as available; everything else is "planned". Ask before adding any dependency. Client data is never sold, shared, or used to train models.
 
 The Core-side additions ACE needs (§9, "Core screens ACE needs") are built **in the Core project**, when ACE reaches the step that needs them.
+
+---
+
+## 13. Outreach and ACE: how they work together (Nov 14, Decision #44)
+
+**This section overrides older text in this file where they differ** (Decision #4 "campaigns in ACE's own database" and D4 "outbound sender" are replaced). Core's plan: `docs/plans/outreach-plan.md`.
+
+### The split
+
+| Core does (the hands) | ACE does (the brain) |
+|---|---|
+| Connects any number of inboxes per company (pool), sends campaigns and sequences rotating across them, limits, spacing, tracking, unsubscribe, suppression | Reads each reply and decides its **intent** from the company's own categories |
+| Holds cold **contacts** (apart from leads) and **campaigns** | Writes a short **summary** and the **reasons** for the intent |
+| Holds the company's **reply categories** and **rules** ("if Interested: make it a lead, assign, draft a reply…") and **runs** the rules | **Drafts** the answer from the company's knowledge base, in the same thread |
+| Stores **drafts**; approve / edit / reject in Core's inbox; sends the approved one from the same inbox | Runs the **Slack app**: posts each draft with Approve / Edit / Reject and calls Core when someone clicks |
+| Emits events; keeps the full trail on the contact / lead | Keeps its own knowledge base, prompts, usage and cost per company |
+
+**ACE must not build:** its own email sender, its own contact or audience database, its own campaign scheduler, or n8n workflows. Those are Core's (or the customer's own n8n on Core's webhooks).
+
+### The loop for one reply
+
+1. A reply arrives in any pool inbox. Core stores it and emits `message.received` (built). For campaign replies the payload will also carry `campaign_id` and `contact_id` (Planned, O2).
+2. ACE fetches the message and the thread (`GET /conversations/{id}`), and the company's categories (`GET /reply-categories`, Planned O3: key, name, description written by the company, which ACE uses in its prompt).
+3. ACE sends its verdict: `PUT /messages/{id}/classification` with `{category, confidence, summary, reasons}` (Planned O3). Core records it, emits `reply.classified`, and **runs the company's rules** for that category: e.g. convert the contact to a lead (owner by the rule, intent hot/warm), stop the campaign for them, create a task, notify.
+4. If a rule says "draft a reply", Core emits `draft.requested`. ACE writes the draft: `POST /conversations/{id}/drafts` with `{body, reasons}` (Planned O3). Core emits `draft.created`.
+5. Approval, in either place:
+   - **Core inbox:** a person approves, edits or rejects.
+   - **Slack (ACE):** ACE posts the draft; a click calls `POST /drafts/{id}/approve` (optionally with the edited body) or `/reject`, on behalf of the Slack user mapped to a Core user (mapping by email in ACE's console).
+   Core sends the approved draft from the same inbox in the same thread and emits `draft.approved` / `message.sent`.
+6. **Every company starts in drafts-only mode** (#42). Auto-send without approval can later be allowed per category by the company (e.g. "Out of office": no reply; "Unsubscribe": Core stops everything, no AI needed).
+
+### Rules for ACE
+
+- Ignore events whose `actor_user_id` is ACE's own integration user (built, C2).
+- Never send directly; always through a Core draft or a Core endpoint, so Core's rules (window, opt-out, suppression, limits) always apply.
+- Low confidence: classify as the company's "Needs a human" category; never guess.
+- Branch on refusal `code`s (§5), not on sentences.
+
+### Message for the ACE session (paste this)
+
+> Core and ACE now split the work this way (Decision #44, `ACE-and-Core.md` §13, and Core's `docs/plans/outreach-plan.md`). **Core** owns inboxes, cold contacts, campaigns, sending, rotation, tracking, reply categories, rules and drafts storage. **ACE** owns intent classification against the company's own categories, summaries, drafted replies from the knowledge base, and a Slack app for approving drafts. ACE does **not** build a sender, a contact/audience database, a campaign scheduler or n8n flows; drop those from the ACE plan (Decision #4 and D4 are replaced). Please (1) update `docs/plans/ace-plan.md` to this split, (2) list the Core endpoints and events ACE needs from §13 with the exact fields you want, and anything missing, and (3) propose how the Slack app maps Slack users to Core users and handles Approve / Edit / Reject. Mark everything Core hasn't built yet as Planned (O1–O5). Wait for approval before code.
