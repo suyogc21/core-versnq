@@ -49,7 +49,7 @@ class MailboxIn(BaseModel):
 
 class MailboxOut(BaseModel):
     id: uuid.UUID
-    user_id: uuid.UUID
+    user_id: uuid.UUID | None
     user_name: str
     email_address: str
     username: str
@@ -63,6 +63,7 @@ class MailboxOut(BaseModel):
     connected_at: datetime
     last_sync_at: datetime | None
     synced: int  # emails kept from this mailbox
+    in_pool: bool = False  # also a sending inbox for sequences / campaigns (O1)
 
 
 class Exclusions(BaseModel):
@@ -94,11 +95,14 @@ async def _out(db, mb: Mailbox) -> MailboxOut:
         connected_at=mb.connected_at,
         last_sync_at=mb.last_sync_at,
         synced=synced or 0,
+        in_pool=mb.in_pool,
     )
 
 
 async def _mine(db, actor: CurrentUser) -> Mailbox | None:
-    return await db.scalar(select(Mailbox).where(Mailbox.user_id == actor.user.id))
+    return await db.scalar(
+        select(Mailbox).where(Mailbox.user_id == actor.user.id, Mailbox.personal)
+    )
 
 
 # ---------- my mailbox ----------
@@ -164,7 +168,9 @@ async def disconnect_mine(db: CrmDb, actor: Replier) -> None:
 # ---------- admins ----------
 @router.get("/mailboxes", response_model=list[MailboxOut])
 async def list_mailboxes(db: CrmDb, actor: Admin) -> list[MailboxOut]:
-    rows = (await db.scalars(select(Mailbox).order_by(Mailbox.email_address))).all()
+    rows = (
+        await db.scalars(select(Mailbox).where(Mailbox.personal).order_by(Mailbox.email_address))
+    ).all()  # people's own mailboxes; company sending inboxes are listed under /sending-inboxes
     return [await _out(db, mb) for mb in rows]
 
 

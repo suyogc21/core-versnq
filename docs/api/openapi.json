@@ -6612,6 +6612,20 @@
         "title": "IdentityOut",
         "type": "object"
       },
+      "ImportIn": {
+        "properties": {
+          "csv": {
+            "maxLength": 200000,
+            "title": "Csv",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csv"
+        ],
+        "title": "ImportIn",
+        "type": "object"
+      },
       "ImportOut": {
         "properties": {
           "created_at": {
@@ -6719,6 +6733,40 @@
         "title": "ImportOut",
         "type": "object"
       },
+      "ImportRow": {
+        "properties": {
+          "email_address": {
+            "title": "Email Address",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "row": {
+            "title": "Row",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "row",
+          "email_address",
+          "ok"
+        ],
+        "title": "ImportRow",
+        "type": "object"
+      },
       "InboxCounts": {
         "properties": {
           "mine_unread": {
@@ -6735,6 +6783,341 @@
           "waiting"
         ],
         "title": "InboxCounts",
+        "type": "object"
+      },
+      "InboxIn": {
+        "properties": {
+          "daily_limit": {
+            "default": 30,
+            "maximum": 2000.0,
+            "minimum": 1.0,
+            "title": "Daily Limit",
+            "type": "integer"
+          },
+          "email_address": {
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email Address",
+            "type": "string"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "imap_host": {
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            "title": "Imap Host",
+            "type": "string"
+          },
+          "imap_port": {
+            "default": 993,
+            "title": "Imap Port",
+            "type": "integer"
+          },
+          "min_gap_minutes": {
+            "default": 6,
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Min Gap Minutes",
+            "type": "integer"
+          },
+          "password": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          },
+          "smtp_host": {
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            "title": "Smtp Host",
+            "type": "string"
+          },
+          "smtp_port": {
+            "default": 587,
+            "title": "Smtp Port",
+            "type": "integer"
+          },
+          "smtp_security": {
+            "default": "starttls",
+            "enum": [
+              "ssl",
+              "starttls"
+            ],
+            "title": "Smtp Security",
+            "type": "string"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          }
+        },
+        "required": [
+          "email_address",
+          "password",
+          "imap_host",
+          "smtp_host"
+        ],
+        "title": "InboxIn",
+        "type": "object"
+      },
+      "InboxOut": {
+        "properties": {
+          "bounces_7d": {
+            "title": "Bounces 7D",
+            "type": "integer"
+          },
+          "daily_limit": {
+            "title": "Daily Limit",
+            "type": "integer"
+          },
+          "email_address": {
+            "title": "Email Address",
+            "type": "string"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_sync_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sync At"
+          },
+          "min_gap_minutes": {
+            "title": "Min Gap Minutes",
+            "type": "integer"
+          },
+          "paused_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused Reason"
+          },
+          "personal": {
+            "title": "Personal",
+            "type": "boolean"
+          },
+          "replies_7d": {
+            "title": "Replies 7D",
+            "type": "integer"
+          },
+          "sent_7d": {
+            "title": "Sent 7D",
+            "type": "integer"
+          },
+          "sent_today": {
+            "title": "Sent Today",
+            "type": "integer"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email_address",
+          "personal",
+          "user_id",
+          "user_name",
+          "from_name",
+          "signature",
+          "daily_limit",
+          "min_gap_minutes",
+          "status",
+          "paused_reason",
+          "last_error",
+          "last_sync_at",
+          "sent_today",
+          "sent_7d",
+          "replies_7d",
+          "bounces_7d"
+        ],
+        "title": "InboxOut",
+        "type": "object"
+      },
+      "InboxPatch": {
+        "properties": {
+          "daily_limit": {
+            "anyOf": [
+              {
+                "maximum": 2000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daily Limit"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "min_gap_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Gap Minutes"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "title": "InboxPatch",
         "type": "object"
       },
       "InstallmentOut": {
@@ -10300,6 +10683,11 @@
             "title": "Imap Port",
             "type": "integer"
           },
+          "in_pool": {
+            "default": false,
+            "title": "In Pool",
+            "type": "boolean"
+          },
           "last_error": {
             "anyOf": [
               {
@@ -10344,9 +10732,16 @@
             "type": "integer"
           },
           "user_id": {
-            "format": "uuid",
-            "title": "User Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
           },
           "user_name": {
             "title": "User Name",
@@ -36997,6 +37392,423 @@
         "summary": "Set Score Settings",
         "tags": [
           "organise"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes": {
+      "get": {
+        "operationId": "sending inboxes-list_inboxes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InboxOut"
+                  },
+                  "title": "Response Sending Inboxes-List Inboxes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Inboxes",
+        "tags": [
+          "sending inboxes"
+        ]
+      },
+      "post": {
+        "description": "Signs in to the inbox (IMAP and SMTP) before saving it.",
+        "operationId": "sending inboxes-add_inbox",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboxIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Inbox",
+        "tags": [
+          "sending inboxes"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes/import": {
+      "post": {
+        "description": "CSV with a header row: email, password, and optionally provider (gmail / zoho_in / zoho),\nimap_host, imap_port, smtp_host, smtp_port, smtp_security, username, from_name, owner_email,\ndaily_limit, min_gap_minutes. Each row is checked on its own; bad rows are reported, not\nsaved.",
+        "operationId": "sending inboxes-import_inboxes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ImportRow"
+                  },
+                  "title": "Response Sending Inboxes-Import Inboxes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Import Inboxes",
+        "tags": [
+          "sending inboxes"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes/{mb_id}": {
+      "delete": {
+        "description": "Takes it out of the pool. A company inbox is also disconnected (password forgotten); a\nuser's own mailbox stays theirs. Emails already sent and received stay on the leads.",
+        "operationId": "sending inboxes-remove_inbox",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Inbox",
+        "tags": [
+          "sending inboxes"
+        ]
+      },
+      "patch": {
+        "operationId": "sending inboxes-update_inbox",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboxPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Inbox",
+        "tags": [
+          "sending inboxes"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes/{mb_id}/add": {
+      "post": {
+        "description": "Adds a user's own connected mailbox to the pool.",
+        "operationId": "sending inboxes-add_personal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Personal",
+        "tags": [
+          "sending inboxes"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes/{mb_id}/check": {
+      "post": {
+        "operationId": "sending inboxes-check_inbox",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Check Inbox",
+        "tags": [
+          "sending inboxes"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes/{mb_id}/pause": {
+      "post": {
+        "operationId": "sending inboxes-pause_inbox",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Pause Inbox",
+        "tags": [
+          "sending inboxes"
+        ]
+      }
+    },
+    "/api/v1/sending-inboxes/{mb_id}/resume": {
+      "post": {
+        "operationId": "sending inboxes-resume_inbox",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mb_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mb Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Resume Inbox",
+        "tags": [
+          "sending inboxes"
         ]
       }
     },

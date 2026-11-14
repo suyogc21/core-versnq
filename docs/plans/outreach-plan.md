@@ -29,8 +29,8 @@ This replaces Decision #4 (campaigns in ACE's own database) and settles ACE's D4
 
 | Step | What | Depends on |
 |---|---|---|
-| **H1** | Hide what isn't 100%: company WhatsApp number until it's live with Meta, copy-in addresses until inbound mail is live | — |
-| **O1** | **Mailbox pool**: any number of inboxes per company; bulk connect; limits, spacing and health per inbox; auto-pause; sequences send from the pool | — |
+| **H1 ✅** | Hide what isn't 100% (built Nov 14): company WhatsApp number until it's live with Meta, copy-in addresses until inbound mail is live | — |
+| **O1 ✅** | **Mailbox pool** (built Nov 14): any number of inboxes per company; bulk connect; limits, spacing and health per inbox; auto-pause; sequences send from the pool | — |
 | O2 | Campaigns: cold contact lists (CSV), steps with variants, rotation across the pool, sending windows, tracking on/off, own tracking domain, master inbox, convert to lead | O1 |
 | O3 | Reply intelligence hooks: the company's reply categories, rules (category → actions), drafts stored in Core with approve/edit/reject in the inbox; the API ACE uses | O2, ACE |
 | O4 | Slack approval (in ACE) | O3 |
@@ -71,9 +71,7 @@ No new table: sends are counted from `messages` (`mailbox_id`, already there), s
 
 ### Endpoints
 
-- `GET/POST /mailboxes` (pool list, connect one), `POST /mailboxes/import` (CSV, each row checked, a report per row), `PATCH /mailboxes/{id}` (limits, owner, name, signature, on/off, pool), `POST /mailboxes/{id}/check`, `POST /mailboxes/{id}/resume`, `DELETE /mailboxes/{id}`.
-- `GET /mailboxes/health` (the table).
-- Refusals carry codes (`mailbox_limit_reached`, `mailbox_paused`, `no_sending_inbox`).
+**Built (Nov 14):** `GET/POST /sending-inboxes` (list with health; connect one), `POST /sending-inboxes/import` (CSV, each row signed in to, a report per row), `PATCH /sending-inboxes/{id}` (sender name, signature, owner, limits, new password), `POST /sending-inboxes/{id}/add` (a person's own mailbox joins the pool), `/check`, `/pause`, `/resume`, `DELETE /sending-inboxes/{id}`. Refusal code `mailbox_exists`. Bounce reports arriving in any inbox are matched to the email sent and recorded (hard bounces suppress the address); a pool inbox above 5% bounces over its last 50 sends (at least 20) is paused and owners/admins told. Defaults: 30 a day, 6-minute gap; health visible to admins and managers (API; screen for admins).
 
 ### Tests
 

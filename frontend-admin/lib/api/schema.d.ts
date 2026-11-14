@@ -4364,6 +4364,143 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sending-inboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Inboxes */
+        get: operations["sending inboxes-list_inboxes"];
+        put?: never;
+        /**
+         * Add Inbox
+         * @description Signs in to the inbox (IMAP and SMTP) before saving it.
+         */
+        post: operations["sending inboxes-add_inbox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sending-inboxes/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Inboxes
+         * @description CSV with a header row: email, password, and optionally provider (gmail / zoho_in / zoho),
+         *     imap_host, imap_port, smtp_host, smtp_port, smtp_security, username, from_name, owner_email,
+         *     daily_limit, min_gap_minutes. Each row is checked on its own; bad rows are reported, not
+         *     saved.
+         */
+        post: operations["sending inboxes-import_inboxes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sending-inboxes/{mb_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Inbox
+         * @description Takes it out of the pool. A company inbox is also disconnected (password forgotten); a
+         *     user's own mailbox stays theirs. Emails already sent and received stay on the leads.
+         */
+        delete: operations["sending inboxes-remove_inbox"];
+        options?: never;
+        head?: never;
+        /** Update Inbox */
+        patch: operations["sending inboxes-update_inbox"];
+        trace?: never;
+    };
+    "/api/v1/sending-inboxes/{mb_id}/add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Personal
+         * @description Adds a user's own connected mailbox to the pool.
+         */
+        post: operations["sending inboxes-add_personal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sending-inboxes/{mb_id}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check Inbox */
+        post: operations["sending inboxes-check_inbox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sending-inboxes/{mb_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Inbox */
+        post: operations["sending inboxes-pause_inbox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sending-inboxes/{mb_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Inbox */
+        post: operations["sending inboxes-resume_inbox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sequences": {
         parameters: {
             query?: never;
@@ -7737,6 +7874,11 @@ export interface components {
             /** Value Normalized */
             value_normalized: string;
         };
+        /** ImportIn */
+        ImportIn: {
+            /** Csv */
+            csv: string;
+        };
         /** ImportOut */
         ImportOut: {
             /**
@@ -7783,12 +7925,123 @@ export interface components {
             /** Updated Count */
             updated_count: number;
         };
+        /** ImportRow */
+        ImportRow: {
+            /** Email Address */
+            email_address: string;
+            /** Error */
+            error?: string | null;
+            /** Ok */
+            ok: boolean;
+            /** Row */
+            row: number;
+        };
         /** InboxCounts */
         InboxCounts: {
             /** Mine Unread */
             mine_unread: number;
             /** Waiting */
             waiting: number;
+        };
+        /** InboxIn */
+        InboxIn: {
+            /**
+             * Daily Limit
+             * @default 30
+             */
+            daily_limit: number;
+            /** Email Address */
+            email_address: string;
+            /** From Name */
+            from_name?: string | null;
+            /** Imap Host */
+            imap_host: string;
+            /**
+             * Imap Port
+             * @default 993
+             */
+            imap_port: number;
+            /**
+             * Min Gap Minutes
+             * @default 6
+             */
+            min_gap_minutes: number;
+            /** Password */
+            password: string;
+            /** Signature */
+            signature?: string | null;
+            /** Smtp Host */
+            smtp_host: string;
+            /**
+             * Smtp Port
+             * @default 587
+             */
+            smtp_port: number;
+            /**
+             * Smtp Security
+             * @default starttls
+             * @enum {string}
+             */
+            smtp_security: "ssl" | "starttls";
+            /** User Id */
+            user_id?: string | null;
+            /** Username */
+            username?: string | null;
+        };
+        /** InboxOut */
+        InboxOut: {
+            /** Bounces 7D */
+            bounces_7d: number;
+            /** Daily Limit */
+            daily_limit: number;
+            /** Email Address */
+            email_address: string;
+            /** From Name */
+            from_name: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Error */
+            last_error: string | null;
+            /** Last Sync At */
+            last_sync_at: string | null;
+            /** Min Gap Minutes */
+            min_gap_minutes: number;
+            /** Paused Reason */
+            paused_reason: string | null;
+            /** Personal */
+            personal: boolean;
+            /** Replies 7D */
+            replies_7d: number;
+            /** Sent 7D */
+            sent_7d: number;
+            /** Sent Today */
+            sent_today: number;
+            /** Signature */
+            signature: string | null;
+            /** Status */
+            status: string;
+            /** User Id */
+            user_id: string | null;
+            /** User Name */
+            user_name: string;
+        };
+        /** InboxPatch */
+        InboxPatch: {
+            /** Daily Limit */
+            daily_limit?: number | null;
+            /** From Name */
+            from_name?: string | null;
+            /** Min Gap Minutes */
+            min_gap_minutes?: number | null;
+            /** Password */
+            password?: string | null;
+            /** Signature */
+            signature?: string | null;
+            /** User Id */
+            user_id?: string | null;
         };
         /** InstallmentOut */
         InstallmentOut: {
@@ -8956,6 +9209,11 @@ export interface components {
             imap_host: string;
             /** Imap Port */
             imap_port: number;
+            /**
+             * In Pool
+             * @default false
+             */
+            in_pool: boolean;
             /** Last Error */
             last_error: string | null;
             /** Last Sync At */
@@ -8970,11 +9228,8 @@ export interface components {
             status: string;
             /** Synced */
             synced: number;
-            /**
-             * User Id
-             * Format: uuid
-             */
-            user_id: string;
+            /** User Id */
+            user_id: string | null;
             /** User Name */
             user_name: string;
             /** Username */
@@ -22187,6 +22442,280 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScoreSettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-list_inboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"][];
+                };
+            };
+        };
+    };
+    "sending inboxes-add_inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-import_inboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-remove_inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-update_inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-add_personal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-check_inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-pause_inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sending inboxes-resume_inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mb_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOut"];
                 };
             };
             /** @description Validation Error */

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
 import { CopyInAddress } from "@/components/crm/copy-in";
+import { SendingInboxes } from "@/components/crm/sending-inboxes";
 import { WhatsAppExtensionsAdmin } from "@/components/crm/wa-extension";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +32,10 @@ export default function InboxesSettingsPage() {
       <PageHeader back={{ href: "/settings", label: "Settings" }} title="Connected inboxes" />
       <div className="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-8">
         <p className="text-muted-foreground">
-          Each person connects their own mailbox under My account. Only emails with known leads are kept. Who sees an email follows who can see the lead,
+          The company&apos;s sending inboxes, and each person&apos;s own mailbox (connected under My account). Only emails with known leads are kept. Who sees an email follows who can see the lead,
           unless the person made the conversation private.
         </p>
+        <SendingInboxes />
         <Mailboxes />
         {copyOn && <CompanyCopyIn />}
         <WhatsAppExtensionsAdmin />
@@ -75,6 +77,20 @@ function Mailboxes() {
               </p>
             </div>
             <div className="ml-auto flex gap-1">
+              {m.status !== "off" && !m.in_pool && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    act(async () => {
+                      unwrap(await api.POST("/api/v1/sending-inboxes/{mb_id}/add", { params: { path: { mb_id: m.id } } }));
+                      await qc.invalidateQueries({ queryKey: ["sending-inboxes"] });
+                    }, () => "Added to the sending inboxes")
+                  }
+                >
+                  Add to sending inboxes
+                </Button>
+              )}
               {m.status !== "off" ? (
                 <Button
                   size="sm"

@@ -41,7 +41,7 @@ from app.modules.crm import leads as L
 from app.modules.crm.models import Lead, LeadIdentity
 from app.modules.crm.notify import notify
 from app.modules.engage import inbox as IB
-from app.modules.engage.models import Mailbox
+from app.modules.engage.models import Mailbox, Message
 from app.modules.money import mailbox as smtp
 from app.modules.settings.models import TenantSettings
 
@@ -56,7 +56,7 @@ SLACK = timedelta(minutes=10)
 SENT_NAMES = ("[Gmail]/Sent Mail", "Sent Items", "Sent", "Sent Messages", "INBOX.Sent")
 # These providers put emails sent through their SMTP in Sent themselves.
 SAVES_SENT = ("gmail.com", "googlemail.com", "office365.com", "outlook.com")
-HEADERS = "(UID BODY.PEEK[HEADER.FIELDS (FROM TO CC MESSAGE-ID DATE)])"
+HEADERS = "(UID BODY.PEEK[HEADER.FIELDS (FROM TO CC MESSAGE-ID DATE CONTENT-TYPE)])"
 
 
 # ---------- talking to the mail server ----------
@@ -249,7 +249,7 @@ async def check(mb: Mailbox, password: str) -> None:
 async def usable_mailbox(db: AsyncSession, user_id: uuid.UUID) -> Mailbox | None:
     """The user's connected mailbox to send from. One that needs its password again refuses,
     rather than silently sending from another address."""
-    mb = await db.scalar(select(Mailbox).where(Mailbox.user_id == user_id))
+    mb = await db.scalar(select(Mailbox).where(Mailbox.user_id == user_id, Mailbox.personal))
     if mb is None or mb.status == "off":
         return None
     if mb.status == "error":
@@ -343,12 +343,16 @@ async def _folder(
 
     picks: list[tuple[int, str, list[str]]] = []
     wanted: set[str] = set()
+    bounces: list[int] = []
     for uid in uids:
         head = heads.get(uid)
         if head is None:
             continue
         sender, recipients, _ = _people(head)
         outgoing = sent or sender == own
+        if not outgoing and is_bounce(head):
+            bounces.append(uid)
+            continue
         others = [a for a in (recipients if outgoing else [sender]) if a != own]
         others = [a for a in others if not excluded(a, exclusions)]
         if others:
@@ -377,10 +381,68 @@ async def _folder(
                 kept += stored is not None
         except Exception:  # noqa: BLE001 - logged; the email is skipped, the sync carries on
             log.exception("mailbox %s: could not keep email uid %s in %s", mb.id, uid, name)
+    for uid in bounces:
+        raw = await client.fetch(uid)
+        if raw:
+            try:
+                async with db.begin_nested():
+                    await record_bounce_report(db, raw)
+            except Exception:  # noqa: BLE001 - logged; the sync carries on
+                log.exception("mailbox %s: could not read bounce uid %s", mb.id, uid)
     if uids:
         state["last"] = uids[-1]
     mb.sync_state = {**(mb.sync_state or {}), name: state}
     return kept
+
+
+# ---------- bounces (step O1) ----------
+BOUNCERS = ("mailer-daemon@", "postmaster@")
+MSGID = re.compile(r"^Message-ID:\s*(<[^>\s]+>)", re.IGNORECASE | re.MULTILINE)
+HARD = re.compile(r"^Status:\s*5\.|\b5\.[0-9]\.[0-9]+\b|\b55[0-4]\b", re.MULTILINE)
+
+
+def is_bounce(head: bytes) -> bool:
+    """A delivery report from a mail server (a bounce), not a person's email."""
+    parsed = email.message_from_bytes(head, policy=email.policy.default)
+    sender = parseaddr(str(parsed.get("From", "")))[1].lower()
+    kind = str(parsed.get("Content-Type", "")).lower()
+    return sender.startswith(BOUNCERS) or ("multipart/report" in kind and "delivery-status" in kind)
+
+
+async def record_bounce_report(db: AsyncSession, raw: bytes) -> Message | None:
+    """Match a bounce to the email we sent (by the Message-ID quoted inside it) and record it:
+    a hard bounce suppresses the address and stops sequences; the sending inbox's health is
+    checked (it may be paused). Returns the matched email, or None."""
+    from app.modules.engage import engine as E
+    from app.modules.engage import pool as P
+
+    top = email.message_from_bytes(raw, policy=email.policy.default)
+    # every part decoded: the quoted original may be base64, or a whole message/rfc822 part
+    texts = [raw.decode("utf-8", "replace")]
+    for part in top.walk():
+        payload = part.get_payload(decode=True)
+        if isinstance(payload, bytes):
+            texts.append(payload.decode("utf-8", "replace"))
+        elif part.get_content_type() in ("message/rfc822", "text/rfc822-headers"):
+            texts.append(str(part.get_payload(0) if part.is_multipart() else part))
+    text = "\n".join(texts)
+    own_id = (top.get("Message-ID") or "").strip()
+    ids = [i for i in MSGID.findall(text) if i != own_id]
+    if not ids:
+        return None
+    msg = await db.scalar(
+        select(Message).where(
+            Message.direction == "out",
+            or_(Message.message_id_header.in_(ids), Message.provider_id.in_(ids)),
+        )
+    )
+    if msg is None or msg.bounced_at is not None:
+        return msg
+    hard = bool(HARD.search(text))
+    await E.record_bounce(db, msg, hard=hard, detail=str(top.get("Subject", "")))
+    if hard and msg.mailbox_id and (sender := await db.get(Mailbox, msg.mailbox_id)):
+        await P.check_health(db, sender)
+    return msg
 
 
 def _older_than_connect(raw: bytes, mb: Mailbox) -> bool:
@@ -435,7 +497,7 @@ async def run_due(tenant_id: uuid.UUID) -> int:
                 select(Mailbox.id).where(
                     or_(
                         Mailbox.sync_requested.is_(True),
-                        (Mailbox.status == "active")
+                        Mailbox.status.in_(("active", "paused"))  # paused: replies still come in
                         & or_(
                             Mailbox.last_sync_at.is_(None),
                             Mailbox.last_sync_at < L.now() - EVERY,

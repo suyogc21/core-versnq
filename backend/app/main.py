@@ -27,6 +27,7 @@ from app.modules.engage.extension import account as extension_account_router
 from app.modules.engage.extension import router as extension_router
 from app.modules.engage.inbox_router import router as inbox_router
 from app.modules.engage.mailbox_router import router as mailbox_router
+from app.modules.engage.pool_router import router as pool_router
 from app.modules.engage.router import public as engage_public_router
 from app.modules.engage.router import router as engage_router
 from app.modules.engage.whatsapp_router import public as whatsapp_public_router
@@ -89,6 +90,7 @@ app.include_router(engage_router)
 app.include_router(engage_public_router)
 app.include_router(inbox_router)
 app.include_router(mailbox_router)
+app.include_router(pool_router)
 app.include_router(extension_account_router)
 app.include_router(extension_router)
 app.include_router(whatsapp_router)

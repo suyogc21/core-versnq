@@ -60,6 +60,7 @@ REASONS = STOP_RULES | {
 STEPS_PER_RUN = 10  # check and task steps run straight on; this bounds one run
 MAX_SEND_TRIES = 3
 RETRY_AFTER = timedelta(minutes=15)
+POOL_WAIT = timedelta(minutes=5)  # every pool inbox busy: look again soon (O1)
 DUE_BATCH = 100
 
 
@@ -329,7 +330,8 @@ async def _check(db: AsyncSession, e: Enrolment, lead: Lead, cfg: dict) -> bool:
 async def _email(
     db: AsyncSession, e: Enrolment, seq: Sequence, step: SequenceStep, lead: Lead, tenant: Tenant
 ) -> str:
-    """Send one email step. Returns 'sent', 'skipped', 'retry' or a stop reason."""
+    """Send one email step. Returns 'sent', 'skipped', 'retry', 'wait' (no pool inbox free yet)
+    or a stop reason."""
     to = lead.primary_email
     if not to:
         await L.log(
@@ -365,7 +367,25 @@ async def _email(
     built = R.build_email(
         body, track_base=f"{base}/api/v1/t", token=token, unsubscribe_url=unsubscribe
     )
-    from_name, from_email = await S.sender_address(db, tenant.name)
+    # The company's pool of sending inboxes, when it has one (step O1, Decision log #44).
+    from app.modules.engage import pool as P
+
+    sender_mb = None
+    if await P.has_pool(db):
+        settings = await db.get(TenantSettings, tenant.id)
+        sender_mb = await P.pick(db, lead, settings.timezone)
+        if sender_mb is None:
+            return "wait"  # every inbox at its limit or inside its gap: try again shortly
+        owner = await db.get(User, sender_mb.user_id) if sender_mb.user_id else None
+        from_name = sender_mb.from_name or (owner.name if owner else tenant.name)
+        from_email = sender_mb.email_address
+        if sender_mb.signature:
+            body = f"{body}\n\n{sender_mb.signature}"
+            built = R.build_email(
+                body, track_base=f"{base}/api/v1/t", token=token, unsubscribe_url=unsubscribe
+            )
+    else:
+        from_name, from_email = await S.sender_address(db, tenant.name)
     header_id = S.new_message_id(from_email)
     from app.modules.engage import inbox as IB  # inbox builds on this module
 
@@ -388,10 +408,15 @@ async def _email(
         status="queued",
         message_id_header=header_id,
         conversation_id=conv.id,
+        mailbox_id=sender_mb.id if sender_mb else None,
     )
     db.add(msg)
     await db.flush()
     try:
+        if sender_mb is not None:
+            from app.modules.engage import mailsync as MS
+
+            sender_mb.last_sent_at = now()  # the gap counts from the attempt
         sent = await S.send(
             db,
             to=to,
@@ -402,6 +427,7 @@ async def _email(
             from_email=from_email,
             unsubscribe_url=unsubscribe,
             message_id=header_id,
+            box=MS.box(sender_mb) if sender_mb is not None else None,
         )
         msg.provider_id = sent["Message-ID"]
     except Invalid as err:
@@ -559,6 +585,9 @@ async def advance(db: AsyncSession, e: Enrolment, tenant: Tenant, settings: Tena
             outcome = await _email(db, e, seq, step, lead, tenant)
             if outcome == "retry":
                 e.next_run_at = now() + RETRY_AFTER
+                return
+            if outcome == "wait":  # no pool inbox free yet (O1)
+                e.next_run_at = now() + POOL_WAIT
                 return
             if outcome in REASONS:
                 await end(db, e, "stopped", outcome)

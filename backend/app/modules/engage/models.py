@@ -221,12 +221,23 @@ class CannedReply(TenantScoped, TimestampMixin, Base):
 
 
 class Mailbox(TenantScoped, TimestampMixin, Base):
-    """A user's own mailbox, connected by IMAP + SMTP with an app password (step 9b-3)."""
+    """An inbox connected by IMAP + SMTP with an app password (step 9b-3). `personal`: a user's
+    own "My mailbox" (one each). `in_pool`: the company may send sequences and campaigns from it,
+    within its daily limit and gap (step O1, Decision log #44). user_id: whose inbox it is
+    (optional for pool inboxes such as sales@)."""
 
     __tablename__ = "mailboxes"
     __table_args__ = (_fk("user_id", "users", "fk_mailboxes_user_same_tenant", "CASCADE"),)
 
-    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    personal: Mapped[bool] = mapped_column(Boolean, default=True)
+    in_pool: Mapped[bool] = mapped_column(Boolean, default=False)
+    from_name: Mapped[str | None] = mapped_column(String(120))
+    signature: Mapped[str | None] = mapped_column(Text)
+    daily_limit: Mapped[int] = mapped_column(Integer, default=30)
+    min_gap_minutes: Mapped[int] = mapped_column(Integer, default=6)
+    last_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    paused_reason: Mapped[str | None] = mapped_column(String(200))
     email_address: Mapped[str] = mapped_column(String(254))
     username: Mapped[str] = mapped_column(String(254))
     password_enc: Mapped[str | None] = mapped_column(Text)
@@ -235,7 +246,7 @@ class Mailbox(TenantScoped, TimestampMixin, Base):
     smtp_host: Mapped[str] = mapped_column(String(255))
     smtp_port: Mapped[int] = mapped_column(Integer)
     smtp_security: Mapped[str] = mapped_column(String(8))  # ssl / starttls
-    status: Mapped[str] = mapped_column(String(8), default="active")  # active / error / off
+    status: Mapped[str] = mapped_column(String(8), default="active")  # active/error/off/paused
     last_error: Mapped[str | None] = mapped_column(String(500))
     connected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     last_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
