@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Versnq Core overview</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--ink:#14171c;--muted:#5d6672;--line:#e3e6ea;
+  --brand:#2f5bea;--brand-soft:#e8eefe;--ok:#11845b;--ok-soft:#e3f5ec;
+  --warn:#a15c00;--warn-soft:#fdf1df;--no:#b4232c;--no-soft:#fbe7e8;
+  --wa:#1fa855;--wa-bg:#efeae2;--wa-out:#d9fdd3;--wa-in:#ffffff;--shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0f1115;--card:#171a20;--ink:#e8eaee;--muted:#9aa3ae;--line:#2a2f37;
+    --brand:#7c9bff;--brand-soft:#1e2740;--ok:#4fd19a;--ok-soft:#143327;--warn:#f0b35a;--warn-soft:#3a2a12;
+    --no:#ff7b84;--no-soft:#3d1a1d;--wa-bg:#0b141a;--wa-out:#005c4b;--wa-in:#202c33;--shadow:none}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 80px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+h1{font-size:28px;margin:0;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:4px 0 0}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:24px}
+nav.tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+nav.tabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+section{display:none}section.on{display:block}
+h2{font-size:22px;margin:0 0 6px;letter-spacing:-.01em}
+h3{font-size:16px;margin:0 0 8px}
+p.lead{color:var(--muted);margin:0 0 20px;max-width:760px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;vertical-align:middle}
+.ok{background:var(--ok-soft);color:var(--ok)}.warn{background:var(--warn-soft);color:var(--warn)}.no{background:var(--no-soft);color:var(--no)}.plan{background:var(--brand-soft);color:var(--brand)}
+ul.clean{list-style:none;padding:0;margin:0}ul.clean li{padding:7px 0;border-top:1px solid var(--line)}ul.clean li:first-child{border-top:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-top:0}
+.tablebox{overflow-x:auto}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:20px;border-radius:14px;background:var(--ok-soft);border:1px solid transparent;margin-bottom:18px}
+.verdict .big{font-size:34px}
+.verdict strong{font-size:18px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--brand-soft);padding:1px 5px;border-radius:5px}
+/* product map */
+.map{display:grid;gap:14px}
+.domain{border:2px dashed var(--line);border-radius:16px;padding:16px}
+.domain>.label{font-weight:700;margin-bottom:12px}
+.prod{border-radius:12px;padding:14px;border:1px solid var(--line);background:var(--card)}
+.prod b{display:block;font-size:16px}
+.prod .addr{font:12.5px ui-monospace,Menlo,monospace;color:var(--muted);display:block;margin-top:4px}
+.prod.core{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.ace{margin-top:10px;border-radius:10px;padding:10px;background:var(--brand-soft);font-size:13.5px}
+/* flow */
+.flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+.flow .node{flex:1 1 150px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.flow .node .ic{font-size:24px}
+.flow .arrow{align-self:center;color:var(--muted);font-size:20px}
+@media (max-width:640px){.flow .arrow{transform:rotate(90deg);width:100%;text-align:center}}
+/* demo */
+.demo{display:grid;grid-template-columns:1.15fr .85fr;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);min-height:420px}
+@media (max-width:820px){.demo{grid-template-columns:1fr}}
+.wa{background:var(--wa-bg);display:flex;flex-direction:column}
+.wa .bar{background:#008069;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.wa .av{width:34px;height:34px;border-radius:50%;background:#dfe5e7;color:#54656f;display:grid;place-items:center;font-weight:700}
+.wa .msgs{flex:1;padding:14px;display:flex;flex-direction:column;gap:6px;overflow:auto}
+.bub{max-width:78%;padding:6px 9px 4px;border-radius:8px;font-size:14px;box-shadow:0 1px .5px rgba(0,0,0,.13);opacity:0;transform:translateY(6px);transition:all .35s}
+.bub.show{opacity:1;transform:none}
+.bub.in{background:var(--wa-in);align-self:flex-start}
+.bub.out{background:var(--wa-out);align-self:flex-end}
+.bub small{display:block;text-align:right;font-size:10.5px;color:var(--muted)}
+.wa .typer{background:var(--card);padding:10px 14px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
+.panel{border-left:1px solid var(--line);display:flex;flex-direction:column}
+@media (max-width:820px){.panel{border-left:0;border-top:1px solid var(--line)}}
+.panel .ph{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.panel .pb{padding:14px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.hidden{display:none!important}
+.leadcard{border:1px solid var(--line);border-radius:10px;padding:12px}
+.leadcard .row{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13.5px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 11px;font:inherit;font-size:13.5px;cursor:pointer}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.flash{animation:flash 1.2s}
+@keyframes flash{0%{box-shadow:0 0 0 0 var(--brand)}40%{box-shadow:0 0 0 4px var(--brand-soft)}100%{box-shadow:none}}
+.steps{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0;flex-wrap:wrap}
+.steptext{flex:1 1 360px;background:var(--brand-soft);border-radius:10px;padding:10px 14px;min-height:48px}
+.steptext b{color:var(--brand)}
+.dots{display:flex;gap:5px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--brand)}
+.timeline{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:14px;margin-top:14px}
+.tl{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;opacity:0;transform:translateY(4px);transition:all .35s}
+.tl.show{opacity:1;transform:none}
+.tl:first-of-type{border-top:0}
+.tl .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;background:var(--ok-soft)}
+/* email demo */
+.mail{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.mstep{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card);opacity:.35;transition:opacity .3s,border-color .3s}
+.mstep.on{opacity:1;border-color:var(--brand)}
+.mstep .n{font-size:12px;color:var(--muted)}
+.callout{border-left:4px solid var(--warn);background:var(--warn-soft);padding:12px 14px;border-radius:8px;margin:14px 0}
+.callout.blue{border-color:var(--brand);background:var(--brand-soft)}
+footer{margin-top:40px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Versnq Core: the whole picture</h1>
+      <p class="sub">Products, how messages flow, what works today, and what's planned. Updated 14 Nov 2026.</p>
+    </div>
+    <span class="pill ok">Core is live at core.versnq.in</span>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-t="big" class="on">1 · Big picture</button>
+    <button data-t="wa">2 · WhatsApp (live demo)</button>
+    <button data-t="email">3 · Email (live demo)</button>
+    <button data-t="smart">4 · Us vs Smartlead</button>
+    <button data-t="status">5 · Good or bad?</button>
+    <button data-t="next">6 · What's next</button>
+  </nav>
+
+  <!-- 1 BIG PICTURE -->
+  <section id="big" class="on">
+    <h2>Three products under one name</h2>
+    <p class="lead">One domain (versnq.in). Each product has its own addresses, app, database and console, so one never affects another.</p>
+    <div class="map">
+      <div class="domain">
+        <div class="label">versnq.in: the website, one page per product</div>
+        <div class="grid g3">
+          <div class="prod">
+            <b>Versnq AMS</b>
+            <span class="muted small">Attendance, leave, payroll</span>
+            <span class="addr">&lt;company&gt;.ams.versnq.in</span>
+            <p class="small" style="margin:8px 0 0"><span class="pill ok">Live, real customers</span></p>
+          </div>
+          <div class="prod core">
+            <b>Versnq Core</b>
+            <span class="muted small">CRM: leads → deals → customers → invoices → payments, email, WhatsApp, inbox</span>
+            <span class="addr">&lt;company&gt;.core.versnq.in</span>
+            <p class="small" style="margin:8px 0 0"><span class="pill ok">Live (demos + Versnq)</span></p>
+            <div class="ace"><b style="font-size:14px">+ Versnq ACE</b> AI that reads conversations, scores intent, drafts replies, analyses calls. It plugs into Core. <span class="pill plan">Being built</span></div>
+          </div>
+          <div class="prod">
+            <b>Versnq Desk</b>
+            <span class="muted small">AI front desk on WhatsApp and phone for local businesses, done for you</span>
+            <span class="addr">runs on n8n.versnq.in</span>
+            <p class="small" style="margin:8px 0 0"><span class="pill warn">Own setup</span> <span class="muted">its CRM could move onto Core later</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px">How one company uses Core</h3>
+    <div class="flow">
+      <div class="node"><div class="ic">🏢</div><b>You create the company</b><div class="small muted">in the staff console</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">🔒</div><b>Its address goes live</b><div class="small muted">with HTTPS, within about 2 minutes, automatically</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">👥</div><b>The team signs in</b><div class="small muted">owner, managers, reps, finance; each sees only what their role allows</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="ic">📥</div><b>Leads come in</b><div class="small muted">web form, import, API, email, WhatsApp</div></div>
+    </div>
+
+    <h3 style="margin-top:28px">Where a lead's whole story lives</h3>
+    <div class="flow">
+      <div class="node"><div class="ic">✉️</div><b>Emails</b><div class="small muted">from the rep's own inbox and sequences</div></div>
+      <div class="node"><div class="ic">💬</div><b>WhatsApp</b><div class="small muted">company number + reps' own WhatsApp (extension)</div></div>
+      <div class="node"><div class="ic">📝</div><b>Calls, notes, tasks</b><div class="small muted">logged by the team</div></div>
+      <div class="node"><div class="ic">💰</div><b>Deals, invoices, payments</b><div class="small muted">balances and reminders</div></div>
+      <div class="arrow">→</div>
+      <div class="node" style="border-color:var(--brand)"><div class="ic">📇</div><b>One lead timeline</b><div class="small muted">everything, in order, in one place</div></div>
+    </div>
+  </section>
+
+  <!-- 2 WHATSAPP -->
+  <section id="wa">
+    <h2>WhatsApp: two lanes</h2>
+    <p class="lead">A company uses <b>one official number</b> for campaigns and automatic replies, and each <b>rep keeps their own WhatsApp</b>. Both lanes land on the same lead in Core.</p>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Lane A: the company's official number <span class="pill warn">Built · waits on Meta</span></h3>
+        <ul class="clean small">
+          <li>Approved templates for the first message; free text inside the 24-hour window</li>
+          <li>Automatic welcome and away replies; an unknown number becomes a new lead</li>
+          <li>STOP opts a person out; nothing automatic follows</li>
+          <li>WhatsApp steps in sequences; sent / delivered / read ticks</li>
+          <li>Payment reminders on WhatsApp</li>
+          <li class="muted">Goes live after Meta verifies the business. Until then it runs in test mode.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Lane B: the rep's own WhatsApp (Chrome extension) <span class="pill ok">Built · works now</span></h3>
+        <ul class="clean small">
+          <li>The rep keeps using their own WhatsApp (phone or Business app) through WhatsApp Web</li>
+          <li>A Versnq side panel shows who this person is in Core</li>
+          <li>One click links the chat to a lead, or creates the lead</li>
+          <li>The chat is saved on the lead's timeline and in the Core inbox</li>
+          <li><b>It never sends anything by itself.</b> The rep types in WhatsApp as always.</li>
+          <li class="muted">Tested on a stand-in page; the first try on real WhatsApp Web is next.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top:26px">Live demo: the extension, step by step</h3>
+    <div class="steps">
+      <div class="steptext" id="waText"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="dots" id="waDots"></div>
+        <button class="btn" id="waBack">Back</button>
+        <button class="btn pri" id="waNext">Next</button>
+        <button class="btn" id="waPlay">▶ Play</button>
+      </div>
+    </div>
+    <div class="demo">
+      <div class="wa">
+        <div class="bar"><div class="av">AR</div><div><b>Asha Rao</b><div style="font-size:12px;opacity:.85">+91 98765 43210 · online</div></div></div>
+        <div class="msgs" id="waMsgs">
+          <div class="bub in" data-s="1">Hi, is the Data Science course still open for January?<small>10:02</small></div>
+          <div class="bub out" data-s="4">Yes Asha! The batch starts 6 Jan. Shall I share the fees?<small>10:05 ✓✓</small></div>
+          <div class="bub in" data-s="4">Yes please. Can I pay in instalments?<small>10:06</small></div>
+          <div class="bub out" data-s="6">Sure: ₹80,000 in 4 instalments. I'll call you tomorrow at 11.<small>10:08 ✓✓</small></div>
+        </div>
+        <div class="typer">WhatsApp Web · the rep's own number · nothing changes in how they chat</div>
+      </div>
+      <div class="panel">
+        <div class="ph"><span>Versnq · side panel</span><span class="pill ok">Connected</span></div>
+        <div class="pb">
+          <div id="p0" class="muted small">Waiting for a chat to open…</div>
+          <div id="p1" class="hidden">
+            <div class="small muted">This number isn't in Core yet.</div>
+            <div class="leadcard" style="margin-top:8px"><b>Asha Rao</b><div class="small muted">+91 98765 43210</div></div>
+            <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" id="createBtn">Create lead</button><button class="btn">Link to a lead</button></div>
+          </div>
+          <div id="p2" class="hidden">
+            <div class="leadcard" id="lc">
+              <div style="display:flex;justify-content:space-between"><b>Asha Rao</b><span class="pill plan">New</span></div>
+              <div class="row"><span class="muted">Owner</span><span>Priya (you)</span></div>
+              <div class="row"><span class="muted">Source</span><span>WhatsApp</span></div>
+              <div class="row"><span class="muted">Stage</span><span id="stage">New</span></div>
+              <div class="row"><span class="muted">Next follow-up</span><span id="fu">—</span></div>
+            </div>
+            <div class="small" id="saved"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn">Add note</button><button class="btn" id="fuBtn">Set follow-up</button><button class="btn">Open in Core</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <b>In Core: Asha's lead timeline</b> <span class="small muted">· what the manager sees, no screenshots needed</span>
+      <div style="margin-top:8px" id="tlBox">
+        <div class="tl" data-s="2"><div class="ic">👤</div><div>Lead created from WhatsApp by Priya <div class="small muted">Owner: Priya · Source: WhatsApp</div></div></div>
+        <div class="tl" data-s="3"><div class="ic">💬</div><div>WhatsApp received: "Is the Data Science course still open…" <div class="small muted">via Priya's own WhatsApp</div></div></div>
+        <div class="tl" data-s="5"><div class="ic">💬</div><div>WhatsApp sent + received (2 messages) <div class="small muted">lead marked contacted · first response time recorded</div></div></div>
+        <div class="tl" data-s="7"><div class="ic">📅</div><div>Follow-up set: tomorrow 11:00 (call) <div class="small muted">a task appears on Priya's My Day</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 EMAIL -->
+  <section id="email">
+    <h2>Email: how it works today</h2>
+    <p class="lead">Core sends from <b>your own mailboxes</b> (Gmail, Google Workspace, Zoho, any mail server). Replies come back into Core, so the whole conversation sits on the lead.</p>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>Each rep's own inbox <span class="pill ok">Works now</span></h3>
+        <ul class="clean small">
+          <li>The rep connects their mailbox once (app password)</li>
+          <li>Replies written in Core go out <b>from their own address</b> and are saved in their Sent folder</li>
+          <li>Emails from leads are pulled in every few minutes, onto the lead and into the shared inbox</li>
+          <li>Emails the rep sends from Gmail itself are captured too</li>
+          <li>Personal emails can be excluded</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Sequences (automatic follow-ups) <span class="pill warn">Works · one company mailbox</span></h3>
+        <ul class="clean small">
+          <li>Steps: email, WhatsApp, wait, task; sending hours and a daily cap</li>
+          <li>Open pixel and tracked links; one-click unsubscribe (Gmail/Yahoo rules)</li>
+          <li>Stops on reply, bounce or unsubscribe; suppression list honoured</li>
+          <li><b>Today all sequence emails go from one company mailbox.</b> Sending from each rep's inbox, with rotation, is the plan (tab 6).</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top:26px">Live demo: one sequence email, start to finish</h3>
+    <div class="steps">
+      <div class="steptext" id="emText"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="emBack">Back</button>
+        <button class="btn pri" id="emNext">Next</button>
+      </div>
+    </div>
+    <div class="mail" id="mail">
+      <div class="mstep"><div class="n">Step 1</div><b>📤 Sent</b><div class="small muted">"Hi Asha, your free demo…" goes out from the mailbox with one-click unsubscribe</div></div>
+      <div class="mstep"><div class="n">Step 2</div><b>👁 Opened</b><div class="small muted">the open pixel fires; the lead shows "opened" (approximate, see note)</div></div>
+      <div class="mstep"><div class="n">Step 3</div><b>🔗 Clicked</b><div class="small muted">a tracked link records the click, then opens the real page</div></div>
+      <div class="mstep"><div class="n">Step 4</div><b>↩️ Replied</b><div class="small muted">her reply is pulled from the mailbox and lands on the lead</div></div>
+      <div class="mstep"><div class="n">Step 5</div><b>⏹ Sequence stops</b><div class="small muted">no more automatic emails; the owner is notified</div></div>
+      <div class="mstep"><div class="n">Step 6</div><b>📇 Full trail</b><div class="small muted">sent, opened, clicked, reply and stop, all on the timeline</div></div>
+    </div>
+
+    <div class="callout">
+      <b>About open tracking (the "pixel"):</b> Core <b>already adds</b> the pixel and tracked links. But opens are approximate everywhere, Smartlead included: Apple Mail and Gmail load images on their own servers. For cold email, many senders turn tracking <b>off</b> because pixels and tracked links can hurt inbox placement. Core can't switch tracking off per sequence yet; that's on the plan (tab 6). <b>Replies are the signal that counts</b>, and those are exact.
+    </div>
+    <div class="callout blue">
+      <b>About Amazon SES:</b> if every campaign goes from the customer's own connected inboxes (like Smartlead), <b>we don't need SES for campaigns</b>. SES would only be needed for Core's own system emails (invites, password resets) and copy-in addresses. A small transactional provider or a Versnq mailbox can cover those.
+    </div>
+  </section>
+
+  <!-- 4 SMARTLEAD -->
+  <section id="smart">
+    <h2>Us vs Smartlead</h2>
+    <p class="lead">Smartlead is a sending machine with a basic inbox; a CRM must be wired to it. Core <b>is</b> the CRM, so every email, WhatsApp, call, deal and payment is on one timeline. Where we're behind is high-volume cold sending.</p>
+    <div class="card tablebox">
+      <table>
+        <thead><tr><th>What</th><th>Smartlead</th><th>Versnq Core today</th></tr></thead>
+        <tbody>
+          <tr><td>Connect the customer's own inboxes</td><td>✅ many per company</td><td><span class="pill ok">Yes</span> one per rep + one company mailbox</td></tr>
+          <tr><td>Campaigns sent from each rep's own inbox</td><td>✅</td><td><span class="pill plan">Planned</span> today: one company mailbox</td></tr>
+          <tr><td>Rotate many inboxes, daily limit per inbox</td><td>✅</td><td><span class="pill plan">Planned</span> today: one daily cap</td></tr>
+          <tr><td>Inbox warm-up</td><td>✅ built in</td><td><span class="pill no">No</span> use a warm-up tool beside Core</td></tr>
+          <tr><td>Open and click tracking</td><td>✅ can be turned off</td><td><span class="pill warn">Yes</span> can't be turned off yet</td></tr>
+          <tr><td>Own tracking domain per customer</td><td>✅</td><td><span class="pill plan">Planned</span> today: the customer's core.versnq.in address</td></tr>
+          <tr><td>Replies collected, sequence stops on reply</td><td>✅</td><td><span class="pill ok">Yes</span></td></tr>
+          <tr><td>Unsubscribe, bounce and suppression</td><td>✅</td><td><span class="pill ok">Yes</span></td></tr>
+          <tr><td>Full trail on the lead, in a real CRM</td><td>needs a CRM integration</td><td><span class="pill ok">Yes, built in</span> plus WhatsApp, calls, deals, invoices</td></tr>
+          <tr><td>WhatsApp (official number + reps' own)</td><td>❌</td><td><span class="pill ok">Yes</span> (official number after Meta)</td></tr>
+          <tr><td>Deals, invoices, instalments, payment reminders</td><td>❌</td><td><span class="pill ok">Yes</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:10px">How to sell it honestly today: <i>"We connect your team's inboxes and WhatsApp, and every conversation lands on the lead, with follow-ups that stop when they reply."</i> Don't promise high-volume cold email with rotation and warm-up until the plan in tab 6 is built.</p>
+  </section>
+
+  <!-- 5 STATUS -->
+  <section id="status">
+    <h2>Are we good or bad?</h2>
+    <div class="verdict">
+      <div class="big">👍</div>
+      <div><strong>Good. Core is stable and live for demos and early use.</strong><br><span class="muted">Not yet ready for high-volume cold email, and the official WhatsApp number waits on Meta.</span></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Solid <span class="pill ok">Built and tested</span></h3>
+        <ul class="clean small">
+          <li>521 automated backend tests and 6 browser tests, all passing</li>
+          <li>Every main page checked as owner and as rep, on desktop and phone</li>
+          <li>Each company's data walled off by the database itself</li>
+          <li>Live on the server with HTTPS; new companies go live on their own in about 2 minutes</li>
+          <li>Nightly backup of the database and files (kept 14 days)</li>
+          <li>Leads, deals, customers, documents, invoices, payments, dashboards, inbox, sequences, WhatsApp (both lanes), API and webhooks</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Not yet <span class="pill warn">Known gaps</span></h3>
+        <ul class="clean small">
+          <li>Official WhatsApp number: waits on Meta business verification</li>
+          <li>Campaigns from reps' own inboxes, rotation, tracking switch, own tracking domain</li>
+          <li>One-click Google/Microsoft mailbox sign-in (Outlook needs it)</li>
+          <li>Backup copy off the server, error monitoring, 2FA recovery codes</li>
+          <li>Extension: first try on real WhatsApp Web</li>
+          <li>Updates to the server are slow until it can pull from GitHub (one deploy key)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 NEXT -->
+  <section id="next">
+    <h2>What's next (proposed)</h2>
+    <p class="lead">A revised email plan, so we can honestly say "we send from your inboxes, like Smartlead, and the trail is in your CRM". These are proposals to approve; none of them is built yet.</p>
+    <div class="grid g2">
+      <div class="card"><h3><span class="pill plan">E1</span> Send from each rep's own inbox</h3><p class="small muted">A sequence email goes out from the lead owner's connected mailbox, with a daily limit per inbox and rotation across the team's inboxes.</p></div>
+      <div class="card"><h3><span class="pill plan">E2</span> Tracking switch + own tracking domain</h3><p class="small muted">Tracking off by default for cold sequences. When on, links use the customer's own domain (e.g. track.theircompany.com).</p></div>
+      <div class="card"><h3><span class="pill plan">E3</span> Warm-up and inbox health</h3><p class="small muted">Use a warm-up partner beside Core; Core shows each inbox's bounces and replies and pauses a sick inbox.</p></div>
+      <div class="card"><h3><span class="pill plan">E4</span> System emails without SES</h3><p class="small muted">Invites and password resets through a small transactional provider or a Versnq mailbox, not campaign traffic.</p></div>
+    </div>
+    <h3 style="margin-top:24px">Also waiting</h3>
+    <ul class="clean small card">
+      <li><b>You:</b> Meta business verification (official WhatsApp number)</li>
+      <li><b>You, 1 minute:</b> add the server's read-only deploy key in GitHub, so updates take seconds</li>
+      <li><b>Together:</b> try the extension on real WhatsApp Web</li>
+      <li><b>Later:</b> ACE (being built in its own project), domain status in the staff console, Desk's CRM onto Core</li>
+    </ul>
+  </section>
+
+  <footer>Versnq Technologies · Versnq Core overview. "Built" means coded and tested; "Planned" means not built yet.</footer>
+</div>
+
+<script>
+// tabs
+const tabs = document.querySelectorAll("#tabs button");
+tabs.forEach(b => b.onclick = () => {
+  tabs.forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === b.dataset.t));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// WhatsApp extension demo
+const WA = [
+  "<b>Start.</b> Priya, a sales rep, opens WhatsApp Web in Chrome. The Versnq side panel is connected to her Core account.",
+  "<b>A new person writes</b> on Priya's own WhatsApp. The panel sees this number isn't in Core yet and offers to create the lead.",
+  "<b>One click: Create lead.</b> Asha becomes a lead, owned by Priya, source WhatsApp. No typing, no copy-paste.",
+  "<b>The chat is saved.</b> Asha's message is now on her lead's timeline in Core, where Priya's manager can see it.",
+  "<b>Priya replies on WhatsApp as usual.</b> The extension never sends anything; it only saves what's on the screen.",
+  "<b>Saved again, once.</b> New messages are added to the timeline. Messages already saved are never saved twice.",
+  "<b>Priya promises a call.</b> Still just normal WhatsApp.",
+  "<b>Follow-up set from the panel.</b> A task for tomorrow 11:00 appears on Priya's My Day, so the lead isn't forgotten.",
+];
+let ws = 0, timer = null;
+const dots = document.getElementById("waDots");
+WA.forEach(() => dots.appendChild(document.createElement("i")));
+function renderWA() {
+  document.getElementById("waText").innerHTML = WA[ws];
+  [...dots.children].forEach((d, i) => d.classList.toggle("on", i <= ws));
+  document.querySelectorAll("#waMsgs .bub").forEach(b => b.classList.toggle("show", +b.dataset.s <= ws));
+  document.querySelectorAll("#tlBox .tl").forEach(t => t.classList.toggle("show", +t.dataset.s <= ws));
+  document.getElementById("p0").classList.toggle("hidden", ws >= 1);
+  document.getElementById("p1").classList.toggle("hidden", ws !== 1);
+  document.getElementById("p2").classList.toggle("hidden", ws < 2);
+  document.getElementById("stage").textContent = ws >= 5 ? "Contacted" : "New";
+  document.querySelector("#lc .pill").textContent = ws >= 5 ? "Contacted" : "New";
+  document.getElementById("fu").textContent = ws >= 7 ? "Tomorrow 11:00" : "—";
+  const saved = ws >= 5 ? "✅ 4 messages saved to Core" : ws >= 3 ? "✅ 1 message saved to Core" : "";
+  document.getElementById("saved").textContent = saved;
+  if ([2, 3, 5, 7].includes(ws)) { const lc = document.getElementById("lc"); lc.classList.remove("flash"); void lc.offsetWidth; lc.classList.add("flash"); }
+  document.getElementById("waBack").disabled = ws === 0;
+  document.getElementById("waNext").disabled = ws === WA.length - 1;
+}
+document.getElementById("waNext").onclick = () => { ws = Math.min(ws + 1, WA.length - 1); renderWA(); };
+document.getElementById("waBack").onclick = () => { ws = Math.max(ws - 1, 0); renderWA(); };
+document.getElementById("createBtn").onclick = () => { ws = 2; renderWA(); };
+document.getElementById("fuBtn").onclick = () => { ws = WA.length - 1; renderWA(); };
+document.getElementById("waPlay").onclick = (e) => {
+  if (timer) { clearInterval(timer); timer = null; e.target.textContent = "▶ Play"; return; }
+  ws = 0; renderWA(); e.target.textContent = "⏸ Pause";
+  timer = setInterval(() => {
+    if (ws >= WA.length - 1) { clearInterval(timer); timer = null; e.target.textContent = "▶ Play"; return; }
+    ws++; renderWA();
+  }, 2600);
+};
+renderWA();
+
+// email demo
+const EM = [
+  "<b>Day 1, 10:00.</b> The sequence sends the first email from the company's connected mailbox, within sending hours and the daily cap.",
+  "<b>She opens it.</b> The pixel records an approximate open; the lead's sequence shows \"opened\".",
+  "<b>She clicks the link.</b> The click is recorded, then she lands on the real page.",
+  "<b>She replies.</b> Core pulls her reply from the mailbox and threads it with the email.",
+  "<b>The sequence stops by itself</b> so she never gets a follow-up after replying. Her owner is told.",
+  "<b>Everything is on her timeline.</b> The rep answers from Core, from their own address.",
+];
+let es = 0;
+function renderEM() {
+  document.getElementById("emText").innerHTML = EM[es];
+  [...document.getElementById("mail").children].forEach((m, i) => m.classList.toggle("on", i <= es));
+  document.getElementById("emBack").disabled = es === 0;
+  document.getElementById("emNext").disabled = es === EM.length - 1;
+}
+document.getElementById("emNext").onclick = () => { es = Math.min(es + 1, EM.length - 1); renderEM(); };
+document.getElementById("emBack").onclick = () => { es = Math.max(es - 1, 0); renderEM(); };
+renderEM();
+</script>
+</body>
+</html>
