@@ -4,12 +4,14 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { useAuth } from "@/lib/auth";
+import { useModules } from "@/lib/modules";
 import { SETTINGS_PAGES } from "@/lib/settings-nav";
 
 /** One home for everything that is set up once; the sidebar keeps the places you work in. */
 export default function SettingsHome() {
   const { can } = useAuth();
-  const pages = SETTINGS_PAGES.filter((p) => can(p.permission));
+  const modules = useModules();
+  const pages = SETTINGS_PAGES.filter((p) => can(p.permission) && (!p.module || modules?.[p.module]));
   const groups = [...new Set(pages.map((p) => p.group))];
   return (
     <>

@@ -31,6 +31,9 @@ MODULES: dict[str, Module] = {
     "money": Module("Invoices and payments", core=False, default=False),
     "key_accounts": Module("Key accounts add-on", core=False, default=False),
     "ace": Module("Versnq ACE add-on", core=False, default=False),
+    # Off until 100% live for the company (Decision log #44, H1). Versnq staff switch them on.
+    "whatsapp_number": Module("Company WhatsApp number (official API)", core=False, default=False),
+    "copy_in": Module("Copy-in email addresses", core=False, default=False),
 }
 
 

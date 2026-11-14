@@ -167,3 +167,13 @@ async def make_custom_role(
             for c in permissions
         )
     return role.id
+
+
+async def switch_on(tenant_id, *keys: str) -> None:
+    """Turn on modules that are off by default (e.g. whatsapp_number, copy_in; #44 H1)."""
+    from app.core.modules import set_module
+    from app.core.tenancy import tenant_session
+
+    async with tenant_session(tenant_id) as db:
+        for key in keys:
+            await set_module(db, tenant_id, key, True)

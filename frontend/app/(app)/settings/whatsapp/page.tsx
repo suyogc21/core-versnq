@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
+import { useModules } from "@/lib/modules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +43,21 @@ function useRun() {
 const copy = (text: string) => navigator.clipboard.writeText(text).then(() => toast.success("Copied"));
 
 export default function WhatsAppSettingsPage() {
+  const modules = useModules();
+  if (modules && !modules.whatsapp_number) {
+    return (
+      <>
+        <PageHeader back={{ href: "/settings", label: "Settings" }} title="WhatsApp" />
+        <p className="mx-auto max-w-3xl p-8 text-muted-foreground" data-wa-off>
+          The company WhatsApp number isn&apos;t switched on for your company yet. Your team can already save chats from their own WhatsApp with the Versnq extension.
+        </p>
+      </>
+    );
+  }
+  return <WhatsAppSettings />;
+}
+
+function WhatsAppSettings() {
   const [tab, setTab] = useState<Tab>("number");
   const account = useAccount();
   const tabs: [Tab, string][] = [

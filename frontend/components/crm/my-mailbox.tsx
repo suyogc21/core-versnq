@@ -14,6 +14,7 @@ import { unwrap } from "@/lib/api/errors";
 import { CopyInAddress } from "@/components/crm/copy-in";
 import { relative } from "@/lib/crm";
 import { type Mailbox, type ProviderKey, PROVIDERS, providerOf, useMyCopyIn, useMyMailbox } from "@/lib/mailboxes";
+import { useModuleOn } from "@/lib/modules";
 
 const STATUS: Record<string, [string, "secondary" | "destructive" | "outline"]> = {
   active: ["Syncing", "secondary"],
@@ -22,6 +23,7 @@ const STATUS: Record<string, [string, "secondary" | "destructive" | "outline"]> 
 
 /** "Connected inbox" on My account (step 9b-3): the user's own mailbox, by app password. */
 export function MyMailbox() {
+  const copyOn = useModuleOn("copy_in");
   const mine = useMyMailbox();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
@@ -86,7 +88,7 @@ export function MyMailbox() {
           }}
         />
       )}
-      <MyCopyIn />
+      {copyOn && <MyCopyIn />}
     </section>
   );
 }

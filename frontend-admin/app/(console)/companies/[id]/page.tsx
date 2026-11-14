@@ -24,6 +24,9 @@ const MODULES: Record<string, string> = {
   api: "Public API and webhooks",
   money: "Invoices and payments (parked)",
   ace: "Versnq ACE add-on",
+  key_accounts: "Key accounts add-on",
+  whatsapp_number: "Company WhatsApp number (turn on once live with Meta)",
+  copy_in: "Copy-in email addresses (turn on once inbound mail is live)",
 };
 const CORE_MODULES = new Set(["crm"]);
 

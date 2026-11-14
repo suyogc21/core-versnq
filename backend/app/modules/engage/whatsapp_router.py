@@ -17,6 +17,7 @@ from sqlalchemy import select
 from app.core import secrets as SEC
 from app.core.config import get_settings
 from app.core.errors import Invalid, NotFound
+from app.core.modules import require_module
 from app.modules.auth.deps import CurrentUser, TenantDb, WorkspaceDep, require
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
@@ -26,8 +27,10 @@ from app.modules.engage import whatsapp as WA
 from app.modules.engage.models import WhatsAppAccount, WhatsAppTemplate
 from app.modules.settings.models import TenantSettings
 
-router = APIRouter(prefix="/api/v1", tags=["whatsapp"], dependencies=CRM)
-public = APIRouter(prefix="/api/v1", tags=["whatsapp"])
+# The whole company-number lane answers 404 while its switch is off (Decision log #44, H1).
+NUMBER = [require_module("whatsapp_number")]
+router = APIRouter(prefix="/api/v1", tags=["whatsapp"], dependencies=[*CRM, *NUMBER])
+public = APIRouter(prefix="/api/v1", tags=["whatsapp"], dependencies=NUMBER)
 Manager = Annotated[CurrentUser, require("whatsapp.manage")]
 Replier = Annotated[CurrentUser, require("inbox.reply")]
 

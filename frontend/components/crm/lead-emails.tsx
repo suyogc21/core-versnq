@@ -15,6 +15,7 @@ import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 import { relative } from "@/lib/crm";
 import { useLeadConversations, useRefreshInbox } from "@/lib/inbox";
+import { useModuleOn } from "@/lib/modules";
 import { type WaTemplate, useWaTemplates } from "@/lib/whatsapp";
 
 /** The lead's conversations (email, and WhatsApp logged by the extension, step 10a) and a new
@@ -24,7 +25,8 @@ export function LeadEmails({ leadId, email, name }: { leadId: string; email: str
   const list = useLeadConversations(leadId);
   const [writing, setWriting] = useState(false);
   const [templating, setTemplating] = useState(false);
-  const wa = useWaTemplates(can("inbox.reply"));
+  const waOn = useModuleOn("whatsapp_number");
+  const wa = useWaTemplates(can("inbox.reply") && waOn);
   const approved = (wa.data ?? []).filter((t) => t.status === "approved");
   if (!can("inbox.reply")) return null;
   return (
@@ -46,7 +48,7 @@ export function LeadEmails({ leadId, email, name }: { leadId: string; email: str
         <Button size="sm" variant="outline" disabled={!email} title={email ? undefined : "Add an email address first"} onClick={() => setWriting(true)}>
           <Mail /> New email
         </Button>
-        {approved.length > 0 && (
+        {waOn && approved.length > 0 && (
           <Button size="sm" variant="outline" onClick={() => setTemplating(true)} data-company-wa>
             <MessageCircle /> Company WhatsApp
           </Button>

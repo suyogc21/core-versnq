@@ -15,6 +15,7 @@ from sqlalchemy import delete, func, select
 from app.core import secrets as SEC
 from app.core.config import get_settings
 from app.core.errors import Invalid, NotFound
+from app.core.modules import require_module
 from app.modules.auth.deps import CurrentUser, require
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
@@ -26,6 +27,8 @@ from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 from app.platform.models import Tenant
 
+# Copy-in addresses answer 404 while the company's switch is off (Decision log #44, H1).
+COPY_IN = [require_module("copy_in")]
 router = APIRouter(prefix="/api/v1", tags=["mailboxes"], dependencies=CRM)
 Replier = Annotated[CurrentUser, require("inbox.reply")]
 Admin = Annotated[CurrentUser, require("mailboxes.manage")]
@@ -275,13 +278,13 @@ async def _copy_in(db, actor: CurrentUser, user_id: uuid.UUID | None, *, new: bo
     return CI.address_of(tenant.slug, row.token), get_settings().inbound_email_live
 
 
-@router.get("/me/copy-in", response_model=CopyInOut)
+@router.get("/me/copy-in", response_model=CopyInOut, dependencies=COPY_IN)
 async def my_copy_in(db: CrmDb, actor: Replier) -> CopyInOut:
     address, live = await _copy_in(db, actor, actor.user.id)
     return CopyInOut(address=address, live=live)
 
 
-@router.post("/me/copy-in/reset", response_model=CopyInOut)
+@router.post("/me/copy-in/reset", response_model=CopyInOut, dependencies=COPY_IN)
 async def reset_my_copy_in(db: CrmDb, actor: Replier) -> CopyInOut:
     """A new address for this user; the old one stops working (if it leaked)."""
     address, live = await _copy_in(db, actor, actor.user.id, new=True)
@@ -299,17 +302,17 @@ async def _company(db, actor: CurrentUser, new: bool = False) -> CompanyCopyInOu
     )
 
 
-@router.get("/copy-in", response_model=CompanyCopyInOut)
+@router.get("/copy-in", response_model=CompanyCopyInOut, dependencies=COPY_IN)
 async def company_copy_in(db: CrmDb, actor: Admin) -> CompanyCopyInOut:
     return await _company(db, actor)
 
 
-@router.post("/copy-in/reset", response_model=CompanyCopyInOut)
+@router.post("/copy-in/reset", response_model=CompanyCopyInOut, dependencies=COPY_IN)
 async def reset_company_copy_in(db: CrmDb, actor: Admin) -> CompanyCopyInOut:
     return await _company(db, actor, new=True)
 
 
-@router.put("/copy-in", response_model=CompanyCopyInOut)
+@router.put("/copy-in", response_model=CompanyCopyInOut, dependencies=COPY_IN)
 async def set_copy_in(body: CopyInSettings, db: CrmDb, actor: Admin) -> CompanyCopyInOut:
     """Whether an email with someone unknown creates a lead (off by default), and its source."""
     if body.create_leads:
@@ -327,7 +330,7 @@ async def set_copy_in(body: CopyInSettings, db: CrmDb, actor: Admin) -> CompanyC
     return await _company(db, actor)
 
 
-@router.post("/inbox/test-copy-in", response_model=list[CopyInResult])
+@router.post("/inbox/test-copy-in", response_model=list[CopyInResult], dependencies=COPY_IN)
 async def test_copy_in(
     request: Request,
     to: Annotated[str, Query(max_length=320)],

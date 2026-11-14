@@ -339,8 +339,11 @@ async def set_steps(s_id: uuid.UUID, body: list[StepIn], db: CrmDb, actor: Manag
                 raise Invalid(f"Step {i}: choose an email template")
             cfg = {"template_id": str(t.id)}
         elif st.kind == "whatsapp":
+            from app.core.modules import is_enabled
             from app.modules.engage.models import WhatsAppTemplate
 
+            if not await is_enabled(db, actor.user.tenant_id, "whatsapp_number"):
+                raise Invalid(f"Step {i}: the company WhatsApp number isn't switched on")
             t = await db.get(WhatsAppTemplate, st.template_id) if st.template_id else None
             if t is None:
                 raise Invalid(f"Step {i}: choose a WhatsApp template")

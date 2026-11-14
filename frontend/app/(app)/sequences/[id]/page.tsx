@@ -26,6 +26,7 @@ import {
 } from "@/lib/sequences";
 import { useTags } from "@/lib/organise";
 import { cn } from "@/lib/utils";
+import { useModuleOn } from "@/lib/modules";
 import { useWaTemplates, WA_STATUS } from "@/lib/whatsapp";
 
 type Tab = "steps" | "results" | "people" | "settings";
@@ -126,7 +127,7 @@ const NEW: Record<StepIn["kind"], Partial<StepIn>> = {
 
 function Steps({ seq }: { seq: Sequence }) {
   const templates = useTemplates();
-  const waTemplates = useWaTemplates();
+  const waTemplates = useWaTemplates(useModuleOn("whatsapp_number"));
   const tags = useTags();
   const fields = useFields();
   const refresh = useRefreshSequences();
@@ -292,7 +293,7 @@ function Steps({ seq }: { seq: Sequence }) {
 // ---------- results ----------
 function Results({ seq }: { seq: Sequence }) {
   const stats = useSequenceStats(seq.id);
-  const waTemplates = useWaTemplates();
+  const waTemplates = useWaTemplates(useModuleOn("whatsapp_number"));
   const templates = useTemplates();
   if (!stats.data) return <p className="text-sm text-muted-foreground">Loading…</p>;
   const d = stats.data;

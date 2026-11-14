@@ -17,7 +17,7 @@ from app.modules.engage import whatsapp as WA
 from app.modules.engage.models import Conversation, Enrolment, Message, WhatsAppAccount
 from app.modules.settings.models import TenantSettings
 from tests.crm.helpers import new_lead, setup_ids
-from tests.factories import login_as, make_workspace
+from tests.factories import login_as, make_workspace, switch_on
 
 SECRET = "app-secret-123"
 ALWAYS = {"from": "00:00", "to": "24:00", "days": [0, 1, 2, 3, 4, 5, 6], "daily_cap": 200}
@@ -47,6 +47,7 @@ def fake_meta(monkeypatch):
 @pytest.fixture
 async def ws(client_for):
     tenant_id, slug = await make_workspace()
+    await switch_on(tenant_id, "whatsapp_number")
     async with tenant_session(tenant_id) as db:
         (await db.get(TenantSettings, tenant_id)).engage = dict(ALWAYS)
     _, admin = await login_as(tenant_id, "admin")
@@ -392,6 +393,7 @@ async def test_extension_chats_and_the_company_number_stay_apart_and_companies_t
         ext_conv = await _conversation(db, lead_row, A)
         assert ext_conv.id != official.id and ext_conv.whatsapp_account_id is None
     other_id, other_slug = await make_workspace()
+    await switch_on(other_id, "whatsapp_number")
     oc = client_for(other_slug)
     raw = json.dumps(_payload(_text("919876543210", "x"))).encode()
     sig = "sha256=" + hmac.new(SECRET.encode(), raw, hashlib.sha256).hexdigest()
@@ -598,3 +600,28 @@ async def test_company_number_messages_raise_message_events(ws):
     assert got[1][1]["_actor"]["actor_type"] == "user"
     await _deliver(c, _payload(_text("919876543210", "STOP")))  # ACE sees the STOP too
     assert [t for t, _ in await events()][-1] == "message.received"
+
+
+async def test_company_number_is_hidden_and_refused_while_switched_off(ws):
+    from app.core.modules import set_module
+
+    tenant_id, c, admin = ws
+    lead = await _lead(c, admin)
+    tpl = await _template(c, admin)
+    async with tenant_session(tenant_id) as db:
+        await set_module(db, tenant_id, "whatsapp_number", False)
+        assert await WA.account(db) is None  # sends, reminders and replies all see "not connected"
+    for path in ("/api/v1/whatsapp/account", "/api/v1/whatsapp/templates"):
+        assert (await c.get(path, headers=admin)).status_code == 404
+    r = await c.post(
+        f"/api/v1/leads/{lead['id']}/whatsapp", json={"template_id": tpl["id"]}, headers=admin
+    )
+    assert r.status_code == 404
+    assert (await c.post("/api/v1/whatsapp/webhook", content=b"{}")).status_code == 404
+    s = (await c.post("/api/v1/sequences", json={"name": "S"}, headers=admin)).json()
+    r = await c.put(
+        f"/api/v1/sequences/{s['id']}/steps",
+        json=[{"kind": "whatsapp", "template_id": tpl["id"]}],
+        headers=admin,
+    )
+    assert r.status_code == 422 and "isn't switched on" in r.text

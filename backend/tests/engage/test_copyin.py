@@ -14,7 +14,7 @@ from app.modules.crm.models import Lead
 from app.modules.engage import copyin as CI
 from app.modules.engage.models import Message
 from tests.crm.helpers import new_lead, setup_ids
-from tests.factories import login_as, make_workspace
+from tests.factories import login_as, make_workspace, switch_on
 
 
 @pytest.fixture(autouse=True)
@@ -29,6 +29,7 @@ def files_dir(tmp_path):
 @pytest.fixture
 async def ws(client_for):
     tenant_id, slug = await make_workspace()
+    await switch_on(tenant_id, "copy_in")
     _, admin = await login_as(tenant_id, "admin")
     return tenant_id, client_for(slug), admin
 
@@ -165,7 +166,20 @@ async def test_the_test_endpoint_and_isolation(ws, client_for):
 
     # another company's slug with this company's token finds nothing
     other_id, other_slug = await make_workspace()
+    await switch_on(other_id, "copy_in")
     token = addr.split("@")[0].rsplit("-", 1)[1]
     forged = f"{other_slug}-{token}@{get_settings().inbound_email_domain}"
     assert await CI.receive(_mail("asha@client.example", "x@y.example", "Forged"), [forged]) == []
     assert len(await _msgs(tenant_id)) == 1 and await _msgs(other_id) == []
+
+
+async def test_copy_in_is_hidden_and_ignored_while_switched_off(ws):
+    from app.core.modules import set_module
+
+    tenant_id, c, admin = ws
+    addr = (await c.get("/api/v1/copy-in", headers=admin)).json()["address"]
+    async with tenant_session(tenant_id) as db:
+        await set_module(db, tenant_id, "copy_in", False)
+    for path in ("/api/v1/copy-in", "/api/v1/me/copy-in"):
+        assert (await c.get(path, headers=admin)).status_code == 404
+    assert await CI.receive(_mail("asha@client.example", "x@y.example", "Hi"), [addr]) == []

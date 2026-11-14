@@ -30,6 +30,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
+from app.core.modules import is_enabled
 from app.core.tenancy import platform_session, tenant_session
 from app.modules.crm import intake as I
 from app.modules.crm import leads as L
@@ -102,6 +103,9 @@ async def receive(raw: bytes, recipients: list[str]) -> list[Result]:
             )
         if tenant_id is None:
             continue
+        async with tenant_session(tenant_id) as tdb:
+            if not await is_enabled(tdb, tenant_id, "copy_in"):  # switched off (#44, H1)
+                continue
         async with tenant_session(tenant_id) as db:
             row = await db.scalar(select(CopyInAddress).where(CopyInAddress.token == hit["token"]))
             if row is None:

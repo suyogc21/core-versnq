@@ -199,7 +199,13 @@ def test_mode() -> bool:
 
 
 async def account(db: AsyncSession) -> WhatsAppAccount | None:
-    return await db.scalar(select(WhatsAppAccount))
+    """The connected number, only while the company's "whatsapp_number" switch is on (#44)."""
+    from app.core.modules import is_enabled
+
+    acct = await db.scalar(select(WhatsAppAccount))
+    if acct is None or not await is_enabled(db, acct.tenant_id, "whatsapp_number"):
+        return None
+    return acct
 
 
 async def require_account(db: AsyncSession) -> WhatsAppAccount:

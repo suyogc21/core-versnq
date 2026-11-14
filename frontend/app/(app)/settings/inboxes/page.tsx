@@ -16,6 +16,7 @@ import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import { relative, useSources } from "@/lib/crm";
 import { useCompanyCopyIn, useExclusions, useMailboxes } from "@/lib/mailboxes";
+import { useModuleOn } from "@/lib/modules";
 
 const STATUS: Record<string, [string, "secondary" | "destructive" | "outline"]> = {
   active: ["Syncing", "secondary"],
@@ -24,6 +25,7 @@ const STATUS: Record<string, [string, "secondary" | "destructive" | "outline"]> 
 };
 
 export default function InboxesSettingsPage() {
+  const copyOn = useModuleOn("copy_in");
   return (
     <>
       <PageHeader back={{ href: "/settings", label: "Settings" }} title="Connected inboxes" />
@@ -33,7 +35,7 @@ export default function InboxesSettingsPage() {
           unless the person made the conversation private.
         </p>
         <Mailboxes />
-        <CompanyCopyIn />
+        {copyOn && <CompanyCopyIn />}
         <WhatsAppExtensionsAdmin />
         <Exclusions />
       </div>
