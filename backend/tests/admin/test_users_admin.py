@@ -5,6 +5,7 @@ from sqlalchemy import select, text
 from app.core.tenancy import tenant_session
 from app.modules.audit.models import AuditLog
 from tests.factories import login_as, make_workspace
+from tests.http_fixtures import sign_in
 
 INVITE = "/api/v1/users"
 
@@ -110,7 +111,7 @@ async def test_disable_revokes_sessions_and_blocks_login(ws):
     from tests.factories import PASSWORD, make_user
 
     rep, email = await make_user(tenant_id)
-    login = await c.post("/api/v1/auth/login", json={"email": email, "password": PASSWORD})
+    login = await sign_in(c, email, PASSWORD)
     refresh = login.cookies["user_refresh"]
 
     assert (await c.post(f"/api/v1/users/{rep}/disable", headers=admin)).json()["status"] == (
@@ -119,9 +120,7 @@ async def test_disable_revokes_sessions_and_blocks_login(ws):
     assert (
         await c.post("/api/v1/auth/refresh", headers={"Cookie": f"user_refresh={refresh}"})
     ).status_code == 401
-    assert (
-        await c.post("/api/v1/auth/login", json={"email": email, "password": PASSWORD})
-    ).status_code == 401
+    assert (await sign_in(c, email, PASSWORD)).status_code == 401
     enabled = await c.post(f"/api/v1/users/{rep}/enable", headers=admin)
     assert enabled.json()["status"] == "active" and role
 
@@ -141,7 +140,7 @@ async def test_temporary_password_restricts_user(ws):
     r = await c.post(f"/api/v1/users/{rep}/temporary-password", headers=admin)
     temp = r.json()["temporary_password"]
 
-    login = await c.post("/api/v1/auth/login", json={"email": email, "password": temp})
+    login = await sign_in(c, email, temp)
     me = await c.get(
         "/api/v1/auth/me", headers={"Authorization": f"Bearer {login.json()['access_token']}"}
     )

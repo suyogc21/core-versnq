@@ -8,14 +8,16 @@ import { useForm } from "react-hook-form";
 import { AuthCard } from "@/components/app/auth-card";
 import { Field } from "@/components/app/field";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth";
+import { type CodeMethod, useAuth } from "@/lib/auth";
 
 type Creds = { email: string; password: string };
 
 export default function LoginPage() {
-  const { status, login, verifyTwoFactor } = useAuth();
+  const { status, login, verifyTwoFactor, resendCode } = useAuth();
   const router = useRouter();
   const [challenge, setChallenge] = useState<string | null>(null);
+  const [method, setMethod] = useState<CodeMethod>("app");
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const creds = useForm<Creds>();
   const code = useForm<{ code: string }>();
@@ -28,7 +30,11 @@ export default function LoginPage() {
     setError(null);
     try {
       const result = await login(email, password);
-      if (!result.done) setChallenge(result.challengeToken);
+      if (!result.done) {
+        setMethod(result.method);
+        setNotice(null);
+        setChallenge(result.challengeToken);
+      }
     } catch (e) {
       setError((e as Error).message);
     }
@@ -43,9 +49,27 @@ export default function LoginPage() {
     }
   });
 
+  const resend = async () => {
+    setError(null);
+    try {
+      await resendCode(challenge as string);
+      setNotice("A new code is on its way. The earlier one no longer works.");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
   if (challenge) {
+    const byEmail = method === "email";
     return (
-      <AuthCard title="Two-factor code" description="Enter the 6-digit code from your authenticator app.">
+      <AuthCard
+        title={byEmail ? "Check your email" : "Two-factor code"}
+        description={
+          byEmail
+            ? `We emailed a 6-digit code to ${creds.getValues("email")}. It works for 10 minutes. This browser will be remembered for 30 days.`
+            : "Enter the 6-digit code from your authenticator app."
+        }
+      >
         <form onSubmit={submitCode} className="space-y-4">
           <Field
             id="code"
@@ -57,9 +81,15 @@ export default function LoginPage() {
             error={error ?? undefined}
             {...code.register("code", { required: true, pattern: /^\d{6}$/ })}
           />
+          {notice ? <p className="text-xs text-muted-foreground">{notice}</p> : null}
           <Button type="submit" className="w-full" disabled={code.formState.isSubmitting}>
             Verify
           </Button>
+          {byEmail ? (
+            <button type="button" className="w-full text-xs text-muted-foreground hover:underline" onClick={resend}>
+              Didn&apos;t get it? Send a new code
+            </button>
+          ) : null}
           <button type="button" className="w-full text-xs text-muted-foreground" onClick={() => setChallenge(null)}>
             Use a different account
           </button>

@@ -3,6 +3,7 @@ import uuid
 from app.core.security import create_access_token
 from tests.auth.conftest import bearer, cookie
 from tests.factories import PASSWORD, make_user, make_workspace, staff_headers
+from tests.http_fixtures import sign_in
 
 LOGIN, REFRESH, LOGOUT, LOGOUT_ALL, ME = (
     "/api/v1/auth/login",
@@ -15,7 +16,7 @@ GENERIC_401 = "Invalid email or password"
 
 
 async def _login(client, email, password=PASSWORD):
-    return await client.post(LOGIN, json={"email": email, "password": password})
+    return await sign_in(client, email, password)
 
 
 async def test_login_returns_tokens_and_me_works(client_for):

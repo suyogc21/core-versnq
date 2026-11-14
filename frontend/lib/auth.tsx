@@ -9,7 +9,8 @@ import type { components } from "@/lib/api/schema";
 
 export type Me = components["schemas"]["MeOut"];
 type Status = "loading" | "signed-out" | "signed-in";
-type LoginResult = { done: true } | { done: false; challengeToken: string };
+export type CodeMethod = "app" | "email";
+type LoginResult = { done: true } | { done: false; challengeToken: string; method: CodeMethod };
 
 type AuthState = {
   status: Status;
@@ -17,6 +18,7 @@ type AuthState = {
   can: (permission: string) => boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
   verifyTwoFactor: (challengeToken: string, code: string) => Promise<void>;
+  resendCode: (challengeToken: string) => Promise<void>;
   reloadMe: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -43,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string): Promise<LoginResult> => {
       const data = unwrap(await api.POST("/api/v1/auth/login", { body: { email, password } }));
       if (data.two_factor_required && data.challenge_token) {
-        return { done: false, challengeToken: data.challenge_token };
+        return { done: false, challengeToken: data.challenge_token, method: data.two_factor_method ?? "app" };
       }
       tokenStore.set(data.access_token ?? null);
       await reloadMe();
@@ -63,6 +65,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [reloadMe],
   );
 
+  const resendCode = useCallback(async (challengeToken: string) => {
+    unwrap(await api.POST("/api/v1/auth/2fa/resend", { body: { challenge_token: challengeToken } }));
+  }, []);
+
   const logout = useCallback(async () => {
     await api.POST("/api/v1/auth/logout").catch(() => undefined);
     tokenStore.set(null);
@@ -74,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const can = useCallback((permission: string) => Boolean(me?.permissions.includes(permission)), [me]);
 
   return (
-    <AuthContext.Provider value={{ status, me, can, login, verifyTwoFactor, reloadMe, logout }}>
+    <AuthContext.Provider value={{ status, me, can, login, verifyTwoFactor, resendCode, reloadMe, logout }}>
       {children}
     </AuthContext.Provider>
   );

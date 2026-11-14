@@ -2,7 +2,7 @@
 import { request, type APIRequestContext } from "@playwright/test";
 
 import { E2E_STAFF_PASSWORD } from "../playwright.config";
-import { CLIENT, STAFF, tokenFromEmail, totp } from "./helpers";
+import { CLIENT, codesSentTo, newCode, STAFF, tokenFromEmail, totp } from "./helpers";
 
 type Json = Record<string, unknown>;
 
@@ -18,7 +18,7 @@ async function call(ctx: APIRequestContext, method: string, url: string, token?:
 
 const tokens = new Map<string, string>(); // one sign-in per account per test run
 
-/** Sign in, turning on 2FA the first time. Returns an access token. */
+/** Sign in (staff: turning on 2FA the first time; company people: the emailed code). Returns an access token. */
 async function signInWith2fa(ctx: APIRequestContext, base: string, prefix: string, email: string, password: string) {
   const known = tokens.get(email);
   if (known) return known;
@@ -28,7 +28,12 @@ async function signInWith2fa(ctx: APIRequestContext, base: string, prefix: strin
 }
 
 async function firstSignIn(ctx: APIRequestContext, base: string, prefix: string, email: string, password: string) {
-  const login = await call(ctx, "POST", `${base}${prefix}/auth/login`, undefined, { email, password });
+  const before = codesSentTo(email).length;
+  let login = await call(ctx, "POST", `${base}${prefix}/auth/login`, undefined, { email, password });
+  if (login.two_factor_method === "email") {
+    const code = await newCode(email, before);
+    login = await call(ctx, "POST", `${base}${prefix}/auth/2fa/verify`, undefined, { challenge_token: login.challenge_token, code });
+  }
   if (login.access_token) {
     const me = await call(ctx, "GET", `${base}${prefix}/auth/me`, login.access_token);
     if (!me.restrictions.includes("two_factor_setup_required")) return login.access_token as string;

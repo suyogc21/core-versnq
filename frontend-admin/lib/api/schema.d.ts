@@ -122,7 +122,7 @@ export interface paths {
         /**
          * Disable Two Factor
          * @description Turn off 2FA (e.g. before moving to a new phone). Needs the password and a current code.
-         *     Roles that require 2FA are sent straight back to setup.
+         *     Sign-in then asks for an emailed code instead.
          */
         post: operations["auth-disable_two_factor"];
         delete?: never;
@@ -142,6 +142,26 @@ export interface paths {
         put?: never;
         /** Enable Two Factor */
         post: operations["auth-enable_two_factor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resend Code
+         * @description Email a new sign-in code (the old one stops working). Once a minute at most.
+         */
+        post: operations["auth-resend_code"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6483,6 +6503,11 @@ export interface components {
              */
             unit_id: string;
         };
+        /** ChallengeIn */
+        ChallengeIn: {
+            /** Challenge Token */
+            challenge_token: string;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
@@ -9072,6 +9097,8 @@ export interface components {
              * @default bearer
              */
             token_type: string;
+            /** Two Factor Method */
+            two_factor_method?: ("app" | "email") | null;
             /**
              * Two Factor Required
              * @default false
@@ -12813,6 +12840,41 @@ export interface operations {
             };
         };
     };
+    "auth-resend_code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChallengeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "auth-setup_two_factor": {
         parameters: {
             query?: never;
@@ -12902,7 +12964,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                user_device?: string | null;
+            };
         };
         requestBody: {
             content: {

@@ -81,7 +81,7 @@ cd /opt/core
 docker compose -f docker-compose.prod.yml exec backend python -m app.platform.cli create-staff
 ```
 
-Sign in at `https://admincore.versnq.in` (2FA is required; there are no demo shortcuts in production).
+Sign in at `https://admincore.versnq.in` (the authenticator app is required for staff; there are no demo shortcuts in production). Company users get an emailed sign-in code instead, on each new browser (Decision #45).
 
 ## Demo companies (invented data)
 
@@ -92,7 +92,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec backend pyth
 for s in brightlane acme bluewave; do /opt/core/infra/nginx/add-company.sh $s; done
 ```
 
-It adds Brightlane Software (B2B SaaS), Acme Academy (EdTech) and Bluewave Realty (real estate, AED), prints every demo sign-in and one shared password **once**. There is no demo staff account and no 2FA shortcut on the server: Owner and Admin demo logins set up 2FA on first sign-in; sales reps don't need it. Each company is walled off from the others, including real ones.
+It adds Brightlane Software (B2B SaaS), Acme Academy (EdTech) and Bluewave Realty (real estate, AED), prints every demo sign-in and one shared password **once**. There is no demo staff account on the server. Demo sign-ins need only the password: their invented `*.demo` addresses can't receive the emailed sign-in code, so none is sent (anyone who turned on the authenticator app uses it). Each company is walled off from the others, including real ones.
 
 ## Each new company (automatic)
 
@@ -117,7 +117,7 @@ systemctl daemon-reload && systemctl enable --now core-provision-companies.timer
 | WhatsApp **Chrome extension** for reps' own WhatsApp (load `extension/dist`; set its address to the company's `https://<slug>.core.versnq.in`) | — |
 | Company WhatsApp number | Meta Business verification; then `WHATSAPP_SENDER=meta` |
 | Copy-in addresses, company-wide sending | Amazon SES; then `INBOUND_EMAIL_LIVE=true` |
-| Invite and password-reset emails | Sent through the no-reply mailbox (`SYSTEM_SMTP_*` in `.env.prod`, the same Zoho mailbox AMS uses) |
+| Invite, password-reset and sign-in code emails | Sent from `support@versnq.in` (`SYSTEM_SMTP_*` in `.env.prod`, the same Zoho mailbox AMS uses) |
 | Payment links | Razorpay / Stripe keys |
 
 ## Backups (nightly)

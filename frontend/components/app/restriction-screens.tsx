@@ -107,19 +107,3 @@ export function TwoFactorSetupForm({ onDone }: { onDone: () => Promise<void> | v
     </form>
   );
 }
-
-/** Owner and Admin must turn on two-factor authentication before anything else. */
-export function TwoFactorSetupScreen() {
-  const { reloadMe, logout } = useAuth();
-  return (
-    <AuthCard
-      title="Turn on two-factor authentication"
-      description="Your role protects the whole workspace, so a second step is required. Scan the code with Google Authenticator, Microsoft Authenticator or 1Password."
-    >
-      <TwoFactorSetupForm onDone={reloadMe} />
-      <button type="button" className="mt-3 w-full text-xs text-muted-foreground" onClick={logout}>
-        Sign out
-      </button>
-    </AuthCard>
-  );
-}

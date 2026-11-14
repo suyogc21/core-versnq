@@ -1,4 +1,5 @@
-"""DEMO_SKIP_2FA: invented demo accounts skip 2FA setup on a developer's machine only."""
+"""DEMO_SKIP_2FA: invented demo staff skip 2FA setup on a developer's machine only. Company users
+never have to set up the app (Decision #45)."""
 
 import pytest
 from pydantic import ValidationError
@@ -26,8 +27,9 @@ def demo_on(monkeypatch):
     monkeypatch.setattr(get_settings(), "demo_skip_2fa", True)
 
 
-def test_owner_needs_2fa_by_default():
-    assert restrictions(_user("owner@acme.demo"), OWNER) == ["two_factor_setup_required"]
+def test_owner_never_has_to_set_up_the_app():
+    assert restrictions(_user("riya@acme-academy.in"), OWNER) == []
+    assert restrictions(_user("owner@acme.demo"), OWNER) == []
 
 
 def test_demo_owner_and_demo_staff_skip_2fa_when_switched_on(demo_on):
@@ -35,9 +37,7 @@ def test_demo_owner_and_demo_staff_skip_2fa_when_switched_on(demo_on):
     assert staff_service.restrictions(_staff("staff@demo.versnq.in")) == []
 
 
-def test_real_people_still_need_2fa_when_switched_on(demo_on):
-    assert restrictions(_user("riya@acme-academy.in"), OWNER) == ["two_factor_setup_required"]
-    assert restrictions(_user("x@demo.example.com"), OWNER) == ["two_factor_setup_required"]
+def test_real_staff_still_need_2fa_when_switched_on(demo_on):
     assert staff_service.restrictions(_staff("suyog@versnq.in")) == ["two_factor_setup_required"]
     assert staff_service.restrictions(_staff("x@notdemo.versnq.in")) == [
         "two_factor_setup_required"

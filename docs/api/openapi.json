@@ -2391,6 +2391,19 @@
         "title": "CellOut",
         "type": "object"
       },
+      "ChallengeIn": {
+        "properties": {
+          "challenge_token": {
+            "title": "Challenge Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_token"
+        ],
+        "title": "ChallengeIn",
+        "type": "object"
+      },
       "ChangePasswordIn": {
         "properties": {
           "current_password": {
@@ -10306,6 +10319,21 @@
             "default": "bearer",
             "title": "Token Type",
             "type": "string"
+          },
+          "two_factor_method": {
+            "anyOf": [
+              {
+                "enum": [
+                  "app",
+                  "email"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Two Factor Method"
           },
           "two_factor_required": {
             "default": false,
@@ -20627,7 +20655,7 @@
     },
     "/api/v1/auth/2fa/disable": {
       "post": {
-        "description": "Turn off 2FA (e.g. before moving to a new phone). Needs the password and a current code.\nRoles that require 2FA are sent straight back to setup.",
+        "description": "Turn off 2FA (e.g. before moving to a new phone). Needs the password and a current code.\nSign-in then asks for an emailed code instead.",
         "operationId": "auth-disable_two_factor",
         "requestBody": {
           "content": {
@@ -20699,6 +20727,50 @@
           }
         ],
         "summary": "Enable Two Factor",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/resend": {
+      "post": {
+        "description": "Email a new sign-in code (the old one stops working). Once a minute at most.",
+        "operationId": "auth-resend_code",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Auth-Resend Code",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resend Code",
         "tags": [
           "auth"
         ]
@@ -20808,6 +20880,24 @@
     "/api/v1/auth/login": {
       "post": {
         "operationId": "auth-login",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "user_device",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Device"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {

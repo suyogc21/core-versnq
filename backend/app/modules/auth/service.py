@@ -6,7 +6,6 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import skips_2fa_for_demo
 from app.core.security import (
     DUMMY_PASSWORD_HASH,
     REFRESH_TOKEN_DAYS,
@@ -20,7 +19,6 @@ from app.modules.auth.models import AuthToken, UserSession
 from app.modules.roles.models import Role
 from app.modules.users.models import User
 
-REQUIRES_2FA = frozenset({"owner", "admin"})
 RESET_TTL = timedelta(minutes=60)
 INVITE_TTL = timedelta(hours=72)
 
@@ -177,10 +175,9 @@ async def change_password(db: AsyncSession, user: User, current: str, new: str) 
 
 
 def restrictions(user: User, role: Role) -> list[str]:
-    """What the user must do before using the rest of Core."""
+    """What the user must do before using the rest of Core. The authenticator app is optional
+    (Decision log #45): without it, sign-in asks for an emailed code instead."""
     found = []
     if user.must_change_password:
         found.append("password_change_required")
-    if role.key in REQUIRES_2FA and not user.totp_enabled and not skips_2fa_for_demo(user.email):
-        found.append("two_factor_setup_required")
     return found

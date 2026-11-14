@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
-import { ChangePasswordScreen, TwoFactorSetupScreen } from "@/components/app/restriction-screens";
+import { ChangePasswordScreen } from "@/components/app/restriction-screens";
 import { useAuth } from "@/lib/auth";
 
 export default function SignedInLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +20,5 @@ export default function SignedInLayout({ children }: { children: React.ReactNode
   }
   // The backend enforces these too; the screens just guide the user through them in order.
   if (me.restrictions.includes("password_change_required")) return <ChangePasswordScreen />;
-  if (me.restrictions.includes("two_factor_setup_required")) return <TwoFactorSetupScreen />;
   return <AppShell>{children}</AppShell>;
 }

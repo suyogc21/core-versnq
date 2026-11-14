@@ -5,7 +5,7 @@ import { CLIENT, signIn, STAFF, tokenFromEmail, turnOnTwoFactor } from "./helper
 
 /**
  * Gate 1 (roadmap 1.17): staff creates a company → the Owner accepts the invite, sets a
- * password and turns on 2FA → the Owner invites a Sales User → the Sales User signs in and
+ * password and signs in → the Owner invites a Sales User → the Sales User signs in and
  * sees only the screens their role allows, and the admin pages refuse them.
  */
 const SLUG = "northwind";
@@ -27,7 +27,7 @@ test("a new company goes from creation to a working, permission-limited team", a
   await expect(staff.getByRole("heading", { name: "Northwind Learning" })).toBeVisible();
   await expect(staff.getByText("tenant.created")).toBeVisible();
 
-  // 2. The Owner follows the emailed invite, sets a password, signs in and turns on 2FA.
+  // 2. The Owner follows the emailed invite, sets a password and signs in (2FA is optional, #45).
   const owner = await (await browser.newContext()).newPage();
   await owner.goto(`${CLIENT(SLUG)}/invite?token=${await tokenFromEmail(OWNER.email)}`);
   await owner.getByLabel("New password").fill(OWNER.password);
@@ -35,7 +35,6 @@ test("a new company goes from creation to a working, permission-limited team", a
   await owner.getByRole("button", { name: "Set password and continue" }).click();
   await expect(owner).toHaveURL(/\/login$/);
   await signIn(owner, CLIENT(SLUG), OWNER.email, OWNER.password);
-  await turnOnTwoFactor(owner);
   await expect(owner.locator("aside").getByText("Northwind Learning")).toBeVisible();
   // Everything set up once lives under one Settings entry, grouped on its home page.
   await owner.getByRole("complementary").getByRole("link", { name: "Settings", exact: true }).click();

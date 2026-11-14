@@ -6,23 +6,24 @@ from app.core.twofactor import decrypt_secret, new_secret
 from app.modules.users.models import User
 from tests.auth.conftest import bearer
 from tests.factories import PASSWORD, make_staff, make_user, make_workspace, staff_headers
+from tests.http_fixtures import sign_in
 
 
 async def _login(c, email, password=PASSWORD):
-    return await c.post("/api/v1/auth/login", json={"email": email, "password": password})
+    return await sign_in(c, email, password)
 
 
-async def test_owner_without_2fa_is_limited_to_setup(client_for):
+async def test_owner_without_the_app_is_not_limited(client_for):
+    """The authenticator app is optional for every role (Decision #45)."""
     tenant_id, slug = await make_workspace()
     _, email = await make_user(tenant_id, role_key="owner")
     c = client_for(slug)
     token = (await _login(c, email)).json()["access_token"]
 
-    blocked = await c.get("/api/v1/settings", headers=bearer(token))
     me = await c.get("/api/v1/auth/me", headers=bearer(token))
 
-    assert blocked.status_code == 403 and blocked.json()["detail"] == "two_factor_setup_required"
-    assert me.json()["restrictions"] == ["two_factor_setup_required"]
+    assert (await c.get("/api/v1/settings", headers=bearer(token))).status_code == 200
+    assert me.json()["restrictions"] == []
 
 
 async def test_sales_user_without_2fa_is_not_limited(client_for):
@@ -179,8 +180,8 @@ async def test_turning_off_2fa_needs_password_and_current_code(client_for):
     assert user.totp_enabled is False and user.totp_secret_enc is None
 
 
-async def test_owner_who_turns_off_2fa_must_set_it_up_again(client_for):
-    """Changing phones: turn off, then the Owner is sent straight back to setup."""
+async def test_owner_who_turns_off_2fa_keeps_working(client_for):
+    """Turning the app off is allowed for every role; sign-in then asks for an emailed code."""
     c, token, secret, *_ = await _signed_in_with_2fa(client_for)
     await c.post(
         "/api/v1/auth/2fa/disable",
@@ -188,9 +189,8 @@ async def test_owner_who_turns_off_2fa_must_set_it_up_again(client_for):
         headers=bearer(token),
     )
     me = await c.get("/api/v1/auth/me", headers=bearer(token))
-    blocked = await c.get("/api/v1/settings", headers=bearer(token))
-    assert me.json()["restrictions"] == ["two_factor_setup_required"]
-    assert blocked.status_code == 403
+    assert me.json()["restrictions"] == []
+    assert (await c.get("/api/v1/settings", headers=bearer(token))).status_code == 200
 
 
 async def test_turning_off_2fa_is_audited_and_rate_limited(client_for):

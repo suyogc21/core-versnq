@@ -7,6 +7,7 @@ from app.core.tenancy import tenant_session
 from app.modules.audit.models import AuditLog
 from tests.auth.conftest import bearer
 from tests.factories import PASSWORD, make_user, make_workspace
+from tests.http_fixtures import sign_in
 
 NEW_PW = "another-good-pass-9"
 
@@ -21,9 +22,7 @@ async def test_password_change_and_2fa_enable_are_audited(client_for):
     tenant_id, slug = await make_workspace()
     user_id, email = await make_user(tenant_id, role_key="owner")
     c = client_for(slug)
-    token = (
-        await c.post("/api/v1/auth/login", json={"email": email, "password": PASSWORD})
-    ).json()["access_token"]
+    token = (await sign_in(c, email, PASSWORD)).json()["access_token"]
     secret = (await c.post("/api/v1/auth/2fa/setup", headers=bearer(token))).json()["secret"]
     await c.post(
         "/api/v1/auth/2fa/enable", json={"code": pyotp.TOTP(secret).now()}, headers=bearer(token)

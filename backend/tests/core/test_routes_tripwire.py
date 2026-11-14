@@ -14,6 +14,7 @@ PUBLIC = {
     ("POST", "/platform/auth/logout"),
     ("POST", "/api/v1/auth/login"),
     ("POST", "/api/v1/auth/2fa/verify"),
+    ("POST", "/api/v1/auth/2fa/resend"),  # needs the challenge from a correct password (#45)
     ("POST", "/api/v1/auth/refresh"),
     ("POST", "/api/v1/auth/logout"),
     ("POST", "/api/v1/auth/invite/accept"),

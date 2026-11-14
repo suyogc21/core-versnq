@@ -15,9 +15,6 @@ import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 
-// Roles that must always have 2FA (matches the backend's REQUIRES_2FA).
-const NEEDS_2FA = new Set(["owner", "admin"]);
-
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3 border-b pb-8 last:border-0">
@@ -135,14 +132,13 @@ function TwoFactor() {
   const form = useForm<{ password: string; code: string }>();
   const { errors, isSubmitting } = form.formState;
   if (!me) return null;
-  const required = NEEDS_2FA.has(me.role.key ?? "");
 
   const turnOff = form.handleSubmit(async (body) => {
     try {
       unwrap(await api.POST("/api/v1/auth/2fa/disable", { body: { password: body.password, code: body.code.trim() } }));
-      toast.success(required ? "Two-factor is off. Set it up on your new phone now." : "Two-factor is off.");
+      toast.success("Two-factor is off. Sign-in will ask for an emailed code instead.");
       form.reset();
-      await reloadMe(); // Owner/Admin are taken straight to setup
+      await reloadMe();
     } catch (e) {
       form.setError("code", { message: (e as Error).message });
     }
@@ -151,18 +147,16 @@ function TwoFactor() {
   return (
     <Section
       title="Two-factor authentication"
-      description="A 6-digit code from an authenticator app, asked for each time you sign in."
+      description="Optional. With it on, sign-in asks for a code from your authenticator app every time. With it off, Core emails you a code when you sign in on a new browser."
     >
       <div className="flex items-center gap-2">
         <span>Status</span>
         <Badge variant={me.two_factor_enabled ? "secondary" : "outline"}>{me.two_factor_enabled ? "On" : "Off"}</Badge>
-        {required && <span className="text-xs text-muted-foreground">Required for your role</span>}
       </div>
       {me.two_factor_enabled ? (
         <form onSubmit={turnOff} className="space-y-3">
           <p className="text-xs text-muted-foreground">
             Moving to a new phone? Turn it off here, then set it up again.
-            {required && " Your role will take you straight to setup."}
           </p>
           <Field
             id="tf-password"

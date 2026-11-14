@@ -38,6 +38,25 @@ export async function tokenFromEmail(to: string): Promise<string> {
   return token;
 }
 
+export function codesSentTo(to: string): string[] {
+  return readdirSync(OUTBOX)
+    .sort()
+    .map((f) => JSON.parse(readFileSync(path.join(OUTBOX, f), "utf8")) as { to: string; subject: string; body: string })
+    .filter((m) => m.to === to && m.subject.includes("sign-in code"))
+    .map((m) => m.body.match(/code is (\d{6})/)![1]);
+}
+
+/** Waits for a sign-in code email newer than the `before` codes already sent to `to`. */
+export async function newCode(to: string, before: number): Promise<string> {
+  await expect.poll(() => codesSentTo(to).length).toBeGreaterThan(before);
+  return codesSentTo(to).at(-1)!;
+}
+
+/** Whether a company sign-in will ask for an emailed code (Decision #45): a new browser, and an
+ * address that can receive mail (invented *.demo ones can't, so they get none). */
+export const getsEmailCode = (url: string, email: string) => url !== STAFF && !email.endsWith(".demo");
+
+
 /** Complete the "turn on two-factor" screen; returns the secret for later sign-ins. */
 export async function turnOnTwoFactor(page: Page): Promise<string> {
   const field = page.getByLabel("6-digit code from the app");
@@ -49,9 +68,15 @@ export async function turnOnTwoFactor(page: Page): Promise<string> {
   return secret;
 }
 
+/** Sign in from a fresh browser; enters the emailed code when the company asks for one. */
 export async function signIn(page: Page, url: string, email: string, password: string) {
+  const before = codesSentTo(email).length;
   await page.goto(`${url}/login`);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
+  if (!getsEmailCode(url, email)) return;
+  await expect(page.getByText("Check your email")).toBeVisible();
+  await page.getByLabel("Code").fill(await newCode(email, before));
+  await page.getByRole("button", { name: "Verify" }).click();
 }
