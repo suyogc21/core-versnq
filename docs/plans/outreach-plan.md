@@ -87,3 +87,48 @@ No new table: sends are counted from `messages` (`mailbox_id`, already there), s
 
 1. Default daily limit 30 and gap 6 minutes per inbox (Smartlead-like starting values)? Raise per inbox when warmed up.
 2. Should reps see the pool's health, or only admins and managers? (Proposed: admins and managers.)
+
+---
+
+## O3: the contract with ACE (agreed Nov 14, from `../ACE/docs/plans/ace-plan.md` "Contract with Core")
+
+ACE's proposed names are **accepted** unless a change is listed. Everything here is Planned (O2/O3) until built.
+
+### Events
+
+| Event | Step | `data` (plus `actor_user_id`, `actor_type`, built) |
+|---|---|---|
+| `message.received` / `message.sent` | built; fields O2 | built fields, plus `contact_id`, `campaign_id`, `mailbox_id` (null when not from the pool). **`lead_id` is null** for a cold contact who isn't a lead yet. `auto_submitted: bool` (from `Auto-Submitted`, `X-Autoreply`, `Precedence: auto_reply/bulk`) |
+| `reply.classified` | O3 | `message_id, conversation_id, contact_id, lead_id, category, confidence, by (ace \| person), classification_id` |
+| `draft.requested` | O3 | `request_id, message_id, conversation_id, contact_id, lead_id, category, rule_id, instructions` (optional text from the rule) |
+| `draft.created` | O3 | `draft_id, conversation_id, request_id, created_by` |
+| `draft.approved` / `draft.rejected` | O3 | `draft_id, conversation_id, decided_by_user_id, via (core \| slack), body_changed`, `message_id` (approved), `reason` (rejected) |
+| `draft.superseded` | O3 | `draft_id, conversation_id, newer_message_id` |
+| `contact.converted` | O2 | `contact_id, lead_id` |
+| `reply_categories.changed` | O3 | none |
+
+### Endpoints
+
+| Call | Step | Shape |
+|---|---|---|
+| `GET /conversations/{id}` | built + O2 | adds `contact` and `campaign` (id, name, step sent) on campaign threads. **API keys never mark a conversation read**; anyone may pass `?mark_read=false` |
+| `GET /contacts/{id}` | O2 | `id, name, email, company, title, variables, status, campaign_ids, lead_id` |
+| `GET /campaigns/{id}` | O2 | `id, name, description` (the offer, written by the company for ACE) |
+| `GET /reply-categories` | O3 | `[{key, name, description, needs_human, active, auto_send_allowed, position}]`, `updated_at`. **Exactly one** category has `needs_human = true`; its key is fixed: `needs_human`. The others are the company's own |
+| `PUT /messages/{id}/classification` | O3 | `{category, confidence (0–100), summary (≤ 500), reasons (≤ 5, ≤ 200 each), language, prompt_version}` → `{classification_id, rules_run, draft_requested}`. Rules run **once per message**: the same body again changes nothing; a different category from ACE re-runs the rules only while no person has classified it; after a person did, refused with `classified_by_person` |
+| `POST /conversations/{id}/drafts` | O3 | `{request_id, reply_to_message_id, body (plain text, no signature), reasons, language}` → `{draft_id, status}`. Same `request_id` → the same draft. Core adds the sending inbox's signature when it sends. Refusals: `draft_superseded`, `conversation_closed`, and the built ones (`email_opted_out`, `email_suppressed`, …) |
+| `GET /drafts/{id}` | O3 | `{id, status (pending \| approved \| rejected \| superseded \| sent), body, decided_by_user_id, conversation_id}` |
+| `POST /drafts/{id}/approve` | O3 | `{on_behalf_of_user_id?, body?}` → `{status, message_id}` |
+| `POST /drafts/{id}/reject` | O3 | `{on_behalf_of_user_id?, reason?}` → `{status}` |
+
+Refusal codes for approve / reject: `draft_already_decided`, `draft_superseded`, `user_cannot_approve`, `user_inactive`.
+
+### Acting for a person (Slack)
+
+- New permission **`drafts.approve_for_users`**, granted only to the role made for ACE's key (never to people).
+- `on_behalf_of_user_id` is accepted **only** on approve and reject, and **only** from a caller holding that permission. Core then checks **that person's** rights: active, `inbox.reply`, and able to see the conversation. The trail reads "Approved by Riya via Slack (ACE)"; the event's `decided_by_user_id` is Riya, `actor_user_id` is ACE.
+- One change from ACE's proposal: `via` is set by Core (`slack` when `on_behalf_of_user_id` is used, `core` otherwise), not sent by ACE.
+
+### Draft lifecycle (Core)
+
+`pending` → `approved` → `sent` (or back to the inbox with the error), `pending` → `rejected`, `pending` → `superseded` (a newer reply from the person arrived before a decision; event emitted). One pending draft per conversation at a time.
