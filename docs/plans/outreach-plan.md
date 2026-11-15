@@ -247,12 +247,12 @@ As agreed in the contract below: `GET /reply-categories` (+ `PUT` for admins), r
 
 Auto-send without approval (ACE step ④: the flag is stored, nothing is sent on its own), the Slack app (O4, in ACE), AI anything inside Core (Core only stores and runs what ACE or a person decides).
 
-### Open questions
+### Decided (Nov 15, Suyog)
 
-1. The default categories and rules above: OK as the starting set for every company?
-2. Rules on **lead** replies too (draft, stop sequences, tell the owner; no convert), not only campaign replies (proposed: yes, as ACE's plan expects)?
-3. Who may approve a draft in Core: **anyone who can answer that conversation** (proposed), or only managers?
-4. Auto-send stays **off** in O3 (stored only), switched on per category later with ACE's step ④ (proposed)?
+1. The default categories and rules above are every company's starting set.
+2. Both inboxes: campaign replies and lead replies (no convert for leads).
+3. Anyone who can answer the conversation may approve its draft.
+4. Auto-send stays off in O3 (stored only; ACE step ④).
 
 ---
 
