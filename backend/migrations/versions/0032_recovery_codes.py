@@ -30,8 +30,10 @@ def upgrade() -> None:
         sa.Column("used_at", sa.DateTime(timezone=True)),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=now, nullable=False),
         sa.ForeignKeyConstraint(
-            ["tenant_id", "user_id"], ["users.tenant_id", "users.id"],
-            name="fk_user_recovery_codes_user", ondelete="CASCADE",
+            ["tenant_id", "user_id"],
+            ["users.tenant_id", "users.id"],
+            name="fk_user_recovery_codes_user",
+            ondelete="CASCADE",
         ),  # fmt: skip
         sa.UniqueConstraint("tenant_id", "code_hash", name="uq_user_recovery_codes_hash"),
     )
@@ -40,8 +42,13 @@ def upgrade() -> None:
     op.create_table(
         "staff_recovery_codes",
         sa.Column("id", sa.Uuid, primary_key=True),
-        sa.Column("staff_id", sa.Uuid, sa.ForeignKey("platform_staff.id", ondelete="CASCADE"),
-                  nullable=False, index=True),  # fmt: skip
+        sa.Column(
+            "staff_id",
+            sa.Uuid,
+            sa.ForeignKey("platform_staff.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),  # fmt: skip
         sa.Column("code_hash", sa.String(64), nullable=False, unique=True),
         sa.Column("used_at", sa.DateTime(timezone=True)),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=now, nullable=False),
