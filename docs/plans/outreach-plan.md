@@ -12,6 +12,32 @@ inboxes (pool) ─► campaign ─► rotating sends ─► reply ─► ACE: in
 
 **Rule: only what is 100% is shown or sold.** Until a step is finished it stays switched off (H1).
 
+## The promise (our tagline)
+
+> **"Already your lead? Never a cold email."**
+> Core is the CRM that sends campaigns, so it knows who is already yours. Nobody who is a lead or customer ever gets a cold campaign, and anyone who becomes one stops getting it that moment.
+
+This is what makes Core different from a sending tool bolted onto a CRM (Smartlead + a separate CRM can't know this). It is a rule in the code, not a setting:
+
+- **At import:** a contact whose email is already a lead or customer is skipped and listed in the report.
+- **At every send:** checked again. If they became a lead since the import (from a web form, a rep, the API, WhatsApp, a lead import, anywhere), the email is not sent and they stop in every campaign.
+- **Unsubscribe, bounce or spam complaint:** blocked for the whole company, in every campaign and every sequence.
+- **One reply = one conversation:** it lands in the outreach inbox; "Convert to lead" moves the whole thread onto the lead.
+
+### What the company can do, CRM and campaigns together
+
+| From | You can |
+|---|---|
+| **Campaigns** (cold people) | Import contacts, write steps with A/B variants, choose inboxes and sending hours, launch, pause, see results by step / variant / inbox |
+| **Outreach inbox** | Read every reply, answer from the same inbox in the same thread, Convert to lead, Not interested, Unsubscribe |
+| **Convert to lead** | The person becomes a lead with the company's routing, owner, stages, tasks, deals, invoices, payments: the whole CRM tree |
+| **Leads** (people already yours) | Never cold campaigns. They get **sequences** (follow-ups, reminders, nurture), one-to-one email and WhatsApp, tasks and the whole timeline, as today |
+| **Sending inboxes** (O1) | 10, 50 or more inboxes per company, each with its limit, gap, signature and health; auto-pause on bounces |
+| **ACE** (O3, O4) | Reads each reply, picks the company's category, drafts the answer; a person approves in Core or Slack |
+| **Webhooks** | Every send, reply and conversion is an event for the company's own n8n / Zapier |
+
+So the line between the two is simple: **cold people live in campaigns, your people live in the CRM**, and Core moves a person from one to the other at the right moment, never both at once.
+
 ## Who does what
 
 | Part | Lives in | Why |
