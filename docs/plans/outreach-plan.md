@@ -31,7 +31,7 @@ This replaces Decision #4 (campaigns in ACE's own database) and settles ACE's D4
 |---|---|---|
 | **H1 ✅** | Hide what isn't 100% (built Nov 14): company WhatsApp number until it's live with Meta, copy-in addresses until inbound mail is live | — |
 | **O1 ✅** | **Mailbox pool** (built Nov 14): any number of inboxes per company; bulk connect; limits, spacing and health per inbox; auto-pause; sequences send from the pool | — |
-| O2 | Campaigns: cold contact lists (CSV), steps with variants, rotation across the pool, sending windows, tracking on/off, own tracking domain, master inbox, convert to lead | O1 |
+| O2 | Campaigns (plan below, for approval): cold contact lists (CSV), steps with variants, rotation across the pool, sending windows, tracking on/off, master inbox, convert to lead. Own tracking domain moves to O2b | O1 |
 | O3 | Reply intelligence hooks: the company's reply categories, rules (category → actions), drafts stored in Core with approve/edit/reject in the inbox; the API ACE uses | O2, ACE |
 | O4 | Slack approval (in ACE) | O3 |
 | O5 | One-click Google / Microsoft connect (OAuth). Outlook needs it; Google's review takes weeks and costs money, so it should be started early | Suyog's Google/Microsoft app registrations |
@@ -85,6 +85,82 @@ No new table: sends are counted from `messages` (`mailbox_id`, already there), s
 
 1. Default daily limit 30 and gap 6 minutes per inbox (Smartlead-like starting values)? Raise per inbox when warmed up.
 2. Should reps see the pool's health, or only admins and managers? (Proposed: admins and managers.)
+
+---
+
+## O2: campaigns (detailed, for approval — written Nov 15)
+
+### What changes for people
+
+A new **Outreach** section in the sidebar (behind a module switch `outreach`, off until Versnq staff turn it on for a company, so H1's rule holds).
+
+1. **Campaigns list**: name, status (draft / running / paused / finished), contacts, sent, replies, bounces, unsubscribes.
+2. **A campaign** has five tabs:
+   - **Contacts**: import a CSV. Map its columns to email, first name, last name, company, title, phone, website; any other column becomes a variable usable in emails (`{{city}}`, `{{pain_point}}`…). Before saving, a report: added, duplicates in the file, bad emails, already unsubscribed or bounced (skipped), **already a lead or customer in the CRM (skipped)**. Up to 20,000 rows per file. Contacts can also be added to another campaign from the list.
+   - **Sequence**: steps, each with a wait ("3 days after the previous step") and **1–5 variants** (A/B/C… subject and body). Contacts are split evenly across variants. A step with an empty subject is sent **in the same thread** ("Re: …"). Preview any step as any contact; a missing variable is flagged before launch (with an optional fallback, `{{first_name|there}}`).
+   - **Inboxes and schedule**: which sending inboxes (all of the pool, or chosen ones), sending days and hours in a chosen time zone, a campaign daily cap. Each inbox's own daily limit and gap (O1) always apply on top. **A contact keeps the same inbox for the whole campaign**, so follow-ups stay in one thread and replies come back to the same inbox.
+   - **Settings**: open tracking and click tracking (both **off by default**: better inbox placement for cold email), the campaign's **description** (the offer, used by ACE in O3), owner.
+   - **Results**: per step and per variant: sent, opened (if tracked), replied, bounced, unsubscribed; per inbox: sent and bounces.
+3. **Launch / pause / resume**. Launch checks: at least one step, every variable filled or with a fallback, at least one healthy inbox, unsubscribe link present (added automatically to every email, plus the one-click `List-Unsubscribe` header).
+4. **Outreach inbox** (the "master inbox"): every reply to every campaign, newest first; filters by campaign, inbox, status (new / replied / converted / not interested), auto-replies hidden by default. Reply from the same inbox, in the same thread. Buttons: **Convert to lead**, **Not interested** (stops that contact), **Unsubscribe**.
+5. **Convert to lead**: makes a lead from the contact (fields and variables copied into the lead's fields where they match; the rest into a note), routed by the company's lead routing rules like any new lead, source "Outreach: <campaign>". The conversation with its full history moves onto the lead, so it shows on the lead's timeline and in the normal inbox. The contact stops in every campaign. Event `contact.converted`.
+
+What happens on its own:
+- **A reply stops that contact** in that campaign (not their colleagues). **Auto-replies** (out of office, `Auto-Submitted`, `X-Autoreply`, `Precedence: auto_reply/bulk`) are stored and marked, and **do not stop** the campaign.
+- **A bounce** marks the contact bounced and suppresses the address (O1 already matches bounce reports). **An unsubscribe** suppresses the address for the whole company and stops every campaign for them.
+- Contacts who are leads never get campaign emails (checked again at each send, not only at import).
+
+### Schema (migration 0030, for approval)
+
+New tables (all with `tenant_id`, forced row security like every other table):
+
+- `contacts`: email (unique per company, lower-case), first_name, last_name, company, title, phone, website, `variables` (JSON, the extra CSV columns), status (`active` / `unsubscribed` / `bounced` / `converted`), `lead_id` (set on convert), source, created_by, timestamps.
+- `campaigns`: name, description, status (`draft` / `running` / `paused` / `finished`), owner_user_id, `mailbox_ids` (empty = the whole pool), `schedule` (JSON: time zone, days, start, end), daily_cap, track_opens, track_clicks, launched_at, created_by, timestamps.
+- `campaign_steps`: campaign_id, position, wait_days, `variants` (JSON list: key, subject, body).
+- `campaign_contacts` (a contact in a campaign): campaign_id, contact_id, status (`pending` / `active` / `replied` / `finished` / `stopped` / `bounced` / `unsubscribed`), position (next step), next_run_at, `variant` (fixed per contact), `mailbox_id` (sticky inbox), ended_reason, timestamps. Unique (campaign, contact).
+
+Changes:
+- `messages`: + `contact_id`, `campaign_id`, `campaign_step_id`, `variant`, `auto_submitted` (bool).
+- `conversations`: `lead_id` becomes optional; + `contact_id`, `campaign_id`; a check that each conversation has a lead or a contact.
+- Permissions: **`campaigns.manage`** (create, import, edit, launch, pause; default Owner, Admin, Sales Manager) and **`outreach.reply`** (the outreach inbox; default the same, plus Sales Users for campaigns they own).
+
+No change to leads, sequences or the normal inbox: conversations without a lead appear only in the outreach inbox.
+
+### Endpoints
+
+- `GET/POST /campaigns`, `GET/PATCH/DELETE /campaigns/{id}` (delete only drafts), `POST /campaigns/{id}/launch | pause | resume`.
+- `PUT /campaigns/{id}/steps` (the whole sequence at once), `POST /campaigns/{id}/preview` (a step as a contact).
+- `POST /campaigns/{id}/contacts/import` (CSV + column mapping; `dry_run=true` gives the report without saving), `GET /campaigns/{id}/contacts` (with status, filters), `POST /campaigns/{id}/contacts` (add existing contacts), `POST /campaigns/{id}/contacts/{cid}/stop`.
+- `GET /campaigns/{id}/stats`.
+- `GET /contacts`, `GET /contacts/{id}` (the shape agreed with ACE), `POST /contacts/{id}/convert`, `POST /contacts/{id}/unsubscribe`.
+- `GET /outreach/conversations` (the outreach inbox), and the existing conversation endpoints (read, reply) work for campaign conversations too.
+- Events: `contact.converted`; `message.sent` / `message.received` gain `contact_id`, `campaign_id`, `mailbox_id`, `auto_submitted` (the O3 contract).
+
+### Sending engine
+
+A campaign runner in the existing worker, every minute: picks due contacts in running campaigns inside their sending window; for each, the contact's sticky inbox (or, on the first email, the least-used healthy inbox among the campaign's, owner's first) within its daily limit and gap and the campaign's cap; renders the variant with the contact's variables; adds the unsubscribe link and header and (if on) tracking; sends; sets the next step's time. Nothing to send → it waits, never skips. Follow-ups carry `In-Reply-To` / `References` of the previous email.
+
+Reply matching (mailbox sync): an incoming email that answers a campaign email (`In-Reply-To` / `References`) or comes from a contact in a running campaign is stored on that contact's conversation; everything else in the mailbox is still ignored, as today.
+
+### Tests
+
+- Tenant isolation for every new table and endpoint; permissions for both new permissions.
+- Import: the report counts, leads / suppressed / duplicates / bad emails skipped, variables kept, 20,000-row limit.
+- Engine: steps run in order with their waits; only inside the sending window; variants split evenly; sticky inbox; inbox limits, gaps and the campaign cap never exceeded across 3 inboxes; waits instead of skipping; follow-ups thread; unsubscribe link and header present; tracking only when on.
+- Replies stop only that contact; auto-replies don't; bounce and unsubscribe suppress and stop everywhere; a contact who became a lead is never emailed.
+- Convert to lead: lead made and routed, conversation moved with its history, event sent, contact stopped everywhere.
+- A browser test: import → launch → a reply in the outreach inbox → convert to lead.
+
+### Not in O2
+
+Own tracking domain per company (needs DNS and a certificate per company; O2b, after you see O2 working), reply categories and AI (O3), warm-up (partner tool), spintax, LinkedIn steps (out of scope), WhatsApp steps in campaigns.
+
+### Decided (Nov 15, Suyog)
+
+1. A CSV row already a lead or customer: **skipped**, listed in the report.
+2. Outreach inbox: Owner, Admin and Sales Managers see every campaign; **Sales Users only campaigns they own**.
+3. Open and click tracking **off by default**, on per campaign.
+4. A reply stops **only that person**.
 
 ---
 
