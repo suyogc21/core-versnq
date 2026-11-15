@@ -37,8 +37,16 @@ x-backend-env: &backend-env
   DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
   DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-10}
 
+# Container logs are capped (go-live G-3): 5 files of 10 MB per service, oldest dropped.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   postgres:
+    logging: *logging
     image: postgres:16 # same image AMS uses (already on the server)
     restart: unless-stopped
     environment:
@@ -56,12 +64,14 @@ services:
       retries: 20
 
   redis:
+    logging: *logging
     image: redis:7
     restart: unless-stopped
     volumes:
       - redisdata:/data
 
   backend:
+    logging: *logging
     build: ./backend
     restart: unless-stopped
     environment:
@@ -78,6 +88,7 @@ services:
         condition: service_started
 
   worker:
+    logging: *logging
     build: ./backend
     restart: unless-stopped
     command: ["arq", "app.workers.main.WorkerSettings"]
@@ -88,6 +99,7 @@ services:
       - backend
 
   frontend:
+    logging: *logging
     build: ./frontend
     restart: unless-stopped
     environment:
@@ -98,6 +110,7 @@ services:
       - backend
 
   frontend-admin:
+    logging: *logging
     build: ./frontend-admin
     restart: unless-stopped
     environment:

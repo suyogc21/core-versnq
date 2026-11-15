@@ -18,6 +18,8 @@ server {
     listen [::]:80;
     server_name ${HOST};
     client_max_body_size 12m;
+    # browsers use HTTPS only for a year (go-live G-3); not includeSubDomains: other versnq.in sites
+    add_header Strict-Transport-Security "max-age=31536000" always;
 
     # the API goes straight to the backend (one hop, so it sees the visitor's address)
     location /api/v1/ {

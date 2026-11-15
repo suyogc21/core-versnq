@@ -138,9 +138,16 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T postgres 
 
 **Still to do:** a copy off this server (another machine or storage), so a lost server doesn't lose the backups too.
 
+## Server hardening (go-live G-3, done Nov 15)
+
+- **Firewall** (`ufw`) on: only SSH, HTTP and HTTPS come in (AMS, n8n, the website and the attendance machines' `/iclock/` use only those). Check: `ufw status`.
+- **HSTS** on every Core address (`add_header Strict-Transport-Security "max-age=31536000" always;`, in `admincore.versnq.in.conf` and every `core-company-*.conf`; `add-company.sh` writes it for new companies). Not `includeSubDomains`, because other versnq.in sites share the domain. The nginx files from before the change are in `/root/nginx-backup-20261115-0532`.
+- **Container logs capped** at 5 × 10 MB per service (`x-logging` in `docker-compose.prod.yml`; applies when containers are recreated on deploy).
+- Disk encryption: not possible on this VPS without rebuilding it (known gap). Passwords and keys inside the database are encrypted by Core.
+
 ## Not set up yet (the parked go-live work)
 
-- A backup copy off the server (above).
+- A backup copy off the server (above): parked; Suyog is setting up a Raspberry Pi for it.
 - Error monitoring, log rotation, 2FA recovery codes (see `docs/OWNER-TODO.md`).
 
 ## Useful

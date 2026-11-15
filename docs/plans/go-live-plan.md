@@ -28,7 +28,7 @@ Written 2026-11-15 for Suyog (roadmap G.2–G.3, the parked "security and go-liv
 - An unexpected error in the backend or the worker (the "500" kind) **emails Versnq staff** from `support@versnq.in`: what failed, when, which company (never passwords, tokens or message bodies). At most one email per kind of error per hour, plus a daily count.
 - An outside **uptime check** every minute on `/health` (a free service), so a down server is noticed even when it can't send email.
 
-### G-3 Server hardening
+### G-3 Server hardening — done Nov 15 (firewall on, HSTS live, log caps on the next deploy)
 - **HSTS** on every Core address (browsers then refuse plain http).
 - **Container logs capped** (10 MB × 5 files per service).
 - **Firewall on**: allow only SSH, HTTP, HTTPS (matches what is open today, so AMS, n8n and the website are unaffected).
