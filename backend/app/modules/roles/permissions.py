@@ -1,7 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
 # code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
-# 0017, 0018, 0019, 0021, 0023, 0024, 0028, 0030).
+# 0017, 0018, 0019, 0021, 0023, 0024, 0028, 0030, 0031).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -48,13 +48,18 @@ CATALOGUE: dict[str, tuple[str, str]] = {
         "Read and answer campaign replies (all campaigns with campaigns.manage, otherwise the "
         "campaigns you own)",
     ),
+    # step O3: only for the role made for ACE's key (Slack clicks), never granted by default
+    "drafts.approve_for_users": (
+        "crm",
+        "Approve or reject drafts for the person who clicked (only for ACE's key)",
+    ),
 }
 # Finance: all of money except exporting, which the admin grants (Decision log #35).
 MONEY_CODES = {c for c, (m, _) in CATALOGUE.items() if m == "money" and not c.endswith(".export")}
 ALL_CODES = frozenset(CATALOGUE)
 
 DEFAULT_GRANTS: dict[str, set[str]] = {
-    "admin": set(ALL_CODES),
+    "admin": set(ALL_CODES - {"drafts.approve_for_users"}),  # for ACE's key only
     "sales_manager": {
         "users.read",
         "leads.create",

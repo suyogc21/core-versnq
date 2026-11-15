@@ -75,6 +75,24 @@ test("a campaign goes from CSV to a reply to a lead", async ({ browser }) => {
   const thread = page.locator('[data-thread="asha@prospect.example"]');
   await expect(thread.getByText("Yes, let's talk on Tuesday.")).toBeVisible();
   await expect(thread.getByText("Hi Asha, worth a chat about Pune?")).toBeVisible();
+
+  // Step O3: a person sorts the reply; a draft arrives (as ACE would send it); approve and send.
+  await thread.getByRole("button", { name: "Not sorted" }).click();
+  await thread.getByLabel("Category").selectOption({ label: "Question" });
+  await expect(page.getByText("Sorted. Done: draft")).toBeVisible();
+  const [conv] = await call("GET", "/api/v1/outreach/conversations");
+  const detail = await call("GET", `/api/v1/outreach/conversations/${conv.id}`);
+  const theirs = detail.messages.find((m: { direction: string }) => m.direction === "in");
+  await call("POST", `/api/v1/conversations/${conv.id}/drafts`, { reply_to_message_id: theirs.id, body: "Tuesday at 11 works. Talk then!", reasons: [] });
+  await page.reload();
+  await page.getByRole("tab", { name: "Replies" }).click();
+  await page.locator('[data-reply="asha@prospect.example"]').click();
+  const draft = page.getByTestId("draft");
+  await expect(draft.getByText("Tuesday at 11 works. Talk then!")).toBeVisible();
+  await draft.getByRole("button", { name: "Approve and send" }).click();
+  await expect(page.getByText("Sent", { exact: true })).toBeVisible();
+  await expect(thread.getByText("Tuesday at 11 works. Talk then!")).toBeVisible();
+
   await thread.getByRole("button", { name: "Convert to lead" }).click();
   await expect(page).toHaveURL(/\/leads\/[0-9a-f-]+$/);
   await expect(page.getByText("Asha").first()).toBeVisible();

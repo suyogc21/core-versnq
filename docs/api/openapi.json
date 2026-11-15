@@ -2383,6 +2383,49 @@
         "title": "CampaignPreviewOut",
         "type": "object"
       },
+      "CampaignRef": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "step_sent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Sent"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "step_sent"
+        ],
+        "title": "CampaignRef",
+        "type": "object"
+      },
       "CampaignSchedule": {
         "properties": {
           "days": {
@@ -2995,6 +3038,167 @@
         "title": "CaptureSourceWithKey",
         "type": "object"
       },
+      "CategoriesIn": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryIn"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Categories",
+            "type": "array"
+          }
+        },
+        "required": [
+          "categories"
+        ],
+        "title": "CategoriesIn",
+        "type": "object"
+      },
+      "CategoriesOut": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "categories",
+          "updated_at"
+        ],
+        "title": "CategoriesOut",
+        "type": "object"
+      },
+      "CategoryIn": {
+        "properties": {
+          "active": {
+            "default": true,
+            "title": "Active",
+            "type": "boolean"
+          },
+          "auto_send_allowed": {
+            "default": false,
+            "title": "Auto Send Allowed",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "key": {
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "rules": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/RuleIO"
+            },
+            "maxItems": 10,
+            "title": "Rules",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "title": "CategoryIn",
+        "type": "object"
+      },
+      "CategoryOut": {
+        "properties": {
+          "active": {
+            "default": true,
+            "title": "Active",
+            "type": "boolean"
+          },
+          "auto_send_allowed": {
+            "default": false,
+            "title": "Auto Send Allowed",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "key": {
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "needs_human": {
+            "title": "Needs Human",
+            "type": "boolean"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "rules": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/RuleIO"
+            },
+            "maxItems": 10,
+            "title": "Rules",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "needs_human",
+          "position"
+        ],
+        "title": "CategoryOut",
+        "type": "object"
+      },
       "CellIn": {
         "properties": {
           "competitor_id": {
@@ -3160,6 +3364,106 @@
           "required"
         ],
         "title": "ChecklistOut",
+        "type": "object"
+      },
+      "ClassificationIn": {
+        "properties": {
+          "category": {
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
+            "title": "Category",
+            "type": "string"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "reasons": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Reasons",
+            "type": "array"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "category"
+        ],
+        "title": "ClassificationIn",
+        "type": "object"
+      },
+      "ClassificationOut": {
+        "properties": {
+          "classification_id": {
+            "format": "uuid",
+            "title": "Classification Id",
+            "type": "string"
+          },
+          "draft_requested": {
+            "title": "Draft Requested",
+            "type": "boolean"
+          },
+          "rules_run": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rules Run",
+            "type": "array"
+          }
+        },
+        "required": [
+          "classification_id",
+          "rules_run",
+          "draft_requested"
+        ],
+        "title": "ClassificationOut",
         "type": "object"
       },
       "CodeOut": {
@@ -3724,6 +4028,61 @@
         "title": "ContactOut",
         "type": "object"
       },
+      "ContactRef": {
+        "description": "A campaign thread's person, before they are a lead (step O2/O3).",
+        "properties": {
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "variables": {
+            "additionalProperties": true,
+            "title": "Variables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "company",
+          "title",
+          "variables"
+        ],
+        "title": "ContactRef",
+        "type": "object"
+      },
       "ConvPatch": {
         "properties": {
           "is_private": {
@@ -3781,6 +4140,16 @@
             ],
             "title": "Assignee Name"
           },
+          "campaign": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CampaignRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "can_manage": {
             "title": "Can Manage",
             "type": "boolean"
@@ -3793,6 +4162,16 @@
             "title": "Channel",
             "type": "string"
           },
+          "contact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -3803,7 +4182,14 @@
             "type": "boolean"
           },
           "lead": {
-            "$ref": "#/components/schemas/LeadBasics"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LeadBasics"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "members": {
             "items": {
@@ -4069,6 +4455,33 @@
           "shared"
         ],
         "title": "ConversationRow",
+        "type": "object"
+      },
+      "ConversationSortingOut": {
+        "properties": {
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DraftOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sortings": {
+            "items": {
+              "$ref": "#/components/schemas/SortingOut"
+            },
+            "title": "Sortings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sortings",
+          "draft"
+        ],
+        "title": "ConversationSortingOut",
         "type": "object"
       },
       "CopyInOut": {
@@ -5143,6 +5556,61 @@
         "title": "Debtor",
         "type": "object"
       },
+      "DecideIn": {
+        "properties": {
+          "body": {
+            "anyOf": [
+              {
+                "maxLength": 50000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "on_behalf_of_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "On Behalf Of User Id"
+          }
+        },
+        "title": "DecideIn",
+        "type": "object"
+      },
+      "DecidedOut": {
+        "properties": {
+          "message_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "DecidedOut",
+        "type": "object"
+      },
       "DeliveryDetail": {
         "properties": {
           "attempts": {
@@ -5509,13 +5977,168 @@
         "title": "DocumentOut",
         "type": "object"
       },
+      "DraftIn": {
+        "properties": {
+          "body": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "reasons": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Reasons",
+            "type": "array"
+          },
+          "reply_to_message_id": {
+            "format": "uuid",
+            "title": "Reply To Message Id",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "reply_to_message_id",
+          "body"
+        ],
+        "title": "DraftIn",
+        "type": "object"
+      },
+      "DraftOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decided_by_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By User Id"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "reply_to_message_id": {
+            "format": "uuid",
+            "title": "Reply To Message Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "body",
+          "reasons",
+          "conversation_id",
+          "reply_to_message_id",
+          "decided_by_user_id",
+          "via",
+          "message_id",
+          "error",
+          "created_at"
+        ],
+        "title": "DraftOut",
+        "type": "object"
+      },
       "EndpointIn": {
         "properties": {
           "events": {
             "items": {
               "type": "string"
             },
-            "maxItems": 40,
+            "maxItems": 47,
             "minItems": 1,
             "title": "Events",
             "type": "array"
@@ -5622,7 +6245,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 40,
+                "maxItems": 47,
                 "minItems": 1,
                 "type": "array"
               },
@@ -14616,21 +15239,6 @@
         "title": "RecordTypePatch",
         "type": "object"
       },
-      "RejectIn": {
-        "properties": {
-          "reason": {
-            "maxLength": 500,
-            "minLength": 1,
-            "title": "Reason",
-            "type": "string"
-          }
-        },
-        "required": [
-          "reason"
-        ],
-        "title": "RejectIn",
-        "type": "object"
-      },
       "RemovedOut": {
         "properties": {
           "removed": {
@@ -15190,6 +15798,38 @@
           "last_touch"
         ],
         "title": "Rollup",
+        "type": "object"
+      },
+      "RuleIO": {
+        "properties": {
+          "action": {
+            "enum": [
+              "convert",
+              "draft",
+              "stop",
+              "unsubscribe",
+              "notify"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "instructions": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructions"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "RuleIO",
         "type": "object"
       },
       "RunOut": {
@@ -16448,6 +17088,69 @@
           }
         },
         "title": "SlaRulePatch",
+        "type": "object"
+      },
+      "SortingOut": {
+        "description": "One reply's current sorting (shown in the thread).",
+        "properties": {
+          "by": {
+            "title": "By",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "message_id": {
+            "format": "uuid",
+            "title": "Message Id",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "message_id",
+          "category",
+          "confidence",
+          "summary",
+          "reasons",
+          "by",
+          "created_at"
+        ],
+        "title": "SortingOut",
         "type": "object"
       },
       "SourceIn": {
@@ -20271,6 +20974,21 @@
         "title": "RoleOut",
         "type": "object"
       },
+      "app__modules__crm__customers_router__RejectIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "RejectIn",
+        "type": "object"
+      },
       "app__modules__crm__deals_router__BulkIn": {
         "properties": {
           "action": {
@@ -21293,6 +22011,36 @@
           "sent_at"
         ],
         "title": "MessageOut",
+        "type": "object"
+      },
+      "app__modules__replies__router__RejectIn": {
+        "properties": {
+          "on_behalf_of_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "On Behalf Of User Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "RejectIn",
         "type": "object"
       },
       "app__modules__roles__router__RoleOut": {
@@ -24464,6 +25212,7 @@
     },
     "/api/v1/conversations/{conv_id}": {
       "get": {
+        "description": "A lead's conversation, or a campaign thread for callers who may see that campaign. API\nkeys never mark it read; anyone may pass ?mark_read=false (step O3).",
         "operationId": "inbox-get_conversation",
         "parameters": [
           {
@@ -24474,6 +25223,16 @@
               "format": "uuid",
               "title": "Conv Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mark_read",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Mark Read",
+              "type": "boolean"
             }
           }
         ],
@@ -24741,6 +25500,64 @@
         ]
       }
     },
+    "/api/v1/conversations/{conv_id}/drafts": {
+      "post": {
+        "operationId": "replies-create_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Draft",
+        "tags": [
+          "replies"
+        ]
+      }
+    },
     "/api/v1/conversations/{conv_id}/members": {
       "post": {
         "description": "Add a colleague: they see this conversation and the lead's basics, and can reply.",
@@ -24972,6 +25789,55 @@
         "summary": "Reply",
         "tags": [
           "inbox"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/sorting": {
+      "get": {
+        "description": "Each reply's current category, and the waiting draft (for the thread view).",
+        "operationId": "replies-conversation_sorting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSortingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Conversation Sorting",
+        "tags": [
+          "replies"
         ]
       }
     },
@@ -26106,7 +26972,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RejectIn"
+                "$ref": "#/components/schemas/app__modules__crm__customers_router__RejectIn"
               }
             }
           },
@@ -28104,6 +28970,170 @@
         "summary": "Update Requirement",
         "tags": [
           "customers"
+        ]
+      }
+    },
+    "/api/v1/drafts/{draft_id}": {
+      "get": {
+        "operationId": "replies-get_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Draft",
+        "tags": [
+          "replies"
+        ]
+      }
+    },
+    "/api/v1/drafts/{draft_id}/approve": {
+      "post": {
+        "operationId": "replies-approve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecideIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecidedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Approve",
+        "tags": [
+          "replies"
+        ]
+      }
+    },
+    "/api/v1/drafts/{draft_id}/reject": {
+      "post": {
+        "operationId": "replies-reject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__replies__router__RejectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecidedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reject",
+        "tags": [
+          "replies"
         ]
       }
     },
@@ -36293,6 +37323,65 @@
         ]
       }
     },
+    "/api/v1/messages/{message_id}/classification": {
+      "put": {
+        "description": "ACE's key sorts as `ace`; a person sorting by hand is `person` (and wins from then on).",
+        "operationId": "replies-classify",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassificationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassificationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Classify",
+        "tags": [
+          "replies"
+        ]
+      }
+    },
     "/api/v1/modules": {
       "get": {
         "operationId": "settings-list_modules",
@@ -39521,6 +40610,76 @@
         "summary": "Add Note",
         "tags": [
           "records"
+        ]
+      }
+    },
+    "/api/v1/reply-categories": {
+      "get": {
+        "operationId": "replies-list_categories",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Categories",
+        "tags": [
+          "replies"
+        ]
+      },
+      "put": {
+        "operationId": "replies-save_categories",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoriesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Categories",
+        "tags": [
+          "replies"
         ]
       }
     },

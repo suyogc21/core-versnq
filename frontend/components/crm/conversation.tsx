@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
+import { CategoryChip, DraftPanel } from "@/components/crm/reply-tools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +14,8 @@ import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
 import { when } from "@/lib/crm";
-import { type ConversationDetail, useCanned, useConversation, usePeople, useRefreshInbox, waLink } from "@/lib/inbox";
+import { type ConversationDetail, type LeadConversation, useCanned, useConversation, usePeople, useRefreshInbox, waLink } from "@/lib/inbox";
+import { type Sorting, useSorting } from "@/lib/replies";
 import { useWaTemplates } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
@@ -24,12 +26,16 @@ export function ConversationView({ id, onClose }: { id: string; onClose?: () => 
   const conv = useConversation(id);
   if (conv.isLoading) return <p className="p-6 text-sm text-muted-foreground">Loading…</p>;
   if (!conv.data) return <p className="p-6 text-sm text-muted-foreground">This conversation is not available.</p>;
-  return <View c={conv.data} onClose={onClose} />;
+  const data = conv.data;
+  if (!data.lead) return <p className="p-6 text-sm text-muted-foreground">This is a campaign reply: open it in Outreach → Replies.</p>;
+  return <View c={{ ...data, lead: data.lead }} onClose={onClose} />;
 }
 
-function View({ c, onClose }: { c: ConversationDetail; onClose?: () => void }) {
+function View({ c, onClose }: { c: LeadConversation; onClose?: () => void }) {
   const refresh = useRefreshInbox();
   const people = usePeople(c.can_manage);
+  const sorting = useSorting(c.id); // categories and the waiting draft (step O3)
+  const sorted = new Map((sorting.data?.sortings ?? []).map((x) => [x.message_id, x]));
   const [adding, setAdding] = useState(false);
   const items: Item[] = [
     ...c.messages.map((m) => ({ at: m.sent_at ?? m.created_at, kind: "message" as const, m })),
@@ -146,15 +152,20 @@ function View({ c, onClose }: { c: ConversationDetail; onClose?: () => void }) {
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-auto px-4 py-4">
         {items.map((it) =>
-          it.kind === "message" ? <MessageBubble key={it.m.id} c={c} m={it.m} /> : <NoteBubble key={it.n.id} n={it.n} />,
+          it.kind === "message" ? <MessageBubble key={it.m.id} c={c} m={it.m} sorting={sorted.get(it.m.id)} /> : <NoteBubble key={it.n.id} n={it.n} />,
         )}
       </div>
+      {c.channel === "email" && (
+        <div className="px-4 pb-2">
+          <DraftPanel convId={c.id} onSent={refresh} />
+        </div>
+      )}
       <Composer c={c} />
     </div>
   );
 }
 
-function MessageBubble({ c, m }: { c: ConversationDetail; m: ConversationDetail["messages"][number] }) {
+function MessageBubble({ c, m, sorting }: { c: LeadConversation; m: ConversationDetail["messages"][number]; sorting?: Sorting }) {
   const mine = m.direction === "out";
   return (
     <div className={cn("max-w-[92%] rounded-xl border p-3 text-sm", mine ? "ml-auto bg-primary/5" : "bg-card")} data-message={m.direction}>
@@ -164,6 +175,7 @@ function MessageBubble({ c, m }: { c: ConversationDetail; m: ConversationDetail[
         </span>
         <span>→ {m.to_address}</span>
         {m.cc.length > 0 && <span>cc {m.cc.join(", ")}</span>}
+        {!mine && <CategoryChip convId={c.id} messageId={m.id} sorting={sorting} />}
         <span className="ml-auto">{when(m.sent_at ?? m.created_at)}</span>
       </div>
       {m.subject && <div className="mb-1 text-xs font-medium">{m.subject}</div>}
@@ -204,7 +216,7 @@ function NoteBubble({ n }: { n: ConversationDetail["notes"][number] }) {
   );
 }
 
-function Attachment({ conv, file }: { conv: ConversationDetail; file: ConversationDetail["messages"][number]["attachments"][number] }) {
+function Attachment({ conv, file }: { conv: LeadConversation; file: ConversationDetail["messages"][number]["attachments"][number] }) {
   const refresh = useRefreshInbox();
   const [docs, setDocs] = useState<{ id: string; name: string }[] | null>(null);
   async function download() {
@@ -267,7 +279,7 @@ function Attachment({ conv, file }: { conv: ConversationDetail; file: Conversati
   );
 }
 
-function Composer({ c }: { c: ConversationDetail }) {
+function Composer({ c }: { c: LeadConversation }) {
   const { me } = useAuth();
   const refresh = useRefreshInbox();
   const canned = useCanned();

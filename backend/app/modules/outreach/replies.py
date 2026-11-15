@@ -140,6 +140,9 @@ async def ingest(
     await IB.message_event(db, msg, channel="email")
     if auto:
         return msg
+    from app.modules.replies import service as RS
+
+    await RS.supersede(db, conv.id, msg)  # a waiting draft is now out of date (step O3)
     if answered is not None and answered.direction == "out" and answered.replied_at is None:
         answered.replied_at = L.now()
     cc = await db.scalar(

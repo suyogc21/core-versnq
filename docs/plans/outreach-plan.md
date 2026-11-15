@@ -58,7 +58,7 @@ This replaces Decision #4 (campaigns in ACE's own database) and settles ACE's D4
 | **H1 ✅** | Hide what isn't 100% (built Nov 14): company WhatsApp number until it's live with Meta, copy-in addresses until inbound mail is live | — |
 | **O1 ✅** | **Mailbox pool** (built Nov 14): any number of inboxes per company; bulk connect; limits, spacing and health per inbox; auto-pause; sequences send from the pool | — |
 | **O2 ✅** | **Campaigns** (built Nov 15): cold contact lists (CSV), steps with up to 5 versions, the same inbox per person, sending hours and a daily cap, tracking off by default, the outreach inbox, convert to lead. Behind the `outreach` switch (Versnq staff turn it on per company). Own tracking domain moves to O2b | O1 |
-| O3 | Reply intelligence hooks (plan below, for approval): the company's reply categories, rules (category → actions), drafts stored in Core with approve/edit/reject in the inbox; the API ACE uses | O2, ACE |
+| **O3 ✅** | **Reply categories, rules, drafts** (built Nov 15): the company's categories (Needs a human fixed), rules per category, sorting by ACE or a person in both inboxes, drafts approved in Core or for a person from Slack; the API ACE uses | O2, ACE |
 | O4 | Slack approval (in ACE) | O3 |
 | O5 | One-click Google / Microsoft connect (OAuth). Outlook needs it; Google's review takes weeks and costs money, so it should be started early | Suyog's Google/Microsoft app registrations |
 
@@ -200,7 +200,7 @@ Everything above, with these details settled while building:
 
 ---
 
-## O3: reply categories, rules and drafts (detailed, for approval — written Nov 15)
+## O3: reply categories, rules and drafts (approved and built Nov 15)
 
 The contract with ACE (next section) is agreed; this is how Core builds it. It works for **campaign replies** (outreach inbox) **and** replies from **leads** in the normal inbox.
 
@@ -246,6 +246,17 @@ As agreed in the contract below: `GET /reply-categories` (+ `PUT` for admins), r
 ### Not in O3
 
 Auto-send without approval (ACE step ④: the flag is stored, nothing is sent on its own), the Slack app (O4, in ACE), AI anything inside Core (Core only stores and runs what ACE or a person decides).
+
+### Built (Nov 15)
+
+All of the above. Settled while building:
+- The default categories are made for a company the first time they are needed (no data in the migration).
+- A person sorting a reply runs the rules too, without ACE (no draft is asked unless the rule says so; ACE answers it when connected).
+- Drafts are for email threads (`draft_channel_unsupported` for WhatsApp, for now).
+- A new draft for a conversation replaces the waiting one (`draft.superseded`); a newer reply makes the waiting one out of date.
+- Every sorting and decision leaves a note on the thread ("Sorted as Question → draft", "Draft approved by Riya via Slack (ACE)").
+- The Owner holds every permission except `drafts.approve_for_users`.
+- Tests: 12 backend tests (`tests/replies/`), and the browser test now sorts a reply and approves a draft.
 
 ### Decided (Nov 15, Suyog)
 

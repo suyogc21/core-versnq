@@ -103,6 +103,24 @@ class LeadBasics(BaseModel):
     can_open: bool  # may open the full lead page
 
 
+class ContactRef(BaseModel):
+    """A campaign thread's person, before they are a lead (step O2/O3)."""
+
+    id: uuid.UUID
+    name: str
+    email: str
+    company: str | None
+    title: str | None
+    variables: dict
+
+
+class CampaignRef(BaseModel):
+    id: uuid.UUID
+    name: str
+    description: str | None  # the offer, written by the company for ACE
+    step_sent: int | None  # the last campaign step this person was sent
+
+
 class ConversationDetail(BaseModel):
     id: uuid.UUID
     channel: str
@@ -113,7 +131,9 @@ class ConversationDetail(BaseModel):
     is_private: bool
     assignee_id: uuid.UUID | None
     assignee_name: str | None
-    lead: LeadBasics
+    lead: LeadBasics | None  # empty for a cold campaign thread (then `contact` is set)
+    contact: ContactRef | None = None
+    campaign: CampaignRef | None = None
     members: list[Member]
     messages: list[MessageOut]
     notes: list[NoteOut]
@@ -271,7 +291,7 @@ async def lead_conversations(
 
 # ---------- one conversation ----------
 async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDetail:
-    lead = await db.get(Lead, conv.lead_id)
+    lead = await db.get(Lead, conv.lead_id) if conv.lead_id else None
     msgs = (
         await db.scalars(
             select(Message)
@@ -308,13 +328,13 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
             select(ConversationMember).where(ConversationMember.conversation_id == conv.id)
         )
     ).all()
-    assignee = await IB.assignee_of(db, conv)
+    assignee = await IB.assignee_of(db, conv) if lead else conv.assignee_user_id
     user_ids = (
         {m.sent_by_user_id for m in msgs}
         | {n.user_id for n in notes}
         | {m.user_id for m in members}
     )
-    user_ids |= {assignee, lead.owner_user_id}
+    user_ids |= {assignee, lead.owner_user_id if lead else None}
     names = dict(
         (
             await db.execute(
@@ -322,13 +342,17 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
             )
         ).all()
     )
-    stage = await db.get(LeadStage, lead.stage_id)
+    stage = await db.get(LeadStage, lead.stage_id) if lead else None
     can_open = bool(
-        await db.scalar(
+        lead
+        and await db.scalar(
             select(Lead.id).where(Lead.id == lead.id, await L.visibility_filter(db, actor))
         )
     )
+    contact, campaign = await _campaign_refs(db, conv, msgs)
     return ConversationDetail(
+        contact=contact,
+        campaign=campaign,
         id=conv.id,
         subject=conv.subject,
         status=conv.status,
@@ -346,7 +370,9 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
             stage=stage.name if stage else None,
             owner_name=names.get(lead.owner_user_id),
             can_open=can_open,
-        ),
+        )
+        if lead
+        else None,
         members=[Member(user_id=m.user_id, name=names.get(m.user_id, "—")) for m in members],
         messages=[
             MessageOut(
@@ -378,10 +404,45 @@ async def _detail(db, actor: CurrentUser, conv: Conversation) -> ConversationDet
     )
 
 
+async def _campaign_refs(
+    db, conv: Conversation, msgs
+) -> tuple[ContactRef | None, CampaignRef | None]:
+    if not conv.contact_id:
+        return None, None
+    from app.modules.outreach.models import Campaign, CampaignStep, Contact
+
+    c = await db.get(Contact, conv.contact_id)
+    camp = await db.get(Campaign, conv.campaign_id) if conv.campaign_id else None
+    last_step = next(
+        (m.campaign_step_id for m in reversed(msgs) if m.direction == "out" and m.campaign_step_id),
+        None,
+    )
+    step = await db.get(CampaignStep, last_step) if last_step else None
+    return (
+        ContactRef(id=c.id, name=c.name, email=c.email, company=c.company, title=c.title,
+                   variables=c.variables or {}) if c else None,
+        CampaignRef(id=camp.id, name=camp.name, description=camp.description,
+                    step_sent=step.position if step else None) if camp else None,
+    )  # fmt: skip
+
+
 @router.get("/conversations/{conv_id}", response_model=ConversationDetail)
-async def get_conversation(conv_id: uuid.UUID, db: CrmDb, actor: Replier) -> ConversationDetail:
-    conv = await IB.get_visible(db, actor, conv_id)
-    await _mark_read(db, actor, conv)
+async def get_conversation(
+    conv_id: uuid.UUID, db: CrmDb, actor: Replier, mark_read: bool = True
+) -> ConversationDetail:
+    """A lead's conversation, or a campaign thread for callers who may see that campaign. API
+    keys never mark it read; anyone may pass ?mark_read=false (step O3)."""
+    from app.modules.auth.deps import has_permission
+    from app.modules.outreach import service as O
+
+    conds = [await IB.visible(db, actor)]
+    if has_permission(actor.permissions, "outreach.reply"):
+        conds.append(O.conversation_filter(actor))
+    conv = await db.scalar(select(Conversation).where(Conversation.id == conv_id, or_(*conds)))
+    if conv is None:
+        raise NotFound("Conversation not found")
+    if mark_read and actor.user.status != "integration":
+        await _mark_read(db, actor, conv)
     return await _detail(db, actor, conv)
 
 

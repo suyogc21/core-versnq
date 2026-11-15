@@ -62,7 +62,12 @@ def values_for(contact: Contact, sender_name: str, company: str) -> dict[str, st
 
 # ---------- who sees what ----------
 def sees_all(actor: CurrentUser) -> bool:
-    return actor.role.key in ADMINS or has_permission(actor.permissions, "campaigns.manage")
+    """Owner, Admin, roles that see every lead (e.g. ACE's), and campaign managers."""
+    return (
+        actor.role.key in ADMINS
+        or actor.role.scope == "all"
+        or has_permission(actor.permissions, "campaigns.manage")
+    )
 
 
 def campaign_filter(actor: CurrentUser):

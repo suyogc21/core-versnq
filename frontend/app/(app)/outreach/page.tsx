@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
+import { CategoryChip, DraftPanel } from "@/components/crm/reply-tools";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import {
   useOutreachInbox,
   useRefreshOutreach,
 } from "@/lib/outreach";
+import { useSorting } from "@/lib/replies";
 import { cn } from "@/lib/utils";
 
 type Tab = "campaigns" | "replies";
@@ -206,6 +208,7 @@ function Replies() {
 function Thread({ id, onBack }: { id: string; onBack: () => void }) {
   const { can } = useAuth();
   const conv = useOutreachConversation(id);
+  const sorting = useSorting(id); // categories and the waiting draft (step O3)
   const refresh = useRefreshOutreach();
   const router = useRouter();
   const [body, setBody] = useState("");
@@ -303,6 +306,14 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
             <div className="mb-1 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
               <span>{m.direction === "in" ? m.from_address : `You · ${m.from_address}`}</span>
               {m.auto_submitted && <Badge variant="outline">Out of office</Badge>}
+              {m.direction === "in" && !m.auto_submitted && (
+                <CategoryChip
+                  convId={id}
+                  messageId={m.id}
+                  sorting={sorting.data?.sortings.find((x) => x.message_id === m.id)}
+                  onChanged={reload}
+                />
+              )}
               {m.status === "failed" && <Badge variant="destructive">Not sent</Badge>}
               <span className="ml-auto">{m.sent_at ? relative(m.sent_at) : ""}</span>
             </div>
@@ -311,6 +322,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
           </div>
         ))}
       </div>
+      <DraftPanel convId={id} onSent={reload} />
       {can("outreach.reply") && (
         <div className="space-y-2">
           <Textarea aria-label="Your answer" placeholder="Write your answer…" rows={4} value={body} onChange={(e) => setBody(e.target.value)} />

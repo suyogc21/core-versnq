@@ -32,6 +32,14 @@ CATALOGUE: dict[str, str] = {
     "message.received": "inbox",  # Decision log #43: every email / WhatsApp in or out
     "message.sent": "inbox",
     "contact.converted": "outreach",  # step O2: a campaign contact became a lead
+    # step O3: replies sorted into the company's categories, and drafts (the contract with ACE)
+    "reply.classified": "inbox",
+    "draft.requested": "inbox",
+    "draft.created": "inbox",
+    "draft.approved": "inbox",
+    "draft.rejected": "inbox",
+    "draft.superseded": "inbox",
+    "reply_categories.changed": "inbox",
     "deal.created": "crm",  # step 3 (Decision log #25)
     "deal.updated": "crm",
     "deal.stage_changed": "crm",

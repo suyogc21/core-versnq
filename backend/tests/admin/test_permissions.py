@@ -13,9 +13,9 @@ async def _perms(tenant_id, key):
         return await effective_permissions(s, role)
 
 
-async def test_owner_has_every_permission(ws):
+async def test_owner_has_every_permission_except_acting_for_others(ws):
     tenant_id, _ = ws
-    assert await _perms(tenant_id, "owner") == set(ALL_CODES)
+    assert await _perms(tenant_id, "owner") == set(ALL_CODES) - {"drafts.approve_for_users"}
 
 
 async def test_default_grants_seeded(ws):
@@ -66,4 +66,4 @@ async def test_me_lists_the_users_permissions(ws):
     ]
     assert set((await c.get("/api/v1/auth/me", headers=owner)).json()["permissions"]) == set(
         ALL_CODES
-    )
+    ) - {"drafts.approve_for_users"}  # only ACE's key acts for other people (step O3)

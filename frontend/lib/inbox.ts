@@ -6,6 +6,8 @@ import type { components } from "@/lib/api/schema";
 
 export type ConversationRow = components["schemas"]["ConversationRow"];
 export type ConversationDetail = components["schemas"]["ConversationDetail"];
+/** A conversation with a lead (the normal inbox). Cold campaign threads live in Outreach. */
+export type LeadConversation = ConversationDetail & { lead: NonNullable<ConversationDetail["lead"]> };
 /** Opens the person's chat in the rep's own WhatsApp (phone app or WhatsApp Web). */
 export function waLink(phone: string | null | undefined): string | null {
   const digits = (phone ?? "").replace(/\D/g, "");

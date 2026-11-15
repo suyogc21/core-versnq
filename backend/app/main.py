@@ -38,6 +38,7 @@ from app.modules.integrations.router import router as integrations_router
 from app.modules.money.router import public as money_webhooks_router
 from app.modules.money.router import router as money_router
 from app.modules.outreach.router import router as outreach_router
+from app.modules.replies.router import router as replies_router
 from app.modules.reports.router import router as reports_router
 from app.modules.roles.router import router as roles_router
 from app.modules.settings.router import router as settings_router
@@ -93,6 +94,7 @@ app.include_router(inbox_router)
 app.include_router(mailbox_router)
 app.include_router(pool_router)
 app.include_router(outreach_router)
+app.include_router(replies_router)
 app.include_router(extension_account_router)
 app.include_router(extension_router)
 app.include_router(whatsapp_router)

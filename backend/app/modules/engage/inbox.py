@@ -94,6 +94,8 @@ async def is_member(db: AsyncSession, conv: Conversation, user_id: uuid.UUID) ->
 async def assignee_of(db: AsyncSession, conv: Conversation) -> uuid.UUID | None:
     if conv.assignee_user_id:
         return conv.assignee_user_id
+    if conv.lead_id is None:  # a cold campaign thread with no owner (step O2)
+        return None
     lead = await db.get(Lead, conv.lead_id)
     return lead.owner_user_id if lead else None
 
@@ -336,6 +338,9 @@ async def ingest(
     if quiet:
         return msg
     await message_event(db, msg, channel="email")
+    from app.modules.replies import service as RS  # replies build on this module
+
+    await RS.supersede(db, conv.id, msg)  # a waiting draft is now out of date (step O3)
     lead.last_activity_at = L.now()
     await _replied(db, lead, msg)
     people = [await assignee_of(db, conv)] + list(

@@ -364,15 +364,17 @@ The Core-side additions ACE needs (§9, "Core screens ACE needs") are built **in
 
 ### The loop for one reply
 
-1. A reply arrives in any pool inbox. Core stores it and emits `message.received` (built). For campaign replies the payload will also carry `campaign_id` and `contact_id` (Planned, O2).
-2. ACE fetches the message and the thread (`GET /conversations/{id}`), and the company's categories (`GET /reply-categories`, Planned O3: key, name, description written by the company, which ACE uses in its prompt).
-3. ACE sends its verdict: `PUT /messages/{id}/classification` with `{category, confidence, summary, reasons}` (Planned O3). Core records it, emits `reply.classified`, and **runs the company's rules** for that category: e.g. convert the contact to a lead (owner by the rule, intent hot/warm), stop the campaign for them, create a task, notify.
-4. If a rule says "draft a reply", Core emits `draft.requested`. ACE writes the draft: `POST /conversations/{id}/drafts` with `{body, reasons}` (Planned O3). Core emits `draft.created`.
+1. A reply arrives in any pool inbox. Core stores it and emits `message.received` (built). For campaign replies the payload also carries `contact_id`, `campaign_id`, `mailbox_id` and `auto_submitted`; `lead_id` is null for a cold contact (**built**, O2).
+2. ACE fetches the message and the thread (`GET /conversations/{id}`), and the company's categories (`GET /reply-categories`, **built** O3: key, name, description written by the company, which ACE uses in its prompt). Campaign threads come back from `GET /conversations/{id}` with `lead: null`, `contact` and `campaign` (incl. `description`, `step_sent`); API keys never mark a thread read.
+3. ACE sends its verdict: `PUT /messages/{id}/classification` with `{category, confidence, summary, reasons, language, prompt_version}` (**built** O3; a person's sorting wins: `classified_by_person`). Core records it, emits `reply.classified`, and **runs the company's rules** for that category: e.g. convert the contact to a lead (owner by the rule, intent hot/warm), stop the campaign for them, create a task, notify.
+4. If a rule says "draft a reply", Core emits `draft.requested`. ACE writes the draft: `POST /conversations/{id}/drafts` with `{request_id, reply_to_message_id, body, reasons, language}` (**built** O3; same `request_id` → same draft). Core emits `draft.created`.
 5. Approval, in either place:
    - **Core inbox:** a person approves, edits or rejects.
    - **Slack (ACE):** ACE posts the draft; a click calls `POST /drafts/{id}/approve` (optionally with the edited body) or `/reject`, on behalf of the Slack user mapped to a Core user (mapping by email in ACE's console).
    Core sends the approved draft from the same inbox in the same thread and emits `draft.approved` / `message.sent`.
 6. **Every company starts in drafts-only mode** (#42). Auto-send without approval can later be allowed per category by the company (e.g. "Out of office": no reply; "Unsubscribe": Core stops everything, no AI needed).
+
+**O3 is built (Nov 15).** Everything in Core's "O3: the contract with ACE" (`docs/plans/outreach-plan.md`) exists: categories and rules (`GET /reply-categories`), `PUT /messages/{id}/classification`, `POST /conversations/{id}/drafts`, `GET /drafts/{id}`, `POST /drafts/{id}/approve | reject` with `on_behalf_of_user_id` (needs `drafts.approve_for_users` on ACE's role; Core checks that person's own rights: `user_cannot_approve`, `user_inactive`; `via` = `slack`), the events `reply.classified`, `draft.requested`, `draft.created`, `draft.approved`, `draft.rejected`, `draft.superseded`, `reply_categories.changed`, `contact.converted`. **ACE's role** (all leads) needs: `inbox.reply`, `outreach.reply`, `leads.create`, `leads.edit`, `drafts.approve_for_users` (an admin grants it to that role; it is never given to people by default, not even the Owner). Auto-send stays off (ACE step ④).
 
 ### Rules for ACE
 

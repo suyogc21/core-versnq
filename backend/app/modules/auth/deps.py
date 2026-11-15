@@ -33,9 +33,10 @@ TenantDb = Annotated[AsyncSession, Depends(get_tenant_db)]
 
 
 async def effective_permissions(db: AsyncSession, role: Role) -> set[str]:
-    """Owner holds every code (including future ones); others hold their granted rows."""
+    """Owner holds every code (including future ones) except acting for other people, which only
+    ACE's key gets (step O3); others hold their granted rows."""
     if role.key == "owner":
-        return set(ALL_CODES)
+        return set(ALL_CODES - {"drafts.approve_for_users"})
     rows = await db.scalars(
         select(RolePermission.permission_code).where(RolePermission.role_id == role.id)
     )
