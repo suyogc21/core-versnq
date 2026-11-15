@@ -48,6 +48,22 @@ def install(app: FastAPI) -> None:
             {"detail": exc.detail, "code": exc.code, **exc.extra}, status_code=exc.status_code
         )
 
+    @app.exception_handler(Exception)
+    async def _unexpected(request: Request, exc: Exception) -> JSONResponse:
+        """A bug or an outage (a 500): staff are emailed (go-live G-2); the person sees a plain
+        sentence, never the error."""
+        from app.core.alerts import report
+
+        host = request.headers.get("host", "").split(":")[0]
+        await report(exc, context=f"{request.method} {request.url.path}"[:120], company=host)
+        return JSONResponse(
+            {
+                "detail": "Something went wrong on our side. Please try again.",
+                "code": "server_error",
+            },
+            status_code=500,
+        )
+
     @app.exception_handler(RequestValidationError)
     async def _invalid_input(_: Request, exc: RequestValidationError) -> JSONResponse:
         """A request body or parameter that doesn't fit (FastAPI's checks)."""

@@ -23,8 +23,16 @@ from app.workers.jobs import (
 )
 
 
+async def _startup(ctx) -> None:
+    from app.core.alerts import install_worker_alerts
+
+    install_worker_alerts()  # a failed job emails staff (go-live G-2)
+
+
 class WorkerSettings:
     """arq worker entry point: `arq app.workers.main.WorkerSettings`."""
+
+    on_startup = _startup
 
     functions = [
         ping_job,

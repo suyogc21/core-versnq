@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     system_smtp_password: str | None = None
     system_email_from: str | None = None
     system_email_from_name: str = "Versnq"
+    alert_email: str | None = None  # go-live G-2: unexpected errors are emailed here
     # Outside production: connected inboxes (step 9b-3) are read from <dir>/<address>/<folder>/
     # <uid>.eml instead of a real IMAP server, so mailbox sync can be tried without one.
     mailbox_test_dir: str | None = None

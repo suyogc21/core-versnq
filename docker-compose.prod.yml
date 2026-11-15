@@ -33,6 +33,7 @@ x-backend-env: &backend-env
   SYSTEM_SMTP_PASSWORD: ${SYSTEM_SMTP_PASSWORD:-}
   SYSTEM_EMAIL_FROM: ${SYSTEM_EMAIL_FROM:-}
   SYSTEM_EMAIL_FROM_NAME: ${SYSTEM_EMAIL_FROM_NAME:-Versnq}
+  ALERT_EMAIL: ${ALERT_EMAIL:-} # unexpected errors are emailed here (go-live G-2)
   ALLOW_DEMO_DATA: ${ALLOW_DEMO_DATA:-false} # true: the invented demo companies may be added
   DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
   DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-10}

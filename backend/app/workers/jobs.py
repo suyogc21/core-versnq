@@ -83,7 +83,10 @@ async def nightly_job(ctx) -> dict:
             money[str(t)] = done
         archived = await archive_tenant(t)
         logs_archived += archived["api"] + archived["webhooks"]
+    from app.core.alerts import send_daily_count
+
     return {
+        "errors_yesterday": await send_daily_count(),  # emailed to staff when any (G-2)
         "logs_archived": logs_archived,
         "money": money,
         "rescored": rescored,

@@ -24,7 +24,7 @@ Written 2026-11-15 for Suyog (roadmap G.2–G.3, the parked "security and go-liv
 - A monthly **restore test**: the newest copy is restored into a scratch database on the server, checked (companies, leads, invoices counted), then removed; the result is emailed to you.
 - Tools: `age` (encryption) and `rclone` (copying), installed on the server only (no change to Core's code or dependencies).
 
-### G-2 Error alerts
+### G-2 Error alerts — built Nov 15 (ALERT_EMAIL on the server; the outside uptime check is on Suyog's list)
 - An unexpected error in the backend or the worker (the "500" kind) **emails Versnq staff** from `support@versnq.in`: what failed, when, which company (never passwords, tokens or message bodies). At most one email per kind of error per hour, plus a daily count.
 - An outside **uptime check** every minute on `/health` (a free service), so a down server is noticed even when it can't send email.
 
