@@ -284,7 +284,7 @@ async def _company(
         owner_user.password_hash, owner_user.status = password_hash, "active"
     from app.core.modules import set_module
 
-    for key in ("whatsapp_number", "copy_in"):  # demos show every feature (test senders)
+    for key in ("whatsapp_number", "copy_in", "outreach"):  # demos show every feature
         await set_module(db, tenant.id, key, True)
     roles = {r.key: r.id for r in (await db.scalars(select(Role))).all()}
     return tenant, owner_user, roles

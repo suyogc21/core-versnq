@@ -114,6 +114,7 @@ systemctl daemon-reload && systemctl enable --now core-provision-companies.timer
 |---|---|
 | Everything in the app, staff console, sign-in with 2FA | — |
 | Sending/receiving email through a **connected mailbox** (Gmail / Google Workspace / Zoho / any IMAP+SMTP, with an app password) | — |
+| **Outreach** (cold email campaigns from the sending inboxes): turn it on per company in the staff console → Companies → Modules | — |
 | WhatsApp **Chrome extension** for reps' own WhatsApp (load `extension/dist`; set its address to the company's `https://<slug>.core.versnq.in`) | — |
 | Company WhatsApp number | Meta Business verification; then `WHATSAPP_SENDER=meta` |
 | Copy-in addresses, company-wide sending | Amazon SES; then `INBOUND_EMAIL_LIVE=true` |

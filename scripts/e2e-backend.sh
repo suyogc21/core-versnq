@@ -10,12 +10,13 @@ export DATABASE_URL="${DATABASE_URL%/*}/versnq_e2e"
 export MIGRATION_DATABASE_URL="${MIGRATION_DATABASE_URL%/*}/versnq_e2e"
 export REDIS_URL="${REDIS_URL%/*}/13"
 export MAIL_OUTBOX_DIR="$ROOT/frontend/e2e/.state/outbox"
+export MAILBOX_TEST_DIR="$ROOT/frontend/e2e/.state/mailboxes"  # sending inboxes (step O2)
 export ENVIRONMENT=dev
 export TRUST_PROXY_HEADERS=true
 export DEMO_SKIP_2FA=false  # the end-to-end test checks the real 2FA flow
 case "$MIGRATION_DATABASE_URL" in *"/versnq_e2e") ;; *) echo "refusing: not versnq_e2e"; exit 1;; esac
 
-rm -rf "$MAIL_OUTBOX_DIR" && mkdir -p "$MAIL_OUTBOX_DIR"
+rm -rf "$MAIL_OUTBOX_DIR" "$MAILBOX_TEST_DIR" && mkdir -p "$MAIL_OUTBOX_DIR" "$MAILBOX_TEST_DIR"
 cd "$ROOT/backend"
 uv run alembic downgrade base >/dev/null
 uv run alembic upgrade head >/dev/null

@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, Inbox, LogOut, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, Inbox, LogOut, Megaphone, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -15,6 +15,7 @@ import { useRecordTypes } from "@/lib/records";
 import { SETTINGS_PAGES, settingsPageFor } from "@/lib/settings-nav";
 import { useLabels, useWorkspaceSettings } from "@/lib/settings";
 import { useInboxCounts } from "@/lib/inbox";
+import { useModuleOn } from "@/lib/modules";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; permission?: string; count?: number };
 
@@ -64,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const recordTypes = useRecordTypes();
   const moneyOn = useMoneyOn();
   const keyOn = useKeyAccountsOn();
+  const outreachOn = useModuleOn("outreach");
   const inboxCounts = useInboxCounts(!!me && can("inbox.reply"));
   if (!me) return null;
   const mainItems = [
@@ -75,6 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ? [{ href: "/dashboards", label: "Dashboards", icon: ChartColumn }]
       : []),
     ...(can("sequences.manage") ? [{ href: "/sequences", label: "Sequences", icon: Send }] : []),
+    ...(outreachOn && (can("campaigns.manage") || can("outreach.reply")) ? [{ href: "/outreach", label: "Outreach", icon: Megaphone }] : []),
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
   ];

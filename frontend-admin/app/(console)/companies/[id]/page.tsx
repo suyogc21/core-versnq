@@ -27,6 +27,7 @@ const MODULES: Record<string, string> = {
   key_accounts: "Key accounts add-on",
   whatsapp_number: "Company WhatsApp number (turn on once live with Meta)",
   copy_in: "Copy-in email addresses (turn on once inbound mail is live)",
+  outreach: "Outreach: cold email campaigns from the sending inboxes",
 };
 const CORE_MODULES = new Set(["crm"]);
 

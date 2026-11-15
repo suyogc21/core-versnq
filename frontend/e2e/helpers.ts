@@ -26,6 +26,7 @@ export async function tokenFromEmail(to: string): Promise<string> {
   await expect
     .poll(() => {
       const mails = readdirSync(OUTBOX)
+        .filter((f) => f.endsWith(".json")) // Core's own emails; campaign emails are .eml files
         .sort()
         .map((f) => JSON.parse(readFileSync(path.join(OUTBOX, f), "utf8")) as { to: string; body: string })
         .filter((m) => m.to === to);
@@ -40,6 +41,7 @@ export async function tokenFromEmail(to: string): Promise<string> {
 
 export function codesSentTo(to: string): string[] {
   return readdirSync(OUTBOX)
+    .filter((f) => f.endsWith(".json")) // Core's own emails; campaign emails are .eml files
     .sort()
     .map((f) => JSON.parse(readFileSync(path.join(OUTBOX, f), "utf8")) as { to: string; subject: string; body: string })
     .filter((m) => m.to === to && m.subject.includes("sign-in code"))

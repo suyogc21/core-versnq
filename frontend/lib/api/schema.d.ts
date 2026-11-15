@@ -6671,6 +6671,49 @@ export interface components {
             /** Variant */
             variant: number;
         };
+        /** CampaignCounts */
+        CampaignCounts: {
+            /**
+             * Active
+             * @default 0
+             */
+            active: number;
+            /**
+             * Bounced
+             * @default 0
+             */
+            bounced: number;
+            /**
+             * Clicked
+             * @default 0
+             */
+            clicked: number;
+            /**
+             * Contacts
+             * @default 0
+             */
+            contacts: number;
+            /**
+             * Opened
+             * @default 0
+             */
+            opened: number;
+            /**
+             * Replied
+             * @default 0
+             */
+            replied: number;
+            /**
+             * Sent
+             * @default 0
+             */
+            sent: number;
+            /**
+             * Unsubscribed
+             * @default 0
+             */
+            unsubscribed: number;
+        };
         /** CampaignIn */
         CampaignIn: {
             /**
@@ -6689,7 +6732,7 @@ export interface components {
             name: string;
             /** Owner User Id */
             owner_user_id?: string | null;
-            schedule?: components["schemas"]["Schedule"] | null;
+            schedule?: components["schemas"]["CampaignSchedule"] | null;
             /**
              * Track Clicks
              * @default false
@@ -6703,7 +6746,7 @@ export interface components {
         };
         /** CampaignOut */
         CampaignOut: {
-            counts: components["schemas"]["Counts"];
+            counts: components["schemas"]["CampaignCounts"];
             /**
              * Created At
              * Format: date-time
@@ -6751,11 +6794,150 @@ export interface components {
             name?: string | null;
             /** Owner User Id */
             owner_user_id?: string | null;
-            schedule?: components["schemas"]["Schedule"] | null;
+            schedule?: components["schemas"]["CampaignSchedule"] | null;
             /** Track Clicks */
             track_clicks?: boolean | null;
             /** Track Opens */
             track_opens?: boolean | null;
+        };
+        /** CampaignPreviewIn */
+        CampaignPreviewIn: {
+            /** Contact Id */
+            contact_id?: string | null;
+            /**
+             * Position
+             * @default 1
+             */
+            position: number;
+            /**
+             * Variant
+             * @default 0
+             */
+            variant: number;
+        };
+        /** CampaignPreviewOut */
+        CampaignPreviewOut: {
+            /** Body */
+            body: string;
+            /** Missing */
+            missing: string[];
+            /** Subject */
+            subject: string;
+        };
+        /** CampaignSchedule */
+        CampaignSchedule: {
+            /**
+             * Days
+             * @default [
+             *       0,
+             *       1,
+             *       2,
+             *       3,
+             *       4
+             *     ]
+             */
+            days: number[];
+            /**
+             * From
+             * @default 09:00
+             */
+            from: string;
+            /** Timezone */
+            timezone?: string | null;
+            /**
+             * To
+             * @default 18:00
+             */
+            to: string;
+        };
+        /**
+         * CampaignStatRow
+         * @description One step, or one version of a step, or one inbox, in the results.
+         */
+        CampaignStatRow: {
+            /**
+             * Bounced
+             * @default 0
+             */
+            bounced: number;
+            /**
+             * Clicked
+             * @default 0
+             */
+            clicked: number;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Opened
+             * @default 0
+             */
+            opened: number;
+            /**
+             * Replied
+             * @default 0
+             */
+            replied: number;
+            /**
+             * Sent
+             * @default 0
+             */
+            sent: number;
+            /**
+             * Unsubscribed
+             * @default 0
+             */
+            unsubscribed: number;
+        };
+        /** CampaignStatsOut */
+        CampaignStatsOut: {
+            /** Inboxes */
+            inboxes: components["schemas"]["CampaignStatRow"][];
+            /** Steps */
+            steps: components["schemas"]["CampaignStatRow"][];
+            totals: components["schemas"]["CampaignCounts"];
+            /** Variants */
+            variants: components["schemas"]["CampaignStatRow"][];
+        };
+        /** CampaignStepIn */
+        CampaignStepIn: {
+            /** Variants */
+            variants: components["schemas"]["CampaignVariant"][];
+            /**
+             * Wait Days
+             * @default 0
+             */
+            wait_days: number;
+        };
+        /** CampaignStepOut */
+        CampaignStepOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Position */
+            position: number;
+            /** Variants */
+            variants: components["schemas"]["CampaignVariant"][];
+            /**
+             * Wait Days
+             * @default 0
+             */
+            wait_days: number;
+        };
+        /** CampaignStepsIn */
+        CampaignStepsIn: {
+            /** Steps */
+            steps: components["schemas"]["CampaignStepIn"][];
+        };
+        /** CampaignVariant */
+        CampaignVariant: {
+            /** Body */
+            body: string;
+            /** Subject */
+            subject?: string | null;
         };
         /** CannedIn */
         CannedIn: {
@@ -7066,6 +7248,57 @@ export interface components {
             /** Wording */
             wording: string | null;
         };
+        /** ContactConvertOut */
+        ContactConvertOut: {
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+        };
+        /** ContactImportIn */
+        ContactImportIn: {
+            /** Csv */
+            csv: string;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+            /** Filename */
+            filename?: string | null;
+            /** Mapping */
+            mapping?: {
+                [key: string]: "email" | "first_name" | "last_name" | "company" | "title" | "phone" | "website" | "variable" | "ignore";
+            } | null;
+        };
+        /** ContactImportOut */
+        ContactImportOut: {
+            /** Added */
+            added: number;
+            /** Already In Campaign */
+            already_in_campaign: number;
+            /** Already Lead */
+            already_lead: number;
+            /** Duplicates In File */
+            duplicates_in_file: number;
+            /** Invalid Email */
+            invalid_email: number;
+            /** Mapping */
+            mapping: {
+                [key: string]: string;
+            };
+            /** Problems */
+            problems: {
+                [key: string]: unknown;
+            }[];
+            /** Rows */
+            rows: number;
+            /** Suppressed */
+            suppressed: number;
+            /** Variables */
+            variables: string[];
+        };
         /** ContactOut */
         ContactOut: {
             /**
@@ -7207,14 +7440,6 @@ export interface components {
             /** Waiting */
             waiting: boolean;
         };
-        /** ConvertOut */
-        ConvertOut: {
-            /**
-             * Lead Id
-             * Format: uuid
-             */
-            lead_id: string;
-        };
         /** CopyInOut */
         CopyInOut: {
             /** Address */
@@ -7244,49 +7469,6 @@ export interface components {
             create_leads: boolean;
             /** Source Id */
             source_id?: string | null;
-        };
-        /** Counts */
-        Counts: {
-            /**
-             * Active
-             * @default 0
-             */
-            active: number;
-            /**
-             * Bounced
-             * @default 0
-             */
-            bounced: number;
-            /**
-             * Clicked
-             * @default 0
-             */
-            clicked: number;
-            /**
-             * Contacts
-             * @default 0
-             */
-            contacts: number;
-            /**
-             * Opened
-             * @default 0
-             */
-            opened: number;
-            /**
-             * Replied
-             * @default 0
-             */
-            replied: number;
-            /**
-             * Sent
-             * @default 0
-             */
-            sent: number;
-            /**
-             * Unsubscribed
-             * @default 0
-             */
-            unsubscribed: number;
         };
         /** CrmRules */
         CrmRules: {
@@ -8412,6 +8594,57 @@ export interface components {
             value: string;
             /** Value Normalized */
             value_normalized: string;
+        };
+        /** ImportIn */
+        ImportIn: {
+            /** Csv */
+            csv: string;
+        };
+        /** ImportOut */
+        ImportOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /** Created Count */
+            created_count: number;
+            /** Failed Count */
+            failed_count: number;
+            /** File Name */
+            file_name: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Headers */
+            headers: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mapping */
+            mapping: {
+                [key: string]: unknown;
+            };
+            /** Options */
+            options: {
+                [key: string]: unknown;
+            };
+            /** Row Count */
+            row_count: number;
+            /** Skipped Count */
+            skipped_count: number;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** Updated Count */
+            updated_count: number;
         };
         /** ImportRow */
         ImportRow: {
@@ -10061,11 +10294,42 @@ export interface components {
             /** Last Message At */
             last_message_at: string | null;
             /** Messages */
-            messages: components["schemas"]["ThreadMessage"][];
+            messages: components["schemas"]["OutreachMessage"][];
             /** State */
             state: string;
             /** Subject */
             subject: string | null;
+        };
+        /** OutreachMessage */
+        OutreachMessage: {
+            /** Auto Submitted */
+            auto_submitted: boolean;
+            /** Body */
+            body: string;
+            /** Direction */
+            direction: string;
+            /** From Address */
+            from_address: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mailbox Id */
+            mailbox_id: string | null;
+            /** Sent At */
+            sent_at: string | null;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+            /** To Address */
+            to_address: string;
+        };
+        /** OutreachReplyIn */
+        OutreachReplyIn: {
+            /** Body */
+            body: string;
         };
         /** OwnerIn */
         OwnerIn: {
@@ -10348,6 +10612,21 @@ export interface components {
             won_count: number;
             /** Won Minor */
             won_minor: number | null;
+        };
+        /** PreviewIn */
+        PreviewIn: {
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+        };
+        /** PreviewOut */
+        PreviewOut: {
+            /** Body */
+            body: string;
+            /** Subject */
+            subject: string;
         };
         /** ProductIn */
         ProductIn: {
@@ -10659,6 +10938,16 @@ export interface components {
             /** Months */
             months: (1 | 3 | 6 | 12) | null;
         };
+        /** ReplyIn */
+        ReplyIn: {
+            /** Body */
+            body: string;
+            /**
+             * Cc
+             * @default []
+             */
+            cc: string[];
+        };
         /** ReplyOut */
         ReplyOut: {
             /** Body */
@@ -10820,46 +11109,6 @@ export interface components {
             /** Won This Year */
             won_this_year: components["schemas"]["Amount"][];
         };
-        /**
-         * Row
-         * @description One step, or one version of a step, or one inbox, in the results.
-         */
-        Row: {
-            /**
-             * Bounced
-             * @default 0
-             */
-            bounced: number;
-            /**
-             * Clicked
-             * @default 0
-             */
-            clicked: number;
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /**
-             * Opened
-             * @default 0
-             */
-            opened: number;
-            /**
-             * Replied
-             * @default 0
-             */
-            replied: number;
-            /**
-             * Sent
-             * @default 0
-             */
-            sent: number;
-            /**
-             * Unsubscribed
-             * @default 0
-             */
-            unsubscribed: number;
-        };
         /** RunOut */
         RunOut: {
             /**
@@ -10886,32 +11135,6 @@ export interface components {
             status: string;
             /** Subject Name */
             subject_name?: string | null;
-        };
-        /** Schedule */
-        Schedule: {
-            /**
-             * Days
-             * @default [
-             *       0,
-             *       1,
-             *       2,
-             *       3,
-             *       4
-             *     ]
-             */
-            days: number[];
-            /**
-             * From
-             * @default 09:00
-             */
-            from: string;
-            /** Timezone */
-            timezone?: string | null;
-            /**
-             * To
-             * @default 18:00
-             */
-            to: string;
         };
         /**
          * ScheduleIn
@@ -11115,7 +11338,7 @@ export interface components {
             /** Name */
             name: string;
             /** Steps */
-            steps: components["schemas"]["app__modules__engage__router__StepOut"][];
+            steps: components["schemas"]["StepOut"][];
             /** Stop On */
             stop_on: string[];
             /** Stopped */
@@ -11480,15 +11703,56 @@ export interface components {
             /** Stage Id */
             stage_id?: string | null;
         };
-        /** StatsOut */
-        StatsOut: {
-            /** Inboxes */
-            inboxes: components["schemas"]["Row"][];
-            /** Steps */
-            steps: components["schemas"]["Row"][];
-            totals: components["schemas"]["Counts"];
-            /** Variants */
-            variants: components["schemas"]["Row"][];
+        /** StepIn */
+        StepIn: {
+            /** Check If */
+            check_if?: ("opened" | "clicked" | "replied" | "tag" | "field") | null;
+            /**
+             * Due In Hours
+             * @default 0
+             */
+            due_in_hours: number;
+            /** Field */
+            field?: string | null;
+            /** Go To */
+            go_to?: number | null;
+            /** Hours */
+            hours?: number | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "email" | "whatsapp" | "task" | "wait" | "check";
+            /** Tag Id */
+            tag_id?: string | null;
+            /**
+             * Task Type
+             * @default other
+             * @enum {string}
+             */
+            task_type: "call" | "linkedin_connect" | "linkedin_message" | "other";
+            /** Template Id */
+            template_id?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Value */
+            value?: string | null;
+        };
+        /** StepOut */
+        StepOut: {
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Position */
+            position: number;
         };
         /** StepStats */
         StepStats: {
@@ -11531,11 +11795,6 @@ export interface components {
              * @default 0
              */
             unsubscribed: number;
-        };
-        /** StepsIn */
-        StepsIn: {
-            /** Steps */
-            steps: components["schemas"]["app__modules__outreach__router__StepIn"][];
         };
         /** StorageOut */
         StorageOut: {
@@ -11946,32 +12205,6 @@ export interface components {
             /** Matches */
             matches: boolean;
         };
-        /** ThreadMessage */
-        ThreadMessage: {
-            /** Auto Submitted */
-            auto_submitted: boolean;
-            /** Body */
-            body: string;
-            /** Direction */
-            direction: string;
-            /** From Address */
-            from_address: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Mailbox Id */
-            mailbox_id: string | null;
-            /** Sent At */
-            sent_at: string | null;
-            /** Status */
-            status: string;
-            /** Subject */
-            subject: string | null;
-            /** To Address */
-            to_address: string;
-        };
         /** ToDocumentIn */
         ToDocumentIn: {
             /**
@@ -12319,13 +12552,6 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
-        };
-        /** Variant */
-        Variant: {
-            /** Body */
-            body: string;
-            /** Subject */
-            subject?: string | null;
         };
         /** ViewCounts */
         ViewCounts: {
@@ -12675,52 +12901,6 @@ export interface components {
             /** Body */
             body: string;
         };
-        /** ImportOut */
-        app__modules__crm__imports_router__ImportOut: {
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Created By User Id
-             * Format: uuid
-             */
-            created_by_user_id: string;
-            /** Created Count */
-            created_count: number;
-            /** Failed Count */
-            failed_count: number;
-            /** File Name */
-            file_name: string;
-            /** Finished At */
-            finished_at: string | null;
-            /** Headers */
-            headers: string[];
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Mapping */
-            mapping: {
-                [key: string]: unknown;
-            };
-            /** Options */
-            options: {
-                [key: string]: unknown;
-            };
-            /** Row Count */
-            row_count: number;
-            /** Skipped Count */
-            skipped_count: number;
-            /** Started At */
-            started_at: string | null;
-            /** Status */
-            status: string;
-            /** Updated Count */
-            updated_count: number;
-        };
         /** AccessOut */
         app__modules__crm__layouts_router__AccessOut: {
             /** Entity */
@@ -12981,87 +13161,6 @@ export interface components {
              */
             mention_ids: string[];
         };
-        /** ReplyIn */
-        app__modules__engage__inbox_router__ReplyIn: {
-            /** Body */
-            body: string;
-            /**
-             * Cc
-             * @default []
-             */
-            cc: string[];
-        };
-        /** ImportIn */
-        app__modules__engage__pool_router__ImportIn: {
-            /** Csv */
-            csv: string;
-        };
-        /** PreviewIn */
-        app__modules__engage__router__PreviewIn: {
-            /**
-             * Lead Id
-             * Format: uuid
-             */
-            lead_id: string;
-        };
-        /** PreviewOut */
-        app__modules__engage__router__PreviewOut: {
-            /** Body */
-            body: string;
-            /** Subject */
-            subject: string;
-        };
-        /** StepIn */
-        app__modules__engage__router__StepIn: {
-            /** Check If */
-            check_if?: ("opened" | "clicked" | "replied" | "tag" | "field") | null;
-            /**
-             * Due In Hours
-             * @default 0
-             */
-            due_in_hours: number;
-            /** Field */
-            field?: string | null;
-            /** Go To */
-            go_to?: number | null;
-            /** Hours */
-            hours?: number | null;
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "email" | "whatsapp" | "task" | "wait" | "check";
-            /** Tag Id */
-            tag_id?: string | null;
-            /**
-             * Task Type
-             * @default other
-             * @enum {string}
-             */
-            task_type: "call" | "linkedin_connect" | "linkedin_message" | "other";
-            /** Template Id */
-            template_id?: string | null;
-            /** Title */
-            title?: string | null;
-            /** Value */
-            value?: string | null;
-        };
-        /** StepOut */
-        app__modules__engage__router__StepOut: {
-            /** Config */
-            config: {
-                [key: string]: unknown;
-            };
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Kind */
-            kind: string;
-            /** Position */
-            position: number;
-        };
         /** MessageOut */
         app__modules__money__router__MessageOut: {
             /**
@@ -13084,105 +13183,6 @@ export interface components {
             status: string;
             /** To Address */
             to_address: string;
-        };
-        /** ImportIn */
-        app__modules__outreach__router__ImportIn: {
-            /** Csv */
-            csv: string;
-            /**
-             * Dry Run
-             * @default false
-             */
-            dry_run: boolean;
-            /** Filename */
-            filename?: string | null;
-            /** Mapping */
-            mapping?: {
-                [key: string]: "email" | "first_name" | "last_name" | "company" | "title" | "phone" | "website" | "variable" | "ignore";
-            } | null;
-        };
-        /** ImportOut */
-        app__modules__outreach__router__ImportOut: {
-            /** Added */
-            added: number;
-            /** Already In Campaign */
-            already_in_campaign: number;
-            /** Already Lead */
-            already_lead: number;
-            /** Duplicates In File */
-            duplicates_in_file: number;
-            /** Invalid Email */
-            invalid_email: number;
-            /** Mapping */
-            mapping: {
-                [key: string]: string;
-            };
-            /** Problems */
-            problems: {
-                [key: string]: unknown;
-            }[];
-            /** Rows */
-            rows: number;
-            /** Suppressed */
-            suppressed: number;
-            /** Variables */
-            variables: string[];
-        };
-        /** PreviewIn */
-        app__modules__outreach__router__PreviewIn: {
-            /** Contact Id */
-            contact_id?: string | null;
-            /**
-             * Position
-             * @default 1
-             */
-            position: number;
-            /**
-             * Variant
-             * @default 0
-             */
-            variant: number;
-        };
-        /** PreviewOut */
-        app__modules__outreach__router__PreviewOut: {
-            /** Body */
-            body: string;
-            /** Missing */
-            missing: string[];
-            /** Subject */
-            subject: string;
-        };
-        /** ReplyIn */
-        app__modules__outreach__router__ReplyIn: {
-            /** Body */
-            body: string;
-        };
-        /** StepIn */
-        app__modules__outreach__router__StepIn: {
-            /** Variants */
-            variants: components["schemas"]["Variant"][];
-            /**
-             * Wait Days
-             * @default 0
-             */
-            wait_days: number;
-        };
-        /** StepOut */
-        app__modules__outreach__router__StepOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Position */
-            position: number;
-            /** Variants */
-            variants: components["schemas"]["Variant"][];
-            /**
-             * Wait Days
-             * @default 0
-             */
-            wait_days: number;
         };
         /** RoleOut */
         app__modules__roles__router__RoleOut: {
@@ -14407,7 +14407,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__outreach__router__ImportIn"];
+                "application/json": components["schemas"]["ContactImportIn"];
             };
         };
         responses: {
@@ -14417,7 +14417,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__outreach__router__ImportOut"];
+                    "application/json": components["schemas"]["ContactImportOut"];
                 };
             };
             /** @description Validation Error */
@@ -14536,7 +14536,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__outreach__router__PreviewIn"];
+                "application/json": components["schemas"]["CampaignPreviewIn"];
             };
         };
         responses: {
@@ -14546,7 +14546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__outreach__router__PreviewOut"];
+                    "application/json": components["schemas"]["CampaignPreviewOut"];
                 };
             };
             /** @description Validation Error */
@@ -14608,7 +14608,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StatsOut"];
+                    "application/json": components["schemas"]["CampaignStatsOut"];
                 };
             };
             /** @description Validation Error */
@@ -14639,7 +14639,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__outreach__router__StepOut"][];
+                    "application/json": components["schemas"]["CampaignStepOut"][];
                 };
             };
             /** @description Validation Error */
@@ -14664,7 +14664,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StepsIn"];
+                "application/json": components["schemas"]["CampaignStepsIn"];
             };
         };
         responses: {
@@ -14674,7 +14674,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__outreach__router__StepOut"][];
+                    "application/json": components["schemas"]["CampaignStepOut"][];
                 };
             };
             /** @description Validation Error */
@@ -15149,7 +15149,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConvertOut"];
+                    "application/json": components["schemas"]["ContactConvertOut"];
                 };
             };
             /** @description Validation Error */
@@ -15474,7 +15474,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__engage__inbox_router__ReplyIn"];
+                "application/json": components["schemas"]["ReplyIn"];
             };
         };
         responses: {
@@ -17648,7 +17648,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__imports_router__ImportOut"][];
+                    "application/json": components["schemas"]["ImportOut"][];
                 };
             };
         };
@@ -17703,7 +17703,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__imports_router__ImportOut"];
+                    "application/json": components["schemas"]["ImportOut"];
                 };
             };
             /** @description Validation Error */
@@ -17763,7 +17763,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__imports_router__ImportOut"];
+                    "application/json": components["schemas"]["ImportOut"];
                 };
             };
             /** @description Validation Error */
@@ -17829,7 +17829,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__crm__imports_router__ImportOut"];
+                    "application/json": components["schemas"]["ImportOut"];
                 };
             };
             /** @description Validation Error */
@@ -22331,7 +22331,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__outreach__router__ReplyIn"];
+                "application/json": components["schemas"]["OutreachReplyIn"];
             };
         };
         responses: {
@@ -24060,7 +24060,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__engage__pool_router__ImportIn"];
+                "application/json": components["schemas"]["ImportIn"];
             };
         };
         responses: {
@@ -24531,7 +24531,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__engage__router__StepIn"][];
+                "application/json": components["schemas"]["StepIn"][];
             };
         };
         responses: {
@@ -25370,7 +25370,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["app__modules__engage__router__PreviewIn"];
+                "application/json": components["schemas"]["PreviewIn"];
             };
         };
         responses: {
@@ -25380,7 +25380,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__modules__engage__router__PreviewOut"];
+                    "application/json": components["schemas"]["PreviewOut"];
                 };
             };
             /** @description Validation Error */

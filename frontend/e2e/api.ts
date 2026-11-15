@@ -46,12 +46,13 @@ async function firstSignIn(ctx: APIRequestContext, base: string, prefix: string,
 
 export type Person = { email: string; password: string; id: string };
 
-/** A company with an Owner, a manager with one rep, and a rep on another team. */
-export async function companyWithTeams(slug: string) {
+/** A company with an Owner, a manager with one rep, and a rep on another team. `modules`: switches
+ * that are off by default to turn on (e.g. outreach). */
+export async function companyWithTeams(slug: string, modules: string[] = []) {
   const staffCtx = await request.newContext();
   const staff = await signInWith2fa(staffCtx, STAFF, "/platform", "e2e-api@versnq.in", E2E_STAFF_PASSWORD);
   const ownerEmail = `owner@${slug}.example.org`;
-  await call(staffCtx, "POST", `${STAFF}/platform/tenants`, staff, {
+  const tenant = await call(staffCtx, "POST", `${STAFF}/platform/tenants`, staff, {
     name: `${slug} Ltd`,
     slug,
     industry_pack: "generic",
@@ -60,6 +61,10 @@ export async function companyWithTeams(slug: string) {
     owner_name: "Oscar Owner",
     owner_email: ownerEmail,
   });
+
+  if (modules.length) {
+    await call(staffCtx, "PUT", `${STAFF}/platform/tenants/${tenant.id}/modules`, staff, Object.fromEntries(modules.map((m) => [m, true])));
+  }
 
   const ctx = await request.newContext();
   const base = CLIENT(slug);

@@ -57,7 +57,7 @@ This replaces Decision #4 (campaigns in ACE's own database) and settles ACE's D4
 |---|---|---|
 | **H1 ✅** | Hide what isn't 100% (built Nov 14): company WhatsApp number until it's live with Meta, copy-in addresses until inbound mail is live | — |
 | **O1 ✅** | **Mailbox pool** (built Nov 14): any number of inboxes per company; bulk connect; limits, spacing and health per inbox; auto-pause; sequences send from the pool | — |
-| O2 | Campaigns (plan below, for approval): cold contact lists (CSV), steps with variants, rotation across the pool, sending windows, tracking on/off, master inbox, convert to lead. Own tracking domain moves to O2b | O1 |
+| **O2 ✅** | **Campaigns** (built Nov 15): cold contact lists (CSV), steps with up to 5 versions, the same inbox per person, sending hours and a daily cap, tracking off by default, the outreach inbox, convert to lead. Behind the `outreach` switch (Versnq staff turn it on per company). Own tracking domain moves to O2b | O1 |
 | O3 | Reply intelligence hooks: the company's reply categories, rules (category → actions), drafts stored in Core with approve/edit/reject in the inbox; the API ACE uses | O2, ACE |
 | O4 | Slack approval (in ACE) | O3 |
 | O5 | One-click Google / Microsoft connect (OAuth). Outlook needs it; Google's review takes weeks and costs money, so it should be started early | Suyog's Google/Microsoft app registrations |
@@ -114,7 +114,7 @@ No new table: sends are counted from `messages` (`mailbox_id`, already there), s
 
 ---
 
-## O2: campaigns (detailed, for approval — written Nov 15)
+## O2: campaigns (approved and built Nov 15)
 
 ### What changes for people
 
@@ -180,6 +180,16 @@ Reply matching (mailbox sync): an incoming email that answers a campaign email (
 ### Not in O2
 
 Own tracking domain per company (needs DNS and a certificate per company; O2b, after you see O2 working), reply categories and AI (O3), warm-up (partner tool), spintax, LinkedIn steps (out of scope), WhatsApp steps in campaigns.
+
+### Built (Nov 15)
+
+Everything above, with these details settled while building:
+- A converted contact's lead gets the origin **Outbound** (the spec's "Three ways a lead enters Core") and the source **Outreach** (made the first time it is needed).
+- Cold threads never show in the normal inbox; after Convert to lead the thread is on the lead and in the normal inbox, following the lead's owner.
+- Steps can be changed and added after launch, not removed (people are part-way through them). Only a draft can be deleted.
+- A paused or removed inbox: that person's next email goes from another of the campaign's inboxes.
+- For ACE (O3): campaign threads are read with `GET /outreach/conversations/{id}` until O3 adds them to `GET /conversations/{id}`.
+- Tests: 20 backend tests (`tests/outreach/`) and a browser test (`e2e/outreach.spec.ts`: CSV → launch → sent by the worker → reply → convert).
 
 ### Decided (Nov 15, Suyog)
 

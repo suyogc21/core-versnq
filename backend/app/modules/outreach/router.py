@@ -33,7 +33,7 @@ HHMM = r"^([01][0-9]|2[0-3]):[0-5][0-9]$|^24:00$"
 
 
 # ---------- shapes ----------
-class Schedule(BaseModel):
+class CampaignSchedule(BaseModel):
     timezone: str | None = Field(default=None, max_length=60)
     days: list[int] = Field(default=[0, 1, 2, 3, 4], max_length=7)
     from_: str = Field(default="09:00", alias="from", pattern=HHMM)
@@ -47,7 +47,7 @@ class CampaignIn(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
     owner_user_id: uuid.UUID | None = None
     mailbox_ids: list[uuid.UUID] = Field(default=[], max_length=500)
-    schedule: Schedule | None = None
+    schedule: CampaignSchedule | None = None
     daily_cap: int = Field(default=500, ge=1, le=100000)
     track_opens: bool = False
     track_clicks: bool = False
@@ -58,13 +58,13 @@ class CampaignPatch(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
     owner_user_id: uuid.UUID | None = None
     mailbox_ids: list[uuid.UUID] | None = Field(default=None, max_length=500)
-    schedule: Schedule | None = None
+    schedule: CampaignSchedule | None = None
     daily_cap: int | None = Field(default=None, ge=1, le=100000)
     track_opens: bool | None = None
     track_clicks: bool | None = None
 
 
-class Counts(BaseModel):
+class CampaignCounts(BaseModel):
     contacts: int = 0
     active: int = 0
     sent: int = 0
@@ -89,29 +89,29 @@ class CampaignOut(BaseModel):
     track_clicks: bool
     launched_at: datetime | None
     created_at: datetime
-    counts: Counts
+    counts: CampaignCounts
 
 
-class Variant(BaseModel):
+class CampaignVariant(BaseModel):
     subject: str | None = Field(default=None, max_length=300)
     body: str = Field(min_length=1, max_length=20000)
 
 
-class StepIn(BaseModel):
+class CampaignStepIn(BaseModel):
     wait_days: int = Field(default=0, ge=0, le=365)
-    variants: list[Variant] = Field(min_length=1, max_length=O.MAX_VARIANTS)
+    variants: list[CampaignVariant] = Field(min_length=1, max_length=O.MAX_VARIANTS)
 
 
-class StepsIn(BaseModel):
-    steps: list[StepIn] = Field(min_length=1, max_length=O.MAX_STEPS)
+class CampaignStepsIn(BaseModel):
+    steps: list[CampaignStepIn] = Field(min_length=1, max_length=O.MAX_STEPS)
 
 
-class StepOut(StepIn):
+class CampaignStepOut(CampaignStepIn):
     id: uuid.UUID
     position: int
 
 
-class ImportIn(BaseModel):
+class ContactImportIn(BaseModel):
     csv: str = Field(min_length=1, max_length=20_000_000)
     mapping: dict[str, Literal[
         "email", "first_name", "last_name", "company", "title", "phone", "website",
@@ -121,7 +121,7 @@ class ImportIn(BaseModel):
     dry_run: bool = False
 
 
-class ImportOut(BaseModel):
+class ContactImportOut(BaseModel):
     rows: int
     added: int
     duplicates_in_file: int
@@ -160,19 +160,19 @@ class CampaignContactOut(BaseModel):
     last_sent_at: datetime | None
 
 
-class PreviewIn(BaseModel):
+class CampaignPreviewIn(BaseModel):
     position: int = Field(default=1, ge=1)
     variant: int = Field(default=0, ge=0)
     contact_id: uuid.UUID | None = None
 
 
-class PreviewOut(BaseModel):
+class CampaignPreviewOut(BaseModel):
     subject: str
     body: str
     missing: list[str]
 
 
-class Row(BaseModel):
+class CampaignStatRow(BaseModel):
     """One step, or one version of a step, or one inbox, in the results."""
 
     key: str
@@ -185,14 +185,14 @@ class Row(BaseModel):
     unsubscribed: int = 0
 
 
-class StatsOut(BaseModel):
-    totals: Counts
-    steps: list[Row]
-    variants: list[Row]
-    inboxes: list[Row]
+class CampaignStatsOut(BaseModel):
+    totals: CampaignCounts
+    steps: list[CampaignStatRow]
+    variants: list[CampaignStatRow]
+    inboxes: list[CampaignStatRow]
 
 
-class ThreadMessage(BaseModel):
+class OutreachMessage(BaseModel):
     id: uuid.UUID
     direction: str
     from_address: str | None
@@ -218,10 +218,10 @@ class OutreachConversation(BaseModel):
 
 
 class OutreachDetail(OutreachConversation):
-    messages: list[ThreadMessage]
+    messages: list[OutreachMessage]
 
 
-class ReplyIn(BaseModel):
+class OutreachReplyIn(BaseModel):
     body: str = Field(min_length=1, max_length=50000)
 
 
@@ -235,8 +235,8 @@ def _contact_out(c: Contact, campaign_ids: list[uuid.UUID] | None = None) -> Con
     )  # fmt: skip
 
 
-async def _counts(db, campaign_ids: list[uuid.UUID]) -> dict[uuid.UUID, Counts]:
-    out = {i: Counts() for i in campaign_ids}
+async def _counts(db, campaign_ids: list[uuid.UUID]) -> dict[uuid.UUID, CampaignCounts]:
+    out = {i: CampaignCounts() for i in campaign_ids}
     if not campaign_ids:
         return out
     rows = await db.execute(
@@ -312,8 +312,8 @@ async def _check_refs(db, owner_user_id: uuid.UUID | None, mailbox_ids: list[uui
             raise Invalid("Choose inboxes from the sending inboxes", code="mailbox_not_in_pool")
 
 
-def _schedule(s: Schedule | None, tz: str) -> dict:
-    s = s or Schedule()
+def _schedule(s: CampaignSchedule | None, tz: str) -> dict:
+    s = s or CampaignSchedule()
     if not s.days or any(d not in range(7) for d in s.days):
         raise Invalid("Choose at least one sending day")
     try:
@@ -457,21 +457,21 @@ async def _steps(db, campaign_id: uuid.UUID) -> list[CampaignStep]:
     )
 
 
-def _step_out(s: CampaignStep) -> StepOut:
-    return StepOut(id=s.id, position=s.position, wait_days=s.wait_days,
-                   variants=[Variant(**v) for v in s.variants])  # fmt: skip
+def _step_out(s: CampaignStep) -> CampaignStepOut:
+    return CampaignStepOut(id=s.id, position=s.position, wait_days=s.wait_days,
+                   variants=[CampaignVariant(**v) for v in s.variants])  # fmt: skip
 
 
-@router.get("/campaigns/{campaign_id}/steps", response_model=list[StepOut])
-async def get_steps(campaign_id: uuid.UUID, db: CrmDb, actor: Replier) -> list[StepOut]:
+@router.get("/campaigns/{campaign_id}/steps", response_model=list[CampaignStepOut])
+async def get_steps(campaign_id: uuid.UUID, db: CrmDb, actor: Replier) -> list[CampaignStepOut]:
     await O.get_campaign(db, actor, campaign_id)
     return [_step_out(s) for s in await _steps(db, campaign_id)]
 
 
-@router.put("/campaigns/{campaign_id}/steps", response_model=list[StepOut])
+@router.put("/campaigns/{campaign_id}/steps", response_model=list[CampaignStepOut])
 async def put_steps(
-    campaign_id: uuid.UUID, body: StepsIn, db: CrmDb, actor: Manager
-) -> list[StepOut]:
+    campaign_id: uuid.UUID, body: CampaignStepsIn, db: CrmDb, actor: Manager
+) -> list[CampaignStepOut]:
     """The whole sequence at once. Once launched, steps can be edited and added, not removed
     (people are part-way through them)."""
     c = await O.get_campaign(db, actor, campaign_id)
@@ -496,8 +496,10 @@ async def put_steps(
     return [_step_out(s) for s in await _steps(db, c.id)]
 
 
-@router.post("/campaigns/{campaign_id}/preview", response_model=PreviewOut)
-async def preview(campaign_id: uuid.UUID, body: PreviewIn, db: CrmDb, actor: Replier) -> PreviewOut:
+@router.post("/campaigns/{campaign_id}/preview", response_model=CampaignPreviewOut)
+async def preview(
+    campaign_id: uuid.UUID, body: CampaignPreviewIn, db: CrmDb, actor: Replier
+) -> CampaignPreviewOut:
     c = await O.get_campaign(db, actor, campaign_id)
     step = next((s for s in await _steps(db, c.id) if s.position == body.position), None)
     if step is None:
@@ -526,7 +528,7 @@ async def preview(campaign_id: uuid.UUID, body: PreviewIn, db: CrmDb, actor: Rep
         name for text in (variant.get("subject") or "", variant["body"])
         for name, fb in R.VAR.findall(text) if not fb.strip() and not values.get(name)
     })  # fmt: skip
-    return PreviewOut(
+    return CampaignPreviewOut(
         subject=R.fill(variant.get("subject") or "", values) or "(replies in the same thread)",
         body=R.fill(variant["body"], values),
         missing=missing,
@@ -534,10 +536,10 @@ async def preview(campaign_id: uuid.UUID, body: PreviewIn, db: CrmDb, actor: Rep
 
 
 # ---------- contacts in a campaign ----------
-@router.post("/campaigns/{campaign_id}/contacts/import", response_model=ImportOut)
+@router.post("/campaigns/{campaign_id}/contacts/import", response_model=ContactImportOut)
 async def import_contacts(
-    campaign_id: uuid.UUID, body: ImportIn, db: CrmDb, actor: Manager
-) -> ImportOut:
+    campaign_id: uuid.UUID, body: ContactImportIn, db: CrmDb, actor: Manager
+) -> ContactImportOut:
     c = await O.get_campaign(db, actor, campaign_id)
     _editable(c)
     header, _ = read_csv(body.csv)
@@ -549,7 +551,7 @@ async def import_contacts(
     if not body.dry_run:
         await audit(db, actor, "campaign.contacts_imported", "campaign", c.id, None,
                     {"added": report.added, "rows": report.rows})  # fmt: skip
-    return ImportOut(**report.__dict__, mapping=mapping)
+    return ContactImportOut(**report.__dict__, mapping=mapping)
 
 
 @router.get("/campaigns/{campaign_id}/contacts", response_model=list[CampaignContactOut])
@@ -622,13 +624,13 @@ async def stop_contact(
 
 
 # ---------- results ----------
-def _row(key, label, sent, opened, clicked, replied, bounced, unsub) -> Row:
-    return Row(key=str(key), label=label, sent=sent, opened=opened, clicked=clicked,
+def _row(key, label, sent, opened, clicked, replied, bounced, unsub) -> CampaignStatRow:
+    return CampaignStatRow(key=str(key), label=label, sent=sent, opened=opened, clicked=clicked,
                replied=replied, bounced=bounced, unsubscribed=unsub)  # fmt: skip
 
 
-@router.get("/campaigns/{campaign_id}/stats", response_model=StatsOut)
-async def stats(campaign_id: uuid.UUID, db: CrmDb, actor: Replier) -> StatsOut:
+@router.get("/campaigns/{campaign_id}/stats", response_model=CampaignStatsOut)
+async def stats(campaign_id: uuid.UUID, db: CrmDb, actor: Replier) -> CampaignStatsOut:
     c = await O.get_campaign(db, actor, campaign_id)
     steps = {s.id: s for s in await _steps(db, c.id)}
     cols = (
@@ -652,7 +654,7 @@ async def stats(campaign_id: uuid.UUID, db: CrmDb, actor: Replier) -> StatsOut:
     def pos(step_id):
         return steps[step_id].position if step_id in steps else 0
 
-    return StatsOut(
+    return CampaignStatsOut(
         totals=(await _counts(db, [c.id]))[c.id],
         steps=[_row(pos(sid), f"Step {pos(sid)}", *n)
                for sid, *n in sorted(by_step, key=lambda r: pos(r[0]))],
@@ -713,19 +715,19 @@ async def get_contact(contact_id: uuid.UUID, db: CrmDb, actor: Replier) -> Conta
     return _contact_out(c, await _campaign_ids(db, c.id))
 
 
-class ConvertOut(BaseModel):
+class ContactConvertOut(BaseModel):
     lead_id: uuid.UUID
 
 
-@router.post("/contacts/{contact_id}/convert", response_model=ConvertOut)
-async def convert(contact_id: uuid.UUID, db: CrmDb, actor: Replier) -> ConvertOut:
+@router.post("/contacts/{contact_id}/convert", response_model=ContactConvertOut)
+async def convert(contact_id: uuid.UUID, db: CrmDb, actor: Replier) -> ContactConvertOut:
     contact = await _visible_contact(db, actor, contact_id)
     if not has_permission(actor.permissions, "leads.create"):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "permission_denied")
     lead = await O.convert(db, actor, contact)
     await audit(db, actor, "contact.converted", "contact", contact.id, None,
                 {"lead_id": str(lead.id)})  # fmt: skip
-    return ConvertOut(lead_id=lead.id)
+    return ContactConvertOut(lead_id=lead.id)
 
 
 @router.post("/contacts/{contact_id}/unsubscribe", response_model=ContactOut)
@@ -813,7 +815,7 @@ async def _detail(db, conv: Conversation) -> OutreachDetail:
     return OutreachDetail(
         **base.model_dump(),
         messages=[
-            ThreadMessage(
+            OutreachMessage(
                 id=m.id,
                 direction=m.direction,
                 from_address=m.from_address,
@@ -837,7 +839,7 @@ async def outreach_conversation(conv_id: uuid.UUID, db: CrmDb, actor: Replier) -
 
 @router.post("/outreach/conversations/{conv_id}/reply", response_model=OutreachDetail)
 async def outreach_reply(
-    conv_id: uuid.UUID, body: ReplyIn, db: CrmDb, actor: Replier
+    conv_id: uuid.UUID, body: OutreachReplyIn, db: CrmDb, actor: Replier
 ) -> OutreachDetail:
     """Answer from the same inbox, in the same thread (no unsubscribe footer: a person's
     answer to a person)."""
