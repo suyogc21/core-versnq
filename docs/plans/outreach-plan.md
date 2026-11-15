@@ -58,7 +58,7 @@ This replaces Decision #4 (campaigns in ACE's own database) and settles ACE's D4
 | **H1 ✅** | Hide what isn't 100% (built Nov 14): company WhatsApp number until it's live with Meta, copy-in addresses until inbound mail is live | — |
 | **O1 ✅** | **Mailbox pool** (built Nov 14): any number of inboxes per company; bulk connect; limits, spacing and health per inbox; auto-pause; sequences send from the pool | — |
 | **O2 ✅** | **Campaigns** (built Nov 15): cold contact lists (CSV), steps with up to 5 versions, the same inbox per person, sending hours and a daily cap, tracking off by default, the outreach inbox, convert to lead. Behind the `outreach` switch (Versnq staff turn it on per company). Own tracking domain moves to O2b | O1 |
-| O3 | Reply intelligence hooks: the company's reply categories, rules (category → actions), drafts stored in Core with approve/edit/reject in the inbox; the API ACE uses | O2, ACE |
+| O3 | Reply intelligence hooks (plan below, for approval): the company's reply categories, rules (category → actions), drafts stored in Core with approve/edit/reject in the inbox; the API ACE uses | O2, ACE |
 | O4 | Slack approval (in ACE) | O3 |
 | O5 | One-click Google / Microsoft connect (OAuth). Outlook needs it; Google's review takes weeks and costs money, so it should be started early | Suyog's Google/Microsoft app registrations |
 
@@ -197,6 +197,62 @@ Everything above, with these details settled while building:
 2. Outreach inbox: Owner, Admin and Sales Managers see every campaign; **Sales Users only campaigns they own**.
 3. Open and click tracking **off by default**, on per campaign.
 4. A reply stops **only that person**.
+
+---
+
+## O3: reply categories, rules and drafts (detailed, for approval — written Nov 15)
+
+The contract with ACE (next section) is agreed; this is how Core builds it. It works for **campaign replies** (outreach inbox) **and** replies from **leads** in the normal inbox.
+
+### What changes for people
+
+1. **Settings → Reply categories** (admins): the company's own list, e.g. *Interested, Meeting request, Question, Not now, Not interested, Unsubscribe me, Wrong person*, plus the fixed **Needs a human** (always there, can't be removed: ACE uses it when it isn't sure). Each has a name, a description (what it means, read by ACE), on/off, and its **rules**.
+2. **Rules** (per category, "when a reply is *Interested* then…"), chosen from a fixed list:
+   - **Convert to lead** (campaign replies only)
+   - **Ask ACE for a draft**, with optional instructions ("offer a call next week")
+   - **Stop** (the contact in that campaign, or the lead's sequences)
+   - **Unsubscribe** (never email this address again)
+   - **Tell the owner** (a notification)
+   - Defaults, which the admin can change: Interested and Meeting request → convert + draft + tell the owner; Question → draft; Not now → stop; Not interested → stop; Unsubscribe me → unsubscribe; Wrong person → stop; Needs a human → tell the owner.
+3. **On each reply** (both inboxes): a **category chip** with ACE's confidence and a one-line summary, or "Not sorted yet". Anyone who can answer the conversation can **set or change the category by hand**; a person's choice wins over ACE's from then on. Filters by category in both inboxes.
+4. **Drafts in the thread**: ACE's draft shows above the reply box with **Approve and send · Edit · Reject**. It is sent from the right inbox, in the same thread, with the inbox's signature. One waiting draft per conversation; if the person writes again before anyone decides, the draft is marked **out of date** and (if the rule says so) ACE drafts again.
+5. **The trail**: "Sorted as Interested by ACE (92%)", "Draft approved by Riya via Slack (ACE)", on the conversation and (for leads) the timeline.
+
+Without ACE, categories and rules still work: a person sorts the reply and the rules run (no drafts are asked for).
+
+### Schema (migration 0031, for approval)
+
+- `reply_categories`: key (unique per company; `needs_human` fixed), name, description, needs_human (exactly one), active, auto_send_allowed (stored now, used only in ACE's step ④), position, updated_at.
+- `reply_rules`: category_id, action (`convert` / `draft` / `stop` / `unsubscribe` / `notify`), instructions (for `draft`), position, active.
+- `message_classifications`: message_id (one current per message), category_key, confidence, summary, reasons, language, prompt_version, by (`ace` / `person`), by_user_id, rules_run_at, created_at. Earlier ones are kept (history).
+- `draft_requests`: the `request_id` Core sends in `draft.requested`, message, conversation, category, rule, instructions, fulfilled draft.
+- `drafts`: conversation, reply_to_message, request_id (unique), body, reasons, language, status (`pending` / `approved` / `rejected` / `superseded` / `sent`), created_by_user_id, decided_by_user_id, via (`core` / `slack`), body_changed, reject_reason, message_id (when sent), superseded_by_message_id, error.
+- Permission **`drafts.approve_for_users`** (only for the role made for ACE's key, never granted to people by default). Categories and rules: `settings.manage`.
+- Seeds the default categories and rules for every company.
+
+### Endpoints
+
+As agreed in the contract below: `GET /reply-categories` (+ `PUT` for admins), rules inside each category, `PUT /messages/{id}/classification` (ACE; a person uses the same with `by = person`), `POST /conversations/{id}/drafts`, `GET /drafts/{id}`, `POST /drafts/{id}/approve | reject` (with `on_behalf_of_user_id` for ACE's key). `GET /conversations/{id}` gains `contact` and `campaign`, reads campaign threads for callers allowed to see that campaign, takes `?mark_read=false`, and never marks read for API keys. Events: `reply.classified`, `draft.requested`, `draft.created`, `draft.approved`, `draft.rejected`, `draft.superseded`, `reply_categories.changed`.
+
+### Tests
+
+- Isolation and permissions for every new table and endpoint; exactly one `needs_human`; a person's category wins (`classified_by_person`).
+- Rules run once per message; the same body twice changes nothing; a different category from ACE re-runs only while no person has sorted it.
+- Each action does what it says, in both inboxes; Convert only for contacts.
+- Drafts: same `request_id` → same draft; one pending per conversation; a new reply supersedes it (event); approve sends from the right inbox in the thread with the signature; reject; refusals (`draft_already_decided`, `draft_superseded`, opt-out / suppression codes).
+- On behalf of: only with `drafts.approve_for_users`; that person's own rights are checked (`user_cannot_approve`, `user_inactive`); the trail and the event say who and via what.
+- A browser test: a reply is sorted, the rule asks for a draft, a draft arrives through the API, a person approves it in the inbox, and it is sent.
+
+### Not in O3
+
+Auto-send without approval (ACE step ④: the flag is stored, nothing is sent on its own), the Slack app (O4, in ACE), AI anything inside Core (Core only stores and runs what ACE or a person decides).
+
+### Open questions
+
+1. The default categories and rules above: OK as the starting set for every company?
+2. Rules on **lead** replies too (draft, stop sequences, tell the owner; no convert), not only campaign replies (proposed: yes, as ACE's plan expects)?
+3. Who may approve a draft in Core: **anyone who can answer that conversation** (proposed), or only managers?
+4. Auto-send stays **off** in O3 (stored only), switched on per category later with ACE's step ④ (proposed)?
 
 ---
 
