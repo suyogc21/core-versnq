@@ -67,19 +67,19 @@ export default function LoginPage() {
         description={
           byEmail
             ? `We emailed a 6-digit code to ${creds.getValues("email")}. It works for 10 minutes. This browser will be remembered for 30 days.`
-            : "Enter the 6-digit code from your authenticator app."
+            : "Enter the 6-digit code from your authenticator app. Lost your phone? Enter one of your backup codes."
         }
       >
         <form onSubmit={submitCode} className="space-y-4">
           <Field
             id="code"
             label="Code"
-            inputMode="numeric"
+            inputMode={byEmail ? "numeric" : "text"}
             autoComplete="one-time-code"
             autoFocus
-            maxLength={6}
+            maxLength={byEmail ? 6 : 9}
             error={error ?? undefined}
-            {...code.register("code", { required: true, pattern: /^\d{6}$/ })}
+            {...code.register("code", { required: true, pattern: byEmail ? /^\d{6}$/ : /^(\d{6}|[a-z0-9]{4}-?[a-z0-9]{4})$/i })}
           />
           {notice ? <p className="text-xs text-muted-foreground">{notice}</p> : null}
           <Button type="submit" className="w-full" disabled={code.formState.isSubmitting}>

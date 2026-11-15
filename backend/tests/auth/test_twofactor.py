@@ -49,7 +49,11 @@ async def test_setup_and_enable_2fa_unlocks_owner(client_for):
         "/api/v1/auth/2fa/enable", json={"code": pyotp.TOTP(secret).now()}, headers=bearer(token)
     )
 
-    assert wrong.status_code == 400 and right.status_code == 204
+    assert (
+        wrong.status_code == 400
+        and right.status_code == 200
+        and len(right.json()["recovery_codes"]) == 10
+    )
     assert (await c.get("/api/v1/settings", headers=bearer(token))).status_code == 200
     async with tenant_session(tenant_id) as s:
         stored = (await s.scalars(select(User.totp_secret_enc).where(User.id == user_id))).one()
@@ -143,7 +147,9 @@ async def test_staff_can_set_up_2fa():
             "/platform/auth/2fa/enable", json={"code": pyotp.TOTP(secret).now()}, headers=headers
         )
         after = await c.get("/platform/tenants", headers=headers)
-    assert r.status_code == 204 and after.status_code == 200
+    assert (
+        r.status_code == 200 and len(r.json()["recovery_codes"]) == 10 and after.status_code == 200
+    )
 
 
 async def _signed_in_with_2fa(client_for, role_key="owner"):

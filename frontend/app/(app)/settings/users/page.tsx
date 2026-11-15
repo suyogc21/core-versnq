@@ -107,8 +107,9 @@ export default function UsersPage() {
   const counts = Object.fromEntries(STATUS_VIEWS.map((v, i) => [v.key, countQueries[i].data?.total]));
 
   const action = useMutation({
-    mutationFn: async ({ user, kind }: { user: Row; kind: "disable" | "enable" | "resend" | "temp" }) => {
+    mutationFn: async ({ user, kind }: { user: Row; kind: "disable" | "enable" | "resend" | "temp" | "reset2fa" }) => {
       const path = { params: { path: { user_id: user.id } } };
+      if (kind === "reset2fa") return unwrap(await api.POST("/api/v1/users/{user_id}/2fa/reset", path));
       if (kind === "disable") return unwrap(await api.POST("/api/v1/users/{user_id}/disable", path));
       if (kind === "enable") return unwrap(await api.POST("/api/v1/users/{user_id}/enable", path));
       if (kind === "resend") return unwrap(await api.POST("/api/v1/users/{user_id}/resend-invite", path));
@@ -118,6 +119,7 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       if (kind === "disable") toast.success(`${user.name} is disabled and signed out everywhere.`);
       if (kind === "enable") toast.success(`${user.name} can sign in again.`);
+      if (kind === "reset2fa") toast.success(`${user.name}'s authenticator app is removed. They sign in with an emailed code now.`);
       if (kind === "resend") {
         if ((data as { invite_sent: boolean }).invite_sent) toast.success(`Invite sent to ${user.email}.`);
         else toast.error("The invite email could not be sent. Try again or set a temporary password.");
@@ -189,6 +191,16 @@ export default function UsersPage() {
                 <DropdownMenuItem onClick={() => setEditing(u)}>Edit details and role</DropdownMenuItem>
                 {u.status === "invited" && <DropdownMenuItem onClick={() => action.mutate({ user: u, kind: "resend" })}>Resend invite</DropdownMenuItem>}
                 {u.status === "active" && <DropdownMenuItem onClick={() => action.mutate({ user: u, kind: "temp" })}>Set temporary password</DropdownMenuItem>}
+                {u.totp_enabled && u.id !== me?.id && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (confirm(`Remove ${u.name}'s authenticator app (lost phone)? They will be signed out and sign in with an emailed code.`))
+                        action.mutate({ user: u, kind: "reset2fa" });
+                    }}
+                  >
+                    Reset authenticator app
+                  </DropdownMenuItem>
+                )}
                 {u.status === "disabled" ? (
                   <DropdownMenuItem onClick={() => action.mutate({ user: u, kind: "enable" })}>Enable</DropdownMenuItem>
                 ) : (

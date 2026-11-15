@@ -50,3 +50,4 @@ class MeOut(BaseModel):
     restrictions: list[str]
     permissions: list[str]
     two_factor_enabled: bool
+    recovery_codes_left: int = 0  # unused backup codes (go-live G-4)

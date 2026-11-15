@@ -34,7 +34,7 @@ Written 2026-11-15 for Suyog (roadmap G.2–G.3, the parked "security and go-liv
 - **Firewall on**: allow only SSH, HTTP, HTTPS (matches what is open today, so AMS, n8n and the website are unaffected).
 - Disk encryption: **not possible on this VPS without rebuilding it**; recorded as a known gap. Secrets in the database stay encrypted, and backups are encrypted (G-1).
 
-### G-4 Lost phone (2FA recovery, roadmap G.2)
+### G-4 Lost phone (2FA recovery, roadmap G.2) — built Nov 15
 - When someone turns on the authenticator app, they get **10 one-time backup codes** (shown once, can be printed); a code works in place of the app code once.
 - An **Owner or Admin can reset** a team member's authenticator (that person then signs in with the emailed code and can set the app up again). Audited.
 - **Versnq staff can reset a company Owner's** authenticator from the staff console. Audited in the staff audit log.

@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { AuthCard } from "@/components/app/auth-card";
+import { BackupCodes } from "@/components/app/backup-codes";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
@@ -66,6 +67,7 @@ export function ChangePasswordScreen() {
 /** QR code + code field. Used by the forced setup screen and by My account. */
 export function TwoFactorSetupForm({ onDone }: { onDone: () => Promise<void> | void }) {
   const [setup, setSetup] = useState<{ secret: string; otpauth_uri: string } | null>(null);
+  const [codes, setCodes] = useState<string[] | null>(null);
   const form = useForm<{ code: string }>();
   const start = useMutation({
     mutationFn: async () => unwrap(await api.POST("/api/v1/auth/2fa/setup")),
@@ -77,14 +79,15 @@ export function TwoFactorSetupForm({ onDone }: { onDone: () => Promise<void> | v
 
   const submit = form.handleSubmit(async ({ code }) => {
     try {
-      unwrap(await api.POST("/api/v1/auth/2fa/enable", { body: { code: code.trim() } }));
+      const r = unwrap(await api.POST("/api/v1/auth/2fa/enable", { body: { code: code.trim() } }));
       toast.success("Two-factor authentication is on.");
-      await onDone();
+      setCodes(r.recovery_codes); // shown once, then onDone
     } catch (e) {
       form.setError("code", { message: (e as Error).message });
     }
   });
 
+  if (codes) return <BackupCodes codes={codes} onDone={onDone} />;
   if (!setup) return <p className="text-muted-foreground">Preparing…</p>;
   return (
     <form onSubmit={submit} className="space-y-4">

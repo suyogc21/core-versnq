@@ -3,7 +3,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -135,6 +135,37 @@ async def resend_owner_invite(
     await db.commit()
     sent = await _try_send(mailer, service.invite_email(tenant, owner.name, owner.email, plain))
     return InviteResult(invite_sent=sent)
+
+
+class OwnerResetIn(BaseModel):
+    email: str = Field(min_length=3, max_length=320)
+
+
+@router.post("/tenants/{tenant_id}/owner-2fa-reset", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_owner_two_factor(
+    tenant_id: uuid.UUID, body: OwnerResetIn, request: Request, db: Db, staff: Staff,
+    mailer: MailerDep,
+) -> None:  # fmt: skip
+    """Lost phone: remove a company Owner's authenticator app (go-live G-4). Audited."""
+    tenant = await _tenant_or_404(db, tenant_id)
+    try:
+        owner = await service.reset_owner_two_factor(db, tenant, body.email, staff.id, _ip(request))
+    except service.NotAnOwnerWithApp:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "No Owner with that email uses an authenticator app"
+        ) from None
+    await db.commit()
+    await _try_send(
+        mailer,
+        Email(
+            to=owner.email,
+            subject=f"Your authenticator app was reset for {tenant.name}",
+            body=f"Hi {owner.name},\n\nVersnq support removed the authenticator app from your "
+            "account, as you asked. Sign in with your password and the code we email you; you "
+            "can set the app up again in My account.\n\nIf you didn't ask for this, reply to "
+            "this email.\n",
+        ),
+    )
 
 
 @router.get("/audit", response_model=list[AuditOut])

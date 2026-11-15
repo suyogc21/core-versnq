@@ -4,9 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 
 from app.core import ratelimit
+from app.core import recovery as RC
 from app.core.auth_schemas import (
     ChallengeIn,
     LoginOut,
+    RecoveryCodesIn,
+    RecoveryCodesOut,
     TwoFactorDisableIn,
     TwoFactorEnableIn,
     TwoFactorSetupOut,
@@ -162,7 +165,12 @@ async def login(
 
 @router.post("/2fa/verify", response_model=LoginOut)
 async def verify_two_factor(
-    body: TwoFactorVerifyIn, request: Request, response: Response, ws: WorkspaceDep, db: TenantDb
+    body: TwoFactorVerifyIn,
+    request: Request,
+    response: Response,
+    ws: WorkspaceDep,
+    db: TenantDb,
+    mailer: MailerDep,
 ) -> LoginOut:
     await ratelimit.enforce(f"rl:mfa:{hash_token(body.challenge_token)}", *MFA_TRIES)
     try:
@@ -172,7 +180,10 @@ async def verify_two_factor(
     user = await db.get(User, claims.sub)
     if claims.tenant_id != ws.id or user is None or user.status != "active":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid code")
-    if user.totp_enabled:
+    used_backup = False
+    if user.totp_enabled and RC.looks_like(body.code):  # a backup code (lost phone, G-4)
+        ok = used_backup = await service.use_recovery_code(db, user, body.code)
+    elif user.totp_enabled:
         ok = verify_code(decrypt_secret(user.totp_secret_enc), body.code)
     else:
         ok = await email_code.check(body.challenge_token, body.code)
@@ -180,6 +191,19 @@ async def verify_two_factor(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid code")
     if not user.totp_enabled:
         _remember_browser(response, user)
+    if used_backup:
+        left = await service.recovery_codes_left(db, user.id)
+        await _audit_self(db, user, "user.2fa_backup_code_used", {"codes_left": left}, request)
+        await _send(
+            mailer,
+            Email(
+                to=user.email,
+                subject=f"A backup code was used to sign in to {ws.name}",
+                body=f"Hi {user.name},\n\nSomeone signed in with one of your backup codes "
+                f"(instead of the authenticator app). {left} codes are left.\n\nIf it wasn't "
+                "you, change your password now and tell your admin.\n",
+            ),
+        )
     access, refresh_plain = await service.open_session(
         db, user, _ip(request), request.headers.get("user-agent")
     )
@@ -236,7 +260,7 @@ async def logout_all(current: AnyUser, db: TenantDb) -> None:
 
 
 @router.get("/me", response_model=MeOut)
-async def me(current: AnyUser, ws: WorkspaceDep) -> MeOut:
+async def me(current: AnyUser, ws: WorkspaceDep, db: TenantDb) -> MeOut:
     u, r = current.user, current.role
     return MeOut(
         id=u.id,
@@ -247,6 +271,7 @@ async def me(current: AnyUser, ws: WorkspaceDep) -> MeOut:
         restrictions=current.restrictions,
         permissions=sorted(current.permissions),
         two_factor_enabled=u.totp_enabled,
+        recovery_codes_left=await service.recovery_codes_left(db, u.id) if u.totp_enabled else 0,
     )
 
 
@@ -314,10 +339,11 @@ async def setup_two_factor(current: AnyUser) -> TwoFactorSetupOut:
     )
 
 
-@router.post("/2fa/enable", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/2fa/enable", response_model=RecoveryCodesOut)
 async def enable_two_factor(
     body: TwoFactorEnableIn, request: Request, current: AnyUser, db: TenantDb
-) -> None:
+) -> RecoveryCodesOut:
+    """Turns the app on and returns 10 one-time backup codes, shown only now (G-4)."""
     u = current.user
     if u.totp_enabled:
         raise HTTPException(status.HTTP_409_CONFLICT, "Two-factor is already enabled")
@@ -325,6 +351,24 @@ async def enable_two_factor(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid code")
     u.totp_enabled = True
     await _audit_self(db, u, "user.2fa_enabled", {"totp_enabled": True}, request)
+    return RecoveryCodesOut(recovery_codes=await service.issue_recovery_codes(db, u))
+
+
+@router.post("/2fa/recovery-codes", response_model=RecoveryCodesOut)
+async def new_recovery_codes(
+    body: RecoveryCodesIn, request: Request, current: AnyUser, db: TenantDb
+) -> RecoveryCodesOut:
+    """Ten new backup codes (the old ones stop working). Needs the password and the app."""
+    u = current.user
+    await ratelimit.enforce(f"rl:2fa-codes:{u.id}", *MFA_TRIES)
+    if not u.totp_enabled or not u.totp_secret_enc:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Two-factor is not enabled")
+    if not u.password_hash or not verify_password(body.password, u.password_hash):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Password or code is wrong")
+    if not verify_code(decrypt_secret(u.totp_secret_enc), body.code):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Password or code is wrong")
+    await _audit_self(db, u, "user.2fa_backup_codes_renewed", {}, request)
+    return RecoveryCodesOut(recovery_codes=await service.issue_recovery_codes(db, u))
 
 
 @router.post("/2fa/disable", status_code=status.HTTP_204_NO_CONTENT)
@@ -342,4 +386,5 @@ async def disable_two_factor(
     if not verify_code(decrypt_secret(u.totp_secret_enc), body.code):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Password or code is wrong")
     u.totp_enabled, u.totp_secret_enc = False, None
+    await service.clear_recovery_codes(db, u.id)
     await _audit_self(db, u, "user.2fa_disabled", {"totp_enabled": False}, request)

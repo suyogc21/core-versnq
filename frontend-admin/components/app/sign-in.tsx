@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { BackupCodes } from "@/components/app/backup-codes";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,17 +61,17 @@ export function LoginForm() {
 
   if (challenge) {
     return (
-      <AuthCard title="Two-factor code" description="Enter the 6-digit code from your authenticator app.">
+      <AuthCard title="Two-factor code" description="Enter the 6-digit code from your authenticator app. Lost your phone? Enter one of your backup codes.">
         <form onSubmit={submitCode} className="space-y-4">
           <Field
             id="code"
             label="Code"
-            inputMode="numeric"
+            inputMode="text"
             autoComplete="one-time-code"
             autoFocus
-            maxLength={6}
+            maxLength={9}
             error={error ?? undefined}
-            {...code.register("code", { required: true, pattern: /^\d{6}$/ })}
+            {...code.register("code", { required: true, pattern: /^(\d{6}|[a-z0-9]{4}-?[a-z0-9]{4})$/i })}
           />
           <Button type="submit" className="w-full" disabled={code.formState.isSubmitting}>
             Verify
@@ -152,6 +153,7 @@ export function ChangePasswordScreen() {
 export function TwoFactorSetupScreen() {
   const { reloadMe, logout } = useAuth();
   const [setup, setSetup] = useState<{ secret: string; otpauth_uri: string } | null>(null);
+  const [codes, setCodes] = useState<string[] | null>(null);
   const form = useForm<{ code: string }>();
   const start = useMutation({
     mutationFn: async () => unwrap(await api.POST("/platform/auth/2fa/setup")),
@@ -163,9 +165,9 @@ export function TwoFactorSetupScreen() {
 
   const submit = form.handleSubmit(async ({ code }) => {
     try {
-      unwrap(await api.POST("/platform/auth/2fa/enable", { body: { code: code.trim() } }));
+      const r = unwrap(await api.POST("/platform/auth/2fa/enable", { body: { code: code.trim() } }));
       toast.success("Two-factor authentication is on.");
-      await reloadMe();
+      setCodes(r.recovery_codes); // shown once; Done then opens the console
     } catch (e) {
       form.setError("code", { message: (e as Error).message });
     }
@@ -176,7 +178,9 @@ export function TwoFactorSetupScreen() {
       title="Turn on two-factor authentication"
       description="Staff accounts can reach every company, so a second step is required. Scan the code with your authenticator app."
     >
-      {setup ? (
+      {codes ? (
+        <BackupCodes codes={codes} onDone={reloadMe} />
+      ) : setup ? (
         <form onSubmit={submit} className="space-y-4">
           <div className="flex justify-center rounded-lg border bg-white p-3">
             <QRCodeSVG value={setup.otpauth_uri} size={168} />

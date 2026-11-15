@@ -212,3 +212,40 @@ async def renew_owner_invite(
         ip=ip,
     )
     return owner, plain
+
+
+class NotAnOwnerWithApp(Exception):
+    """No Owner with that email uses an authenticator app in this company."""
+
+
+async def reset_owner_two_factor(
+    db: AsyncSession, tenant: Tenant, email: str, staff_id: uuid.UUID, ip: str | None
+) -> User:
+    """Lost phone (go-live G-4): Versnq staff remove a company Owner's authenticator app and
+    backup codes and sign them out everywhere. Audited in the staff audit log."""
+    from sqlalchemy import func
+
+    from app.modules.auth.service import clear_recovery_codes, revoke_all_sessions
+
+    await set_tenant_context(db, tenant.id)
+    owner = await db.scalar(
+        select(User)
+        .join(Role, (Role.id == User.role_id) & (Role.tenant_id == User.tenant_id))
+        .where(Role.key == "owner", func.lower(User.email) == email.strip().lower())
+    )
+    if owner is None or not owner.totp_enabled:
+        raise NotAnOwnerWithApp
+    owner.totp_enabled, owner.totp_secret_enc = False, None
+    await clear_recovery_codes(db, owner.id)
+    await revoke_all_sessions(db, owner.id)
+    await audit.record(
+        db,
+        staff_id=staff_id,
+        action="tenant.owner_2fa_reset",
+        target_type="tenant",
+        target_id=tenant.id,
+        tenant_slug=tenant.slug,
+        after={"owner_email": owner.email},
+        ip=ip,
+    )
+    return owner

@@ -19,7 +19,8 @@ class LoginOut(BaseModel):
 
 class TwoFactorVerifyIn(BaseModel):
     challenge_token: str
-    code: str = Field(min_length=6, max_length=6)
+    # the app's 6-digit code, the emailed code, or a backup code (xxxx-xxxx, go-live G-4)
+    code: str = Field(min_length=6, max_length=12)
 
 
 class ChallengeIn(BaseModel):
@@ -33,6 +34,17 @@ class TwoFactorSetupOut(BaseModel):
 
 class TwoFactorEnableIn(BaseModel):
     code: str = Field(min_length=6, max_length=6)
+
+
+class RecoveryCodesOut(BaseModel):
+    """Shown once: each works once in place of the app's code (go-live G-4)."""
+
+    recovery_codes: list[str]
+
+
+class RecoveryCodesIn(BaseModel):
+    password: str = Field(min_length=1, max_length=200)
+    code: str = Field(min_length=6, max_length=6)  # the app's current code
 
 
 class TwoFactorDisableIn(BaseModel):

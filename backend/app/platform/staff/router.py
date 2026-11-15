@@ -5,7 +5,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import ratelimit
-from app.core.auth_schemas import LoginOut, TwoFactorEnableIn, TwoFactorSetupOut, TwoFactorVerifyIn
+from app.core.auth_schemas import (
+    LoginOut,
+    RecoveryCodesOut,
+    TwoFactorEnableIn,
+    TwoFactorSetupOut,
+    TwoFactorVerifyIn,
+)
 from app.core.client_ip import client_ip
 from app.core.config import get_settings
 from app.core.deps import get_platform_db
@@ -123,12 +129,15 @@ async def verify_two_factor(
     except InvalidToken:
         raise _unauthorized("Invalid code") from None
     staff = await db.get(PlatformStaff, claims.sub)
-    if (
-        staff is None
-        or not staff.is_active
-        or not staff.totp_enabled
-        or not verify_code(decrypt_secret(staff.totp_secret_enc), body.code)
-    ):
+    if staff is None or not staff.is_active or not staff.totp_enabled:
+        raise _unauthorized("Invalid code")
+    from app.core import recovery as RC
+
+    if RC.looks_like(body.code):  # a backup code (lost phone, go-live G-4)
+        ok = await service.use_recovery_code(db, staff, body.code)
+    else:
+        ok = verify_code(decrypt_secret(staff.totp_secret_enc), body.code)
+    if not ok:
         raise _unauthorized("Invalid code")
     access, refresh_plain = await service.open_session(
         db, staff, _ip(request), request.headers.get("user-agent")
@@ -189,8 +198,9 @@ async def setup_two_factor(staff: AnyStaff) -> TwoFactorSetupOut:
     return TwoFactorSetupOut(secret=secret, otpauth_uri=provisioning_uri(secret, staff.email))
 
 
-@router.post("/2fa/enable", status_code=status.HTTP_204_NO_CONTENT)
-async def enable_two_factor(body: TwoFactorEnableIn, staff: AnyStaff) -> None:
+@router.post("/2fa/enable", response_model=RecoveryCodesOut)
+async def enable_two_factor(body: TwoFactorEnableIn, staff: AnyStaff, db: Db) -> RecoveryCodesOut:
+    """Turns the app on and returns 10 one-time backup codes, shown only now (G-4)."""
     if staff.totp_enabled:
         raise HTTPException(status.HTTP_409_CONFLICT, "Two-factor is already enabled")
     if not staff.totp_secret_enc or not verify_code(
@@ -198,3 +208,4 @@ async def enable_two_factor(body: TwoFactorEnableIn, staff: AnyStaff) -> None:
     ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid code")
     staff.totp_enabled = True
+    return RecoveryCodesOut(recovery_codes=await service.issue_recovery_codes(db, staff))

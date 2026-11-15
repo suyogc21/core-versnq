@@ -92,7 +92,7 @@ Legend: `[ ]` to do · `[x]` done and verified · `⏸` parked
 ## Before the first real client (go-live)
 
 - [ ] G.1 Real email sending for invites and password resets (pull the transactional part of 3.2 forward; provider needs Suyog's approval)
-- [ ] G.2 Lost-phone recovery: one-time backup codes; Owner/Admin can reset a user's 2FA; staff can reset an Owner's 2FA (audited)
+- [x] G.2 Lost-phone recovery: one-time backup codes; Owner/Admin can reset a user's 2FA; staff can reset an Owner's 2FA (audited) — built Nov 15 (`go-live-plan.md` G-4)
 - [ ] G.3 Deployment: hosting, HTTPS + HSTS at the proxy, backend reachable only through the proxy (TRUST_PROXY_HEADERS; nginx must append the visitor address with `$proxy_add_x_forwarded_for`), encrypted database storage (spec §10 "encrypted at rest"), daily backups with a tested restore, error monitoring
 - [ ] **Gate G:** a real company can be created, invited and used over HTTPS; Suyog approves
 

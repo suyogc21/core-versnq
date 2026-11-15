@@ -12436,6 +12436,11 @@
             "title": "Permissions",
             "type": "array"
           },
+          "recovery_codes_left": {
+            "default": 0,
+            "title": "Recovery Codes Left",
+            "type": "integer"
+          },
           "restrictions": {
             "items": {
               "type": "string"
@@ -13548,6 +13553,21 @@
           "owner_user_id"
         ],
         "title": "OwnerIn",
+        "type": "object"
+      },
+      "OwnerResetIn": {
+        "properties": {
+          "email": {
+            "maxLength": 320,
+            "minLength": 3,
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "OwnerResetIn",
         "type": "object"
       },
       "PackOut": {
@@ -15237,6 +15257,45 @@
           }
         },
         "title": "RecordTypePatch",
+        "type": "object"
+      },
+      "RecoveryCodesIn": {
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "title": "Code",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "code"
+        ],
+        "title": "RecoveryCodesIn",
+        "type": "object"
+      },
+      "RecoveryCodesOut": {
+        "description": "Shown once: each works once in place of the app's code (go-live G-4).",
+        "properties": {
+          "recovery_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recovery Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "recovery_codes"
+        ],
+        "title": "RecoveryCodesOut",
         "type": "object"
       },
       "RemovedOut": {
@@ -19171,7 +19230,7 @@
             "type": "string"
           },
           "code": {
-            "maxLength": 6,
+            "maxLength": 12,
             "minLength": 6,
             "title": "Code",
             "type": "string"
@@ -22724,6 +22783,7 @@
     },
     "/api/v1/auth/2fa/enable": {
       "post": {
+        "description": "Turns the app on and returns 10 one-time backup codes, shown only now (G-4).",
         "operationId": "auth-enable_two_factor",
         "requestBody": {
           "content": {
@@ -22736,7 +22796,14 @@
           "required": true
         },
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesOut"
+                }
+              }
+            },
             "description": "Successful Response"
           },
           "422": {
@@ -22756,6 +22823,53 @@
           }
         ],
         "summary": "Enable Two Factor",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/recovery-codes": {
+      "post": {
+        "description": "Ten new backup codes (the old ones stop working). Needs the password and the app.",
+        "operationId": "auth-new_recovery_codes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryCodesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "New Recovery Codes",
         "tags": [
           "auth"
         ]
@@ -43816,6 +43930,55 @@
         ]
       }
     },
+    "/api/v1/users/{user_id}/2fa/reset": {
+      "post": {
+        "description": "Lost phone: remove a team member's authenticator app (go-live G-4). Audited.",
+        "operationId": "users-reset_two_factor",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reset Two Factor",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/api/v1/users/{user_id}/disable": {
       "post": {
         "operationId": "users-disable_user",
@@ -44877,6 +45040,7 @@
     },
     "/platform/auth/2fa/enable": {
       "post": {
+        "description": "Turns the app on and returns 10 one-time backup codes, shown only now (G-4).",
         "operationId": "platform-auth-enable_two_factor",
         "requestBody": {
           "content": {
@@ -44889,7 +45053,14 @@
           "required": true
         },
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesOut"
+                }
+              }
+            },
             "description": "Successful Response"
           },
           "422": {
@@ -45700,6 +45871,58 @@
           }
         ],
         "summary": "Put Modules",
+        "tags": [
+          "platform-tenants"
+        ]
+      }
+    },
+    "/platform/tenants/{tenant_id}/owner-2fa-reset": {
+      "post": {
+        "description": "Lost phone: remove a company Owner's authenticator app (go-live G-4). Audited.",
+        "operationId": "platform-tenants-reset_owner_two_factor",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerResetIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reset Owner Two Factor",
         "tags": [
           "platform-tenants"
         ]

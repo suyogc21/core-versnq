@@ -67,6 +67,11 @@ export async function turnOnTwoFactor(page: Page): Promise<string> {
   await field.fill(totp(secret));
   await page.getByRole("button", { name: "Turn on" }).click();
   await expect(page.getByText("Two-factor authentication is on.")).toBeVisible();
+  // The 10 backup codes are shown once (go-live G-4): confirm they were saved.
+  const codes = page.getByTestId("backup-codes");
+  await expect(codes.locator("li")).toHaveCount(10);
+  await codes.getByLabel("I saved them").check();
+  await codes.getByRole("button", { name: "Done" }).click();
   return secret;
 }
 

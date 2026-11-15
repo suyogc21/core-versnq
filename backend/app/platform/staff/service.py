@@ -116,3 +116,36 @@ def restrictions(staff: PlatformStaff) -> list[str]:
     if not staff.totp_enabled and not skips_2fa_for_demo(staff.email):
         found.append("two_factor_setup_required")
     return found
+
+
+# ---------- backup codes for the authenticator app (go-live G-4) ----------
+async def issue_recovery_codes(db: AsyncSession, staff: PlatformStaff) -> list[str]:
+    from sqlalchemy import delete
+
+    from app.core import recovery as RC
+    from app.platform.staff.models import StaffRecoveryCode
+
+    await db.execute(delete(StaffRecoveryCode).where(StaffRecoveryCode.staff_id == staff.id))
+    codes = RC.new_codes()
+    db.add_all(StaffRecoveryCode(staff_id=staff.id, code_hash=RC.code_hash(c)) for c in codes)
+    await db.flush()
+    return codes
+
+
+async def use_recovery_code(db: AsyncSession, staff: PlatformStaff, code: str) -> bool:
+    from datetime import UTC, datetime
+
+    from app.core import recovery as RC
+    from app.platform.staff.models import StaffRecoveryCode
+
+    row = await db.scalar(
+        select(StaffRecoveryCode).where(
+            StaffRecoveryCode.staff_id == staff.id,
+            StaffRecoveryCode.code_hash == RC.code_hash(code),
+            StaffRecoveryCode.used_at.is_(None),
+        )
+    )
+    if row is None:
+        return False
+    row.used_at = datetime.now(UTC)
+    return True

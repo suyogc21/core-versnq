@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
+import { BackupCodes } from "@/components/app/backup-codes";
 import { TwoFactorSetupForm } from "@/components/app/restriction-screens";
 import { MyMailbox } from "@/components/crm/my-mailbox";
 import { MyWhatsAppExtension } from "@/components/crm/wa-extension";
@@ -153,6 +154,7 @@ function TwoFactor() {
         <span>Status</span>
         <Badge variant={me.two_factor_enabled ? "secondary" : "outline"}>{me.two_factor_enabled ? "On" : "Off"}</Badge>
       </div>
+      {me.two_factor_enabled && <NewBackupCodes left={me.recovery_codes_left ?? 0} onDone={reloadMe} />}
       {me.two_factor_enabled ? (
         <form onSubmit={turnOff} className="space-y-3">
           <p className="text-xs text-muted-foreground">
@@ -191,5 +193,67 @@ function TwoFactor() {
         <Button onClick={() => setSettingUp(true)}>Turn on two-factor</Button>
       )}
     </Section>
+  );
+}
+
+/** Lost-phone backup codes (go-live G-4): how many are left, and ten new ones. */
+function NewBackupCodes({ left, onDone }: { left: number; onDone: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [codes, setCodes] = useState<string[] | null>(null);
+  const form = useForm<{ password: string; code: string }>();
+  const submit = form.handleSubmit(async (body) => {
+    try {
+      const r = unwrap(await api.POST("/api/v1/auth/2fa/recovery-codes", { body: { password: body.password, code: body.code.trim() } }));
+      setCodes(r.recovery_codes);
+      form.reset();
+    } catch (e) {
+      form.setError("code", { message: (e as Error).message });
+    }
+  });
+  if (codes) {
+    return (
+      <div className="max-w-sm">
+        <BackupCodes
+          codes={codes}
+          onDone={async () => {
+            setCodes(null);
+            setOpen(false);
+            await onDone();
+          }}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-2 rounded-lg border p-3">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span>
+          Backup codes left: <strong className={left <= 2 ? "text-destructive" : undefined}>{left}</strong>
+        </span>
+        {!open && (
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+            Get new backup codes
+          </Button>
+        )}
+      </div>
+      {open && (
+        <form onSubmit={submit} className="space-y-2">
+          <p className="text-xs text-muted-foreground">Ten new codes; the old ones stop working.</p>
+          <Field id="bc-password" label="Password" type="password" autoComplete="current-password" {...form.register("password", { required: true })} />
+          <Field
+            id="bc-code"
+            label="Current 6-digit code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            error={form.formState.errors.code?.message}
+            {...form.register("code", { required: true, pattern: { value: /^\d{6}$/, message: "6 digits" } })}
+          />
+          <Button type="submit" size="sm" disabled={form.formState.isSubmitting}>
+            Show new codes
+          </Button>
+        </form>
+      )}
+    </div>
   );
 }

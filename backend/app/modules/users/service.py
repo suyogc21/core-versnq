@@ -171,6 +171,21 @@ async def set_temporary_password(db: AsyncSession, actor: CurrentUser, target: U
     return temp
 
 
+async def reset_two_factor(db: AsyncSession, actor: CurrentUser, target: User) -> None:
+    """Lost phone (go-live G-4): the person's authenticator app and backup codes are removed and
+    they are signed out everywhere; they sign in with the emailed code and can set it up again."""
+    from app.modules.auth.service import clear_recovery_codes
+
+    _not_self(actor, target)
+    _can_touch(actor, await _role_of(db, target))
+    if not target.totp_enabled:
+        raise Conflict("This person doesn't use an authenticator app")
+    target.totp_enabled, target.totp_secret_enc = False, None
+    await clear_recovery_codes(db, target.id)
+    await revoke_all_sessions(db, target.id)
+    await _audit(db, actor, "user.2fa_reset", target, {"totp_enabled": True})
+
+
 async def renew_invite(db: AsyncSession, actor: CurrentUser, target: User) -> str:
     _can_touch(actor, await _role_of(db, target))
     if target.status != "invited":

@@ -181,3 +181,57 @@ def restrictions(user: User, role: Role) -> list[str]:
     if user.must_change_password:
         found.append("password_change_required")
     return found
+
+
+# ---------- backup codes for the authenticator app (go-live G-4) ----------
+async def issue_recovery_codes(db: AsyncSession, user: User) -> list[str]:
+    """Ten new codes; the old ones stop working. The plain codes are shown once."""
+    from app.core import recovery as RC
+    from app.modules.auth.models import UserRecoveryCode
+
+    await clear_recovery_codes(db, user.id)
+    codes = RC.new_codes()
+    db.add_all(
+        UserRecoveryCode(tenant_id=user.tenant_id, user_id=user.id, code_hash=RC.code_hash(c))
+        for c in codes
+    )
+    await db.flush()
+    return codes
+
+
+async def use_recovery_code(db: AsyncSession, user: User, code: str) -> bool:
+    from app.core import recovery as RC
+    from app.modules.auth.models import UserRecoveryCode
+
+    row = await db.scalar(
+        select(UserRecoveryCode).where(
+            UserRecoveryCode.user_id == user.id,
+            UserRecoveryCode.code_hash == RC.code_hash(code),
+            UserRecoveryCode.used_at.is_(None),
+        )
+    )
+    if row is None:
+        return False
+    row.used_at = _now()
+    return True
+
+
+async def recovery_codes_left(db: AsyncSession, user_id: uuid.UUID) -> int:
+    from app.modules.auth.models import UserRecoveryCode
+
+    return (
+        await db.scalar(
+            select(func.count())
+            .select_from(UserRecoveryCode)
+            .where(UserRecoveryCode.user_id == user_id, UserRecoveryCode.used_at.is_(None))
+        )
+        or 0
+    )
+
+
+async def clear_recovery_codes(db: AsyncSession, user_id: uuid.UUID) -> None:
+    from sqlalchemy import delete
+
+    from app.modules.auth.models import UserRecoveryCode
+
+    await db.execute(delete(UserRecoveryCode).where(UserRecoveryCode.user_id == user_id))

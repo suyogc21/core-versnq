@@ -201,6 +201,29 @@ async def temporary_password(
     )
 
 
+@router.post("/{user_id}/2fa/reset", response_model=UserOut)
+async def reset_two_factor(
+    user_id: uuid.UUID, db: TenantDb, ws: WorkspaceDep, actor: Manager, mailer: MailerDep
+) -> User:
+    """Lost phone: remove a team member's authenticator app (go-live G-4). Audited."""
+    target = await service.get_visible(db, actor, user_id)
+    await service.reset_two_factor(db, actor, target)
+    try:
+        await mailer.send(
+            Email(
+                to=target.email,
+                subject=f"Your authenticator app was reset in {ws.name}",
+                body=f"Hi {target.name},\n\n{actor.user.name} removed the authenticator app from "
+                "your account (for example after a lost phone). Sign in with your password and "
+                "the code we email you; you can set the app up again in My account.\n\n"
+                "If you didn't ask for this, tell your admin.\n",
+            )
+        )
+    except Exception:  # noqa: BLE001 - logged; the reset stands
+        log.exception("2FA reset email to %s failed", target.email)
+    return target
+
+
 @router.post("/{user_id}/resend-invite", response_model=InviteResult)
 async def resend_invite(
     user_id: uuid.UUID, db: TenantDb, ws: WorkspaceDep, actor: Manager, mailer: MailerDep

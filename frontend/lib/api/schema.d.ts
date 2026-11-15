@@ -140,8 +140,31 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Enable Two Factor */
+        /**
+         * Enable Two Factor
+         * @description Turns the app on and returns 10 one-time backup codes, shown only now (G-4).
+         */
         post: operations["auth-enable_two_factor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * New Recovery Codes
+         * @description Ten new backup codes (the old ones stop working). Needs the password and the app.
+         */
+        post: operations["auth-new_recovery_codes"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5481,6 +5504,26 @@ export interface paths {
         patch: operations["users-update_user"];
         trace?: never;
     };
+    "/api/v1/users/{user_id}/2fa/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Two Factor
+         * @description Lost phone: remove a team member's authenticator app (go-live G-4). Audited.
+         */
+        post: operations["users-reset_two_factor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/{user_id}/disable": {
         parameters: {
             query?: never;
@@ -5833,7 +5876,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Enable Two Factor */
+        /**
+         * Enable Two Factor
+         * @description Turns the app on and returns 10 one-time backup codes, shown only now (G-4).
+         */
         post: operations["platform-auth-enable_two_factor"];
         delete?: never;
         options?: never;
@@ -6069,6 +6115,26 @@ export interface paths {
          */
         put: operations["platform-tenants-put_modules"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants/{tenant_id}/owner-2fa-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Owner Two Factor
+         * @description Lost phone: remove a company Owner's authenticator app (go-live G-4). Audited.
+         */
+        post: operations["platform-tenants-reset_owner_two_factor"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10315,6 +10381,11 @@ export interface components {
             name: string;
             /** Permissions */
             permissions: string[];
+            /**
+             * Recovery Codes Left
+             * @default 0
+             */
+            recovery_codes_left: number;
             /** Restrictions */
             restrictions: string[];
             role: components["schemas"]["app__modules__auth__schemas__RoleOut"];
@@ -10674,6 +10745,11 @@ export interface components {
         OwnerIn: {
             /** Owner User Id */
             owner_user_id: string | null;
+        };
+        /** OwnerResetIn */
+        OwnerResetIn: {
+            /** Email */
+            email: string;
         };
         /** PackOut */
         PackOut: {
@@ -11261,6 +11337,21 @@ export interface components {
             plural?: string | null;
             /** Singular */
             singular?: string | null;
+        };
+        /** RecoveryCodesIn */
+        RecoveryCodesIn: {
+            /** Code */
+            code: string;
+            /** Password */
+            password: string;
+        };
+        /**
+         * RecoveryCodesOut
+         * @description Shown once: each works once in place of the app's code (go-live G-4).
+         */
+        RecoveryCodesOut: {
+            /** Recovery Codes */
+            recovery_codes: string[];
         };
         /** RemovedOut */
         RemovedOut: {
@@ -13980,11 +14071,46 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "auth-new_recovery_codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecoveryCodesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -26252,6 +26378,37 @@ export interface operations {
             };
         };
     };
+    "users-reset_two_factor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "users-disable_user": {
         parameters: {
             query?: never;
@@ -26949,11 +27106,13 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -27464,6 +27623,39 @@ export interface operations {
                         [key: string]: boolean;
                     };
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "platform-tenants-reset_owner_two_factor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnerResetIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

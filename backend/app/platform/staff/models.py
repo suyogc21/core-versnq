@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text, Uuid, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text, Uuid, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
@@ -33,3 +33,14 @@ class PlatformStaffSession(IdMixin, TimestampMixin, Base):
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ip: Mapped[str | None] = mapped_column(String(64))
     user_agent: Mapped[str | None] = mapped_column(String(400))
+
+
+class StaffRecoveryCode(IdMixin, Base):
+    """One backup code for a staff member's authenticator app (go-live G-4); works once."""
+
+    __tablename__ = "staff_recovery_codes"
+
+    staff_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("platform_staff.id"), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

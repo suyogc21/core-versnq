@@ -124,6 +124,19 @@ export default function CompanyPage() {
           >
             Resend Owner invite
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const email = prompt("Owner's email: their authenticator app is removed (lost phone). Check who is asking first.");
+              if (!email?.trim()) return;
+              run(
+                async () => unwrap(await api.POST("/platform/tenants/{tenant_id}/owner-2fa-reset", { ...path, body: { email: email.trim() } })),
+                "The Owner's authenticator app is removed; they were emailed.",
+              );
+            }}
+          >
+            Reset Owner&apos;s authenticator
+          </Button>
           {suspended ? (
             <Button
               onClick={() =>

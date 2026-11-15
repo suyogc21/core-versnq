@@ -8,6 +8,7 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     String,
     Uuid,
+    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -56,3 +57,21 @@ class UserSession(IdMixin, TimestampMixin, Base):
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ip: Mapped[str | None] = mapped_column(String(64))
     user_agent: Mapped[str | None] = mapped_column(String(400))
+
+
+class UserRecoveryCode(IdMixin, Base):
+    """One backup code for the authenticator app (go-live G-4); works once."""
+
+    __tablename__ = "user_recovery_codes"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "user_id"], ["users.tenant_id", "users.id"],
+            name="fk_user_recovery_codes_user", ondelete="CASCADE",
+        ),
+    )  # fmt: skip
+
+    tenant_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tenants.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
