@@ -680,6 +680,10 @@ async def record_click(db: AsyncSession, msg: Message, index: int) -> str | None
 
 async def _opt_out(db: AsyncSession, msg: Message, reason: str, consent_source: str) -> None:
     await C.suppress(db, msg.tenant_id, "email", [msg.to_address.lower()], reason)
+    if msg.contact_id:  # a campaign email (step O2): the contact stops in every campaign
+        from app.modules.outreach import service as O  # outreach builds on this module
+
+        await O.contact_opted_out(db, msg.contact_id, reason)
     lead = await db.get(Lead, msg.lead_id) if msg.lead_id else None
     if lead is not None:
         if reason in ("opt_out", "complaint") and lead.email_consent != "opted_out":

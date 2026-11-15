@@ -4,6 +4,7 @@ from arq.connections import RedisSettings
 from app.core.config import get_settings
 from app.workers.jobs import (
     automation_job,
+    campaigns_job,
     import_job,
     import_sweep_job,
     mailboxes_job,
@@ -38,6 +39,7 @@ class WorkerSettings:
         webhook_job,
         webhooks_job,
         sequences_job,
+        campaigns_job,
         mailboxes_job,
         whatsapp_health_job,
         money_mail_job,
@@ -52,6 +54,7 @@ class WorkerSettings:
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
         cron(webhooks_job, second=set(range(7, 60, 10)), unique=True),  # every 10 seconds
         cron(sequences_job, second={15, 45}, unique=True),  # every 30 seconds
+        cron(campaigns_job, second={0, 30}, unique=True),  # every 30 seconds
         cron(mailboxes_job, second=25, unique=True),
         cron(nightly_job, hour=21, minute=30, second=10),  # 03:00 in India
         cron(whatsapp_health_job, hour=2, minute=0, second=40),  # 07:30 in India

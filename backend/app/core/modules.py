@@ -34,6 +34,7 @@ MODULES: dict[str, Module] = {
     # Off until 100% live for the company (Decision log #44, H1). Versnq staff switch them on.
     "whatsapp_number": Module("Company WhatsApp number (official API)", core=False, default=False),
     "copy_in": Module("Copy-in email addresses", core=False, default=False),
+    "outreach": Module("Outreach campaigns (cold email)", core=False, default=False),
 }
 
 

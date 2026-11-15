@@ -52,24 +52,36 @@ async def sent_since(db: AsyncSession, since: datetime) -> dict[uuid.UUID, int]:
 async def pick(db: AsyncSession, lead: Lead, tz: str) -> Mailbox | None:
     """The inbox to send this lead's next email from, or None when every inbox is at its limit
     or inside its gap (the step then waits; nothing is skipped)."""
-    inboxes = (
-        await db.scalars(select(Mailbox).where(Mailbox.in_pool, Mailbox.status == "active"))
-    ).all()
+    return await choose(db, tz, owner_user_id=lead.owner_user_id)
+
+
+def _ready(mb: Mailbox, today: dict[uuid.UUID, int], now: datetime) -> bool:
+    if today.get(mb.id, 0) >= mb.daily_limit:
+        return False
+    return mb.last_sent_at is None or now - mb.last_sent_at >= timedelta(minutes=mb.min_gap_minutes)
+
+
+async def choose(
+    db: AsyncSession,
+    tz: str,
+    *,
+    owner_user_id: uuid.UUID | None = None,
+    only: list[uuid.UUID] | None = None,
+) -> Mailbox | None:
+    """Owner's inbox first, then the least used today; `only` limits the choice (a campaign's
+    chosen inboxes, step O2)."""
+    q = select(Mailbox).where(Mailbox.in_pool, Mailbox.status == "active")
+    if only:
+        q = q.where(Mailbox.id.in_(only))
+    inboxes = (await db.scalars(q)).all()
     if not inboxes:
         return None
     today = await sent_since(db, start_of_day(tz))
     now = L.now()
 
-    def ready(mb: Mailbox) -> bool:
-        if today.get(mb.id, 0) >= mb.daily_limit:
-            return False
-        return mb.last_sent_at is None or now - mb.last_sent_at >= timedelta(
-            minutes=mb.min_gap_minutes
-        )
-
-    owners = [mb for mb in inboxes if lead.owner_user_id and mb.user_id == lead.owner_user_id]
+    owners = [mb for mb in inboxes if owner_user_id and mb.user_id == owner_user_id]
     for mb in sorted(owners, key=lambda m: today.get(m.id, 0)):
-        if ready(mb):
+        if _ready(mb, today, now):
             return mb
     rest = [mb for mb in inboxes if mb not in owners]
     rest.sort(
@@ -78,7 +90,14 @@ async def pick(db: AsyncSession, lead: Lead, tz: str) -> Mailbox | None:
             m.last_sent_at or datetime.min.replace(tzinfo=now.tzinfo),
         )
     )
-    return next((mb for mb in rest if ready(mb)), None)
+    return next((mb for mb in rest if _ready(mb, today, now)), None)
+
+
+async def ready_now(db: AsyncSession, mb: Mailbox, tz: str) -> bool:
+    """This inbox may send now: active, in the pool, under its limit, outside its gap."""
+    if mb.status != "active" or not mb.in_pool:
+        return False
+    return _ready(mb, await sent_since(db, start_of_day(tz)), L.now())
 
 
 async def check_health(db: AsyncSession, mb: Mailbox) -> bool:

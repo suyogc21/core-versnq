@@ -42,6 +42,7 @@ async def test_me_lists_the_users_permissions(ws):
     _, mgr = await login_as(tenant_id, "sales_manager")
     _, owner = await login_as(tenant_id, "owner")
     assert (await c.get("/api/v1/auth/me", headers=mgr)).json()["permissions"] == [
+        "campaigns.manage",
         "customers.create",
         "customers.read",
         "dashboards.team",
@@ -58,6 +59,7 @@ async def test_me_lists_the_users_permissions(ws):
         "leads.edit",
         "leads.import",
         "leads.merge",
+        "outreach.reply",
         "payments.record",
         "sequences.manage",
         "users.read",

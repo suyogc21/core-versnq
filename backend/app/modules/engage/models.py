@@ -115,6 +115,12 @@ class Message(TenantScoped, TimestampMixin, Base):
     whatsapp_template_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # step O2: a campaign email to a cold contact (no lead yet), and auto-replies
+    contact_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    campaign_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    campaign_step_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    variant: Mapped[int | None] = mapped_column(Integer)
+    auto_submitted: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class MessageEvent(TenantScoped, Base):
@@ -130,12 +136,15 @@ class MessageEvent(TenantScoped, Base):
 
 
 class Conversation(TenantScoped, TimestampMixin, Base):
-    """A thread with one lead (step 9b). Follows the lead's owner unless taken over."""
+    """A thread with one lead (step 9b), or with a cold contact from a campaign (step O2; it
+    moves onto the lead on convert). Follows the lead's owner unless taken over."""
 
     __tablename__ = "conversations"
     __table_args__ = (_fk("lead_id", "leads", "fk_conversations_lead_same_tenant", "CASCADE"),)
 
-    lead_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    contact_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    campaign_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     channel: Mapped[str] = mapped_column(String(10))
     subject: Mapped[str | None] = mapped_column(String(300))
     assignee_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)

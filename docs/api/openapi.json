@@ -1909,6 +1909,378 @@
         "title": "BusinessDashboard",
         "type": "object"
       },
+      "CampaignContactOut": {
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          },
+          "ended_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Reason"
+          },
+          "last_sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sent At"
+          },
+          "mailbox_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mailbox Id"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run At"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "variant": {
+            "title": "Variant",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contact",
+          "status",
+          "position",
+          "variant",
+          "next_run_at",
+          "ended_reason",
+          "mailbox_id",
+          "last_sent_at"
+        ],
+        "title": "CampaignContactOut",
+        "type": "object"
+      },
+      "CampaignIn": {
+        "properties": {
+          "daily_cap": {
+            "default": 500,
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Daily Cap",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "mailbox_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "title": "Mailbox Ids",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Schedule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "track_clicks": {
+            "default": false,
+            "title": "Track Clicks",
+            "type": "boolean"
+          },
+          "track_opens": {
+            "default": false,
+            "title": "Track Opens",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CampaignIn",
+        "type": "object"
+      },
+      "CampaignOut": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "daily_cap": {
+            "title": "Daily Cap",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "launched_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launched At"
+          },
+          "mailbox_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Mailbox Ids",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "schedule": {
+            "additionalProperties": true,
+            "title": "Schedule",
+            "type": "object"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "track_clicks": {
+            "title": "Track Clicks",
+            "type": "boolean"
+          },
+          "track_opens": {
+            "title": "Track Opens",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "owner_user_id",
+          "owner_name",
+          "mailbox_ids",
+          "schedule",
+          "daily_cap",
+          "track_opens",
+          "track_clicks",
+          "launched_at",
+          "created_at",
+          "counts"
+        ],
+        "title": "CampaignOut",
+        "type": "object"
+      },
+      "CampaignPatch": {
+        "properties": {
+          "daily_cap": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daily Cap"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "mailbox_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "maxItems": 500,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mailbox Ids"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Schedule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "track_clicks": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Clicks"
+          },
+          "track_opens": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Opens"
+          }
+        },
+        "title": "CampaignPatch",
+        "type": "object"
+      },
       "CannedIn": {
         "properties": {
           "body": {
@@ -2751,6 +3123,130 @@
         "title": "ConsentOut",
         "type": "object"
       },
+      "ContactOut": {
+        "properties": {
+          "campaign_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Campaign Ids",
+            "type": "array"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "variables": {
+            "additionalProperties": true,
+            "title": "Variables",
+            "type": "object"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "first_name",
+          "last_name",
+          "company",
+          "title",
+          "phone",
+          "website",
+          "variables",
+          "status",
+          "lead_id"
+        ],
+        "title": "ContactOut",
+        "type": "object"
+      },
       "ConvPatch": {
         "properties": {
           "is_private": {
@@ -3098,6 +3594,20 @@
         "title": "ConversationRow",
         "type": "object"
       },
+      "ConvertOut": {
+        "properties": {
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ],
+        "title": "ConvertOut",
+        "type": "object"
+      },
       "CopyInOut": {
         "properties": {
           "address": {
@@ -3186,6 +3696,52 @@
           }
         },
         "title": "CopyInSettings",
+        "type": "object"
+      },
+      "Counts": {
+        "properties": {
+          "active": {
+            "default": 0,
+            "title": "Active",
+            "type": "integer"
+          },
+          "bounced": {
+            "default": 0,
+            "title": "Bounced",
+            "type": "integer"
+          },
+          "clicked": {
+            "default": 0,
+            "title": "Clicked",
+            "type": "integer"
+          },
+          "contacts": {
+            "default": 0,
+            "title": "Contacts",
+            "type": "integer"
+          },
+          "opened": {
+            "default": 0,
+            "title": "Opened",
+            "type": "integer"
+          },
+          "replied": {
+            "default": 0,
+            "title": "Replied",
+            "type": "integer"
+          },
+          "sent": {
+            "default": 0,
+            "title": "Sent",
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "default": 0,
+            "title": "Unsubscribed",
+            "type": "integer"
+          }
+        },
+        "title": "Counts",
         "type": "object"
       },
       "CrmRules": {
@@ -4542,7 +5098,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 39,
+            "maxItems": 40,
             "minItems": 1,
             "title": "Events",
             "type": "array"
@@ -4649,7 +5205,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 39,
+                "maxItems": 40,
                 "minItems": 1,
                 "type": "array"
               },
@@ -6623,127 +7179,6 @@
           "is_whatsapp"
         ],
         "title": "IdentityOut",
-        "type": "object"
-      },
-      "ImportIn": {
-        "properties": {
-          "csv": {
-            "maxLength": 200000,
-            "title": "Csv",
-            "type": "string"
-          }
-        },
-        "required": [
-          "csv"
-        ],
-        "title": "ImportIn",
-        "type": "object"
-      },
-      "ImportOut": {
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "created_by_user_id": {
-            "format": "uuid",
-            "title": "Created By User Id",
-            "type": "string"
-          },
-          "created_count": {
-            "title": "Created Count",
-            "type": "integer"
-          },
-          "failed_count": {
-            "title": "Failed Count",
-            "type": "integer"
-          },
-          "file_name": {
-            "title": "File Name",
-            "type": "string"
-          },
-          "finished_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Finished At"
-          },
-          "headers": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Headers",
-            "type": "array"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "mapping": {
-            "additionalProperties": true,
-            "title": "Mapping",
-            "type": "object"
-          },
-          "options": {
-            "additionalProperties": true,
-            "title": "Options",
-            "type": "object"
-          },
-          "row_count": {
-            "title": "Row Count",
-            "type": "integer"
-          },
-          "skipped_count": {
-            "title": "Skipped Count",
-            "type": "integer"
-          },
-          "started_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Started At"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "updated_count": {
-            "title": "Updated Count",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "id",
-          "file_name",
-          "headers",
-          "row_count",
-          "mapping",
-          "options",
-          "status",
-          "created_count",
-          "updated_count",
-          "skipped_count",
-          "failed_count",
-          "created_by_user_id",
-          "started_at",
-          "finished_at",
-          "created_at"
-        ],
-        "title": "ImportOut",
         "type": "object"
       },
       "ImportRow": {
@@ -11625,6 +12060,210 @@
         "title": "OtherIn",
         "type": "object"
       },
+      "OutreachConversation": {
+        "properties": {
+          "assignee_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee User Id"
+          },
+          "campaign_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Id"
+          },
+          "campaign_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Name"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_direction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Direction"
+          },
+          "last_message_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Message At"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "required": [
+          "id",
+          "campaign_id",
+          "campaign_name",
+          "contact",
+          "subject",
+          "last_message_at",
+          "last_direction",
+          "state",
+          "assignee_user_id"
+        ],
+        "title": "OutreachConversation",
+        "type": "object"
+      },
+      "OutreachDetail": {
+        "properties": {
+          "assignee_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee User Id"
+          },
+          "campaign_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Id"
+          },
+          "campaign_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Name"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_direction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Direction"
+          },
+          "last_message_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Message At"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ThreadMessage"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "required": [
+          "id",
+          "campaign_id",
+          "campaign_name",
+          "contact",
+          "subject",
+          "last_message_at",
+          "last_direction",
+          "state",
+          "assignee_user_id",
+          "messages"
+        ],
+        "title": "OutreachDetail",
+        "type": "object"
+      },
       "OwnerIn": {
         "properties": {
           "owner_user_id": {
@@ -12376,38 +13015,6 @@
           "lost_count"
         ],
         "title": "PipelineSummary",
-        "type": "object"
-      },
-      "PreviewIn": {
-        "properties": {
-          "lead_id": {
-            "format": "uuid",
-            "title": "Lead Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "lead_id"
-        ],
-        "title": "PreviewIn",
-        "type": "object"
-      },
-      "PreviewOut": {
-        "properties": {
-          "body": {
-            "title": "Body",
-            "type": "string"
-          },
-          "subject": {
-            "title": "Subject",
-            "type": "string"
-          }
-        },
-        "required": [
-          "subject",
-          "body"
-        ],
-        "title": "PreviewOut",
         "type": "object"
       },
       "ProductIn": {
@@ -13389,30 +13996,6 @@
         "title": "RepeatIn",
         "type": "object"
       },
-      "ReplyIn": {
-        "properties": {
-          "body": {
-            "maxLength": 50000,
-            "minLength": 1,
-            "title": "Body",
-            "type": "string"
-          },
-          "cc": {
-            "default": [],
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 20,
-            "title": "Cc",
-            "type": "array"
-          }
-        },
-        "required": [
-          "body"
-        ],
-        "title": "ReplyIn",
-        "type": "object"
-      },
       "ReplyOut": {
         "properties": {
           "body": {
@@ -13911,6 +14494,55 @@
         "title": "Rollup",
         "type": "object"
       },
+      "Row": {
+        "description": "One step, or one version of a step, or one inbox, in the results.",
+        "properties": {
+          "bounced": {
+            "default": 0,
+            "title": "Bounced",
+            "type": "integer"
+          },
+          "clicked": {
+            "default": 0,
+            "title": "Clicked",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "opened": {
+            "default": 0,
+            "title": "Opened",
+            "type": "integer"
+          },
+          "replied": {
+            "default": 0,
+            "title": "Replied",
+            "type": "integer"
+          },
+          "sent": {
+            "default": 0,
+            "title": "Sent",
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "default": 0,
+            "title": "Unsubscribed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "Row",
+        "type": "object"
+      },
       "RunOut": {
         "properties": {
           "created_at": {
@@ -13992,6 +14624,51 @@
           "created_at"
         ],
         "title": "RunOut",
+        "type": "object"
+      },
+      "Schedule": {
+        "properties": {
+          "days": {
+            "default": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 7,
+            "title": "Days",
+            "type": "array"
+          },
+          "from": {
+            "default": "09:00",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$|^24:00$",
+            "title": "From",
+            "type": "string"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "to": {
+            "default": "18:00",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$|^24:00$",
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "title": "Schedule",
         "type": "object"
       },
       "ScheduleIn": {
@@ -14568,7 +15245,7 @@
           },
           "steps": {
             "items": {
-              "$ref": "#/components/schemas/StepOut"
+              "$ref": "#/components/schemas/app__modules__engage__router__StepOut"
             },
             "title": "Steps",
             "type": "array"
@@ -15588,175 +16265,40 @@
         "title": "StartIn",
         "type": "object"
       },
-      "StepIn": {
+      "StatsOut": {
         "properties": {
-          "check_if": {
-            "anyOf": [
-              {
-                "enum": [
-                  "opened",
-                  "clicked",
-                  "replied",
-                  "tag",
-                  "field"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Check If"
+          "inboxes": {
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            },
+            "title": "Inboxes",
+            "type": "array"
           },
-          "due_in_hours": {
-            "default": 0,
-            "maximum": 720.0,
-            "minimum": 0.0,
-            "title": "Due In Hours",
-            "type": "integer"
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            },
+            "title": "Steps",
+            "type": "array"
           },
-          "field": {
-            "anyOf": [
-              {
-                "maxLength": 60,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Field"
+          "totals": {
+            "$ref": "#/components/schemas/Counts"
           },
-          "go_to": {
-            "anyOf": [
-              {
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Go To"
-          },
-          "hours": {
-            "anyOf": [
-              {
-                "exclusiveMinimum": 0.0,
-                "maximum": 2160.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Hours"
-          },
-          "kind": {
-            "enum": [
-              "email",
-              "whatsapp",
-              "task",
-              "wait",
-              "check"
-            ],
-            "title": "Kind",
-            "type": "string"
-          },
-          "tag_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tag Id"
-          },
-          "task_type": {
-            "default": "other",
-            "enum": [
-              "call",
-              "linkedin_connect",
-              "linkedin_message",
-              "other"
-            ],
-            "title": "Task Type",
-            "type": "string"
-          },
-          "template_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Template Id"
-          },
-          "title": {
-            "anyOf": [
-              {
-                "maxLength": 200,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          },
-          "value": {
-            "anyOf": [
-              {
-                "maxLength": 200,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value"
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            },
+            "title": "Variants",
+            "type": "array"
           }
         },
         "required": [
-          "kind"
+          "totals",
+          "steps",
+          "variants",
+          "inboxes"
         ],
-        "title": "StepIn",
-        "type": "object"
-      },
-      "StepOut": {
-        "properties": {
-          "config": {
-            "additionalProperties": true,
-            "title": "Config",
-            "type": "object"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
-          "position": {
-            "title": "Position",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "id",
-          "position",
-          "kind",
-          "config"
-        ],
-        "title": "StepOut",
+        "title": "StatsOut",
         "type": "object"
       },
       "StepStats": {
@@ -15810,6 +16352,24 @@
           "kind"
         ],
         "title": "StepStats",
+        "type": "object"
+      },
+      "StepsIn": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__outreach__router__StepIn"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "title": "StepsIn",
         "type": "object"
       },
       "StorageOut": {
@@ -17026,6 +17586,95 @@
         "title": "TestOut",
         "type": "object"
       },
+      "ThreadMessage": {
+        "properties": {
+          "auto_submitted": {
+            "title": "Auto Submitted",
+            "type": "boolean"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "from_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Address"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mailbox_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mailbox Id"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "to_address": {
+            "title": "To Address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "direction",
+          "from_address",
+          "to_address",
+          "subject",
+          "body",
+          "status",
+          "sent_at",
+          "auto_submitted",
+          "mailbox_id"
+        ],
+        "title": "ThreadMessage",
+        "type": "object"
+      },
       "ToDocumentIn": {
         "properties": {
           "document_id": {
@@ -18041,6 +18690,33 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "Variant": {
+        "properties": {
+          "body": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "Variant",
         "type": "object"
       },
       "ViewCounts": {
@@ -19091,6 +19767,113 @@
         "title": "NoteIn",
         "type": "object"
       },
+      "app__modules__crm__imports_router__ImportOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_user_id": {
+            "format": "uuid",
+            "title": "Created By User Id",
+            "type": "string"
+          },
+          "created_count": {
+            "title": "Created Count",
+            "type": "integer"
+          },
+          "failed_count": {
+            "title": "Failed Count",
+            "type": "integer"
+          },
+          "file_name": {
+            "title": "File Name",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Headers",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mapping": {
+            "additionalProperties": true,
+            "title": "Mapping",
+            "type": "object"
+          },
+          "options": {
+            "additionalProperties": true,
+            "title": "Options",
+            "type": "object"
+          },
+          "row_count": {
+            "title": "Row Count",
+            "type": "integer"
+          },
+          "skipped_count": {
+            "title": "Skipped Count",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_count": {
+            "title": "Updated Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "file_name",
+          "headers",
+          "row_count",
+          "mapping",
+          "options",
+          "status",
+          "created_count",
+          "updated_count",
+          "skipped_count",
+          "failed_count",
+          "created_by_user_id",
+          "started_at",
+          "finished_at",
+          "created_at"
+        ],
+        "title": "ImportOut",
+        "type": "object"
+      },
       "app__modules__crm__layouts_router__AccessOut": {
         "properties": {
           "entity": {
@@ -19954,6 +20737,247 @@
         "title": "NoteIn",
         "type": "object"
       },
+      "app__modules__engage__inbox_router__ReplyIn": {
+        "properties": {
+          "body": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "cc": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Cc",
+            "type": "array"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "ReplyIn",
+        "type": "object"
+      },
+      "app__modules__engage__pool_router__ImportIn": {
+        "properties": {
+          "csv": {
+            "maxLength": 200000,
+            "title": "Csv",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csv"
+        ],
+        "title": "ImportIn",
+        "type": "object"
+      },
+      "app__modules__engage__router__PreviewIn": {
+        "properties": {
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ],
+        "title": "PreviewIn",
+        "type": "object"
+      },
+      "app__modules__engage__router__PreviewOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "body"
+        ],
+        "title": "PreviewOut",
+        "type": "object"
+      },
+      "app__modules__engage__router__StepIn": {
+        "properties": {
+          "check_if": {
+            "anyOf": [
+              {
+                "enum": [
+                  "opened",
+                  "clicked",
+                  "replied",
+                  "tag",
+                  "field"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check If"
+          },
+          "due_in_hours": {
+            "default": 0,
+            "maximum": 720.0,
+            "minimum": 0.0,
+            "title": "Due In Hours",
+            "type": "integer"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "go_to": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Go To"
+          },
+          "hours": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2160.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hours"
+          },
+          "kind": {
+            "enum": [
+              "email",
+              "whatsapp",
+              "task",
+              "wait",
+              "check"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "tag_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag Id"
+          },
+          "task_type": {
+            "default": "other",
+            "enum": [
+              "call",
+              "linkedin_connect",
+              "linkedin_message",
+              "other"
+            ],
+            "title": "Task Type",
+            "type": "string"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "StepIn",
+        "type": "object"
+      },
+      "app__modules__engage__router__StepOut": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "kind",
+          "config"
+        ],
+        "title": "StepOut",
+        "type": "object"
+      },
       "app__modules__money__router__MessageOut": {
         "properties": {
           "created_at": {
@@ -20012,6 +21036,263 @@
           "sent_at"
         ],
         "title": "MessageOut",
+        "type": "object"
+      },
+      "app__modules__outreach__router__ImportIn": {
+        "properties": {
+          "csv": {
+            "maxLength": 20000000,
+            "minLength": 1,
+            "title": "Csv",
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
+          },
+          "mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "enum": [
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "company",
+                    "title",
+                    "phone",
+                    "website",
+                    "variable",
+                    "ignore"
+                  ],
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapping"
+          }
+        },
+        "required": [
+          "csv"
+        ],
+        "title": "ImportIn",
+        "type": "object"
+      },
+      "app__modules__outreach__router__ImportOut": {
+        "properties": {
+          "added": {
+            "title": "Added",
+            "type": "integer"
+          },
+          "already_in_campaign": {
+            "title": "Already In Campaign",
+            "type": "integer"
+          },
+          "already_lead": {
+            "title": "Already Lead",
+            "type": "integer"
+          },
+          "duplicates_in_file": {
+            "title": "Duplicates In File",
+            "type": "integer"
+          },
+          "invalid_email": {
+            "title": "Invalid Email",
+            "type": "integer"
+          },
+          "mapping": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Mapping",
+            "type": "object"
+          },
+          "problems": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Problems",
+            "type": "array"
+          },
+          "rows": {
+            "title": "Rows",
+            "type": "integer"
+          },
+          "suppressed": {
+            "title": "Suppressed",
+            "type": "integer"
+          },
+          "variables": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Variables",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows",
+          "added",
+          "duplicates_in_file",
+          "invalid_email",
+          "already_lead",
+          "suppressed",
+          "already_in_campaign",
+          "variables",
+          "problems",
+          "mapping"
+        ],
+        "title": "ImportOut",
+        "type": "object"
+      },
+      "app__modules__outreach__router__PreviewIn": {
+        "properties": {
+          "contact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
+          "position": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Position",
+            "type": "integer"
+          },
+          "variant": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Variant",
+            "type": "integer"
+          }
+        },
+        "title": "PreviewIn",
+        "type": "object"
+      },
+      "app__modules__outreach__router__PreviewOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "body",
+          "missing"
+        ],
+        "title": "PreviewOut",
+        "type": "object"
+      },
+      "app__modules__outreach__router__ReplyIn": {
+        "properties": {
+          "body": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "ReplyIn",
+        "type": "object"
+      },
+      "app__modules__outreach__router__StepIn": {
+        "properties": {
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/Variant"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Variants",
+            "type": "array"
+          },
+          "wait_days": {
+            "default": 0,
+            "maximum": 365.0,
+            "minimum": 0.0,
+            "title": "Wait Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variants"
+        ],
+        "title": "StepIn",
+        "type": "object"
+      },
+      "app__modules__outreach__router__StepOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/Variant"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Variants",
+            "type": "array"
+          },
+          "wait_days": {
+            "default": 0,
+            "maximum": 365.0,
+            "minimum": 0.0,
+            "title": "Wait Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variants",
+          "id",
+          "position"
+        ],
+        "title": "StepOut",
         "type": "object"
       },
       "app__modules__roles__router__RoleOut": {
@@ -21602,6 +22883,812 @@
         ]
       }
     },
+    "/api/v1/campaigns": {
+      "get": {
+        "operationId": "outreach-list_campaigns",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignOut"
+                  },
+                  "title": "Response Outreach-List Campaigns",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Campaigns",
+        "tags": [
+          "outreach"
+        ]
+      },
+      "post": {
+        "operationId": "outreach-create_campaign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Campaign",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}": {
+      "delete": {
+        "operationId": "outreach-delete_campaign",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Campaign",
+        "tags": [
+          "outreach"
+        ]
+      },
+      "get": {
+        "operationId": "outreach-get_campaign",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Campaign",
+        "tags": [
+          "outreach"
+        ]
+      },
+      "patch": {
+        "operationId": "outreach-update_campaign",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Campaign",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/contacts": {
+      "get": {
+        "operationId": "outreach-campaign_contacts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 12,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignContactOut"
+                  },
+                  "title": "Response Outreach-Campaign Contacts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Campaign Contacts",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/contacts/import": {
+      "post": {
+        "operationId": "outreach-import_contacts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__outreach__router__ImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__outreach__router__ImportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Import Contacts",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/contacts/{contact_id}/stop": {
+      "post": {
+        "description": "Not interested: this person gets nothing more from this campaign.",
+        "operationId": "outreach-stop_contact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Stop Contact",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/launch": {
+      "post": {
+        "operationId": "outreach-launch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Launch",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/pause": {
+      "post": {
+        "operationId": "outreach-pause",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Pause",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/preview": {
+      "post": {
+        "operationId": "outreach-preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__outreach__router__PreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__outreach__router__PreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/resume": {
+      "post": {
+        "operationId": "outreach-resume",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Resume",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/stats": {
+      "get": {
+        "operationId": "outreach-stats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Stats",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/steps": {
+      "get": {
+        "operationId": "outreach-get_steps",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__modules__outreach__router__StepOut"
+                  },
+                  "title": "Response Outreach-Get Steps",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Steps",
+        "tags": [
+          "outreach"
+        ]
+      },
+      "put": {
+        "description": "The whole sequence at once. Once launched, steps can be edited and added, not removed\n(people are part-way through them).",
+        "operationId": "outreach-put_steps",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StepsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__modules__outreach__router__StepOut"
+                  },
+                  "title": "Response Outreach-Put Steps",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Steps",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
     "/api/v1/canned-replies": {
       "get": {
         "operationId": "inbox-list_canned",
@@ -22149,6 +24236,232 @@
         ]
       }
     },
+    "/api/v1/contacts": {
+      "get": {
+        "operationId": "outreach-list_contacts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ContactOut"
+                  },
+                  "title": "Response Outreach-List Contacts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Contacts",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/contacts/{contact_id}": {
+      "get": {
+        "operationId": "outreach-get_contact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Contact",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/contacts/{contact_id}/convert": {
+      "post": {
+        "operationId": "outreach-convert",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConvertOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Convert",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/contacts/{contact_id}/unsubscribe": {
+      "post": {
+        "operationId": "outreach-unsubscribe",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Unsubscribe",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
     "/api/v1/conversations/{conv_id}": {
       "get": {
         "operationId": "inbox-get_conversation",
@@ -22623,7 +24936,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReplyIn"
+                "$ref": "#/components/schemas/app__modules__engage__inbox_router__ReplyIn"
               }
             }
           },
@@ -26665,7 +28978,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ImportOut"
+                    "$ref": "#/components/schemas/app__modules__crm__imports_router__ImportOut"
                   },
                   "title": "Response Imports-List Imports",
                   "type": "array"
@@ -26790,7 +29103,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportOut"
+                  "$ref": "#/components/schemas/app__modules__crm__imports_router__ImportOut"
                 }
               }
             },
@@ -26839,7 +29152,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportOut"
+                  "$ref": "#/components/schemas/app__modules__crm__imports_router__ImportOut"
                 }
               }
             },
@@ -26946,7 +29259,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportOut"
+                  "$ref": "#/components/schemas/app__modules__crm__imports_router__ImportOut"
                 }
               }
             },
@@ -34732,6 +37045,240 @@
         ]
       }
     },
+    "/api/v1/outreach/conversations": {
+      "get": {
+        "description": "Every campaign reply (threads where the person wrote back), newest first.",
+        "operationId": "outreach-outreach_inbox",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "campaign_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mailbox_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mailbox Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 20,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_auto",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Auto",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OutreachConversation"
+                  },
+                  "title": "Response Outreach-Outreach Inbox",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Outreach Inbox",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/outreach/conversations/{conv_id}": {
+      "get": {
+        "operationId": "outreach-outreach_conversation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutreachDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Outreach Conversation",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
+    "/api/v1/outreach/conversations/{conv_id}/reply": {
+      "post": {
+        "description": "Answer from the same inbox, in the same thread (no unsubscribe footer: a person's\nanswer to a person).",
+        "operationId": "outreach-outreach_reply",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__outreach__router__ReplyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutreachDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Outreach Reply",
+        "tags": [
+          "outreach"
+        ]
+      }
+    },
     "/api/v1/payment-links/{link_id}": {
       "delete": {
         "operationId": "money-cancel_payment_link",
@@ -37568,7 +40115,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ImportIn"
+                "$ref": "#/components/schemas/app__modules__engage__pool_router__ImportIn"
               }
             }
           },
@@ -38333,7 +40880,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/StepIn"
+                  "$ref": "#/components/schemas/app__modules__engage__router__StepIn"
                 },
                 "title": "Body",
                 "type": "array"
@@ -39657,7 +42204,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PreviewIn"
+                "$ref": "#/components/schemas/app__modules__engage__router__PreviewIn"
               }
             }
           },
@@ -39668,7 +42215,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PreviewOut"
+                  "$ref": "#/components/schemas/app__modules__engage__router__PreviewOut"
                 }
               }
             },

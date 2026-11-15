@@ -359,11 +359,14 @@ async def _folder(
             picks.append((uid, "out" if outgoing else "in", others))
             wanted.update(others)
     leads = await _known(db, wanted)
+    from app.modules.outreach import replies  # outreach builds on this module
+
+    contacts = await replies.known_contacts(db, wanted - leads.keys())
 
     kept = 0
     for uid, direction, others in picks:
         lead = next((leads[a] for a in others if a in leads), None)
-        if lead is None:
+        if lead is None and not (direction == "in" and any(a in contacts for a in others)):
             continue
         raw = await client.fetch(uid)
         if not raw:

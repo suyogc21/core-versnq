@@ -432,7 +432,8 @@ async def test_emails_in_and_out_raise_one_message_event_each(ws, client_for):
     assert p["channel"] == "email" and p["direction"] == "in" and p["official"] is None
     assert set(p) == {
         "_actor",
-        "conversation_id", "lead_id", "message_id", "channel", "direction", "official"
+        "conversation_id", "lead_id", "message_id", "channel", "direction", "official",
+        "contact_id", "campaign_id", "mailbox_id", "auto_submitted",
     }  # fmt: skip
 
     r = await c.post(f"/api/v1/conversations/{conv}/reply", json={"body": "80,000"}, headers=admin)

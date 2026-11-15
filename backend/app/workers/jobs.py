@@ -141,6 +141,23 @@ async def sequences_job(ctx) -> int:
     return await run_all(await _active_tenants())
 
 
+async def campaigns_job(ctx) -> int:
+    """Every 30 seconds: send the campaign emails that are due (step O2), for companies with
+    Outreach switched on."""
+    from app.core.modules import is_enabled
+    from app.core.tenancy import tenant_session
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.outreach.engine import run_due
+
+    total = 0
+    for tenant_id in await _active_tenants():
+        async with tenant_session(tenant_id) as db:
+            on = await is_enabled(db, tenant_id, "outreach")
+        if on:
+            total += await run_due(tenant_id)
+    return total
+
+
 async def mailboxes_job(ctx) -> int:
     """Every minute: read connected inboxes not read for a couple of minutes (step 9b-3)."""
     from app.modules.crm.automation import _active_tenants

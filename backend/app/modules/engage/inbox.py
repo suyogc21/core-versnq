@@ -19,7 +19,7 @@ import uuid
 from datetime import UTC, datetime
 from email.utils import getaddresses, parseaddr, parsedate_to_datetime
 
-from sqlalchemy import and_, or_, select, true
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Invalid, NotFound
@@ -62,13 +62,14 @@ async def visible(db: AsyncSession, actor: CurrentUser):
         ConversationMember.user_id == actor.user.id
     )
     is_member = Conversation.id.in_(member)
+    has_lead = Conversation.lead_id.isnot(None)  # cold campaign threads: the outreach inbox
     if actor.role.key in ADMINS:
-        return true()
+        return has_lead
     lead_ok = Conversation.lead_id.in_(select(Lead.id).where(await L.visibility_filter(db, actor)))
     not_private = or_(
         Conversation.is_private.is_(False), Conversation.private_user_id == actor.user.id
     )
-    return or_(is_member, and_(lead_ok, not_private))
+    return and_(has_lead, or_(is_member, and_(lead_ok, not_private)))
 
 
 async def get_visible(db: AsyncSession, actor: CurrentUser, conv_id: uuid.UUID) -> Conversation:
@@ -237,11 +238,16 @@ async def message_event(
         "message.received" if msg.direction == "in" else "message.sent",
         {
             "conversation_id": str(msg.conversation_id),
-            "lead_id": str(msg.lead_id),
+            "lead_id": str(msg.lead_id) if msg.lead_id else None,
             "message_id": str(msg.id),
             "channel": channel,
             "direction": msg.direction,
             "official": official,
+            # step O2 (the contract with ACE): null when not a campaign email / not the pool
+            "contact_id": str(msg.contact_id) if msg.contact_id else None,
+            "campaign_id": str(msg.campaign_id) if msg.campaign_id else None,
+            "mailbox_id": str(msg.mailbox_id) if msg.mailbox_id else None,
+            "auto_submitted": bool(msg.auto_submitted),
         },
     )
 
@@ -269,8 +275,16 @@ async def ingest(
 
     answered = await _answered(db, parsed)
     lead = await db.get(Lead, answered.lead_id) if answered and answered.lead_id else None
+    if lead is None and answered is not None and answered.contact_id:
+        from app.modules.outreach import replies  # outreach builds on this module
+
+        return await replies.ingest(db, tenant_id, parsed, answered, mailbox=mailbox, quiet=quiet)
     if lead is None and from_addr:
         lead = await _lead_for_address(db, from_addr)
+    if lead is None and from_addr:
+        from app.modules.outreach import replies
+
+        return await replies.ingest(db, tenant_id, parsed, None, mailbox=mailbox, quiet=quiet)
     if lead is None:
         return None  # unknown sender: not stored (Decision log #40, I3)
 

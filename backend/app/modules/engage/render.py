@@ -53,16 +53,22 @@ class Built:
 
 
 def build_email(
-    body: str, *, track_base: str | None, token: str, unsubscribe_url: str | None
+    body: str,
+    *,
+    track_base: str | None,
+    token: str,
+    unsubscribe_url: str | None,
+    track_opens: bool = True,
+    track_links: bool = True,
 ) -> Built:
     """Plain text → (text, html, tracked links). `track_base` None = no tracking (tests can
-    still check the links list)."""
+    still check the links list). Campaigns choose opens and links separately (step O2)."""
     links: list[str] = []
 
     def link(m: re.Match) -> str:
         url = m.group(0)
         links.append(url)
-        target = f"{track_base}/c/{token}/{len(links) - 1}" if track_base else url
+        target = f"{track_base}/c/{token}/{len(links) - 1}" if track_base and track_links else url
         return f'<a href="{html.escape(target, quote=True)}">{html.escape(url)}</a>'
 
     paragraphs = []
@@ -77,7 +83,7 @@ def build_email(
     pixel = (
         f'<img src="{html.escape(track_base)}/o/{token}.gif" width="1" height="1" alt=""'
         ' style="display:none">'
-        if track_base
+        if track_base and track_opens
         else ""
     )
     footer = (

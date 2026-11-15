@@ -31,6 +31,7 @@ CATALOGUE: dict[str, str] = {
     "sequence.replied": "sequences",
     "message.received": "inbox",  # Decision log #43: every email / WhatsApp in or out
     "message.sent": "inbox",
+    "contact.converted": "outreach",  # step O2: a campaign contact became a lead
     "deal.created": "crm",  # step 3 (Decision log #25)
     "deal.updated": "crm",
     "deal.stage_changed": "crm",
