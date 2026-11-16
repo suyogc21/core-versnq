@@ -48,3 +48,6 @@ extension/dist/
 # Android build output and local copies of built apps
 mobile/android/app/build/
 frontend/public/app/*.apk
+
+# helper worktrees (local only)
+.claude/worktrees/
