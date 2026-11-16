@@ -77,13 +77,13 @@ Each item has a size: S = 1, M = 2, L = 3.
 | Item | Size | |
 |---|---|---|
 | Click-to-call with the company's own Twilio (C3; Exotel later) | L | ⬜ next |
-| **C1 call pipeline:** every call on the timeline, recordings (30 days), missed-call tasks, Outcome in one tap, Calls list, Settings → Calls | M | 🟡 built and tested Nov 16 (deploy pending) |
+| **C1 call pipeline:** every call on the timeline, recordings (30 days), missed-call tasks, Outcome in one tap, Calls list, Settings → Calls | M | ✅ live Nov 16 (the phone app that feeds it is C4) |
 | ACE analyses calls (Core side built in C1: `call.recorded`, `PUT /calls/{id}/analysis`) | M | ⬜ ACE session |
 
 ### Phase 3: phone app (5): decided Nov 16 (installable web app now, Android app next)
 | Item | Size | |
 |---|---|---|
-| Installable app (PWA): home-screen icon, offline page, phone notifications (C2) | M | 🟡 built and tested Nov 16 (deploy pending) |
+| Installable app (PWA): home-screen icon, offline page, phone notifications (C2) | M | ✅ live Nov 16 (waiting for your own try) |
 | Native iOS and Android app | L | ⬜ |
 
 ### Phase 4: marketing (13)
