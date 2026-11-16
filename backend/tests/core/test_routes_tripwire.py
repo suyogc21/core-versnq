@@ -49,6 +49,16 @@ PUBLIC = {
     # verify token; the POST is refused unless signed with the company's app secret.
     ("GET", "/api/v1/whatsapp/webhook"),
     ("POST", "/api/v1/whatsapp/webhook"),
+    # Lead ads (batch 5d): Meta's one-time check needs one of the company's verify tokens;
+    # Meta's lead notices need the app secret's signature; Google's leads need the
+    # company's own webhook key. Anything else is refused.
+    ("GET", "/api/v1/lead-ads/facebook/webhook"),
+    ("POST", "/api/v1/lead-ads/facebook/webhook"),
+    ("POST", "/api/v1/lead-ads/google/webhook"),
+    # SMS (batch 5d): delivery reports and replies; the random token in the address is the
+    # company's own, and Twilio's requests must also carry Twilio's signature.
+    ("POST", "/api/v1/sms/{token}/status"),
+    ("POST", "/api/v1/sms/{token}/inbound"),
 }
 
 

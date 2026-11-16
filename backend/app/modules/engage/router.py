@@ -164,8 +164,8 @@ StopRule = Literal["reply", "customer", "deal_won", "payment", "closed"]
 
 
 class StepIn(BaseModel):
-    kind: Literal["email", "whatsapp", "task", "wait", "check"]
-    template_id: uuid.UUID | None = None  # email: an email template; whatsapp: a WhatsApp one
+    kind: Literal["email", "whatsapp", "sms", "task", "wait", "check"]
+    template_id: uuid.UUID | None = None  # email / WhatsApp / SMS: a template of that kind
     title: str | None = Field(default=None, max_length=200)  # task
     task_type: Literal["call", "linkedin_connect", "linkedin_message", "other"] = "other"
     due_in_hours: int = Field(default=0, ge=0, le=24 * 30)
@@ -347,6 +347,13 @@ async def set_steps(s_id: uuid.UUID, body: list[StepIn], db: CrmDb, actor: Manag
             t = await db.get(WhatsAppTemplate, st.template_id) if st.template_id else None
             if t is None:
                 raise Invalid(f"Step {i}: choose a WhatsApp template")
+            cfg = {"template_id": str(t.id)}
+        elif st.kind == "sms":  # batch 5d
+            from app.modules.sms.models import SmsTemplate
+
+            t = await db.get(SmsTemplate, st.template_id) if st.template_id else None
+            if t is None or not t.is_active:
+                raise Invalid(f"Step {i}: choose an SMS text")
             cfg = {"template_id": str(t.id)}
         elif st.kind == "task":
             title = " ".join((st.title or "").split())

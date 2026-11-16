@@ -204,15 +204,15 @@ function MergeDialog({ survivor, otherId, onClose }: { survivor: Lead; otherId: 
 // ---------- consent ----------
 const CONSENT_LABEL: Record<string, string> = { opted_in: "Opted in", opted_out: "Opted out" };
 
-/** Email / WhatsApp consent with the rules: opting someone out is one click; recording a fresh
+/** Email / WhatsApp / SMS consent with the rules: opting someone out is one click; recording a fresh
  * opt-in needs a note saying how they agreed. */
 export function ConsentCard({ lead }: { lead: Lead }) {
   const { can } = useAuth();
   const refresh = useRefreshLead();
-  const [optIn, setOptIn] = useState<"email" | "whatsapp" | null>(null);
+  const [optIn, setOptIn] = useState<"email" | "whatsapp" | "sms" | null>(null);
   const [note, setNote] = useState("");
 
-  async function set(channel: "email" | "whatsapp", status: "opted_in" | "opted_out", wording?: string) {
+  async function set(channel: "email" | "whatsapp" | "sms", status: "opted_in" | "opted_out", wording?: string) {
     try {
       const updated = unwrap(
         await api.POST("/api/v1/leads/{lead_id}/consents", {
@@ -231,8 +231,8 @@ export function ConsentCard({ lead }: { lead: Lead }) {
 
   return (
     <div className="space-y-2 text-xs">
-      {(["email", "whatsapp"] as const).map((channel) => {
-        const state = channel === "email" ? lead.email_consent : lead.whatsapp_consent;
+      {(["email", "whatsapp", "sms"] as const).map((channel) => {
+        const state = { email: lead.email_consent, whatsapp: lead.whatsapp_consent, sms: lead.sms_consent }[channel];
         return (
           <div key={channel} className="flex items-center gap-2">
             {state === "opted_out" ? (
@@ -240,7 +240,7 @@ export function ConsentCard({ lead }: { lead: Lead }) {
             ) : (
               <ShieldCheck className={cn("size-3.5", state === "opted_in" ? "text-emerald-600" : "text-muted-foreground")} />
             )}
-            <span className="w-16 text-muted-foreground">{channel === "email" ? "Email" : "WhatsApp"}</span>
+            <span className="w-16 text-muted-foreground">{{ email: "Email", whatsapp: "WhatsApp", sms: "SMS" }[channel]}</span>
             <span className={cn(state === "opted_out" && "font-medium text-destructive")}>{state ? CONSENT_LABEL[state] : "Not asked"}</span>
             {can("leads.edit") && (
               <span className="ml-auto">

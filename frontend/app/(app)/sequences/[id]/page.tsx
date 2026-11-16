@@ -27,6 +27,7 @@ import {
 import { useTags } from "@/lib/organise";
 import { cn } from "@/lib/utils";
 import { useModuleOn } from "@/lib/modules";
+import { useSmsTemplates } from "@/lib/sms";
 import { useWaTemplates, WA_STATUS } from "@/lib/whatsapp";
 
 type Tab = "steps" | "results" | "people" | "settings";
@@ -120,6 +121,7 @@ function fromSaved(seq: Sequence): Draft[] {
 const NEW: Record<StepIn["kind"], Partial<StepIn>> = {
   email: {},
   whatsapp: {},
+  sms: {},
   wait: { hours: 48 },
   task: { title: "Call them", task_type: "call", due_in_hours: 0 },
   check: { check_if: "opened" },
@@ -128,6 +130,7 @@ const NEW: Record<StepIn["kind"], Partial<StepIn>> = {
 function Steps({ seq }: { seq: Sequence }) {
   const templates = useTemplates();
   const waTemplates = useWaTemplates(useModuleOn("whatsapp_number"));
+  const smsTemplates = useSmsTemplates();
   const tags = useTags();
   const fields = useFields();
   const refresh = useRefreshSequences();
@@ -185,6 +188,16 @@ function Steps({ seq }: { seq: Sequence }) {
                     {t.name}
                     {t.status !== "approved" ? ` (${WA_STATUS[t.status]?.[0] ?? t.status})` : ""}
                     {t.category === "marketing" ? " · marketing: opted-in people only" : ""}
+                  </option>
+                ))}
+              </NativeSelect>
+            )}
+            {st.kind === "sms" && (
+              <NativeSelect aria-label={`Step ${i + 1} SMS text`} className="h-8 w-60" value={st.template_id ?? ""} onChange={(e) => set(i, { template_id: e.target.value || null })}>
+                <option value="">Choose an SMS text…</option>
+                {(smsTemplates.data ?? []).filter((t) => t.is_active).map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
                   </option>
                 ))}
               </NativeSelect>
@@ -272,11 +285,12 @@ function Steps({ seq }: { seq: Sequence }) {
       </ol>
       {steps.length === 0 && <p className="text-sm text-muted-foreground">No steps yet. Add the first one below.</p>}
       <div className="flex flex-wrap gap-2">
-        {(["email", "whatsapp", "wait", "task", "check"] as const)
+        {(["email", "whatsapp", "sms", "wait", "task", "check"] as const)
           .filter((k) => k !== "whatsapp" || (waTemplates.data ?? []).length > 0)
+          .filter((k) => k !== "sms" || (smsTemplates.data ?? []).length > 0)
           .map((k) => (
             <Button key={k} size="sm" variant="outline" onClick={() => add(k)}>
-              <Plus /> {{ email: "Email", whatsapp: "WhatsApp", wait: "Wait", task: "Task", check: "Check" }[k]}
+              <Plus /> {{ email: "Email", whatsapp: "WhatsApp", sms: "SMS", wait: "Wait", task: "Task", check: "Check" }[k]}
             </Button>
           ))}
         <Button size="sm" className="ml-auto" onClick={save}>
@@ -340,7 +354,9 @@ function Results({ seq }: { seq: Sequence }) {
                   ? (templates.data?.find((t) => t.id === tid)?.name ?? "Email")
                   : saved?.kind === "whatsapp"
                     ? `WhatsApp: ${waTemplates.data?.find((t) => t.id === tid)?.name ?? "template"}`
-                    : st.kind;
+                    : saved?.kind === "sms"
+                      ? "SMS"
+                      : st.kind;
               const email = st.kind === "email";
               const wa = st.kind === "whatsapp";
               return (

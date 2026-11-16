@@ -48,6 +48,13 @@ class Settings(BaseSettings):
     vapid_subject: str = "mailto:support@versnq.in"
     # Calling with the company's own Twilio (C3): "test" never reaches Twilio (dev, tests)
     twilio_mode: Literal["test", "live"] = "test"
+    # SMS (batch 5d): "test" never reaches MSG91 or Twilio (dev, tests); live on the server
+    sms_mode: Literal["test", "live"] = "test"
+    # Lead ads (batch 5d): "test" never calls Meta's Graph API; META_LEADS_APP_SECRET is
+    # Versnq's own Meta app secret, used to check Meta's webhook signature when a company
+    # hasn't entered its own app's secret.
+    lead_ads_mode: Literal["test", "live"] = "test"
+    meta_leads_app_secret: str | None = None
     # Outside production: connected inboxes (step 9b-3) are read from <dir>/<address>/<folder>/
     # <uid>.eml instead of a real IMAP server, so mailbox sync can be tried without one.
     mailbox_test_dir: str | None = None

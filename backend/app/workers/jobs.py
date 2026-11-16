@@ -278,3 +278,16 @@ async def data_export_sweep_job(ctx) -> int:
             await build_export(t, export_id)
             done += 1
     return done
+
+
+async def lead_ads_job(ctx) -> int:
+    """Every minute: Facebook ad leads whose read from Meta failed are tried again (batch 5d)."""
+    from app.core.tenancy import tenant_session
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.leadads.service import retry_pending
+
+    done = 0
+    for t in await _active_tenants():
+        async with tenant_session(t) as db:
+            done += await retry_pending(db)
+    return done

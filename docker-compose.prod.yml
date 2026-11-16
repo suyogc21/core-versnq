@@ -38,6 +38,9 @@ x-backend-env: &backend-env
   VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-} # phone notifications (C2); empty: off
   VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
   TWILIO_MODE: ${TWILIO_MODE:-live} # calls with each company's own Twilio (C3); test: never reaches Twilio
+  SMS_MODE: ${SMS_MODE:-live} # SMS through each company's MSG91 / Twilio (batch 5d)
+  LEAD_ADS_MODE: ${LEAD_ADS_MODE:-live} # Facebook lead ads fetch leads from Meta (batch 5d)
+  META_LEADS_APP_SECRET: ${META_LEADS_APP_SECRET:-} # Versnq's Meta app secret (lead ads webhooks)
   ALLOW_DEMO_DATA: ${ALLOW_DEMO_DATA:-false} # true: the invented demo companies may be added
   DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
   DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-10}

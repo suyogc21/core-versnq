@@ -3419,6 +3419,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lead-ads/facebook/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Facebook Verify
+         * @description Meta's one-time check when the webhook is set up: echo the challenge for our token.
+         */
+        get: operations["lead-ads-facebook_verify"];
+        put?: never;
+        /**
+         * Facebook Webhook
+         * @description UNVERIFIED shape (Meta "page" object, "leadgen" field):
+         *     {"object": "page", "entry": [{"id": <page id>, "changes": [{"field": "leadgen",
+         *     "value": {"leadgen_id", "page_id", "form_id", "ad_id", "adgroup_id", "created_time"}}]}]}
+         */
+        post: operations["lead-ads-facebook_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-ads/google/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Google Webhook
+         * @description UNVERIFIED shape (Google Ads lead form webhook): {"lead_id", "user_column_data":
+         *     [{"column_id", "column_name", "string_value"}], "google_key", "campaign_id", "form_id",
+         *     "is_test", …}. Google expects a 200 answer.
+         */
+        post: operations["lead-ads-google_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-ads/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sources */
+        get: operations["lead-ads-list_sources"];
+        put?: never;
+        /** Create Source */
+        post: operations["lead-ads-create_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lead-ads/sources/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Source */
+        delete: operations["lead-ads-delete_source"];
+        options?: never;
+        head?: never;
+        /** Update Source */
+        patch: operations["lead-ads-update_source"];
+        trace?: never;
+    };
     "/api/v1/lead-sources": {
         parameters: {
             query?: never;
@@ -4017,6 +4101,24 @@ export interface paths {
         get: operations["sequences-lead_enrolments"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads/{lead_id}/sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lead Sms */
+        get: operations["sms-lead_sms"];
+        put?: never;
+        /** Send Sms */
+        post: operations["sms-send_sms"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5935,6 +6037,94 @@ export interface paths {
         head?: never;
         /** Update Sla Rule */
         patch: operations["routing-update_sla_rule"];
+        trace?: never;
+    };
+    "/api/v1/sms/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Account */
+        get: operations["sms-get_account"];
+        /** Put Account */
+        put: operations["sms-put_account"];
+        post?: never;
+        /** Delete Account */
+        delete: operations["sms-delete_account"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Templates */
+        get: operations["sms-list_templates"];
+        put?: never;
+        /** Create Template */
+        post: operations["sms-create_template"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/templates/{template_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Template */
+        put: operations["sms-update_template"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/{token}/inbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inbound */
+        post: operations["sms-inbound"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/{token}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delivery Status */
+        post: operations["sms-delivery_status"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/storage": {
@@ -8688,7 +8878,7 @@ export interface components {
              * Channel
              * @enum {string}
              */
-            channel: "email" | "whatsapp";
+            channel: "email" | "whatsapp" | "sms";
             /**
              * Status
              * @enum {string}
@@ -10951,6 +11141,115 @@ export interface components {
             /** Updated At */
             updated_at?: string | null;
         };
+        /** LeadAdSourceCreated */
+        LeadAdSourceCreated: {
+            /**
+             * Failed
+             * @default 0
+             */
+            failed: number;
+            /** Google Key */
+            google_key?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Lead At */
+            last_lead_at: string | null;
+            /**
+             * Leads
+             * @default 0
+             */
+            leads: number;
+            /** Name */
+            name: string;
+            /** Own App Secret */
+            own_app_secret: boolean;
+            /** Page Id */
+            page_id: string | null;
+            /** Provider */
+            provider: string;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Stage Id */
+            stage_id: string | null;
+            /** Verify Token */
+            verify_token: string | null;
+            /** Webhook Url */
+            webhook_url: string;
+        };
+        /** LeadAdSourceIn */
+        LeadAdSourceIn: {
+            /** App Secret */
+            app_secret?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Page Id */
+            page_id?: string | null;
+            /** Page Token */
+            page_token?: string | null;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "facebook" | "google";
+            /** Source Id */
+            source_id?: string | null;
+            /** Stage Id */
+            stage_id?: string | null;
+        };
+        /** LeadAdSourceOut */
+        LeadAdSourceOut: {
+            /**
+             * Failed
+             * @default 0
+             */
+            failed: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Lead At */
+            last_lead_at: string | null;
+            /**
+             * Leads
+             * @default 0
+             */
+            leads: number;
+            /** Name */
+            name: string;
+            /** Own App Secret */
+            own_app_secret: boolean;
+            /** Page Id */
+            page_id: string | null;
+            /** Provider */
+            provider: string;
+            /**
+             * Source Id
+             * Format: uuid
+             */
+            source_id: string;
+            /** Stage Id */
+            stage_id: string | null;
+            /** Verify Token */
+            verify_token: string | null;
+            /** Webhook Url */
+            webhook_url: string;
+        };
         /** LeadBasics */
         LeadBasics: {
             /** Can Open */
@@ -11272,6 +11571,8 @@ export interface components {
             score: number;
             /** Score Band */
             score_band?: string | null;
+            /** Sms Consent */
+            sms_consent?: string | null;
             /**
              * Source Id
              * Format: uuid
@@ -13565,6 +13866,106 @@ export interface components {
             /** Within Minutes */
             within_minutes?: number | null;
         };
+        /** SmsAccountIn */
+        SmsAccountIn: {
+            /** Account Sid */
+            account_sid?: string | null;
+            /** Auth */
+            auth?: string | null;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "msg91" | "twilio" | "test";
+            /** Sender */
+            sender: string;
+        };
+        /** SmsAccountOut */
+        SmsAccountOut: {
+            /** Account Sid */
+            account_sid?: string | null;
+            /** Connected */
+            connected: boolean;
+            /** Inbound Url */
+            inbound_url?: string | null;
+            /** Provider */
+            provider?: string | null;
+            /** Sender */
+            sender?: string | null;
+            /** Status Url */
+            status_url?: string | null;
+            /** Test Mode */
+            test_mode: boolean;
+        };
+        /** SmsOut */
+        SmsOut: {
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Direction */
+            direction: string;
+            /** Error */
+            error: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /** Status */
+            status: string;
+        };
+        /** SmsSendIn */
+        SmsSendIn: {
+            /** Body */
+            body?: string | null;
+            /** Template Id */
+            template_id?: string | null;
+        };
+        /** SmsTemplateIn */
+        SmsTemplateIn: {
+            /** Body */
+            body: string;
+            /** Dlt Template Id */
+            dlt_template_id?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Provider Template Id */
+            provider_template_id?: string | null;
+        };
+        /** SmsTemplateOut */
+        SmsTemplateOut: {
+            /** Body */
+            body: string;
+            /** Dlt Template Id */
+            dlt_template_id?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Provider Template Id */
+            provider_template_id?: string | null;
+        };
         /**
          * SortingOut
          * @description One reply's current sorting (shown in the thread).
@@ -13795,7 +14196,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "email" | "whatsapp" | "task" | "wait" | "check";
+            kind: "email" | "whatsapp" | "sms" | "task" | "wait" | "check";
             /** Tag Id */
             tag_id?: string | null;
             /**
@@ -23030,6 +23431,200 @@ export interface operations {
             };
         };
     };
+    "lead-ads-facebook_verify": {
+        parameters: {
+            query?: {
+                "hub.mode"?: string | null;
+                "hub.verify_token"?: string | null;
+                "hub.challenge"?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "lead-ads-facebook_webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    "lead-ads-google_webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    "lead-ads-list_sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadAdSourceOut"][];
+                };
+            };
+        };
+    };
+    "lead-ads-create_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadAdSourceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadAdSourceCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "lead-ads-delete_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "lead-ads-update_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadAdSourceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadAdSourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "crm-setup-list_sources": {
         parameters: {
             query?: never;
@@ -24421,6 +25016,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnrolmentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-lead_sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-send_sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsSendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsOut"];
                 };
             };
             /** @description Validation Error */
@@ -28758,6 +29419,225 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SlaRuleOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-get_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsAccountOut"];
+                };
+            };
+        };
+    };
+    "sms-put_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsAccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsAccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-delete_account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "sms-list_templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsTemplateOut"][];
+                };
+            };
+        };
+    };
+    "sms-create_template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsTemplateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsTemplateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-update_template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsTemplateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsTemplateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-inbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sms-delivery_status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

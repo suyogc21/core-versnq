@@ -154,6 +154,7 @@ class LeadOut(BaseModel):
     possible_duplicate_of_id: uuid.UUID | None
     email_consent: str | None
     whatsapp_consent: str | None
+    sms_consent: str | None = None
     created_at: datetime
     updated_at: datetime
     version: int

@@ -1,4 +1,4 @@
-import { Activity, Boxes, Building2, Code, Inbox, Layers, Lock, Mail, MessageCircle, Phone, ReceiptText, Shield, Tags, Users, UsersRound, Workflow } from "lucide-react";
+import { Activity, Boxes, Building2, Code, Inbox, Layers, Lock, Mail, Megaphone, MessageCircle, MessageSquare, Phone, ReceiptText, Shield, Tags, Users, UsersRound, Workflow } from "lucide-react";
 
 /** Every settings page, its group and who may open it. The sidebar shows one "Settings"
  * entry when any of these is allowed; typing an address you may not use is refused. */
@@ -24,6 +24,8 @@ export const SETTINGS_PAGES: SettingsPage[] = [
   { href: "/settings/lead-capture", title: "Lead capture", hint: "Web forms, who gets new leads, response times, duplicates", group: "Getting leads in", permission: "crm.configure", icon: Inbox },
   { href: "/settings/inboxes", title: "Connected inboxes", hint: "Connected mailboxes and WhatsApp extensions, copy-in address, addresses never synced", group: "People", permission: "mailboxes.manage", icon: Mail },
   { href: "/settings/whatsapp", title: "WhatsApp", hint: "The company's official number, its templates, automatic replies and STOP words", group: "Getting leads in", permission: "whatsapp.manage", module: "whatsapp_number", icon: MessageCircle },
+  { href: "/settings/lead-ads", title: "Lead ads", hint: "Leads from Facebook, Instagram and Google Ads lead forms, straight in", group: "Getting leads in", permission: "crm.configure", icon: Megaphone },
+  { href: "/settings/sms", title: "SMS", hint: "Your SMS provider (MSG91 or Twilio), SMS texts and DLT template ids", group: "Getting leads in", permission: "settings.manage", icon: MessageSquare },
   { href: "/settings/calls", title: "Calls", hint: "Recording calls, how long recordings are kept, calls from unknown numbers", group: "Getting leads in", permission: "settings.manage", icon: Phone },
   { href: "/settings/reply-categories", title: "Reply categories", hint: "How replies are sorted (by ACE or a person) and what happens for each: lead, draft, stop", group: "Automation", permission: "settings.manage", icon: Tags },
   { href: "/settings/automations", title: "Automations", hint: "When something happens, do something: tasks, tags, owners, stages, alerts, webhooks", group: "Automation", permission: "crm.configure", icon: Workflow },

@@ -504,6 +504,40 @@ async def _whatsapp(
     return await skip(msg.error or "not sent") if tries >= MAX_SEND_TRIES else "retry"
 
 
+async def _sms(
+    db: AsyncSession, e: Enrolment, seq: Sequence, step: SequenceStep, lead: Lead
+) -> str:
+    """Send one SMS step (batch 5d). A step a rule refuses (no number, opted out, no provider)
+    is skipped and logged; a provider failure is retried, then skipped."""
+    from app.modules.sms import service as SMS
+    from app.modules.sms.models import SmsMessage, SmsTemplate
+
+    async def skip(why: str) -> str:
+        await L.log(db, lead, "sms_sent", f"{seq.name}: SMS skipped — {why}", None,
+                    {"sequence_id": str(seq.id), "skipped": True})  # fmt: skip
+        return "skipped"
+
+    tpl = await db.get(SmsTemplate, uuid.UUID(step.config["template_id"]))
+    if tpl is None or not tpl.is_active:
+        return await skip("its SMS text was deleted or switched off")
+    try:
+        msg = await SMS.send(db, lead, template=tpl, enrolment_id=e.id, step_id=step.id)
+    except Invalid as err:
+        return await skip(str(err.detail)[:200])
+    if msg.status != "failed":
+        return "sent"
+    tries = await db.scalar(
+        select(func.count())
+        .select_from(SmsMessage)
+        .where(
+            SmsMessage.enrolment_id == e.id,
+            SmsMessage.step_id == step.id,
+            SmsMessage.status == "failed",
+        )
+    )
+    return await skip(msg.error or "not sent") if tries >= MAX_SEND_TRIES else "retry"
+
+
 async def _task(db: AsyncSession, seq: Sequence, step: SequenceStep, lead: Lead) -> None:
     cfg = step.config
     if not lead.owner_user_id:
@@ -605,6 +639,17 @@ async def advance(db: AsyncSession, e: Enrolment, tenant: Tenant, settings: Tena
                 e.next_run_at = _tomorrow_open(engage, tz)
                 return
             outcome = await _whatsapp(db, e, seq, step, lead)
+            if outcome == "retry":
+                e.next_run_at = now() + RETRY_AFTER
+                return
+            e.position += 1
+            continue
+        if step.kind == "sms":  # batch 5d: inside quiet hours, opt-outs honoured
+            opens = next_open(now(), engage, tz)
+            if opens > now():
+                e.next_run_at = opens
+                return
+            outcome = await _sms(db, e, seq, step, lead)
             if outcome == "retry":
                 e.next_run_at = now() + RETRY_AFTER
                 return

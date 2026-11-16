@@ -105,7 +105,7 @@ async def merged_into(lead_id: uuid.UUID, db: CrmDb, actor: ActiveUser) -> dict:
 
 # ---------- consent ----------
 class ConsentIn(BaseModel):
-    channel: Literal["email", "whatsapp"]
+    channel: Literal["email", "whatsapp", "sms"]
     status: Literal["opted_in", "opted_out"]
     wording: str | None = Field(default=None, max_length=500)
 

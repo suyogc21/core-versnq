@@ -16,6 +16,7 @@ import { ScoreBadge, TagEditor } from "@/components/crm/tags";
 import { ConsentCard, DuplicateBanner, OrganisationCard } from "@/components/crm/lead-extras";
 import { LeadEmails } from "@/components/crm/lead-emails";
 import { LeadSequences } from "@/components/crm/lead-sequences";
+import { LeadSms } from "@/components/crm/lead-sms";
 import { LinksCard } from "@/components/crm/links-card";
 import { ActionButton, EditLead, Facts, Highlights, LeadTasks, Timeline, TIMELINE_FILTERS } from "@/components/crm/lead-panel";
 import { LogActivityForm } from "@/components/crm/log-activity";
@@ -361,6 +362,11 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
           <Section title="Next follow-up">
             <FollowUpCard lead={l} />
           </Section>
+          {can("leads.edit") && !l.erased_at && (
+            <Section title="SMS">
+              <LeadSms lead={l} />
+            </Section>
+          )}
           {can("deals.edit") && (
             <Section title={label("deal", true)}>
               <DealsCard leadId={l.id} leadName={l.display_name} />
