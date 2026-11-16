@@ -234,11 +234,27 @@ function EraseLead({ lead }: { lead: Lead }) {
       toast.error((e as Error).message);
     }
   }
+  async function download() {
+    try {
+      const data = unwrap(await api.GET("/api/v1/leads/{lead_id}/personal-data", { params: { path: { lead_id: lead.id } } }));
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      a.download = `personal-data-${lead.id}.json`;
+      a.click();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
   if (!open)
     return (
-      <button type="button" className="text-xs text-muted-foreground underline hover:text-destructive" onClick={() => setOpen(true)}>
-        Erase this person…
-      </button>
+      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+        <button type="button" className="underline hover:text-foreground" onClick={download}>
+          Download this person&apos;s data
+        </button>
+        <button type="button" className="underline hover:text-destructive" onClick={() => setOpen(true)}>
+          Erase this person…
+        </button>
+      </div>
     );
   return (
     <div className="space-y-2 rounded-md border border-destructive/40 p-3 text-sm">

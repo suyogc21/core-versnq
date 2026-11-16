@@ -256,3 +256,37 @@ async def erase_lead(db: AsyncSession, lead) -> None:
     await db.flush()
     for p in paths:
         storage.remove(p)
+
+
+async def person_data(db: AsyncSession, lead) -> dict:
+    """One person's data as plain JSON (no secrets, no internal-only columns)."""
+    tables = Base.metadata.tables
+    skip = {"tenant_id", "version", "leak_alerted_at", "org_suggestions_dismissed"}
+
+    def clean(row) -> dict:
+        return {k: _json(v) for k, v in row._mapping.items() if k not in skip and not _secret(k)}
+
+    async def rows(name: str, where) -> list[dict]:
+        t = tables[name]
+        result = await db.execute(select(t).where(where(t)).limit(5000))
+        return [clean(r) for r in result]
+
+    lid = lead.id
+    lead_row = (await db.execute(select(tables["leads"]).where(tables["leads"].c.id == lid))).one()
+    by_lead = lambda t: t.c.lead_id == lid  # noqa: E731
+    return {
+        "exported_at": now().isoformat(),
+        "person": clean(lead_row),
+        "contact_points": await rows("lead_identities", by_lead),
+        "consents": await rows("consents", by_lead),
+        "timeline": await rows("activities", by_lead),
+        "messages": await rows("messages", by_lead),
+        "calls": [
+            {k: v for k, v in c.items() if not k.startswith("recording_")}
+            for c in await rows("calls", by_lead)
+        ],
+        "deals": await rows("deals", by_lead),
+        "invoices": await rows("invoices", by_lead),
+        "payments": await rows("payments", by_lead),
+        "tasks": await rows("tasks", by_lead),
+    }

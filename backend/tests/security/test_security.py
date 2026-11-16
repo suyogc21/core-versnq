@@ -206,3 +206,18 @@ async def test_erasing_a_person_removes_their_data_and_tells_connected_systems(c
         events = (await db.scalars(select(Event.type).where(Event.type == "lead.erased"))).all()
     assert row.display_name == "Erased person" and row.first_name is None and row.erased_at
     assert row.primary_phone is None and left == [0, 0, 0] and events == ["lead.erased"]
+
+
+async def test_a_persons_data_for_their_access_request(client_for):
+    tenant_id, c, admin = await _company(client_for)
+    _, sources = await setup_ids(c, admin)
+    lead = (await new_lead(c, admin, sources["Website"], first_name="Meera")).json()
+    _, rep = await login_as(tenant_id, "sales_user")
+
+    r = await c.get(f"/api/v1/leads/{lead['id']}/personal-data", headers=admin)
+    by_rep = await c.get(f"/api/v1/leads/{lead['id']}/personal-data", headers=rep)
+
+    assert r.status_code == 200 and by_rep.status_code == 403
+    body = r.json()
+    assert body["person"]["first_name"] == "Meera" and "tenant_id" not in body["person"]
+    assert body["contact_points"] and any(a["type_key"] for a in body["timeline"])

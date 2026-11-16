@@ -327,7 +327,27 @@
         "IN": "GSTIN",
         "AE": "TRN",
         "US": "EIN",
-        "*": "Tax ID"
+        "*": "Tax ID",
+        "SA": "VAT number",
+        "OM": "VATIN",
+        "BH": "VAT number",
+        "GB": "VAT number",
+        "DE": "USt-IdNr.",
+        "FR": "N° TVA",
+        "NL": "btw-id",
+        "IE": "VAT number",
+        "ES": "NIF-IVA",
+        "IT": "Partita IVA",
+        "BE": "BTW/TVA",
+        "AT": "UID",
+        "PT": "NIF",
+        "SE": "Momsreg.nr",
+        "DK": "CVR",
+        "PL": "NIP",
+        "SG": "GST reg. no.",
+        "AU": "ABN",
+        "CA": "GST/HST no.",
+        "NZ": "GST no."
       },
       "tax_rates": {
         "IN": [
@@ -387,6 +407,387 @@
           }
         ],
         "*": [
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "SA": [
+          {
+            "name": "VAT 15%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 1500
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "OM": [
+          {
+            "name": "VAT 5%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 500
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "BH": [
+          {
+            "name": "VAT 10%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 1000
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "GB": [
+          {
+            "name": "VAT 20%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2000
+              }
+            ]
+          },
+          {
+            "name": "VAT 5%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 500
+              }
+            ]
+          },
+          {
+            "name": "VAT 0%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 0
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "DE": [
+          {
+            "name": "VAT 19%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 1900
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "FR": [
+          {
+            "name": "VAT 20%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2000
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "NL": [
+          {
+            "name": "VAT 21%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2100
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "IE": [
+          {
+            "name": "VAT 23%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2300
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "ES": [
+          {
+            "name": "VAT 21%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2100
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "IT": [
+          {
+            "name": "VAT 22%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2200
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "BE": [
+          {
+            "name": "VAT 21%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2100
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "AT": [
+          {
+            "name": "VAT 20%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2000
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "PT": [
+          {
+            "name": "VAT 23%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2300
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "SE": [
+          {
+            "name": "VAT 25%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2500
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "DK": [
+          {
+            "name": "VAT 25%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2500
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "PL": [
+          {
+            "name": "VAT 23%",
+            "parts": [
+              {
+                "name": "VAT",
+                "rate_bp": 2300
+              }
+            ]
+          },
+          {
+            "name": "Reverse charge (EU B2B)",
+            "parts": []
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "SG": [
+          {
+            "name": "GST 9%",
+            "parts": [
+              {
+                "name": "GST",
+                "rate_bp": 900
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "AU": [
+          {
+            "name": "GST 10%",
+            "parts": [
+              {
+                "name": "GST",
+                "rate_bp": 1000
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "CA": [
+          {
+            "name": "GST 5%",
+            "parts": [
+              {
+                "name": "GST",
+                "rate_bp": 500
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "NZ": [
+          {
+            "name": "GST 15%",
+            "parts": [
+              {
+                "name": "GST",
+                "rate_bp": 1500
+              }
+            ]
+          },
+          {
+            "name": "No tax",
+            "parts": []
+          }
+        ],
+        "US": [
+          {
+            "name": "Sales tax (set your rate)",
+            "parts": [
+              {
+                "name": "Sales tax",
+                "rate_bp": 0
+              }
+            ]
+          },
           {
             "name": "No tax",
             "parts": []

@@ -20435,6 +20435,39 @@
         "title": "TaxPatch",
         "type": "object"
       },
+      "TaxPreset": {
+        "properties": {
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "rates": {
+            "items": {
+              "$ref": "#/components/schemas/TaxIn"
+            },
+            "title": "Rates",
+            "type": "array"
+          },
+          "tax_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Label"
+          }
+        },
+        "required": [
+          "country",
+          "tax_label",
+          "rates"
+        ],
+        "title": "TaxPreset",
+        "type": "object"
+      },
       "TeamDashboard": {
         "properties": {
           "current": {
@@ -40291,6 +40324,57 @@
         ]
       }
     },
+    "/api/v1/leads/{lead_id}/personal-data": {
+      "get": {
+        "description": "Everything Core keeps about one person, for their access request (GDPR Art. 15 / 20,\nDPDP right to information): details, contact points, consents, timeline, messages, calls\n(not the audio), deals and invoices.",
+        "operationId": "security-personal_data",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Security-Personal Data",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Personal Data",
+        "tags": [
+          "security"
+        ]
+      }
+    },
     "/api/v1/leads/{lead_id}/score": {
       "get": {
         "operationId": "organise-lead_score",
@@ -42312,6 +42396,89 @@
           }
         ],
         "summary": "Save Money Settings",
+        "tags": [
+          "money"
+        ]
+      }
+    },
+    "/api/v1/money/tax-presets": {
+      "get": {
+        "description": "Ready-made tax rates per country (finishing plan, batch 6). Standard rates as known on\nNov 16, 2026: the company checks them before invoicing; every rate stays editable.",
+        "operationId": "money-tax_presets",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TaxPreset"
+                  },
+                  "title": "Response Money-Tax Presets",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Tax Presets",
+        "tags": [
+          "money"
+        ]
+      }
+    },
+    "/api/v1/money/tax-presets/{country}": {
+      "post": {
+        "description": "Adds a country's rates the company doesn't have yet (by name); nothing is changed.",
+        "operationId": "money-add_tax_preset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "country",
+            "required": true,
+            "schema": {
+              "title": "Country",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TaxOut"
+                  },
+                  "title": "Response Money-Add Tax Preset",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Tax Preset",
         "tags": [
           "money"
         ]

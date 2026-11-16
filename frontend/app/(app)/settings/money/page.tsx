@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -256,6 +256,46 @@ function Taxes() {
       <p className="text-xs text-muted-foreground">
         A rate can have parts, each shown on the invoice: GST 18% is CGST 9% + SGST 9%. Changing a rate never changes invoices already made.
       </p>
+      <CountryPresets />
+    </div>
+  );
+}
+
+/** Ready-made rates per country (finishing plan, batch 6). */
+function CountryPresets() {
+  const save = useSave();
+  const presets = useQuery({ queryKey: ["tax-presets"], queryFn: async () => unwrap(await api.GET("/api/v1/money/tax-presets")) });
+  const [country, setCountry] = useState("");
+  const names = typeof Intl !== "undefined" && "DisplayNames" in Intl ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
+  const chosen = presets.data?.find((p) => p.country === country);
+  if (!presets.data?.length) return null;
+  return (
+    <div className="surface space-y-2 p-3 text-sm">
+      <div className="font-medium">Add a country&apos;s rates</div>
+      <div className="flex flex-wrap items-center gap-2">
+        <select aria-label="Country" className="h-9 rounded-md border bg-background px-2" value={country} onChange={(e) => setCountry(e.target.value)}>
+          <option value="">Choose a country…</option>
+          {presets.data.map((p) => (
+            <option key={p.country} value={p.country}>
+              {names?.of(p.country) ?? p.country}
+            </option>
+          ))}
+        </select>
+        <Button
+          variant="outline"
+          disabled={!country}
+          onClick={() => save(async () => unwrap(await api.POST("/api/v1/money/tax-presets/{country}", { params: { path: { country } } })), "Rates added")}
+        >
+          Add
+        </Button>
+      </div>
+      {chosen && (
+        <p className="text-muted-foreground">
+          {chosen.rates.map((r) => r.name).join(", ")}
+          {chosen.tax_label ? ` · tax number shown as “${chosen.tax_label}”` : ""}. Rates you already have are left as they are.
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">Standard rates as of November 2026. Check them with your accountant before invoicing; every rate can be edited.</p>
     </div>
   );
 }

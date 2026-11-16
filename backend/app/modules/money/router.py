@@ -41,6 +41,8 @@ from app.modules.money.models import (
 from app.modules.money.setup import ensure_money_setup
 from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
+from app.platform.models import Tenant
+from app.platform.packs import load_pack
 
 MONEY = [*CRM, require_module("money")]
 router = APIRouter(prefix="/api/v1", tags=["money"], dependencies=MONEY)
@@ -254,6 +256,54 @@ async def create_tax_rate(body: TaxIn, db: MoneyDb, actor: Settings):
     await db.flush()
     await audit(db, actor, "tax_rate.created", "tax_rate", rate.id, after={"name": rate.name})
     return rate
+
+
+class TaxPreset(BaseModel):
+    country: str
+    tax_label: str | None
+    rates: list[TaxIn]
+
+
+@router.get("/money/tax-presets", response_model=list[TaxPreset])
+async def tax_presets(db: MoneyDb, actor: Settings):
+    """Ready-made tax rates per country (finishing plan, batch 6). Standard rates as known on
+    Nov 16, 2026: the company checks them before invoicing; every rate stays editable."""
+    tenant = await db.get(Tenant, actor.user.tenant_id)
+    money = load_pack(tenant.industry_pack or "generic").crm.money
+    return [
+        TaxPreset(
+            country=cc,
+            tax_label=money.tax_labels.get(cc),
+            rates=[TaxIn(name=r.name, parts=r.parts) for r in rates],
+        )  # fmt: skip
+        for cc, rates in sorted(money.tax_rates.items())
+        if cc != "*"
+    ]
+
+
+@router.post("/money/tax-presets/{country}", response_model=list[TaxOut])
+async def add_tax_preset(country: str, db: MoneyDb, actor: Settings):
+    """Adds a country's rates the company doesn't have yet (by name); nothing is changed."""
+    tenant = await db.get(Tenant, actor.user.tenant_id)
+    money = load_pack(tenant.industry_pack or "generic").crm.money
+    rates = money.tax_rates.get(country.upper())
+    if not rates or country == "*":
+        raise NotFound("No ready-made rates for that country")
+    have = {n.lower() for n in (await db.scalars(select(TaxRate.name))).all()}
+    top = await db.scalar(select(func.coalesce(func.max(TaxRate.position), -1)))
+    added = []
+    for r in rates:
+        if r.name.lower() in have:
+            continue
+        top += 1
+        rate = TaxRate(tenant_id=actor.user.tenant_id, name=r.name,
+                       parts=calc.check_parts(list(r.parts)), position=top)  # fmt: skip
+        db.add(rate)
+        added.append(rate.name)
+    await db.flush()
+    await audit(db, actor, "tax_rate.preset_added", "tenant", actor.user.tenant_id,
+                after={"country": country.upper(), "added": added})  # fmt: skip
+    return (await db.scalars(select(TaxRate).order_by(TaxRate.position))).all()
 
 
 @router.patch("/money/tax-rates/{rate_id}", response_model=TaxOut)

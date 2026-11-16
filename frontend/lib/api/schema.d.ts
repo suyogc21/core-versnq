@@ -3989,6 +3989,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/personal-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Personal Data
+         * @description Everything Core keeps about one person, for their access request (GDPR Art. 15 / 20,
+         *     DPDP right to information): details, contact points, consents, timeline, messages, calls
+         *     (not the audio), deals and invoices.
+         */
+        get: operations["security-personal_data"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/score": {
         parameters: {
             query?: never;
@@ -4652,6 +4674,47 @@ export interface paths {
         /** Save Money Settings */
         put: operations["money-save_money_settings"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/tax-presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tax Presets
+         * @description Ready-made tax rates per country (finishing plan, batch 6). Standard rates as known on
+         *     Nov 16, 2026: the company checks them before invoicing; every rate stays editable.
+         */
+        get: operations["money-tax_presets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/money/tax-presets/{country}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Tax Preset
+         * @description Adds a country's rates the company doesn't have yet (by name); nothing is changed.
+         */
+        post: operations["money-add_tax_preset"];
         delete?: never;
         options?: never;
         head?: never;
@@ -14066,6 +14129,15 @@ export interface components {
             name?: string | null;
             /** Parts */
             parts?: components["schemas"]["TaxPart"][] | null;
+        };
+        /** TaxPreset */
+        TaxPreset: {
+            /** Country */
+            country: string;
+            /** Rates */
+            rates: components["schemas"]["TaxIn"][];
+            /** Tax Label */
+            tax_label: string | null;
         };
         /** TeamDashboard */
         TeamDashboard: {
@@ -24372,6 +24444,39 @@ export interface operations {
             };
         };
     };
+    "security-personal_data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "organise-lead_score": {
         parameters: {
             query?: never;
@@ -25692,6 +25797,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MoneySettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "money-tax_presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxPreset"][];
+                };
+            };
+        };
+    };
+    "money-add_tax_preset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                country: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxOut"][];
                 };
             };
             /** @description Validation Error */

@@ -271,3 +271,14 @@ async def erase(lead_id: uuid.UUID, body: EraseIn, db: TenantDb, actor: Admin) -
     await audit(db, actor, "lead.erased", "lead", lead.id)
     # So every connected system (ACE, webhooks) deletes its own copy too.
     await emit(db, lead.tenant_id, "lead.erased", {"lead_id": str(lead.id)})
+
+
+@router.get("/leads/{lead_id}/personal-data")
+async def personal_data(lead_id: uuid.UUID, db: TenantDb, actor: Admin) -> dict:
+    """Everything Core keeps about one person, for their access request (GDPR Art. 15 / 20,
+    DPDP right to information): details, contact points, consents, timeline, messages, calls
+    (not the audio), deals and invoices."""
+    lead = await L.get_visible(db, actor, lead_id)
+    out = await S.person_data(db, lead)
+    await audit(db, actor, "lead.personal_data_exported", "lead", lead.id)
+    return out
