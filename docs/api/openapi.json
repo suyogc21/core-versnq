@@ -1574,6 +1574,37 @@
         "title": "AttachmentOut",
         "type": "object"
       },
+      "Audience": {
+        "properties": {
+          "customers_only": {
+            "default": false,
+            "title": "Customers Only",
+            "type": "boolean"
+          },
+          "filter": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "lead filters (tag, stage_id, brand_id\u2026)",
+            "title": "Filter",
+            "type": "object"
+          },
+          "view_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "a saved view of leads",
+            "title": "View Id"
+          }
+        },
+        "title": "Audience",
+        "type": "object"
+      },
       "AutomationIn": {
         "properties": {
           "actions": {
@@ -5409,6 +5440,24 @@
           }
         },
         "title": "CopyInSettings",
+        "type": "object"
+      },
+      "CountOut": {
+        "properties": {
+          "matching": {
+            "title": "Matching",
+            "type": "integer"
+          },
+          "reachable": {
+            "title": "Reachable",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "matching",
+          "reachable"
+        ],
+        "title": "CountOut",
         "type": "object"
       },
       "CrmRules": {
@@ -14499,6 +14548,376 @@
         "title": "NewLeadIn",
         "type": "object"
       },
+      "NewsletterIn": {
+        "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/Audience",
+            "default": {
+              "customers_only": false,
+              "filter": {}
+            }
+          },
+          "body": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "from_email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Email"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "mailbox_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mailbox Id"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "default": "mailboxes",
+            "enum": [
+              "mailboxes",
+              "postmark"
+            ],
+            "title": "Path",
+            "type": "string"
+          },
+          "preheader": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preheader"
+          },
+          "subject": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "subject",
+          "body"
+        ],
+        "title": "NewsletterIn",
+        "type": "object"
+      },
+      "NewsletterOut": {
+        "properties": {
+          "audience": {
+            "additionalProperties": true,
+            "title": "Audience",
+            "type": "object"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "from_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Email"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mailbox_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mailbox Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "preheader": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preheader"
+          },
+          "report": {
+            "$ref": "#/components/schemas/Report",
+            "default": {
+              "bounced": 0,
+              "clicked": 0,
+              "failed": 0,
+              "opened": 0,
+              "queued": 0,
+              "recipients": 0,
+              "sent": 0,
+              "skipped": 0,
+              "unsubscribed": 0
+            }
+          },
+          "send_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Send At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subject",
+          "preheader",
+          "body",
+          "path",
+          "mailbox_id",
+          "from_name",
+          "from_email",
+          "audience",
+          "status",
+          "send_at",
+          "started_at",
+          "finished_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "NewsletterOut",
+        "type": "object"
+      },
+      "NewsletterPatch": {
+        "properties": {
+          "audience": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Audience"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "body": {
+            "anyOf": [
+              {
+                "maxLength": 50000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "from_email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Email"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "mailbox_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mailbox Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "enum": [
+                  "mailboxes",
+                  "postmark"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "preheader": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preheader"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "title": "NewsletterPatch",
+        "type": "object"
+      },
       "NoteOut": {
         "properties": {
           "body": {
@@ -16269,6 +16688,94 @@
         "title": "ReasonIn",
         "type": "object"
       },
+      "RecipientOut": {
+        "properties": {
+          "bounced": {
+            "title": "Bounced",
+            "type": "boolean"
+          },
+          "clicked": {
+            "title": "Clicked",
+            "type": "boolean"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "opened": {
+            "title": "Opened",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "unsubscribed": {
+            "title": "Unsubscribed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "lead_id",
+          "name",
+          "email",
+          "status",
+          "reason",
+          "sent_at",
+          "opened",
+          "clicked",
+          "unsubscribed",
+          "bounced"
+        ],
+        "title": "RecipientOut",
+        "type": "object"
+      },
       "RecordActivityOut": {
         "properties": {
           "actor_id": {
@@ -17053,6 +17560,57 @@
           "body"
         ],
         "title": "ReplyOut",
+        "type": "object"
+      },
+      "Report": {
+        "properties": {
+          "bounced": {
+            "default": 0,
+            "title": "Bounced",
+            "type": "integer"
+          },
+          "clicked": {
+            "default": 0,
+            "title": "Clicked",
+            "type": "integer"
+          },
+          "failed": {
+            "default": 0,
+            "title": "Failed",
+            "type": "integer"
+          },
+          "opened": {
+            "default": 0,
+            "title": "Opened",
+            "type": "integer"
+          },
+          "queued": {
+            "default": 0,
+            "title": "Queued",
+            "type": "integer"
+          },
+          "recipients": {
+            "default": 0,
+            "title": "Recipients",
+            "type": "integer"
+          },
+          "sent": {
+            "default": 0,
+            "title": "Sent",
+            "type": "integer"
+          },
+          "skipped": {
+            "default": 0,
+            "title": "Skipped",
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "default": 0,
+            "title": "Unsubscribed",
+            "type": "integer"
+          }
+        },
+        "title": "Report",
         "type": "object"
       },
       "ReportOut": {
@@ -18168,6 +18726,25 @@
           "your_ip"
         ],
         "title": "SecuritySettingsOut",
+        "type": "object"
+      },
+      "SendIn": {
+        "properties": {
+          "send_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "empty = now",
+            "title": "Send At"
+          }
+        },
+        "title": "SendIn",
         "type": "object"
       },
       "SendingSettings": {
@@ -42446,6 +43023,497 @@
         "summary": "Update Tax Rate",
         "tags": [
           "money"
+        ]
+      }
+    },
+    "/api/v1/newsletters": {
+      "get": {
+        "operationId": "newsletters-list_newsletters",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NewsletterOut"
+                  },
+                  "title": "Response Newsletters-List Newsletters",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Newsletters",
+        "tags": [
+          "newsletters"
+        ]
+      },
+      "post": {
+        "operationId": "newsletters-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsletterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsletterOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create",
+        "tags": [
+          "newsletters"
+        ]
+      }
+    },
+    "/api/v1/newsletters/audience-count": {
+      "post": {
+        "operationId": "newsletters-audience_count",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Audience"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Audience Count",
+        "tags": [
+          "newsletters"
+        ]
+      }
+    },
+    "/api/v1/newsletters/{nl_id}": {
+      "delete": {
+        "operationId": "newsletters-delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete",
+        "tags": [
+          "newsletters"
+        ]
+      },
+      "get": {
+        "operationId": "newsletters-get_newsletter",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsletterOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Newsletter",
+        "tags": [
+          "newsletters"
+        ]
+      },
+      "patch": {
+        "operationId": "newsletters-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsletterPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsletterOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update",
+        "tags": [
+          "newsletters"
+        ]
+      }
+    },
+    "/api/v1/newsletters/{nl_id}/cancel": {
+      "post": {
+        "description": "Stops it: copies not sent yet are not sent.",
+        "operationId": "newsletters-cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsletterOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cancel",
+        "tags": [
+          "newsletters"
+        ]
+      }
+    },
+    "/api/v1/newsletters/{nl_id}/recipients": {
+      "get": {
+        "operationId": "newsletters-recipients",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecipientOut"
+                  },
+                  "title": "Response Newsletters-Recipients",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Recipients",
+        "tags": [
+          "newsletters"
+        ]
+      }
+    },
+    "/api/v1/newsletters/{nl_id}/send": {
+      "post": {
+        "description": "Fixes the list now; sends now or at `send_at`.",
+        "operationId": "newsletters-send",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsletterOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send",
+        "tags": [
+          "newsletters"
+        ]
+      }
+    },
+    "/api/v1/newsletters/{nl_id}/test": {
+      "post": {
+        "description": "A copy to you, filled with a sample lead's details.",
+        "operationId": "newsletters-test_send",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nl_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Nl Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Send",
+        "tags": [
+          "newsletters"
         ]
       }
     },

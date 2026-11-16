@@ -44,6 +44,7 @@ from app.modules.integrations.lead_api import router as lead_api_router
 from app.modules.integrations.router import router as integrations_router
 from app.modules.money.router import public as money_webhooks_router
 from app.modules.money.router import router as money_router
+from app.modules.newsletters.router import router as newsletters_router
 from app.modules.outreach.router import router as outreach_router
 from app.modules.push.router import router as push_router
 from app.modules.replies.router import router as replies_router
@@ -111,6 +112,7 @@ app.include_router(security_router)
 app.include_router(twilio_router)
 app.include_router(twilio_public_router)
 app.include_router(push_router)
+app.include_router(newsletters_router)
 app.include_router(brands_router)
 app.include_router(ace_console_router)
 app.include_router(extension_account_router)

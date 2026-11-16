@@ -198,6 +198,14 @@ async def push_job(ctx) -> int:
     return total
 
 
+async def newsletters_job(ctx) -> int:
+    """Every 30 seconds (and right after Send): newsletters send their next batch (batch 5b)."""
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.newsletters.service import run_tenant
+
+    return sum([await run_tenant(t) for t in await _active_tenants()])
+
+
 async def sequences_job(ctx) -> int:
     """Every 30 seconds: run the sequence steps that are due (step 9a)."""
     from app.modules.crm.automation import _active_tenants

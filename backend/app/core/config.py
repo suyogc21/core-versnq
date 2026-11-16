@@ -62,6 +62,11 @@ class Settings(BaseSettings):
     # sequence emails (step 9a): "test" keeps them in Core; "mailbox" sends through the
     # company's own mailbox; Amazon SES is added at go-live (Decision log #39)
     email_sender: Literal["test", "mailbox"] = "test"
+    # Newsletters (batch 5b) through Postmark's broadcast stream: "test" keeps them in Core and
+    # never calls Postmark; "live" needs POSTMARK_SERVER_TOKEN (the Postmark server's API token).
+    postmark_mode: Literal["test", "live"] = "test"
+    postmark_server_token: str | None = None
+    postmark_broadcast_stream: str = "broadcast"
     # Uploaded files (documents, later invoice PDFs) live here on our own server's disk
     # (Decision log #29). Back this folder up nightly with the database.
     files_dir: str = "var/files"
