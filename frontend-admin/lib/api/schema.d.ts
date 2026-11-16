@@ -2155,6 +2155,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/forms/{public_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Form Page
+         * @description Public: what the hosted page shows.
+         */
+        get: operations["capture-form_page"];
+        put?: never;
+        /**
+         * Send Form
+         * @description Public: someone sends the hosted form. Required answers are checked here too; the lead
+         *     then goes through the same path as every other form (duplicates, routing, timeline).
+         */
+        post: operations["capture-send_form"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/formula/check": {
         parameters: {
             query?: never;
@@ -7272,6 +7297,12 @@ export interface components {
             field_map: {
                 [key: string]: string;
             };
+            form?: components["schemas"]["FormSpec"] | null;
+            /**
+             * Hosted
+             * @default false
+             */
+            hosted: boolean;
             /**
              * Is Active
              * @default true
@@ -7300,6 +7331,12 @@ export interface components {
             field_map: {
                 [key: string]: unknown;
             };
+            form?: components["schemas"]["FormSpec"] | null;
+            /**
+             * Hosted
+             * @default false
+             */
+            hosted: boolean;
             /**
              * Id
              * Format: uuid
@@ -7313,6 +7350,8 @@ export interface components {
             last_used_at: string | null;
             /** Name */
             name: string;
+            /** Public Id */
+            public_id?: string | null;
             /**
              * Source Id
              * Format: uuid
@@ -7329,6 +7368,9 @@ export interface components {
             field_map?: {
                 [key: string]: string;
             } | null;
+            form?: components["schemas"]["FormSpec"] | null;
+            /** Hosted */
+            hosted?: boolean | null;
             /** Is Active */
             is_active?: boolean | null;
             /** Name */
@@ -7351,6 +7393,12 @@ export interface components {
             field_map: {
                 [key: string]: unknown;
             };
+            form?: components["schemas"]["FormSpec"] | null;
+            /**
+             * Hosted
+             * @default false
+             */
+            hosted: boolean;
             /**
              * Id
              * Format: uuid
@@ -7366,6 +7414,8 @@ export interface components {
             last_used_at: string | null;
             /** Name */
             name: string;
+            /** Public Id */
+            public_id?: string | null;
             /**
              * Source Id
              * Format: uuid
@@ -8965,6 +9015,89 @@ export interface components {
              * Format: email
              */
             email: string;
+        };
+        /** FormField */
+        FormField: {
+            /** Label */
+            label: string;
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Target */
+            target: string;
+        };
+        /** FormPageOut */
+        FormPageOut: {
+            /**
+             * Ask Consent
+             * @default []
+             */
+            ask_consent: string[];
+            /**
+             * Button
+             * @default Send
+             */
+            button: string;
+            /**
+             * Closed
+             * @default false
+             */
+            closed: boolean;
+            company: components["schemas"]["PageCompany"];
+            /** Consent Text */
+            consent_text?: string | null;
+            /**
+             * Fields
+             * @default []
+             */
+            fields: components["schemas"]["PageField"][];
+            /** Intro */
+            intro?: string | null;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        };
+        /** FormSentOut */
+        FormSentOut: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Redirect Url */
+            redirect_url?: string | null;
+            /** Thank You */
+            thank_you: string;
+        };
+        /** FormSpec */
+        FormSpec: {
+            /**
+             * Ask Consent
+             * @default []
+             */
+            ask_consent: ("email" | "whatsapp")[];
+            /**
+             * Button
+             * @default Send
+             */
+            button: string;
+            /** Fields */
+            fields: components["schemas"]["FormField"][];
+            /** Intro */
+            intro?: string | null;
+            /** Redirect Url */
+            redirect_url?: string | null;
+            /**
+             * Thank You
+             * @default Thank you. We'll be in touch soon.
+             */
+            thank_you: string;
+            /** Title */
+            title: string;
         };
         /** FormulaIn */
         FormulaIn: {
@@ -10919,6 +11052,31 @@ export interface components {
             key: string;
             /** Name */
             name: string;
+        };
+        /** PageCompany */
+        PageCompany: {
+            /** Logo Url */
+            logo_url?: string | null;
+            /** Name */
+            name: string;
+            /** Primary Color */
+            primary_color?: string | null;
+        };
+        /** PageField */
+        PageField: {
+            /** Input */
+            input: string;
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /**
+             * Options
+             * @default []
+             */
+            options: string[];
+            /** Required */
+            required: boolean;
         };
         /** PaymentLinkIn */
         PaymentLinkIn: {
@@ -18519,6 +18677,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["app__modules__crm__layouts_router__AccessOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-form_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "capture-send_form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormSentOut"];
                 };
             };
             /** @description Validation Error */

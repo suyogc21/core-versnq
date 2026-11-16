@@ -2746,6 +2746,21 @@
             "title": "Field Map",
             "type": "object"
           },
+          "form": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FormSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hosted": {
+            "default": false,
+            "title": "Hosted",
+            "type": "boolean"
+          },
           "is_active": {
             "default": true,
             "title": "Is Active",
@@ -2805,6 +2820,21 @@
             "title": "Field Map",
             "type": "object"
           },
+          "form": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FormSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hosted": {
+            "default": false,
+            "title": "Hosted",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -2833,6 +2863,17 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "public_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Id"
           },
           "source_id": {
             "format": "uuid",
@@ -2895,6 +2936,27 @@
               }
             ],
             "title": "Field Map"
+          },
+          "form": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FormSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hosted": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hosted"
           },
           "is_active": {
             "anyOf": [
@@ -2971,6 +3033,21 @@
             "title": "Field Map",
             "type": "object"
           },
+          "form": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FormSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hosted": {
+            "default": false,
+            "title": "Hosted",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -3003,6 +3080,17 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "public_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Id"
           },
           "source_id": {
             "format": "uuid",
@@ -7857,6 +7945,204 @@
           "email"
         ],
         "title": "ForgotIn",
+        "type": "object"
+      },
+      "FormField": {
+        "properties": {
+          "label": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "target": {
+            "maxLength": 63,
+            "minLength": 1,
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target",
+          "label"
+        ],
+        "title": "FormField",
+        "type": "object"
+      },
+      "FormPageOut": {
+        "properties": {
+          "ask_consent": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Ask Consent",
+            "type": "array"
+          },
+          "button": {
+            "default": "Send",
+            "title": "Button",
+            "type": "string"
+          },
+          "closed": {
+            "default": false,
+            "title": "Closed",
+            "type": "boolean"
+          },
+          "company": {
+            "$ref": "#/components/schemas/PageCompany"
+          },
+          "consent_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Text"
+          },
+          "fields": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/PageField"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "intro": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intro"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "company"
+        ],
+        "title": "FormPageOut",
+        "type": "object"
+      },
+      "FormSentOut": {
+        "properties": {
+          "ok": {
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "redirect_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redirect Url"
+          },
+          "thank_you": {
+            "title": "Thank You",
+            "type": "string"
+          }
+        },
+        "required": [
+          "thank_you"
+        ],
+        "title": "FormSentOut",
+        "type": "object"
+      },
+      "FormSpec": {
+        "properties": {
+          "ask_consent": {
+            "default": [],
+            "items": {
+              "enum": [
+                "email",
+                "whatsapp"
+              ],
+              "type": "string"
+            },
+            "maxItems": 2,
+            "title": "Ask Consent",
+            "type": "array"
+          },
+          "button": {
+            "default": "Send",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Button",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FormField"
+            },
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Fields",
+            "type": "array"
+          },
+          "intro": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intro"
+          },
+          "redirect_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "pattern": "^https://\\S+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redirect Url"
+          },
+          "thank_you": {
+            "default": "Thank you. We'll be in touch soon.",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Thank You",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "fields"
+        ],
+        "title": "FormSpec",
         "type": "object"
       },
       "FormulaIn": {
@@ -13764,6 +14050,77 @@
           "name"
         ],
         "title": "PackOut",
+        "type": "object"
+      },
+      "PageCompany": {
+        "properties": {
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "primary_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Color"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PageCompany",
+        "type": "object"
+      },
+      "PageField": {
+        "properties": {
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "options": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "input",
+          "required"
+        ],
+        "title": "PageField",
         "type": "object"
       },
       "PaymentLinkIn": {
@@ -30379,6 +30736,90 @@
         "summary": "Set Access",
         "tags": [
           "layouts"
+        ]
+      }
+    },
+    "/api/v1/forms/{public_id}": {
+      "get": {
+        "description": "Public: what the hosted page shows.",
+        "operationId": "capture-form_page",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "public_id",
+            "required": true,
+            "schema": {
+              "title": "Public Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Form Page",
+        "tags": [
+          "capture"
+        ]
+      },
+      "post": {
+        "description": "Public: someone sends the hosted form. Required answers are checked here too; the lead\nthen goes through the same path as every other form (duplicates, routing, timeline).",
+        "operationId": "capture-send_form",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "public_id",
+            "required": true,
+            "schema": {
+              "title": "Public Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormSentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send Form",
+        "tags": [
+          "capture"
         ]
       }
     },

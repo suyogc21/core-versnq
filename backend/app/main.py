@@ -7,6 +7,7 @@ from app.modules.accounts.router import router as accounts_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
 from app.modules.crm.automations_router import router as automations_router
+from app.modules.crm.capture_router import forms_public
 from app.modules.crm.capture_router import public as capture_public_router
 from app.modules.crm.capture_router import router as capture_router
 from app.modules.crm.customers_router import router as customers_router
@@ -78,6 +79,7 @@ app.include_router(rules_router)
 app.include_router(notifications_router)
 app.include_router(capture_router)
 app.include_router(capture_public_router)
+app.include_router(forms_public)
 app.include_router(customers_router)
 app.include_router(money_router)
 app.include_router(money_webhooks_router)

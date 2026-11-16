@@ -36,6 +36,5 @@ No new tables. One new public endpoint: `GET /api/v1/forms/<public_id>` (what th
 - Rate limits and the spam trap work.
 - Browser test: build a form, open the link on a phone-sized screen, send it, and see the lead in Leads.
 
-## For you to decide
-1. Approve as written, or change it.
-2. Show "Powered by Versnq" on hosted forms (free marketing), or not.
+## Decided (Nov 16, Suyog)
+Approved. **No "Powered by Versnq"** on hosted forms; they show only the company's own branding.

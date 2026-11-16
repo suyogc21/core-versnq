@@ -10,10 +10,11 @@ person already exists.
 
 import hashlib
 import json
+import re
 import secrets
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from urllib.parse import parse_qs
 
 from fastapi import APIRouter, Request, Response, status
@@ -55,6 +56,34 @@ def _new_key() -> str:
     return "vqf_" + secrets.token_urlsafe(24)
 
 
+# ---------- the form builder (real forms, 0034) ----------
+IDENTITY = ("email", "phone", "whatsapp")
+NOT_ON_FORMS = {"external_id", "campaign", "consent_email", "consent_whatsapp",
+                *(k for k in MP.BUILTIN_TARGETS if k.startswith("utm_"))}  # fmt: skip
+INPUT = {"email": "email", "phone": "tel", "whatsapp": "tel", "website": "url",
+         "linkedin": "url", "message": "textarea"}  # fmt: skip
+CUSTOM_INPUT = {"text": "text", "number": "number", "date": "date", "email": "email",
+                "phone": "tel", "url": "url", "select": "select",
+                "multi_select": "multi_select"}  # fmt: skip
+
+
+class FormField(BaseModel):
+    target: str = Field(min_length=1, max_length=63)  # a built-in name, or "cf.<key>"
+    label: str = Field(min_length=1, max_length=120)
+    required: bool = False
+
+
+class FormSpec(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+    intro: str | None = Field(default=None, max_length=1000)
+    button: str = Field(default="Send", min_length=1, max_length=40)
+    fields: list[FormField] = Field(min_length=1, max_length=30)
+    ask_consent: list[Literal["email", "whatsapp"]] = Field(default=[], max_length=2)
+    thank_you: str = Field(default="Thank you. We'll be in touch soon.", min_length=1,
+                           max_length=500)  # fmt: skip
+    redirect_url: str | None = Field(default=None, max_length=500, pattern=r"^https://\S+$")
+
+
 # ---------- settings ----------
 class CaptureSourceIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
@@ -64,6 +93,8 @@ class CaptureSourceIn(BaseModel):
     field_map: dict[str, str] = Field(default={}, max_length=100)
     consent_text: str | None = Field(default=None, max_length=500)
     is_active: bool = True
+    form: FormSpec | None = None
+    hosted: bool = False
 
 
 class CaptureSourcePatch(BaseModel):
@@ -73,6 +104,8 @@ class CaptureSourcePatch(BaseModel):
     field_map: dict[str, str] | None = Field(default=None, max_length=100)
     consent_text: str | None = Field(default=None, max_length=500)
     is_active: bool | None = None
+    form: FormSpec | None = None
+    hosted: bool | None = None
 
 
 class CaptureSourceOut(BaseModel):
@@ -85,6 +118,9 @@ class CaptureSourceOut(BaseModel):
     field_map: dict
     consent_text: str | None
     is_active: bool
+    form: FormSpec | None = None
+    hosted: bool = False
+    public_id: str | None = None  # the hosted page is /f/<public_id>
     last_used_at: datetime | None
     created_at: datetime
 
@@ -117,6 +153,26 @@ async def _check(db, src: CaptureSource) -> None:
         ok = target in MP.BUILTIN_TARGETS or (target.startswith("cf.") and target[3:] in defs)
         if not ok:
             raise Invalid(f"'{target}' is not a field you can fill from a form")
+    if src.form:
+        _check_form(src.form, defs)
+    if src.hosted:
+        if not src.form:
+            raise Invalid("Build the form before switching its page on")
+        if not src.public_id:
+            src.public_id = secrets.token_urlsafe(9)
+
+
+def _check_form(form: dict, defs: dict) -> None:
+    targets = [f["target"] for f in form["fields"]]
+    if len(set(targets)) != len(targets):
+        raise Invalid("A field is on the form twice")
+    for t in targets:
+        builtin = t in MP.BUILTIN_TARGETS and t not in NOT_ON_FORMS
+        custom = t.startswith("cf.") and t[3:] in defs and defs[t[3:]].type in CUSTOM_INPUT
+        if not (builtin or custom):
+            raise Invalid(f"'{t}' can't be a question on a form")
+    if not any(t in IDENTITY for t in targets):
+        raise Invalid("Add an email, phone or WhatsApp field, so the lead can be reached")
 
 
 @router.get("/capture-sources", response_model=list[CaptureSourceOut])
@@ -164,7 +220,7 @@ async def update_capture_source(
     src = await _get(db, src_id)
     changes = body.model_dump(exclude_unset=True)
     for key, value in changes.items():
-        if value is not None or key in ("stage_id", "consent_text"):
+        if value is not None or key in ("stage_id", "consent_text", "form"):
             setattr(src, key, value)
     await _check(db, src)
     await audit(db, actor, "capture_source.updated", "capture_source", src.id, None, changes)
@@ -316,3 +372,127 @@ async def _capture(db, tenant_id, src: CaptureSource, data, request: Request, ip
         async with db.begin_nested():
             await I.intake(db, tenant_id, incoming(False), policy=policy)
     src.last_used_at = L.now()
+
+
+# ---------- the hosted page (real forms, 0034) ----------
+forms_public = APIRouter(prefix="/api/v1/forms", tags=["capture"], dependencies=CRM)
+EMAILISH = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class PageField(BaseModel):
+    name: str  # what the page sends back
+    label: str
+    input: str  # text, email, tel, url, number, date, textarea, select, multi_select
+    required: bool
+    options: list[str] = []
+
+
+class PageCompany(BaseModel):
+    name: str
+    logo_url: str | None = None
+    primary_color: str | None = None
+
+
+class FormPageOut(BaseModel):
+    closed: bool = False
+    company: PageCompany
+    title: str = ""
+    intro: str | None = None
+    button: str = "Send"
+    fields: list[PageField] = []
+    consent_text: str | None = None
+    ask_consent: list[str] = []
+
+
+class FormSentOut(BaseModel):
+    ok: bool = True
+    thank_you: str
+    redirect_url: str | None = None
+
+
+async def _hosted(db, public_id: str) -> CaptureSource:
+    src = await db.scalar(select(CaptureSource).where(CaptureSource.public_id == public_id))
+    if src is None or not src.hosted or not src.form:
+        raise NotFound("Form not found")
+    return src
+
+
+def _page_fields(form: dict, defs: dict) -> list[PageField]:
+    out = []
+    for f in form["fields"]:
+        t = f["target"]
+        if t.startswith("cf."):
+            d = defs.get(t[3:])
+            if d is None:
+                continue  # the custom field was removed since: leave the question out
+            opts = [o.get("label") or o["value"] for o in d.options or [] if not o.get("parent")]
+            kind = CUSTOM_INPUT.get(d.type, "text")
+            out.append(PageField(name=d.key, label=f["label"], input=kind,
+                                 required=f["required"], options=opts))  # fmt: skip
+        else:
+            out.append(PageField(name=t, label=f["label"], input=INPUT.get(t, "text"),
+                                 required=f["required"]))  # fmt: skip
+    return out
+
+
+@forms_public.get("/{public_id}", response_model=FormPageOut)
+async def form_page(public_id: str, ws: WorkspaceDep, db: CrmDb) -> FormPageOut:
+    """Public: what the hosted page shows."""
+    src = await _hosted(db, public_id)
+    settings = await db.get(TenantSettings, ws.id)
+    brand = (settings.branding if settings else None) or {}
+    company = PageCompany(name=ws.name, logo_url=brand.get("logo_url"),
+                          primary_color=brand.get("primary_color"))  # fmt: skip
+    if not src.is_active:
+        return FormPageOut(closed=True, company=company)
+    form = src.form
+    return FormPageOut(
+        company=company, title=form["title"], intro=form.get("intro"), button=form["button"],
+        fields=_page_fields(form, await lead_fields(db)), consent_text=src.consent_text,
+        ask_consent=form.get("ask_consent", []),
+    )  # fmt: skip
+
+
+@forms_public.post("/{public_id}", response_model=FormSentOut, status_code=status.HTTP_201_CREATED)
+async def send_form(public_id: str, request: Request, ws: WorkspaceDep, db: CrmDb) -> FormSentOut:
+    """Public: someone sends the hosted form. Required answers are checked here too; the lead
+    then goes through the same path as every other form (duplicates, routing, timeline)."""
+    ip = _client_ip(request)
+    if not await hit(f"rl:form:{public_id[:20]}:{ip}", 20, 60) or not await hit(
+        f"rl:form:{public_id[:20]}", 1000, 3600
+    ):
+        raise Invalid("Too many submissions. Try again later.", code="rate_limited")
+    src = await _hosted(db, public_id)
+    if not src.is_active:
+        raise Invalid("This form is closed", code="form_closed")
+    data = await _read(request)
+    form = src.form
+    if any(v.strip() for v in data.get(HONEYPOT, [])):
+        return FormSentOut(thank_you=form["thank_you"], redirect_url=form.get("redirect_url"))
+    fields = _page_fields(form, await lead_fields(db))
+    errors: dict[str, str] = {}
+    for f in fields:
+        values = [v.strip() for v in data.get(f.name, []) if v.strip()]
+        if f.required and not values:
+            errors[f.name] = "Please fill this in"
+        elif values and f.input == "email" and not EMAILISH.match(values[0]):
+            errors[f.name] = "Enter a valid email"
+        elif values and f.options and any(v not in f.options for v in values):
+            errors[f.name] = "Choose one of the options"
+    if not errors and not any(
+        v.strip() for f in fields if f.name in IDENTITY for v in data.get(f.name, [])
+    ):
+        errors["_form"] = "Give an email or phone number so we can reach you"
+    if errors:
+        raise Invalid("Please check the form", {"fields": errors}, code="form_invalid")
+    allowed = (
+        {f.name for f in fields}
+        | {*MP.ATTRIBUTION_KEYS}
+        | {k for k in MP.BUILTIN_TARGETS if k.startswith("utm_")}
+    )
+    kept = {k: v for k, v in data.items() if k in allowed}
+    for channel in form.get("ask_consent", []):
+        kept[f"consent_{channel}"] = ["yes" if MP.yes_no(
+            (data.get(f"consent_{channel}") or [""])[0]) else "no"]  # fmt: skip
+    await _capture(db, ws.id, src, kept, request, ip)
+    return FormSentOut(thank_you=form["thank_you"], redirect_url=form.get("redirect_url"))

@@ -47,7 +47,7 @@ Each item has a size: S = 1, M = 2, L = 3.
 ### Go-live: mostly your accounts (10)
 | Item | Size | Who | |
 |---|---|---|---|
-| Email provider for copy-in and company sending domains (decide: see "Email" below) | S | You, then me | ⬜ |
+| Email provider for copy-in and company sending domains: **Postmark** (chosen Nov 16) | S | You (account), then me | ⬜ |
 | Meta business verification (WhatsApp number) | S | You | ⬜ |
 | Razorpay and Stripe keys | S | You | ⬜ |
 | Off-server backups to the Raspberry Pi | M | You, then me | ⬜ parked |
@@ -59,7 +59,7 @@ Each item has a size: S = 1, M = 2, L = 3.
 ### Phase 1: green ticks on what we have (9)
 | Item | Size | |
 |---|---|---|
-| **Real forms: builder plus a hosted page to share or embed** (today's form "link" only accepts posts; opening it gives an error) | M | ⬜ **next** |
+| **Real forms: builder plus a hosted page to share or embed** (the old form "link" only accepted posts; opening it gave an error) | M | 🟡 built and tested Nov 16; ✅ once deployed |
 | Green-tick walk-through of every feature on the live server, fixing what fails | L | ⬜ |
 | WhatsApp extras: photos and PDFs, templates with images and buttons | M | ⬜ |
 | Several brands and sending domains in one company | M | ⬜ |
@@ -116,9 +116,10 @@ Each item has a size: S = 1, M = 2, L = 3.
 |---|---|---|
 | Sign-in codes, invites, resets, error alerts | **Zoho SMTP** (set on the server) | ✅ working |
 | Campaigns, sequences, replies from the inbox | **Each company's own mailboxes** (Gmail, Zoho, any server) | ✅ no outside provider needed |
-| Copy-in addresses (receiving) and company sending domains | An email provider: **not chosen** | ⬜ |
+| Copy-in addresses (receiving) and company sending domains | **Postmark** (chosen Nov 16) | ⬜ needs your Postmark account, then I build receiving |
 
 ## Change log
 | Date | Change |
 |---|---|
 | 2026-11-16 | Tracker created; goal reset to global and level with LeadSquared and HubSpot |
+| 2026-11-16 | Real forms built (builder, hosted page /f/<id>, embed); email provider: Postmark |

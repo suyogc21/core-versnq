@@ -1,12 +1,13 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Code, Copy, ExternalLink, Link2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { PageHeader } from "@/components/app/app-shell";
+import { FormBuilder, type FormSpec, STARTER } from "@/components/crm/form-builder";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -94,8 +95,8 @@ function Forms() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Each form gets its own secret link. Your website sends enquiries to it and they arrive here: duplicates are caught and the assignment rules
-        pick the owner.
+        Build a form, then share its link (WhatsApp, Instagram, ads) or put it on your website. Enquiries arrive here: duplicates are caught and the
+        assignment rules pick the owner.
       </p>
       <div className="divide-y surface">
         {(list.data ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">No forms yet.</p>}
@@ -116,19 +117,37 @@ function Forms() {
             <span className="text-xs text-muted-foreground">
               {sourceName(f.source_id)} · key {f.key_hint}… · {f.last_used_at ? `last lead ${relative(f.last_used_at)}` : "no leads yet"}
             </span>
-            <span className="ml-auto flex gap-1">
+            <span className="ml-auto flex flex-wrap gap-1">
+              {f.hosted && f.public_id ? (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => copyText(pageUrl(f.public_id!))}>
+                    <Link2 /> Copy link
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => window.open(pageUrl(f.public_id!), "_blank", "noopener")}>
+                    <ExternalLink /> Open
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => copyText(embedCode(f.public_id!), "Embed code copied")}>
+                    <Code /> Embed
+                  </Button>
+                </>
+              ) : (
+                <Button size="sm" variant="outline" onClick={() => setEditing(f)}>
+                  Build a form page
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"
+                title="The address your own website or tools send to (for developers)"
                 onClick={async () => {
-                  if (!confirm("Make a new link? The old one stops working at once.")) return;
+                  if (!confirm("Make a new developer address? The old one stops working at once (the form page link stays the same).")) return;
                   await save(async () => {
                     const r = unwrap(await api.POST("/api/v1/capture-sources/{src_id}/new-key", { params: { path: { src_id: f.id } } }));
                     setKey({ name: r.name, key: r.key });
                   });
                 }}
               >
-                New link
+                Developer address
               </Button>
               <Button
                 size="icon-sm"
@@ -164,6 +183,8 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
   const [stageId, setStageId] = useState(form?.stage_id ?? "");
   const [consent, setConsent] = useState(form?.consent_text ?? "");
   const [map, setMap] = useState<[string, string][]>(Object.entries((form?.field_map ?? {}) as Record<string, string>));
+  const [hosted, setHosted] = useState(form ? form.hosted : true);
+  const [spec, setSpec] = useState<FormSpec | null>(form?.form ?? (form ? null : STARTER));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -173,13 +194,16 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
       stage_id: stageId || null,
       consent_text: consent.trim() || null,
       field_map: Object.fromEntries(map.filter(([a, b]) => a.trim() && b)),
+      form: spec,
+      hosted: hosted && !!spec,
     };
     const ok = await save(async () => {
       if (form) {
         unwrap(await api.PATCH("/api/v1/capture-sources/{src_id}", { params: { path: { src_id: form.id } }, body }));
       } else {
         const r = unwrap(await api.POST("/api/v1/capture-sources", { body: { ...body, is_active: true } }));
-        onKey({ name: r.name, key: r.key });
+        if (r.hosted && r.public_id) copyText(pageUrl(r.public_id), "Form page ready: link copied");
+        else onKey({ name: r.name, key: r.key });
       }
     }, form ? "Saved" : undefined);
     if (ok) onClose();
@@ -187,9 +211,9 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{form ? `Edit ${form.name}` : "Add a web form"}</DialogTitle>
+          <DialogTitle>{form ? `Edit ${form.name}` : "Add a form"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
@@ -225,11 +249,26 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="f-consent">Consent wording on your form (optional)</Label>
+            <Label htmlFor="f-consent">Consent wording (optional)</Label>
             <Input id="f-consent" value={consent} onChange={(e) => setConsent(e.target.value)} placeholder="I agree to be contacted by email and WhatsApp" />
             <p className="text-xs text-muted-foreground">Saved with every opt-in as proof of what the person agreed to.</p>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-3 rounded-lg border p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <Switch
+                aria-label="Form page"
+                checked={hosted}
+                onCheckedChange={(on) => {
+                  setHosted(on);
+                  if (on && !spec) setSpec(STARTER);
+                }}
+              />
+              Form page: a link you can share or embed
+            </label>
+            {hosted && spec && <FormBuilder spec={spec} onChange={setSpec} />}
+          </div>
+          <details className="space-y-1.5">
+            <summary className="cursor-pointer text-sm font-medium">For developers: your own website form</summary>
             <Label>Your own form fields (optional)</Label>
             <p className="text-xs text-muted-foreground">
               Name, email, phone, company, city, message and UTM fields are recognised automatically. Add a row for any other question.
@@ -259,7 +298,7 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
             <Button type="button" size="sm" variant="outline" onClick={() => setMap([...map, ["", ""]])}>
               <Plus /> Add a field
             </Button>
-          </div>
+          </details>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
@@ -274,7 +313,13 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
   );
 }
 
-/** The secret link, shown once, with ready-to-paste code for a website. */
+const origin = () => (typeof window !== "undefined" ? window.location.origin : "");
+const pageUrl = (publicId: string) => `${origin()}/f/${publicId}`;
+const embedCode = (publicId: string) =>
+  `<iframe src="${pageUrl(publicId)}" style="width:100%;max-width:560px;height:720px;border:0" title="Enquiry form"></iframe>`;
+const copyText = (text: string, done = "Link copied") => navigator.clipboard.writeText(text).then(() => toast.success(done));
+
+/** The secret developer address, shown once, with ready-to-paste code for a website. */
 function KeyDialog({ name, formKey, onClose }: { name: string; formKey: string; onClose: () => void }) {
   const url = `${typeof window !== "undefined" ? window.location.origin : ""}/api/v1/capture/${formKey}`;
   const snippet = `<form id="enquiry">
@@ -305,14 +350,15 @@ document.getElementById("enquiry").addEventListener("submit", async (e) => {
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{name}: your form link</DialogTitle>
+          <DialogTitle>{name}: address for developers</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 text-sm">
           <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs">
-            Copy it now: for safety it is shown only once. If you lose it, make a new link (the old one then stops working).
+            Your website or tools (Zapier, n8n) send enquiries to this address. It is not a page: opening it in a browser shows an error. To get a
+            link people can open, switch on the form page. Copy it now: for safety it is shown only once.
           </p>
           <div className="flex gap-2">
-            <Input readOnly value={url} aria-label="Form link" className="font-mono text-xs" />
+            <Input readOnly value={url} aria-label="Developer address" className="font-mono text-xs" />
             <Button type="button" variant="outline" onClick={() => copy(url)}>
               <Copy /> Copy
             </Button>

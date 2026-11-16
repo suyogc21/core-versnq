@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 /**
  * Security headers on every page. Stops other sites from embedding our pages (fake look-alike
- * login pages), MIME sniffing and leaking full URLs (with tokens) to other sites.
+ * login pages), MIME sniffing and leaking full URLs (with tokens) to other sites. Hosted forms
+ * (/f/<id>) are the one exception to embedding: companies put them on their own websites.
  * HSTS is added by the HTTPS proxy in production.
  */
 const SECURITY_HEADERS = [
@@ -19,7 +20,12 @@ const nextConfig: NextConfig = {
   // Files are at most 10 MB (Decision log #32); the backend also refuses any cut-off body.
   experimental: { proxyClientMaxBodySize: "11mb" },
   async headers() {
-    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+    return [
+      // every page but the hosted forms refuses to be embedded
+      { source: "/((?!f/).*)", headers: SECURITY_HEADERS },
+      // hosted forms (/f/<id>) are made to be embedded on the company's own website
+      { source: "/f/:path*", headers: [...SECURITY_HEADERS.slice(2), { key: "Content-Security-Policy", value: "frame-ancestors *" }] },
+    ];
   },
 };
 

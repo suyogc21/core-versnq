@@ -277,6 +277,10 @@ class CaptureSource(TenantScoped, TimestampMixin, Base):
     field_map: Mapped[dict] = mapped_column(JSONB, default=dict)  # incoming name -> field key
     consent_text: Mapped[str | None] = mapped_column(String(500))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Real forms (0034): the hosted page /f/<public_id>, built from `form`
+    public_id: Mapped[str | None] = mapped_column(String(16), unique=True)
+    form: Mapped[dict | None] = mapped_column(JSONB)
+    hosted: Mapped[bool] = mapped_column(Boolean, default=False)
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
 

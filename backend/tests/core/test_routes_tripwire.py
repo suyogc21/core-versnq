@@ -23,6 +23,10 @@ PUBLIC = {
     # Web forms post leads here; protected by the per-form secret key + rate limits (#22).
     ("POST", "/api/v1/capture/{key}"),
     ("OPTIONS", "/api/v1/capture/{key}"),
+    # Hosted forms (Nov 16): the page's questions, and sending it; only hosted, switched-on
+    # forms answer; protected by rate limits and the spam trap.
+    ("GET", "/api/v1/forms/{public_id}"),
+    ("POST", "/api/v1/forms/{public_id}"),
     # Payment gateways tell Core a link was paid; only a valid signature is accepted (#34).
     ("POST", "/api/v1/webhooks/{gateway_name}/{account_id}"),
     # Inside every sequence email (#39): open pixel, tracked links (only to links that were in
