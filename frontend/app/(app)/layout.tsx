@@ -6,21 +6,42 @@ import { useEffect } from "react";
 import { AppShell } from "@/components/app/app-shell";
 import { ChangePasswordScreen } from "@/components/app/restriction-screens";
 import { useAuth } from "@/lib/auth";
+import { LanguageProvider } from "@/lib/i18n";
+import { useWorkspaceSettings } from "@/lib/settings";
 
-export default function SignedInLayout({ children }: { children: React.ReactNode }) {
+export default function SignedInLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { status, me } = useAuth();
   const router = useRouter();
   const path = usePathname();
+  const settings = useWorkspaceSettings();
 
   useEffect(() => {
     // after signing in, back to the page they asked for (e.g. /ace/open when ACE sent them)
-    if (status === "signed-out") router.replace(path && path !== "/" ? `/login?next=${encodeURIComponent(path)}` : "/login");
+    if (status === "signed-out")
+      router.replace(
+        path && path !== "/"
+          ? `/login?next=${encodeURIComponent(path)}`
+          : "/login",
+      );
   }, [status, router, path]);
 
   if (status !== "signed-in" || !me) {
-    return <div className="grid h-screen place-items-center text-muted-foreground">Loading…</div>;
+    return (
+      <div className="grid h-screen place-items-center text-muted-foreground">
+        Loading…
+      </div>
+    );
   }
   // The backend enforces these too; the screens just guide the user through them in order.
-  if (me.restrictions.includes("password_change_required")) return <ChangePasswordScreen />;
-  return <AppShell>{children}</AppShell>;
+  if (me.restrictions.includes("password_change_required"))
+    return <ChangePasswordScreen />;
+  return (
+    <LanguageProvider companyLang={settings.data?.locale}>
+      <AppShell>{children}</AppShell>
+    </LanguageProvider>
+  );
 }

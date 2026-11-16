@@ -143,7 +143,7 @@ function PickLead({ call, onCancel, onPicked }: { call: UnknownCall; onCancel: (
         <div className="space-y-1">
           <p className="text-muted-foreground">You called them just before:</p>
           {recent.data!.map((l) => (
-            <Button key={l.id} size="sm" variant="outline" className="mr-2" onClick={() => pick(l.id)}>
+            <Button key={l.id} size="sm" variant="outline" className="me-2" onClick={() => pick(l.id)}>
               {l.name}
             </Button>
           ))}
@@ -154,7 +154,7 @@ function PickLead({ call, onCancel, onPicked }: { call: UnknownCall; onCancel: (
         <ul className="divide-y rounded-md border">
           {items.map((l) => (
             <li key={l.id}>
-              <button type="button" className="w-full px-3 py-2 text-left hover:bg-accent" onClick={() => pick(l.id)}>
+              <button type="button" className="w-full px-3 py-2 text-start hover:bg-accent" onClick={() => pick(l.id)}>
                 {l.name}
               </button>
             </li>

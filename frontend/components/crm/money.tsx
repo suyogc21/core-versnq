@@ -96,8 +96,8 @@ export function MoneyCard({ customerId }: { customerId: string }) {
                 <Link href={`/invoices/${i.id}`} className="flex items-center gap-2 py-2 hover:bg-muted/40">
                   <span className="font-medium tabular-nums">{i.number ?? "Draft"}</span>
                   <InvoiceStatus status={i.status} overdue={i.overdue_minor} />
-                  <span className="ml-auto tabular-nums">{formatMoney(i.total_minor, i.currency)}</span>
-                  {i.next_due_date && <span className="w-20 text-right text-muted-foreground">due {day(i.next_due_date).replace(/ \d{4}$/, "")}</span>}
+                  <span className="ms-auto tabular-nums">{formatMoney(i.total_minor, i.currency)}</span>
+                  {i.next_due_date && <span className="w-20 text-end text-muted-foreground">due {day(i.next_due_date).replace(/ \d{4}$/, "")}</span>}
                 </Link>
               </li>
             ))}

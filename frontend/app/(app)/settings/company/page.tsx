@@ -35,13 +35,17 @@ type Form = {
 };
 
 // Browsers list some zones under old names (e.g. Asia/Calcutta); always offer the saved one.
-const timezones = (current: string) => [...new Set([current, ...Intl.supportedValuesOf("timeZone")])].sort();
+const timezones = (current: string) =>
+  [...new Set([current, ...Intl.supportedValuesOf("timeZone")])].sort();
 
 export default function SettingsPage() {
   const settings = useWorkspaceSettings();
   return (
     <>
-      <PageHeader back={{ href: "/settings", label: "Settings" }} title="Company" />
+      <PageHeader
+        back={{ href: "/settings", label: "Settings" }}
+        title="Company"
+      />
       {settings.data ? (
         <SettingsForm settings={settings.data} />
       ) : (
@@ -53,7 +57,10 @@ export default function SettingsPage() {
 
 function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
   const queryClient = useQueryClient();
-  const branding = settings.branding as { primary_color?: string; logo_url?: string };
+  const branding = settings.branding as {
+    primary_color?: string;
+    logo_url?: string;
+  };
   const form = useForm<Form>({
     defaultValues: {
       labels: settings.labels as Record<string, Label>,
@@ -75,7 +82,10 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
             timezone: v.timezone,
             locale: v.locale,
             default_country: v.default_country.toUpperCase(),
-            branding: { primary_color: v.primary_color, logo_url: v.logo_url || null },
+            branding: {
+              primary_color: v.primary_color,
+              logo_url: v.logo_url || null,
+            },
           },
         }),
       );
@@ -88,12 +98,16 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
   });
 
   return (
-    <form onSubmit={submit} className="mx-auto w-full max-w-2xl space-y-8 p-4 sm:p-8">
+    <form
+      onSubmit={submit}
+      className="mx-auto w-full max-w-2xl space-y-8 p-4 sm:p-8"
+    >
       <section className="space-y-3">
         <div>
           <h2 className="font-semibold">Names for your records</h2>
           <p className="text-muted-foreground">
-            Use your business&apos;s own words. An academy might call a lead a &quot;Student&quot;.
+            Use your business&apos;s own words. An academy might call a lead a
+            &quot;Student&quot;.
           </p>
         </div>
         <div className="grid grid-cols-[5.5rem_1fr_1fr] sm:grid-cols-[8rem_1fr_1fr] items-center gap-x-3 gap-y-2">
@@ -105,11 +119,17 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
               <span className="text-muted-foreground">{name}</span>
               <Input
                 aria-label={`${name} singular`}
-                {...form.register(`labels.${key}.singular`, { required: true, maxLength: 60 })}
+                {...form.register(`labels.${key}.singular`, {
+                  required: true,
+                  maxLength: 60,
+                })}
               />
               <Input
                 aria-label={`${name} plural`}
-                {...form.register(`labels.${key}.plural`, { required: true, maxLength: 60 })}
+                {...form.register(`labels.${key}.plural`, {
+                  required: true,
+                  maxLength: 60,
+                })}
               />
             </div>
           ))}
@@ -134,18 +154,33 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
             maxLength={2}
             error={errors.default_country?.message}
             {...form.register("default_country", {
-              pattern: { value: /^[A-Za-z]{2}$/, message: "Use a two-letter code" },
+              pattern: {
+                value: /^[A-Za-z]{2}$/,
+                message: "Use a two-letter code",
+              },
             })}
           />
-          <Field
-            id="locale"
-            label="Language"
-            hint="e.g. en or en-IN"
-            error={errors.locale?.message}
-            {...form.register("locale", {
-              pattern: { value: /^[a-z]{2}(-[A-Z]{2})?$/, message: "Use a code like en or en-IN" },
-            })}
-          />
+          <div className="space-y-1.5">
+            <Label htmlFor="locale">Language</Label>
+            <NativeSelect id="locale" {...form.register("locale")}>
+              {[...new Set([settings.locale, "en", "en-IN", "ar", "hi"])].map(
+                (code) => (
+                  <option key={code} value={code}>
+                    {{
+                      en: "English",
+                      "en-IN": "English (India)",
+                      ar: "العربية (Arabic)",
+                      hi: "हिन्दी (Hindi)",
+                    }[code] ?? code}
+                  </option>
+                ),
+              )}
+            </NativeSelect>
+            <p className="text-xs text-muted-foreground">
+              Everyone sees Core in this language unless they pick their own in
+              My account.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -168,7 +203,10 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
             placeholder="https://…"
             error={errors.logo_url?.message}
             {...form.register("logo_url", {
-              pattern: { value: /^https:\/\/\S+$/, message: "Use an https:// link" },
+              pattern: {
+                value: /^https:\/\/\S+$/,
+                message: "Use an https:// link",
+              },
             })}
           />
         </div>
@@ -176,7 +214,12 @@ function SettingsForm({ settings }: { settings: WorkspaceSettings }) {
 
       {errors.root && <p className="text-destructive">{errors.root.message}</p>}
       <div className="flex justify-end gap-2 border-t pt-4">
-        <Button type="button" variant="outline" disabled={!isDirty} onClick={() => form.reset()}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!isDirty}
+          onClick={() => form.reset()}
+        >
           Discard
         </Button>
         <Button type="submit" disabled={!isDirty || isSubmitting}>

@@ -35,7 +35,7 @@ function Bars({ items, format }: { items: Item[]; format: Fmt }) {
           <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
             <span className="block h-full rounded-full bg-primary" style={{ width: `${(Math.abs(i.value) / max) * 100}%` }} />
           </span>
-          <span className="min-w-24 shrink-0 text-right tabular-nums">{format(i.value, i.currency)}</span>
+          <span className="min-w-24 shrink-0 text-end tabular-nums">{format(i.value, i.currency)}</span>
         </li>
       ))}
     </ul>

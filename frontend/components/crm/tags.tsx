@@ -59,14 +59,14 @@ export function TagPicker({ chosen, onPick, onCreate }: { chosen: string[]; onPi
       />
       <div className="max-h-56 overflow-auto">
         {list.map((t) => (
-          <button key={t.id} type="button" className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs hover:bg-accent" onClick={() => onPick(t.id)}>
+          <button key={t.id} type="button" className="flex w-full items-center gap-2 rounded px-2 py-1 text-start text-xs hover:bg-accent" onClick={() => onPick(t.id)}>
             <span className="size-2 rounded-full" style={{ background: t.colour ?? "#94a3b8" }} />
             <span className="flex-1 truncate">{t.name}</span>
             {chosen.includes(t.id) && <Check className="size-3.5" />}
           </button>
         ))}
         {q.trim() && !exact && (
-          <button type="button" className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs text-primary hover:bg-accent" onClick={() => (onCreate(q.trim()), setQ(""))}>
+          <button type="button" className="flex w-full items-center gap-2 rounded px-2 py-1 text-start text-xs text-primary hover:bg-accent" onClick={() => (onCreate(q.trim()), setQ(""))}>
             <Plus className="size-3.5" /> Create “{q.trim()}”
           </button>
         )}

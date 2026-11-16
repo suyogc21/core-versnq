@@ -47,7 +47,7 @@ function Inbox() {
     <div className="flex min-h-0 flex-1 flex-col">
       <PageHeader title="Inbox" actions={<Input placeholder="Search name or subject…" className="h-7 w-full sm:w-64" value={search} onChange={(e) => setSearch(e.target.value)} />} />
       <div className="flex min-h-0 flex-1">
-        <div className={cn("flex min-h-0 w-full flex-col border-r md:w-[360px] md:shrink-0", open && "hidden md:flex")}>
+        <div className={cn("flex min-h-0 w-full flex-col border-e md:w-[360px] md:shrink-0", open && "hidden md:flex")}>
           <div className="flex gap-1 overflow-x-auto border-b px-2 py-2" role="tablist">
             {VIEWS.map(([k, l]) => (
               <button
@@ -67,7 +67,7 @@ function Inbox() {
               <button
                 key={r.id}
                 onClick={() => setOpen(r.id)}
-                className={cn("block w-full px-3 py-2.5 text-left hover:bg-muted/50", open === r.id && "bg-muted")}
+                className={cn("block w-full px-3 py-2.5 text-start hover:bg-muted/50", open === r.id && "bg-muted")}
                 data-row={r.lead_name}
               >
                 <div className="flex items-center gap-1.5">
@@ -76,7 +76,7 @@ function Inbox() {
                   <span className={cn("truncate text-sm", r.unread && "font-semibold")}>{r.lead_name}</span>
                   {r.shared && <Users className="size-3 text-muted-foreground" aria-label="Shared with you" />}
                   {r.is_private && <Lock className="size-3 text-muted-foreground" aria-label="Private" />}
-                  <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{relative(r.last_message_at)}</span>
+                  <span className="ms-auto shrink-0 text-[11px] text-muted-foreground">{relative(r.last_message_at)}</span>
                 </div>
                 <div className="truncate text-xs">{r.subject || "(no subject)"}</div>
                 <div className="flex gap-2 text-[11px] text-muted-foreground">

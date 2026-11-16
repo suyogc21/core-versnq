@@ -136,9 +136,9 @@ function RequirementRow({ req, first, last, onMove }: { req: Requirement; first:
           </button>
         </div>
         <Switch aria-label={`${req.name} on`} checked={req.is_active} onCheckedChange={(on) => patch({ is_active: on })} />
-        <button className={cn("min-w-0 flex-1 truncate text-left font-medium", !req.is_active && "text-muted-foreground line-through")} onClick={() => setOpen(!open)}>
+        <button className={cn("min-w-0 flex-1 truncate text-start font-medium", !req.is_active && "text-muted-foreground line-through")} onClick={() => setOpen(!open)}>
           {req.name}
-          <span className="ml-2 text-xs font-normal text-muted-foreground">
+          <span className="ms-2 text-xs font-normal text-muted-foreground">
             {req.is_required ? "required" : "optional"}
             {req.allow_office ? " · Word/Excel ok" : ""}
             {productNames.length ? ` · only for ${productNames.join(", ")}` : " · everyone"}

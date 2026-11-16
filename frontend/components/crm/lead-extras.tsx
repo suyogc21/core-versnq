@@ -148,7 +148,7 @@ function MergeDialog({ survivor, otherId, onClose }: { survivor: Lead; otherId: 
             ) : (
               <div className="overflow-x-auto rounded-lg border">
                 <table className="w-full text-xs">
-                  <thead className="bg-muted/50 text-left text-muted-foreground">
+                  <thead className="bg-muted/50 text-start text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2 font-medium">Detail</th>
                       <th className="px-3 py-2 font-medium">Keep this ({survivor.display_name})</th>
@@ -243,7 +243,7 @@ export function ConsentCard({ lead }: { lead: Lead }) {
             <span className="w-16 text-muted-foreground">{{ email: "Email", whatsapp: "WhatsApp", sms: "SMS" }[channel]}</span>
             <span className={cn(state === "opted_out" && "font-medium text-destructive")}>{state ? CONSENT_LABEL[state] : "Not asked"}</span>
             {can("leads.edit") && (
-              <span className="ml-auto">
+              <span className="ms-auto">
                 {state === "opted_out" ? (
                   <button className="text-primary hover:underline" onClick={() => setOptIn(channel)}>
                     Record opt-in
@@ -343,7 +343,7 @@ export function OrganisationCard({ lead }: { lead: Lead }) {
           <Link key={p.id} href={`/leads/${p.id}`} className="flex items-center gap-2 rounded px-1 py-0.5 hover:bg-accent">
             <Users className="size-3.5 text-muted-foreground" />
             <span className="truncate">{p.display_name}</span>
-            <span className="ml-auto truncate text-muted-foreground">{p.primary_email ?? (p.primary_phone && formatPhone(p.primary_phone))}</span>
+            <span className="ms-auto truncate text-muted-foreground">{p.primary_email ?? (p.primary_phone && formatPhone(p.primary_phone))}</span>
           </Link>
         ))}
       </div>
@@ -359,7 +359,7 @@ export function OrganisationCard({ lead }: { lead: Lead }) {
             {org.data?.display_name ?? "…"}
           </Link>
           {editable && (
-            <button className="ml-auto text-muted-foreground hover:underline" onClick={() => link(null)}>
+            <button className="ms-auto text-muted-foreground hover:underline" onClick={() => link(null)}>
               Unlink
             </button>
           )}
@@ -374,7 +374,7 @@ export function OrganisationCard({ lead }: { lead: Lead }) {
                 <span className="text-muted-foreground"> ({s.reason === "domain" ? "same email domain" : "same company name"})</span>
               </span>
               {editable && (
-                <span className="ml-auto flex gap-2">
+                <span className="ms-auto flex gap-2">
                   <button className="font-medium text-primary hover:underline" onClick={() => link(s.id)}>
                     Link
                   </button>
@@ -398,7 +398,7 @@ export function OrganisationCard({ lead }: { lead: Lead }) {
             <div className="space-y-1">
               <Input autoFocus className="h-7" placeholder={`Search ${label("lead", true).toLowerCase()} that are companies…`} value={q} onChange={(e) => search(e.target.value)} />
               {results.map((r) => (
-                <button key={r.id} className="flex w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-accent" onClick={() => link(r.id)}>
+                <button key={r.id} className="flex w-full items-center gap-2 rounded px-1 py-1 text-start hover:bg-accent" onClick={() => link(r.id)}>
                   <Building2 className="size-3.5 text-muted-foreground" />
                   {r.display_name}
                 </button>

@@ -110,7 +110,7 @@ export function ConditionRow({ choices, value, onChange, onRemove }: { choices: 
       {field && !NO_VALUE_OPS.has(value.op) && (
         <ValueInput field={field} list={list} value={value.value} onChange={(v) => onChange({ ...value, value: v })} />
       )}
-      <button type="button" aria-label="Remove condition" className="ml-auto p-1.5 text-muted-foreground hover:text-destructive" onClick={onRemove}>
+      <button type="button" aria-label="Remove condition" className="ms-auto p-1.5 text-muted-foreground hover:text-destructive" onClick={onRemove}>
         <X className="size-3.5" />
       </button>
     </div>

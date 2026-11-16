@@ -347,27 +347,27 @@ function Draft({ inv }: { inv: Invoice }) {
 function Totals({ inv }: { inv: Invoice }) {
   const m = (n: number) => formatMoney(n, inv.currency);
   return (
-    <dl className="ml-auto grid max-w-xs grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[13px] tabular-nums" data-totals>
+    <dl className="ms-auto grid max-w-xs grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[13px] tabular-nums" data-totals>
       <dt className="text-muted-foreground">Subtotal</dt>
-      <dd className="text-right">{m(inv.subtotal_minor)}</dd>
+      <dd className="text-end">{m(inv.subtotal_minor)}</dd>
       {inv.tax_breakdown.map((b) => (
         <div key={`${b.name}${b.rate_bp}`} className="contents">
           <dt className="text-muted-foreground">
             {String(b.name)} {percent(Number(b.rate_bp))}%
           </dt>
-          <dd className="text-right">{m(Number(b.amount))}</dd>
+          <dd className="text-end">{m(Number(b.amount))}</dd>
         </div>
       ))}
       <dt className="border-t pt-1 font-semibold">Total</dt>
-      <dd className="border-t pt-1 text-right font-semibold" data-total>
+      <dd className="border-t pt-1 text-end font-semibold" data-total>
         {m(inv.total_minor)}
       </dd>
       {inv.paid_minor > 0 && (
         <>
           <dt className="text-muted-foreground">Paid</dt>
-          <dd className="text-right text-emerald-700 dark:text-emerald-300">{m(inv.paid_minor)}</dd>
+          <dd className="text-end text-emerald-700 dark:text-emerald-300">{m(inv.paid_minor)}</dd>
           <dt className="font-semibold">Balance due</dt>
-          <dd className="text-right font-semibold" data-balance>
+          <dd className="text-end font-semibold" data-balance>
             {m(inv.total_minor - inv.paid_minor)}
           </dd>
         </>
@@ -390,7 +390,7 @@ function Schedule({ inv, onLink }: { inv: Invoice; onLink?: (installmentId: stri
             <span className={cn("font-medium", st.tone)}>{st.label}</span>
             {i.paid_minor > 0 && left > 0 && <span className="text-muted-foreground">{formatMoney(left, inv.currency)} left</span>}
             {onLink && left > 0 && (
-              <Button size="sm" variant="ghost" className="ml-auto h-7" onClick={() => onLink(i.id)}>
+              <Button size="sm" variant="ghost" className="ms-auto h-7" onClick={() => onLink(i.id)}>
                 <Link2 /> Payment link
               </Button>
             )}
@@ -479,25 +479,25 @@ function Issued({ inv }: { inv: Invoice }) {
         <Section title="Lines">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead className="text-left text-muted-foreground">
+              <thead className="text-start text-muted-foreground">
                 <tr>
                   <th className="py-1 font-medium">Description</th>
-                  <th className="py-1 text-right font-medium">Qty</th>
-                  <th className="py-1 text-right font-medium">Price</th>
-                  <th className="py-1 text-right font-medium">Discount</th>
-                  <th className="py-1 text-right font-medium">Tax</th>
-                  <th className="py-1 text-right font-medium">Amount</th>
+                  <th className="py-1 text-end font-medium">Qty</th>
+                  <th className="py-1 text-end font-medium">Price</th>
+                  <th className="py-1 text-end font-medium">Discount</th>
+                  <th className="py-1 text-end font-medium">Tax</th>
+                  <th className="py-1 text-end font-medium">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y tabular-nums">
                 {inv.lines.map((l) => (
                   <tr key={l.id}>
                     <td className="py-1.5">{l.description}</td>
-                    <td className="py-1.5 text-right">{l.quantity}</td>
-                    <td className="py-1.5 text-right">{formatMoney(l.unit_price_minor, inv.currency)}</td>
-                    <td className="py-1.5 text-right">{l.discount_minor ? formatMoney(l.discount_minor, inv.currency) : "—"}</td>
-                    <td className="py-1.5 text-right">{l.tax_name ?? "—"}</td>
-                    <td className="py-1.5 text-right">{formatMoney(l.total_minor, inv.currency)}</td>
+                    <td className="py-1.5 text-end">{l.quantity}</td>
+                    <td className="py-1.5 text-end">{formatMoney(l.unit_price_minor, inv.currency)}</td>
+                    <td className="py-1.5 text-end">{l.discount_minor ? formatMoney(l.discount_minor, inv.currency) : "—"}</td>
+                    <td className="py-1.5 text-end">{l.tax_name ?? "—"}</td>
+                    <td className="py-1.5 text-end">{formatMoney(l.total_minor, inv.currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -553,7 +553,7 @@ function Issued({ inv }: { inv: Invoice }) {
                   <span className="text-muted-foreground">{day(p.paid_on)}</span>
                   {p.reference && <span className="text-muted-foreground">Ref {p.reference}</span>}
                   {p.status === "reversed" && <span className="text-red-700 dark:text-red-300">Reversed: {p.reverse_reason}</span>}
-                  <span className="ml-auto flex items-center gap-1">
+                  <span className="ms-auto flex items-center gap-1">
                     <Button size="sm" variant="ghost" className="h-7" onClick={() => openPdf("receipt", p.id).catch((e) => toast.error(e.message))}>
                       <Receipt /> {p.receipt_number}
                     </Button>
@@ -645,7 +645,7 @@ function Issued({ inv }: { inv: Invoice }) {
                 <li key={m.id} className="flex items-center gap-2">
                   <span className="capitalize">{m.kind}</span>
                   <span className="truncate text-muted-foreground">{m.to_address}</span>
-                  <span className={cn("ml-auto", m.status === "failed" ? "text-red-700 dark:text-red-300" : "text-muted-foreground")} title={m.error ?? undefined}>
+                  <span className={cn("ms-auto", m.status === "failed" ? "text-red-700 dark:text-red-300" : "text-muted-foreground")} title={m.error ?? undefined}>
                     {m.status === "sent" ? `sent ${relative(m.sent_at)}` : m.status}
                   </span>
                 </li>

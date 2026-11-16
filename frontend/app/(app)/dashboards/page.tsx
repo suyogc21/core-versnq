@@ -137,7 +137,7 @@ function Bars({ items, empty = "Nothing in this period." }: { items: { label: Re
             <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
               <span className={cn("block h-full rounded-full", i.tone ?? "bg-primary")} style={{ width: `${(i.value / max) * 100}%` }} />
             </span>
-            <span className="min-w-28 shrink-0 text-right whitespace-nowrap tabular-nums">{i.text ?? i.value}</span>
+            <span className="min-w-28 shrink-0 text-end whitespace-nowrap tabular-nums">{i.text ?? i.value}</span>
           </>
         );
         return (
@@ -244,16 +244,16 @@ function Team({ q }: { q: PeriodQuery }) {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs" data-leaderboard>
-              <thead className="text-left text-muted-foreground">
+              <thead className="text-start text-muted-foreground">
                 <tr>
                   <th className="py-1 font-medium">Person</th>
-                  <th className="py-1 text-right font-medium">New leads</th>
-                  <th className="py-1 text-right font-medium">Calls</th>
-                  <th className="py-1 text-right font-medium">Follow-ups</th>
-                  <th className="py-1 text-right font-medium">Won</th>
-                  <th className="py-1 text-right font-medium">Booked</th>
-                  <th className="py-1 text-right font-medium">Collected</th>
-                  <th className="py-1 text-right font-medium">Slow responses</th>
+                  <th className="py-1 text-end font-medium">New leads</th>
+                  <th className="py-1 text-end font-medium">Calls</th>
+                  <th className="py-1 text-end font-medium">Follow-ups</th>
+                  <th className="py-1 text-end font-medium">Won</th>
+                  <th className="py-1 text-end font-medium">Booked</th>
+                  <th className="py-1 text-end font-medium">Collected</th>
+                  <th className="py-1 text-end font-medium">Slow responses</th>
                 </tr>
               </thead>
               <tbody className="divide-y tabular-nums">
@@ -264,13 +264,13 @@ function Team({ q }: { q: PeriodQuery }) {
                         {r.name}
                       </Link>
                     </td>
-                    <td className="py-1.5 text-right">{r.new_leads}</td>
-                    <td className="py-1.5 text-right">{r.calls}</td>
-                    <td className="py-1.5 text-right">{r.follow_ups_done}</td>
-                    <td className="py-1.5 text-right font-medium">{r.deals_won}</td>
-                    <td className="py-1.5 text-right">{amounts(r.booked)}</td>
-                    <td className="py-1.5 text-right">{amounts(r.collected)}</td>
-                    <td className={cn("py-1.5 text-right", r.sla_missed > 0 && "text-red-700 dark:text-red-300")}>{r.sla_missed}</td>
+                    <td className="py-1.5 text-end">{r.new_leads}</td>
+                    <td className="py-1.5 text-end">{r.calls}</td>
+                    <td className="py-1.5 text-end">{r.follow_ups_done}</td>
+                    <td className="py-1.5 text-end font-medium">{r.deals_won}</td>
+                    <td className="py-1.5 text-end">{amounts(r.booked)}</td>
+                    <td className="py-1.5 text-end">{amounts(r.collected)}</td>
+                    <td className={cn("py-1.5 text-end", r.sla_missed > 0 && "text-red-700 dark:text-red-300")}>{r.sla_missed}</td>
                   </tr>
                 ))}
               </tbody>
@@ -371,7 +371,7 @@ function Money({ q }: { q: PeriodQuery }) {
                   {x.name}
                 </Link>
                 <span className="text-muted-foreground">{x.number}</span>
-                <span className="ml-auto font-medium text-red-700 tabular-nums dark:text-red-300">{formatMoney(x.minor, x.currency)}</span>
+                <span className="ms-auto font-medium text-red-700 tabular-nums dark:text-red-300">{formatMoney(x.minor, x.currency)}</span>
               </li>
             ))}
           </ul>

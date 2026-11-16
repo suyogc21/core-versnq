@@ -105,7 +105,7 @@ function Points({ value, onSave }: { value: number; onSave: (n: number) => void 
     <Input
       aria-label="Points"
       type="number"
-      className={cn("h-7 w-20 text-right tabular-nums", value < 0 && "text-destructive")}
+      className={cn("h-7 w-20 text-end tabular-nums", value < 0 && "text-destructive")}
       value={v}
       onChange={(e) => setV(e.target.value)}
       onBlur={() => Number(v) !== value && v !== "" && onSave(Number(v))}

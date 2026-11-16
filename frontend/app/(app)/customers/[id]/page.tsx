@@ -44,7 +44,7 @@ export default function CustomerPage() {
             <div className="text-[13px] text-muted-foreground">{[c.number, c.phone && phone(c.phone), c.email, c.owner_name && `Owner: ${c.owner_name}`].filter(Boolean).join(" · ")}</div>
           </div>
           {can("leads.edit") && (
-            <Link href={`/leads/${c.lead_id}`} className="ml-auto text-xs font-medium text-primary hover:underline">
+            <Link href={`/leads/${c.lead_id}`} className="ms-auto text-xs font-medium text-primary hover:underline">
               Open full record ↗
             </Link>
           )}

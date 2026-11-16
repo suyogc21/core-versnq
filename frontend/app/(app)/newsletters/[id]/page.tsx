@@ -150,7 +150,7 @@ function Editor({ nl }: { nl: Newsletter }) {
           <p className="text-muted-foreground">
             Plain text: a blank line starts a new paragraph, links become clickable. Every email ends with an unsubscribe link. Insert:{" "}
             {VARIABLES.map(([code, label]) => (
-              <button key={code} type="button" className="mr-2 underline" onClick={() => setV({ ...v, body: `${v.body}${code}` })}>
+              <button key={code} type="button" className="me-2 underline" onClick={() => setV({ ...v, body: `${v.body}${code}` })}>
                 {label}
               </button>
             ))}
@@ -255,7 +255,7 @@ function Editor({ nl }: { nl: Newsletter }) {
           <Button disabled={busy || !count.data?.reachable} onClick={send}>
             {sendAt ? "Schedule" : "Send now"}
           </Button>
-          <Button variant="ghost" className="ml-auto" disabled={busy} onClick={remove}>
+          <Button variant="ghost" className="ms-auto" disabled={busy} onClick={remove}>
             Delete draft
           </Button>
         </div>
@@ -297,7 +297,7 @@ function Results({ nl }: { nl: Newsletter }) {
             {nl.status === "scheduled" && nl.send_at ? `Goes out ${new Date(nl.send_at).toLocaleString()}` : nl.subject}
           </span>
           {["scheduled", "sending"].includes(nl.status) && (
-            <Button size="sm" variant="outline" className="ml-auto" onClick={cancel}>
+            <Button size="sm" variant="outline" className="ms-auto" onClick={cancel}>
               Cancel
             </Button>
           )}
@@ -322,7 +322,7 @@ function Results({ nl }: { nl: Newsletter }) {
             <li key={p.email} className="flex flex-wrap items-center gap-2 py-1.5">
               <span className="font-medium">{p.name ?? p.email}</span>
               <span className="text-muted-foreground">{p.email}</span>
-              <span className="ml-auto text-xs text-muted-foreground">
+              <span className="ms-auto text-xs text-muted-foreground">
                 {p.status === "sent"
                   ? [p.bounced && "bounced", p.unsubscribed && "unsubscribed", p.clicked ? "clicked" : p.opened && "opened"].filter(Boolean).join(" · ") || "sent"
                   : p.status === "queued"

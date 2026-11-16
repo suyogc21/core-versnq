@@ -68,7 +68,7 @@ export default function NewslettersPage() {
               <Link key={n.id} href={`/newsletters/${n.id}`} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-sm hover:bg-accent" data-newsletter={n.name}>
                 <span className="font-medium">{n.name}</span>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{STATUS_LABELS[n.status] ?? n.status}</span>
-                <span className="ml-auto text-muted-foreground">
+                <span className="ms-auto text-muted-foreground">
                   {n.report.sent ? `${n.report.sent} sent · ${pct(n.report.opened, n.report.sent)} opened · ${pct(n.report.clicked, n.report.sent)} clicked` : n.subject}
                 </span>
               </Link>

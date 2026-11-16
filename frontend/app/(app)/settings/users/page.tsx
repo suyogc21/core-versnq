@@ -261,7 +261,7 @@ export default function UsersPage() {
             reset();
           }}
         />
-        <div className="ml-auto hidden md:block">
+        <div className="ms-auto hidden md:block">
           <TableTools columns={columns} prefs={prefs} />
         </div>
       </div>

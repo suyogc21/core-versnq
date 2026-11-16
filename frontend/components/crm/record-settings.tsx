@@ -331,7 +331,7 @@ function Stages({ rtype }: { rtype: RecordType }) {
             <Button
               size="icon-sm"
               variant="ghost"
-              className="ml-auto"
+              className="ms-auto"
               aria-label={`Delete ${s.name}`}
               onClick={() => save(async () => unwrap(await api.DELETE("/api/v1/record-types/{type_id}/stages/{stage_id}", { params: { path: { type_id: rtype.id, stage_id: s.id } } })), "Deleted")}
             >
@@ -438,7 +438,7 @@ function Access({ rtype }: { rtype: RecordType }) {
       <p className="text-xs text-muted-foreground">The Owner can always do everything. {rtype.has_owner ? "“Sees” works like leads: their own, their team's, or all." : "This type is shared: anyone who can view sees all of them."}</p>
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+          <thead className="bg-muted/50 text-start text-xs text-muted-foreground">
             <tr>
               <th className="px-3 py-2 font-medium">Role</th>
               {["View", "Add", "Edit", "Delete"].map((h) => (
@@ -509,7 +509,7 @@ function LinkTypes({ types }: { types: RecordType[] }) {
             <Button
               size="icon-sm"
               variant="ghost"
-              className="ml-auto"
+              className="ms-auto"
               aria-label={`Delete ${lt.label}`}
               onClick={() => confirm(`Delete "${lt.label}"?`) && save(async () => unwrap(await api.DELETE("/api/v1/link-types/{link_type_id}", { params: { path: { link_type_id: lt.id } } })), "Deleted")}
             >

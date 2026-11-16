@@ -89,7 +89,7 @@ export default function KeyAccountPage() {
             </Link>
           </span>
         )}
-        <Link href={`/leads/${a.org_lead_id}`} className="ml-auto text-xs font-medium text-primary hover:underline">
+        <Link href={`/leads/${a.org_lead_id}`} className="ms-auto text-xs font-medium text-primary hover:underline">
           Open organisation ↗
         </Link>
       </div>
@@ -164,7 +164,7 @@ function Overview({ a }: { a: KeyAccountDetail }) {
                 <li key={t.id} className="flex items-center gap-2 py-1.5">
                   <span className="flex-1">{t.title}</span>
                   <span className="text-muted-foreground">{t.owner_name}</span>
-                  <span className="w-24 text-right text-muted-foreground">{relative(t.due_at)}</span>
+                  <span className="w-24 text-end text-muted-foreground">{relative(t.due_at)}</span>
                 </li>
               ))}
             </ul>
@@ -279,7 +279,7 @@ function Goals({ a }: { a: KeyAccountDetail }) {
             />
             <span className={cn("flex-1", g.status === "done" && "text-muted-foreground line-through")}>{g.title}</span>
             {g.target_minor !== null && g.currency && <span className="tabular-nums">{formatMoney(g.target_minor, g.currency, { compact: true })}</span>}
-            {g.due_on && <span className="w-24 text-right text-muted-foreground">by {day(g.due_on)}</span>}
+            {g.due_on && <span className="w-24 text-end text-muted-foreground">by {day(g.due_on)}</span>}
           </li>
         ))}
         {a.goals.length === 0 && <li className="py-1.5 text-muted-foreground">No goals yet.</li>}
@@ -340,7 +340,7 @@ function Units({ a }: { a: KeyAccountDetail }) {
                 </option>
               ))}
             </NativeSelect>
-            <span className="w-24 text-right tabular-nums">{u.budget_minor !== null && u.budget_currency ? formatMoney(u.budget_minor, u.budget_currency, { compact: true }) : "—"}</span>
+            <span className="w-24 text-end tabular-nums">{u.budget_minor !== null && u.budget_currency ? formatMoney(u.budget_minor, u.budget_currency, { compact: true }) : "—"}</span>
             {a.can_edit && (
               <Button
                 size="icon"
@@ -397,9 +397,9 @@ function GridTab({ a }: { a: KeyAccountDetail }) {
         <table className="w-full border-separate border-spacing-1 text-xs" data-grid>
           <thead>
             <tr>
-              <th className="text-left font-medium text-muted-foreground">Department</th>
+              <th className="text-start font-medium text-muted-foreground">Department</th>
               {g.products.map((p) => (
-                <th key={p.id} className="min-w-28 text-left font-medium text-muted-foreground">
+                <th key={p.id} className="min-w-28 text-start font-medium text-muted-foreground">
                   {p.name}
                 </th>
               ))}
@@ -408,13 +408,13 @@ function GridTab({ a }: { a: KeyAccountDetail }) {
           <tbody>
             {g.units.map((u) => (
               <tr key={u.id}>
-                <td className="pr-2 font-medium whitespace-nowrap">{u.name}</td>
+                <td className="pe-2 font-medium whitespace-nowrap">{u.name}</td>
                 {g.products.map((p) => {
                   const c = cell(u.id, p.id);
                   const s = CELL[c.state] ?? CELL.empty;
                   return (
                     <td key={p.id}>
-                      <button className={cn("w-full rounded-md px-2 py-2 text-left font-medium", s.tone)} onClick={() => setOpen(c)} data-cell={`${u.name}|${p.name}`}>
+                      <button className={cn("w-full rounded-md px-2 py-2 text-start font-medium", s.tone)} onClick={() => setOpen(c)} data-cell={`${u.name}|${p.name}`}>
                         {s.label}
                         {c.deals.length > 0 && <span className="block text-[10px] font-normal opacity-80">{c.deals.length === 1 ? formatMoney(c.deals[0].amount_minor, c.deals[0].currency, { compact: true }) : `${c.deals.length} deals`}</span>}
                       </button>
@@ -544,7 +544,7 @@ function People({ a }: { a: KeyAccountDetail }) {
   return (
     <div className="surface overflow-x-auto p-4">
       <table className="w-full text-xs" data-people>
-        <thead className="text-left text-muted-foreground">
+        <thead className="text-start text-muted-foreground">
           <tr>
             <th className="py-1 font-medium">Person</th>
             <th className="py-1 font-medium">Department</th>
@@ -563,7 +563,7 @@ function People({ a }: { a: KeyAccountDetail }) {
                   <Link href={`/leads/${p.lead_id}`} className="font-medium hover:underline">
                     {p.name}
                   </Link>
-                  {p.stance && <span className={cn("ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-medium", STANCE[p.stance]?.tone)}>{STANCE[p.stance]?.label}</span>}
+                  {p.stance && <span className={cn("ms-2 rounded-full px-1.5 py-0.5 text-[10px] font-medium", STANCE[p.stance]?.tone)}>{STANCE[p.stance]?.label}</span>}
                 </td>
                 <td className="py-1.5">
                   <NativeSelect className="h-7" aria-label={`Department of ${p.name}`} disabled={!a.can_edit} value={p.unit_id ?? ""} onChange={(e) => save(p.lead_id, { ...v, unit_id: e.target.value || null })}>
@@ -631,7 +631,7 @@ function Tree({ a }: { a: KeyAccountDetail }) {
           <HealthDot health={n.health} withLabel={false} />
           <span className="font-medium">{n.name}</span>
           <TierPill tier={n.tier} />
-          <span className="ml-auto text-xs text-muted-foreground">
+          <span className="ms-auto text-xs text-muted-foreground">
             won {amounts(n.rollup.won_this_year)} · pipeline {amounts(n.rollup.pipeline)}
           </span>
         </Link>

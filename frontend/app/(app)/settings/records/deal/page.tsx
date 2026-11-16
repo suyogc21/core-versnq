@@ -216,7 +216,7 @@ function PipelineEditor({ p }: { p: Pipeline }) {
         </label>
         <span className="text-xs text-muted-foreground">{p.deal_count} deals</span>
         {p.deal_count === 0 && (
-          <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={deletePipeline}>
+          <Button size="sm" variant="ghost" className="ms-auto text-muted-foreground hover:text-destructive" onClick={deletePipeline}>
             Delete
           </Button>
         )}
@@ -301,7 +301,7 @@ function StageRow({
       <button className="text-xs text-primary hover:underline" onClick={onRequires}>
         {s.required_fields.length ? `Requires ${s.required_fields.length}` : "Required fields"}
       </button>
-      <button aria-label={`Remove ${s.name}`} className="ml-auto text-muted-foreground hover:text-destructive" onClick={onRemove}>
+      <button aria-label={`Remove ${s.name}`} className="ms-auto text-muted-foreground hover:text-destructive" onClick={onRemove}>
         <Trash2 className="size-3.5" />
       </button>
     </div>
@@ -431,9 +431,9 @@ function Products() {
         {(products.data ?? []).length === 0 && <p className="px-3 py-4 text-sm text-muted-foreground">No products yet.</p>}
         {(products.data ?? []).map((p) => (
           <div key={p.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-            <button className={cn("min-w-0 flex-1 truncate text-left font-medium hover:underline", !p.is_active && "text-muted-foreground line-through")} onClick={() => setEditing(p)}>
+            <button className={cn("min-w-0 flex-1 truncate text-start font-medium hover:underline", !p.is_active && "text-muted-foreground line-through")} onClick={() => setEditing(p)}>
               {p.name}
-              {p.code && <span className="ml-2 text-xs font-normal text-muted-foreground">{p.code}</span>}
+              {p.code && <span className="ms-2 text-xs font-normal text-muted-foreground">{p.code}</span>}
             </button>
             <span className="tabular-nums">{formatMoney(p.price_minor, p.currency)}</span>
             <Switch
@@ -508,7 +508,7 @@ function ProductDialog({ product, onClose }: { product: Product | null; onClose:
           </div>
           <DialogFooter>
             {product && (
-              <Button type="button" variant="ghost" className="mr-auto text-muted-foreground hover:text-destructive" onClick={remove}>
+              <Button type="button" variant="ghost" className="me-auto text-muted-foreground hover:text-destructive" onClick={remove}>
                 Delete
               </Button>
             )}

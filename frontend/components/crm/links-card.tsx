@@ -167,9 +167,9 @@ function AddLink({ end, options, typeById, onDone }: { end: LinkEnd; options: Op
       </NativeSelect>
       <Input autoFocus aria-label="Search to link" className="h-7" placeholder="Search by name…" value={q} onChange={(e) => search(e.target.value)} />
       {results.map((r) => (
-        <button key={r.id} className="flex w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-accent" onClick={() => link(r.id)}>
+        <button key={r.id} className="flex w-full items-center gap-2 rounded px-1 py-1 text-start hover:bg-accent" onClick={() => link(r.id)}>
           <span className="truncate">{r.name}</span>
-          {r.hint && <span className="ml-auto truncate text-muted-foreground">{r.hint}</span>}
+          {r.hint && <span className="ms-auto truncate text-muted-foreground">{r.hint}</span>}
         </button>
       ))}
       {q.trim().length >= 2 && results.length === 0 && <p className="text-muted-foreground">No match.</p>}

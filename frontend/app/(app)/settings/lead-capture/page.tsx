@@ -118,7 +118,7 @@ function Forms() {
             <span className="text-xs text-muted-foreground">
               {sourceName(f.source_id)} · key {f.key_hint}… · {f.last_used_at ? `last lead ${relative(f.last_used_at)}` : "no leads yet"}
             </span>
-            <span className="ml-auto flex flex-wrap gap-1">
+            <span className="ms-auto flex flex-wrap gap-1">
               {f.hosted && f.public_id ? (
                 <>
                   <Button size="sm" variant="outline" onClick={() => copyText(pageUrl(f.public_id!))}>
@@ -484,7 +484,7 @@ function Assignment() {
             <span className="text-xs text-muted-foreground">
               {r.conditions.length ? `${r.conditions.length} condition${r.conditions.length > 1 ? "s" : ""}` : "Every lead"} → {who(r)}
             </span>
-            <span className="ml-auto flex">
+            <span className="ms-auto flex">
               <Button size="icon-sm" variant="ghost" aria-label="Move up" disabled={i === 0} onClick={() => order(swap(list, i, -1))}>
                 <ArrowUp />
               </Button>
@@ -742,7 +742,7 @@ function Sla() {
                 {BREACH[r.on_breach]}
               </span>
               <Button
-                className="ml-auto"
+                className="ms-auto"
                 size="icon-sm"
                 variant="ghost"
                 aria-label={`Delete ${r.name}`}

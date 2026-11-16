@@ -199,7 +199,7 @@ function Export() {
                 {e.status === "ready" ? `${((e.size_bytes ?? 0) / 1e6).toFixed(1)} MB` : e.status === "expired" ? "Expired" : e.status === "failed" ? "Failed" : "Being made…"}
               </span>
               {e.status === "ready" && (
-                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => download(e.id)}>
+                <Button size="sm" variant="ghost" className="ms-auto" onClick={() => download(e.id)}>
                   Download
                 </Button>
               )}

@@ -122,7 +122,7 @@ function Templates({ provider }: { provider: Provider | null }) {
         {(list.data ?? []).map((t) => (
           <li key={t.id} className="py-2">
             <span className="font-medium">{t.name}</span>
-            {t.dlt_template_id && <span className="ml-2 text-xs text-muted-foreground">DLT {t.dlt_template_id}</span>}
+            {t.dlt_template_id && <span className="ms-2 text-xs text-muted-foreground">DLT {t.dlt_template_id}</span>}
             <p className="text-muted-foreground">{t.body}</p>
           </li>
         ))}

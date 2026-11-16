@@ -67,7 +67,7 @@ function TagRow({ tag, all }: { tag: Tag; all: Tag[] }) {
       </div>
       <Input aria-label={`${tag.name} name`} className="h-7 w-44" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name.trim() && name !== tag.name && patch({ name: name.trim() })} />
       <span className="text-xs text-muted-foreground">used {tag.uses}×</span>
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ms-auto flex items-center gap-1.5">
         {merging ? (
           <>
             <NativeSelect aria-label="Merge into" className="h-7 w-auto" value={into} onChange={(e) => setInto(e.target.value)}>

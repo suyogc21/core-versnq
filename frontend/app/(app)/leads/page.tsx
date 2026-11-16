@@ -427,7 +427,7 @@ function LeadsList() {
             Created {created.from ?? "…"} to {created.to ?? "…"}
           </span>
         ) : null}
-        <div className="ml-auto hidden items-center gap-1 md:flex">
+        <div className="ms-auto hidden items-center gap-1 md:flex">
           {can("leads.export") && (
             <Button
               size="sm"

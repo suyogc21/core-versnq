@@ -74,7 +74,7 @@ export default function BrandsPage() {
                   <span className="font-medium">{b.name}</span>
                   {b.is_default && <Badge variant="secondary">Default</Badge>}
                   {!b.is_active && <Badge variant="outline">Off</Badge>}
-                  <span className="ml-auto flex gap-1">
+                  <span className="ms-auto flex gap-1">
                     {b.is_active && !b.is_default && (
                       <Button size="sm" variant="ghost" onClick={() => makeDefault(b)}>
                         Make default

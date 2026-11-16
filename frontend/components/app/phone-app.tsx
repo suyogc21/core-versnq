@@ -177,7 +177,7 @@ function Recordings({ status, busy, run, phone }: { status: PhoneStatus; busy: b
             If your phone records calls itself, choose the folder it saves them to. Each call&apos;s recording then goes to the lead, so your manager can listen and ACE can summarise it.
           </p>
           <p className="text-muted-foreground">Where it usually is (it differs by phone and version):</p>
-          <ul className="list-disc pl-5 text-muted-foreground">
+          <ul className="list-disc ps-5 text-muted-foreground">
             <li>Samsung: Recordings → Call</li>
             <li>Xiaomi, Redmi, Poco: MIUI → sound_recorder → call_rec</li>
             <li>OnePlus, Oppo, Realme: Music → Recordings → Call Recordings</li>
@@ -229,7 +229,7 @@ export function PhonesWithTheApp() {
               <span className="text-muted-foreground">
                 {[d.device, d.version && `app ${d.version}`, d.last_call_at ? `last call ${new Date(d.last_call_at).toLocaleString()}` : "no calls yet"].filter(Boolean).join(" · ")}
               </span>
-              <Button size="sm" variant="ghost" className="ml-auto" onClick={() => remove(d.id)}>
+              <Button size="sm" variant="ghost" className="ms-auto" onClick={() => remove(d.id)}>
                 Remove
               </Button>
             </li>

@@ -60,14 +60,14 @@ export default function ReportsPage() {
               <li key={r.id}>
                 <button
                   type="button"
-                  className={cn("w-full truncate rounded px-2 py-1 text-left hover:bg-accent", savedId === r.id && "bg-accent font-medium")}
+                  className={cn("w-full truncate rounded px-2 py-1 text-start hover:bg-accent", savedId === r.id && "bg-accent font-medium")}
                   onClick={() => {
                     setDef(r.definition);
                     setSavedId(r.id);
                   }}
                 >
                   {r.name}
-                  {!r.yours && <span className="ml-1 text-xs text-muted-foreground">(shared)</span>}
+                  {!r.yours && <span className="ms-1 text-xs text-muted-foreground">(shared)</span>}
                 </button>
               </li>
             ))}
@@ -166,7 +166,7 @@ function Builder({ def, onChange, saved, onSaved }: { def: Definition; onChange:
               {label}
             </Button>
           ))}
-          <Button size="sm" variant="ghost" className="ml-auto" onClick={download} disabled={!result.data}>
+          <Button size="sm" variant="ghost" className="ms-auto" onClick={download} disabled={!result.data}>
             Download CSV
           </Button>
         </div>
@@ -208,7 +208,7 @@ function Output({ result, display }: { result: Result; display: string }) {
           <TableHeader>
             <TableRow>
               {result.columns.map((c, i) => (
-                <TableHead key={i} className={i === result.columns.length - 1 ? "text-right" : ""}>
+                <TableHead key={i} className={i === result.columns.length - 1 ? "text-end" : ""}>
                   {c}
                 </TableHead>
               ))}
@@ -221,7 +221,7 @@ function Output({ result, display }: { result: Result; display: string }) {
                   <TableCell key={j}>{l}</TableCell>
                 ))}
                 {result.money && <TableCell>{r.currency}</TableCell>}
-                <TableCell className="text-right tabular-nums">{shown(result, r.value, r.currency)}</TableCell>
+                <TableCell className="text-end tabular-nums">{shown(result, r.value, r.currency)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

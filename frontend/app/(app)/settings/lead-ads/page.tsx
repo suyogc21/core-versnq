@@ -86,7 +86,7 @@ function SourceCard({ source }: { source: Source }) {
         <h2 className="font-semibold">
           {source.provider === "facebook" ? "Facebook / Instagram" : "Google Ads"}: {source.name}
         </h2>
-        <label className="ml-auto flex items-center gap-2 text-muted-foreground">
+        <label className="ms-auto flex items-center gap-2 text-muted-foreground">
           <Switch aria-label={`${source.name} on`} checked={source.is_active} onCheckedChange={toggle} /> On
         </label>
       </div>

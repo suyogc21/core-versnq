@@ -41,7 +41,7 @@ export function NotificationBell() {
         >
           <Bell className="size-4" />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">
+            <span className="absolute -top-0.5 -end-0.5 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">
               {unread > 99 ? "99+" : unread}
             </span>
           )}
@@ -64,7 +64,7 @@ export function NotificationBell() {
               key={n.id}
               type="button"
               onClick={() => open(n, close)}
-              className={cn("flex w-full gap-2 rounded-md px-2 py-1.5 text-left hover:bg-accent", !n.read_at && "bg-primary/5")}
+              className={cn("flex w-full gap-2 rounded-md px-2 py-1.5 text-start hover:bg-accent", !n.read_at && "bg-primary/5")}
             >
               <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", n.read_at ? "bg-transparent" : "bg-primary")} />
               <span className="min-w-0 flex-1">

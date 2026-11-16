@@ -184,7 +184,7 @@ function MonthStrip() {
       <span>
         Collected <b className="tabular-nums">{amounts(c.collected)}</b>
       </span>
-      <span className="ml-auto text-xs text-muted-foreground">My numbers →</span>
+      <span className="ms-auto text-xs text-muted-foreground">My numbers →</span>
     </Link>
   );
 }

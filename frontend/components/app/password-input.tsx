@@ -11,13 +11,13 @@ export function PasswordInput({ className, ...props }: Omit<React.ComponentProps
   const [shown, setShown] = useState(false);
   return (
     <div className="relative">
-      <Input {...props} type={shown ? "text" : "password"} className={cn("pr-9", className)} />
+      <Input {...props} type={shown ? "text" : "password"} className={cn("pe-9", className)} />
       <button
         type="button"
         onClick={() => setShown(!shown)}
         aria-label={shown ? "Hide password" : "Show password"}
         aria-pressed={shown}
-        className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-muted-foreground hover:text-foreground"
+        className="absolute inset-y-0 end-0 flex w-9 items-center justify-center text-muted-foreground hover:text-foreground"
       >
         {shown ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>

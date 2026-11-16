@@ -185,9 +185,9 @@ function Stages() {
                 <ArrowDown className="size-3" />
               </button>
             </div>
-            <button className="min-w-0 flex-1 text-left" onClick={() => setEditing(s)}>
+            <button className="min-w-0 flex-1 text-start" onClick={() => setEditing(s)}>
               <StagePill stage={s} />
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="ms-2 text-xs text-muted-foreground">
                 {s.is_open ? "Open" : s.is_unqualified ? "Closed · needs a reason" : s.is_converted ? "Closed · won" : "Closed"}
                 {s.required_fields.length > 0 && ` · requires ${s.required_fields.length} field${s.required_fields.length > 1 ? "s" : ""}`}
                 {s.is_system && " · built-in"}
@@ -286,7 +286,7 @@ function StageDialog({ stage, onClose }: { stage: Stage | null; onClose: () => v
           </fieldset>
           <DialogFooter>
             {stage && !stage.is_system && (
-              <Button type="button" variant="ghost" className="mr-auto text-destructive" onClick={remove}>
+              <Button type="button" variant="ghost" className="me-auto text-destructive" onClick={remove}>
                 <Trash2 /> Delete
               </Button>
             )}
@@ -365,7 +365,7 @@ function ActivityTypes() {
       <ul className="divide-y surface">
         {list.map((t) => (
           <li key={t.id} className="flex items-center gap-2 px-3 py-2">
-            <button className="min-w-0 flex-1 text-left" onClick={() => setEditing(t)}>
+            <button className="min-w-0 flex-1 text-start" onClick={() => setEditing(t)}>
               <div className={cn("font-medium", !t.is_active && "text-muted-foreground line-through")}>{t.label}</div>
               <div className="text-xs text-muted-foreground">
                 {t.is_system ? "Built-in" : "Custom"}

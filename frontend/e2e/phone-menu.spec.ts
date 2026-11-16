@@ -6,7 +6,7 @@ import { signIn } from "./helpers";
 /** On a phone, the side menu opens, closes with its X and with a tap outside, and a link in it
  * navigates and closes it (reported from the Android app, Nov 16). */
 test("the phone menu opens, closes and navigates", async ({ browser }) => {
-  const { base, manager } = await companyWithTeams("fabrikam");
+  const { base, manager } = await companyWithTeams("alpineski");
   const ctx = await browser.newContext({ ...devices["Pixel 7"] });
   const page = await ctx.newPage();
   await signIn(page, base, manager.email, manager.password);

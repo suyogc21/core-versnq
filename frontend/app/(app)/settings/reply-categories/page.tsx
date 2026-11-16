@@ -63,7 +63,7 @@ function Editor({ initial }: { initial: ReplyCategory[] }) {
             {c.needs_human ? (
               <span className="text-xs text-muted-foreground">Always on</span>
             ) : (
-              <Button size="sm" variant="ghost" className="ml-auto" aria-label={`Remove ${c.name}`} onClick={() => setList(list.filter((_, n) => n !== i))}>
+              <Button size="sm" variant="ghost" className="ms-auto" aria-label={`Remove ${c.name}`} onClick={() => setList(list.filter((_, n) => n !== i))}>
                 <Trash2 />
               </Button>
             )}

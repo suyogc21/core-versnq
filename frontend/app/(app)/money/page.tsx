@@ -104,7 +104,7 @@ function Invoices({ overdue = false }: { overdue?: boolean }) {
             ))}
           </div>
         )}
-        <span className="ml-auto text-xs text-muted-foreground">{total} invoices</span>
+        <span className="ms-auto text-xs text-muted-foreground">{total} invoices</span>
         {can("invoices.export") && (
           <Button size="sm" variant="ghost" onClick={() => exportCsv("/api/v1/invoices/export", { q: query.q, status: query.status, overdue: query.overdue }, overdue ? "overdue-invoices" : "invoices").catch((e) => toast.error(e.message))}>
             <Download /> Export
@@ -113,13 +113,13 @@ function Invoices({ overdue = false }: { overdue?: boolean }) {
       </div>
       <div className="surface overflow-x-auto">
         <table className="w-full text-[13px]">
-          <thead className="text-left text-xs text-muted-foreground">
+          <thead className="text-start text-xs text-muted-foreground">
             <tr className="border-b">
               <th className="px-3 py-2 font-medium">Number</th>
               <th className="px-3 py-2 font-medium">Customer</th>
               <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 text-right font-medium">Total</th>
-              <th className="px-3 py-2 text-right font-medium">{overdue ? "Overdue" : "Due"}</th>
+              <th className="px-3 py-2 text-end font-medium">Total</th>
+              <th className="px-3 py-2 text-end font-medium">{overdue ? "Overdue" : "Due"}</th>
               <th className="hidden px-3 py-2 font-medium sm:table-cell">Next due</th>
               <th className="hidden px-3 py-2 font-medium md:table-cell">Owner</th>
             </tr>
@@ -134,8 +134,8 @@ function Invoices({ overdue = false }: { overdue?: boolean }) {
                 <td className="px-3 py-2">
                   <InvoiceStatus status={i.status} overdue={i.overdue_minor} />
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums">{formatMoney(i.total_minor, i.currency)}</td>
-                <td className={cn("px-3 py-2 text-right tabular-nums", overdue && "font-medium text-red-700 dark:text-red-300")}>
+                <td className="px-3 py-2 text-end tabular-nums">{formatMoney(i.total_minor, i.currency)}</td>
+                <td className={cn("px-3 py-2 text-end tabular-nums", overdue && "font-medium text-red-700 dark:text-red-300")}>
                   {i.status === "void" || i.status === "draft" ? "—" : formatMoney(overdue ? i.overdue_minor : i.total_minor - i.paid_minor, i.currency)}
                 </td>
                 <td className="hidden px-3 py-2 text-muted-foreground sm:table-cell">{day(i.next_due_date)}</td>
@@ -184,12 +184,12 @@ function Payments() {
       )}
     <div className="surface overflow-x-auto">
       <table className="w-full text-[13px]">
-        <thead className="text-left text-xs text-muted-foreground">
+        <thead className="text-start text-xs text-muted-foreground">
           <tr className="border-b">
             <th className="px-3 py-2 font-medium">Paid on</th>
             <th className="px-3 py-2 font-medium">Customer</th>
             <th className="px-3 py-2 font-medium">Invoice</th>
-            <th className="px-3 py-2 text-right font-medium">Amount</th>
+            <th className="px-3 py-2 text-end font-medium">Amount</th>
             <th className="hidden px-3 py-2 font-medium sm:table-cell">Method</th>
             <th className="px-3 py-2 font-medium">Receipt</th>
           </tr>
@@ -204,7 +204,7 @@ function Payments() {
                   {p.invoice_number}
                 </Link>
               </td>
-              <td className={cn("px-3 py-2 text-right tabular-nums", p.status === "reversed" && "line-through")}>{formatMoney(p.amount_minor, p.currency)}</td>
+              <td className={cn("px-3 py-2 text-end tabular-nums", p.status === "reversed" && "line-through")}>{formatMoney(p.amount_minor, p.currency)}</td>
               <td className="hidden px-3 py-2 text-muted-foreground sm:table-cell">{METHOD_LABEL[p.method] ?? p.method}</td>
               <td className="px-3 py-2">
                 <button className="text-primary hover:underline" onClick={() => openPdf("receipt", p.id).catch((e) => toast.error(e.message))}>

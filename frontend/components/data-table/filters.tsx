@@ -110,7 +110,7 @@ export function ViewTabs({ views, active, onChange }: { views: View[]; active: s
         >
           {v.label}
           {v.count !== undefined && (
-            <span className={cn("ml-1.5 text-xs tabular-nums text-muted-foreground", v.alert && v.count > 0 && "text-destructive")}>{v.count}</span>
+            <span className={cn("ms-1.5 text-xs tabular-nums text-muted-foreground", v.alert && v.count > 0 && "text-destructive")}>{v.count}</span>
           )}
         </button>
       ))}

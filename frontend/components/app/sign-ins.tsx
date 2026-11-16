@@ -91,9 +91,9 @@ export function MyDevices() {
                 {[d.ip, `active ${new Date(d.last_active_at).toLocaleString()}`].filter(Boolean).join(" · ")}
               </span>
               {d.this_device ? (
-                <span className="ml-auto text-xs text-muted-foreground">This device</span>
+                <span className="ms-auto text-xs text-muted-foreground">This device</span>
               ) : (
-                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => signOut(d.id)}>
+                <Button size="sm" variant="ghost" className="ms-auto" onClick={() => signOut(d.id)}>
                   Sign out
                 </Button>
               )}

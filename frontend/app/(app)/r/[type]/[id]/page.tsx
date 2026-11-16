@@ -97,7 +97,7 @@ function RecordView({ rtype, record }: { rtype: RecordType; record: RecordItem }
             {rtype.singular} · added {relative(record.created_at)}
           </span>
           {acc.delete && (
-            <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={remove}>
+            <Button size="sm" variant="ghost" className="ms-auto text-muted-foreground hover:text-destructive" onClick={remove}>
               Delete
             </Button>
           )}
@@ -163,12 +163,12 @@ function Stepper({ rtype, record, editable }: { rtype: RecordType; record: Recor
           onClick={() => move(s)}
           title={`Move to ${s.name}`}
           className={cn(
-            "min-w-28 flex-1 border-r px-3 py-1.5 whitespace-nowrap text-muted-foreground last:border-r-0 hover:bg-accent",
+            "min-w-28 flex-1 border-e px-3 py-1.5 whitespace-nowrap text-muted-foreground last:border-r-0 hover:bg-accent",
             here > -1 && i < here && "bg-primary/10 text-foreground",
             s.id === record.stage_id && "bg-primary font-semibold text-primary-foreground hover:bg-primary",
           )}
         >
-          {here > -1 && i < here && <Check className="mr-1 inline size-3" />}
+          {here > -1 && i < here && <Check className="me-1 inline size-3" />}
           {s.name}
         </button>
       ))}

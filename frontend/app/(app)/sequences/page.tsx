@@ -137,7 +137,7 @@ function Templates() {
       <div className="divide-y surface">
         {(list.data ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">{list.isLoading ? "Loading…" : "No templates yet."}</p>}
         {(list.data ?? []).map((t) => (
-          <button key={t.id} className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/50" onClick={() => setEditing(t)} data-template={t.name}>
+          <button key={t.id} className="flex w-full items-center gap-3 px-3 py-2.5 text-start text-sm hover:bg-muted/50" onClick={() => setEditing(t)} data-template={t.name}>
             <span className={cn("font-medium", !t.is_active && "text-muted-foreground line-through")}>{t.name}</span>
             <span className="min-w-0 truncate text-xs text-muted-foreground">{t.subject}</span>
           </button>
@@ -236,7 +236,7 @@ function TemplateDialog({ template, onClose }: { template: Template | null; onCl
           {template && (
             <Button
               variant="ghost"
-              className="mr-auto text-destructive"
+              className="me-auto text-destructive"
               onClick={async () => {
                 if (!confirm(`Delete the template ${template.name}?`)) return;
                 try {

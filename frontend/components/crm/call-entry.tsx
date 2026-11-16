@@ -55,7 +55,7 @@ export function CallEntry({ leadId, data, outcome }: { leadId: string; data: Cal
           {data.intent && <div className="mt-1"><span className="font-medium">Intent:</span> {INTENTS[data.intent] ?? data.intent}</div>}
           {data.next_step && <div><span className="font-medium">Next step:</span> {data.next_step}</div>}
           {(data.red_flags ?? []).length > 0 && (
-            <ul className="mt-1 list-disc pl-4 text-destructive">
+            <ul className="mt-1 list-disc ps-4 text-destructive">
               {(data.red_flags ?? []).map((f) => <li key={f}>{f}</li>)}
             </ul>
           )}

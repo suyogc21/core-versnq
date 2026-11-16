@@ -135,7 +135,7 @@ function LayoutEditor({ entity, layout }: { entity: string; layout: Layout }) {
             <Button type="button" size="icon-sm" variant="ghost" aria-label={`Move section ${s.name} down`} disabled={i === sections.length - 1} onClick={() => setSections(swap(sections, i, i + 1))}>
               <ArrowDown />
             </Button>
-            <Button type="button" size="icon-sm" variant="ghost" className="ml-auto" aria-label={`Remove section ${s.name}`} onClick={() => setSections(sections.filter((_, j) => j !== i))}>
+            <Button type="button" size="icon-sm" variant="ghost" className="ms-auto" aria-label={`Remove section ${s.name}`} onClick={() => setSections(sections.filter((_, j) => j !== i))}>
               <Trash2 />
             </Button>
           </div>
@@ -239,7 +239,7 @@ export function FieldAccessSettings({ entity }: { entity: string }) {
       <div className="overflow-x-auto surface">
         <table className="w-full text-sm" data-access-grid>
           <thead>
-            <tr className="border-b text-left text-xs text-muted-foreground">
+            <tr className="border-b text-start text-xs text-muted-foreground">
               <th className="px-3 py-2 font-medium">Field</th>
               {roles.map((r) => (
                 <th key={r.id} className="px-2 py-2 font-medium whitespace-nowrap">
@@ -253,7 +253,7 @@ export function FieldAccessSettings({ entity }: { entity: string }) {
               <tr key={f.key}>
                 <td className="px-3 py-1.5 whitespace-nowrap">
                   {f.label}
-                  {f.builtin && <span className="ml-1.5 text-[10px] text-muted-foreground uppercase">standard</span>}
+                  {f.builtin && <span className="ms-1.5 text-[10px] text-muted-foreground uppercase">standard</span>}
                 </td>
                 {roles.map((r) => (
                   <td key={r.id} className="px-2 py-1">

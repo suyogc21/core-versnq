@@ -237,7 +237,7 @@ function Column({ col, currency, editable }: { col: Board["columns"][number]; cu
           <span className="size-2 rounded-full" style={{ background: col.colour ?? "#94a3b8" }} />
           <span className="truncate">{col.name}</span>
           <span className="text-muted-foreground">{col.count}</span>
-          {col.kind === "open" && <span className="ml-auto text-[11px] text-muted-foreground">{col.probability}%</span>}
+          {col.kind === "open" && <span className="ms-auto text-[11px] text-muted-foreground">{col.probability}%</span>}
         </div>
         <div className="text-xs text-muted-foreground tabular-nums">
           {formatMoney(col.amount_minor, currency)}
@@ -279,7 +279,7 @@ function Card({ deal, overlay }: { deal: Deal; overlay?: boolean }) {
       <div className="flex items-center gap-2">
         <span className="font-semibold tabular-nums">{formatMoney(deal.amount_minor, deal.currency)}</span>
         {deal.expected_close_on && deal.status === "open" && (
-          <span className={cn("ml-auto flex items-center gap-1 text-muted-foreground", late && "text-destructive")}>
+          <span className={cn("ms-auto flex items-center gap-1 text-muted-foreground", late && "text-destructive")}>
             <CalendarDays className="size-3" />
             {deal.expected_close_on}
           </span>
@@ -333,11 +333,11 @@ function ListView({ pipelineId, owner, q }: { pipelineId: string; owner?: string
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
-          <thead className="border-y bg-muted/40 text-left text-xs text-muted-foreground">
+          <thead className="border-y bg-muted/40 text-start text-xs text-muted-foreground">
             <tr>
               <th className="px-4 py-2 font-medium">Deal</th>
               <th className="px-2 py-2 font-medium">Stage</th>
-              <th className="px-2 py-2 text-right font-medium">Value</th>
+              <th className="px-2 py-2 text-end font-medium">Value</th>
               <th className="px-2 py-2 font-medium">Expected close</th>
               <th className="px-2 py-2 font-medium">Owner</th>
             </tr>
@@ -370,7 +370,7 @@ function ListView({ pipelineId, owner, q }: { pipelineId: string; owner?: string
                     {d.stage_name} <StatusBadge status={d.status} />
                   </span>
                 </td>
-                <td className="px-2 py-2 text-right tabular-nums">{formatMoney(d.amount_minor, d.currency)}</td>
+                <td className="px-2 py-2 text-end tabular-nums">{formatMoney(d.amount_minor, d.currency)}</td>
                 <td className="px-2 py-2 text-muted-foreground">{d.expected_close_on ?? "—"}</td>
                 <td className="px-2 py-2 text-muted-foreground">{d.owner_name ?? "Unassigned"}</td>
               </tr>

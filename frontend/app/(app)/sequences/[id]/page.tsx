@@ -147,7 +147,7 @@ function AbTest({ st, i, set }: { st: Draft; i: number; set: (i: number, patch: 
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium">Variant B</span>
         <span className="text-muted-foreground">A is the template. Leave a box empty to keep the template&apos;s.</span>
-        <button type="button" className="ml-auto underline" onClick={() => set(i, { b_subject: null, b_body: null, winner: null, auto_pick_after: null })}>
+        <button type="button" className="ms-auto underline" onClick={() => set(i, { b_subject: null, b_body: null, winner: null, auto_pick_after: null })}>
           Stop testing
         </button>
       </div>
@@ -329,7 +329,7 @@ function Steps({ seq }: { seq: Sequence }) {
                 <span className="text-xs text-muted-foreground">otherwise the next step</span>
               </>
             )}
-            <span className="ml-auto flex">
+            <span className="ms-auto flex">
               <Button size="icon-sm" variant="ghost" aria-label={`Move step ${i + 1} up`} disabled={i === 0} onClick={() => move(i, -1)}>
                 <ArrowUp />
               </Button>
@@ -353,7 +353,7 @@ function Steps({ seq }: { seq: Sequence }) {
               <Plus /> {{ email: "Email", whatsapp: "WhatsApp", sms: "SMS", wait: "Wait", task: "Task", check: "Check" }[k]}
             </Button>
           ))}
-        <Button size="sm" className="ml-auto" onClick={save}>
+        <Button size="sm" className="ms-auto" onClick={save}>
           Save steps
         </Button>
       </div>
@@ -393,16 +393,16 @@ function Results({ seq }: { seq: Sequence }) {
       <div className="overflow-x-auto surface">
         <table className="w-full text-sm" data-step-stats>
           <thead>
-            <tr className="border-b text-left text-xs text-muted-foreground">
+            <tr className="border-b text-start text-xs text-muted-foreground">
               <th className="px-3 py-2 font-medium">Step</th>
-              <th className="px-2 py-2 text-right font-medium">Sent</th>
-              <th className="px-2 py-2 text-right font-medium" title="Estimated: some mail apps load images automatically">
+              <th className="px-2 py-2 text-end font-medium">Sent</th>
+              <th className="px-2 py-2 text-end font-medium" title="Estimated: some mail apps load images automatically">
                 Opened*
               </th>
-              <th className="px-2 py-2 text-right font-medium">Clicked</th>
-              <th className="px-2 py-2 text-right font-medium">Replied</th>
-              <th className="px-2 py-2 text-right font-medium">Bounced</th>
-              <th className="px-2 py-2 text-right font-medium">Unsubscribed</th>
+              <th className="px-2 py-2 text-end font-medium">Clicked</th>
+              <th className="px-2 py-2 text-end font-medium">Replied</th>
+              <th className="px-2 py-2 text-end font-medium">Bounced</th>
+              <th className="px-2 py-2 text-end font-medium">Unsubscribed</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -426,22 +426,22 @@ function Results({ seq }: { seq: Sequence }) {
                   </td>
                   {email ? (
                     <>
-                      <td className="px-2 text-right tabular-nums">{st.sent}</td>
-                      <td className="px-2 text-right tabular-nums">{pct(st.opened, st.sent)}</td>
-                      <td className="px-2 text-right tabular-nums">{pct(st.clicked, st.sent)}</td>
-                      <td className="px-2 text-right tabular-nums">{pct(st.replied, st.sent)}</td>
-                      <td className="px-2 text-right tabular-nums">{st.bounced}</td>
-                      <td className="px-2 text-right tabular-nums">{st.unsubscribed}</td>
+                      <td className="px-2 text-end tabular-nums">{st.sent}</td>
+                      <td className="px-2 text-end tabular-nums">{pct(st.opened, st.sent)}</td>
+                      <td className="px-2 text-end tabular-nums">{pct(st.clicked, st.sent)}</td>
+                      <td className="px-2 text-end tabular-nums">{pct(st.replied, st.sent)}</td>
+                      <td className="px-2 text-end tabular-nums">{st.bounced}</td>
+                      <td className="px-2 text-end tabular-nums">{st.unsubscribed}</td>
                     </>
                   ) : wa ? (
                     <>
-                      <td className="px-2 text-right tabular-nums">{st.sent}</td>
-                      <td className="px-2 text-right tabular-nums" title="Read (WhatsApp tells us exactly)">
+                      <td className="px-2 text-end tabular-nums">{st.sent}</td>
+                      <td className="px-2 text-end tabular-nums" title="Read (WhatsApp tells us exactly)">
                         {pct(st.opened, st.sent)} read
                       </td>
-                      <td className="px-2 text-right text-muted-foreground">—</td>
-                      <td className="px-2 text-right tabular-nums">{pct(st.replied, st.sent)}</td>
-                      <td colSpan={2} className="px-2 text-right text-muted-foreground">—</td>
+                      <td className="px-2 text-end text-muted-foreground">—</td>
+                      <td className="px-2 text-end tabular-nums">{pct(st.replied, st.sent)}</td>
+                      <td colSpan={2} className="px-2 text-end text-muted-foreground">—</td>
                     </>
                   ) : (
                     <td colSpan={6} className="px-2 text-xs text-muted-foreground">
@@ -492,22 +492,22 @@ function AbResult({ seqId, st, pct }: { seqId: string; st: StepStat; pct: (n: nu
       </div>
       <table className="w-full max-w-md text-sm">
         <thead>
-          <tr className="text-left text-xs text-muted-foreground">
+          <tr className="text-start text-xs text-muted-foreground">
             <th className="py-1 font-medium">Variant</th>
-            <th className="text-right font-medium">Sent</th>
-            <th className="text-right font-medium">Opened*</th>
-            <th className="text-right font-medium">Clicked</th>
-            <th className="text-right font-medium">Replied</th>
+            <th className="text-end font-medium">Sent</th>
+            <th className="text-end font-medium">Opened*</th>
+            <th className="text-end font-medium">Clicked</th>
+            <th className="text-end font-medium">Replied</th>
           </tr>
         </thead>
         <tbody>
           {(st.variants ?? []).map((v) => (
             <tr key={v.variant}>
               <td className="py-1">{v.variant.toUpperCase()}</td>
-              <td className="text-right tabular-nums">{v.sent}</td>
-              <td className="text-right tabular-nums">{pct(v.opened, v.sent)}</td>
-              <td className="text-right tabular-nums">{pct(v.clicked, v.sent)}</td>
-              <td className="text-right tabular-nums">{pct(v.replied, v.sent)}</td>
+              <td className="text-end tabular-nums">{v.sent}</td>
+              <td className="text-end tabular-nums">{pct(v.opened, v.sent)}</td>
+              <td className="text-end tabular-nums">{pct(v.clicked, v.sent)}</td>
+              <td className="text-end tabular-nums">{pct(v.replied, v.sent)}</td>
             </tr>
           ))}
         </tbody>
@@ -552,7 +552,7 @@ function People({ seq }: { seq: Sequence }) {
             <Button
               size="sm"
               variant="ghost"
-              className="ml-auto"
+              className="ms-auto"
               onClick={async () => {
                 try {
                   unwrap(await api.POST("/api/v1/enrolments/{e_id}/stop", { params: { path: { e_id: e.id } } }));
@@ -620,7 +620,7 @@ function Settings({ seq }: { seq: Sequence }) {
         {seq.active + seq.completed + seq.stopped === 0 && (
           <Button
             variant="ghost"
-            className="ml-auto text-destructive"
+            className="ms-auto text-destructive"
             onClick={async () => {
               if (!confirm(`Delete ${seq.name}?`)) return;
               try {

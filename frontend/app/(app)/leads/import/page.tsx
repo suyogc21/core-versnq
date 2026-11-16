@@ -185,7 +185,7 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
       </p>
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+          <thead className="bg-muted/50 text-start text-xs text-muted-foreground">
             <tr>
               <th className="px-3 py-2 font-medium">Column in your file</th>
               <th className="px-3 py-2 font-medium">Example values</th>
@@ -415,7 +415,7 @@ function Recent({ onOpen }: { onOpen: (id: string) => void }) {
               {relative(i.created_at)}
             </span>
             {!["queued", "running"].includes(i.status) && (
-              <button className="ml-auto text-xs text-muted-foreground hover:text-destructive hover:underline" onClick={() => remove(i)}>
+              <button className="ms-auto text-xs text-muted-foreground hover:text-destructive hover:underline" onClick={() => remove(i)}>
                 Delete stored rows
               </button>
             )}

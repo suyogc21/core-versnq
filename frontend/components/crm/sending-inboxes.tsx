@@ -105,7 +105,7 @@ export function SendingInboxes() {
               </p>
               {(m.paused_reason || m.last_error) && <p className="text-xs text-destructive">{m.paused_reason ?? m.last_error}</p>}
             </div>
-            <div className="ml-auto flex flex-wrap gap-1">
+            <div className="ms-auto flex flex-wrap gap-1">
               <Button size="sm" variant="ghost" onClick={() => setEditing(m)}>
                 Edit
               </Button>

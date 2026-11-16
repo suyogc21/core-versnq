@@ -163,7 +163,7 @@ function Editor({ saved }: { saved: Saved }) {
               <li key={b._k} className="surface space-y-2 p-3" data-block={i + 1}>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium tracking-wide uppercase">{KINDS.find((k) => k.type === b.type)?.label ?? b.type}</span>
-                  <div className="ml-auto flex">
+                  <div className="ms-auto flex">
                     <Button size="icon-sm" variant="ghost" aria-label={`Move block ${i + 1} up`} disabled={i === 0} onClick={() => move(i, -1)}>
                       <ArrowUp />
                     </Button>

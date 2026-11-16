@@ -84,7 +84,7 @@ export function FieldSettings({ entity }: { entity: string }) {
                 <ArrowDown className="size-3" />
               </button>
             </div>
-            <button className="min-w-0 flex-1 text-left" onClick={() => setEditing(f)}>
+            <button className="min-w-0 flex-1 text-start" onClick={() => setEditing(f)}>
               <div className="font-medium">
                 {f.label}
                 {f.required && <span className="text-destructive"> *</span>}
@@ -309,7 +309,7 @@ function FieldDialog({ entity, field, all, onClose }: { entity: string; field: F
           )}
           <DialogFooter>
             {field && (
-              <Button type="button" variant="ghost" className="mr-auto text-destructive" onClick={remove}>
+              <Button type="button" variant="ghost" className="me-auto text-destructive" onClick={remove}>
                 <Trash2 /> Delete
               </Button>
             )}

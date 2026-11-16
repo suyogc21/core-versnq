@@ -92,12 +92,12 @@ export function StageStepper({ lead }: { lead: Lead }) {
               onClick={() => move(s)}
               title={`Move to ${s.name}`}
               className={cn(
-                "min-w-28 flex-1 border-r px-3 py-1.5 whitespace-nowrap text-muted-foreground hover:bg-accent",
+                "min-w-28 flex-1 border-e px-3 py-1.5 whitespace-nowrap text-muted-foreground hover:bg-accent",
                 done && "bg-primary/10 text-foreground",
                 here && "bg-primary font-semibold text-primary-foreground hover:bg-primary",
               )}
             >
-              {done && <Check className="mr-1 inline size-3" />}
+              {done && <Check className="me-1 inline size-3" />}
               {s.name}
             </button>
           );
@@ -331,7 +331,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
           </div>
           <ScoreBadge leadId={l.id} band={l.score_band} score={l.score} />
           <KeyAccountBadge leadId={l.id} kind={l.kind} />
-          <div className="ml-auto">
+          <div className="ms-auto">
             <ContactActions lead={l} onLog={setLogType} />
           </div>
         </div>
@@ -435,7 +435,7 @@ export function LeadPreview({ leadId, onClose, onLogged }: { leadId: string; onC
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/10" onClick={onClose} aria-hidden />
-      <aside role="dialog" aria-label="Preview" className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col border-l bg-card shadow-2xl">
+      <aside role="dialog" aria-label="Preview" className="fixed inset-y-0 end-0 z-50 flex w-full max-w-[480px] flex-col border-s bg-card shadow-2xl">
         {!l ? (
           <p className="p-6 text-muted-foreground">Loading…</p>
         ) : (
@@ -443,7 +443,7 @@ export function LeadPreview({ leadId, onClose, onLogged }: { leadId: string; onC
             <div className="space-y-2 border-b p-4">
               <div className="flex items-center gap-2">
                 <PreviewStage lead={l} />
-                <span className="ml-auto hidden text-[11px] text-muted-foreground sm:inline">J / K next · Esc close</span>
+                <span className="ms-auto hidden text-[11px] text-muted-foreground sm:inline">J / K next · Esc close</span>
                 <button aria-label="Close preview" className="rounded p-1 hover:bg-accent" onClick={onClose}>
                   <X className="size-4" />
                 </button>
@@ -452,7 +452,7 @@ export function LeadPreview({ leadId, onClose, onLogged }: { leadId: string; onC
               <div className="text-xs text-muted-foreground">{l.primary_phone ? formatPhone(l.primary_phone) : l.primary_email}</div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <ContactActions lead={l} onLog={setLogType} />
-                <Link href={`/leads/${l.id}`} className="ml-auto text-xs font-medium text-primary hover:underline">
+                <Link href={`/leads/${l.id}`} className="ms-auto text-xs font-medium text-primary hover:underline">
                   Open full record ↗
                 </Link>
               </div>

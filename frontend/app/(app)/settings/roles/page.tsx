@@ -73,7 +73,7 @@ export default function RolesPage() {
                   <TableCell className="font-medium">
                     {r.name}
                     {r.is_system && (
-                      <Badge variant="outline" className="ml-2">
+                      <Badge variant="outline" className="ms-2">
                         System
                       </Badge>
                     )}
@@ -239,7 +239,7 @@ function RecordAccess({ roleId }: { roleId: string }) {
       <legend className="mb-1.5 text-sm font-medium">Your own record types</legend>
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-xs">
-          <thead className="bg-muted/50 text-left text-muted-foreground">
+          <thead className="bg-muted/50 text-start text-muted-foreground">
             <tr>
               <th className="px-2 py-1.5 font-medium">Type</th>
               {["View", "Add", "Edit", "Delete"].map((h) => (

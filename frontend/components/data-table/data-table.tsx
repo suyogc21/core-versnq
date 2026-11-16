@@ -209,7 +209,7 @@ export function DataTable<T>({
               <thead>
                 <tr>
                   {selectable && (
-                    <th className="sticky top-0 left-0 z-30 w-9 border-b bg-card pl-4">
+                    <th className="sticky top-0 start-0 z-30 w-9 border-b bg-card ps-4">
                       <input
                         type="checkbox"
                         aria-label="Select this page"
@@ -225,8 +225,8 @@ export function DataTable<T>({
                       <th
                         key={c.key}
                         className={cn(
-                          "sticky top-0 z-20 h-9 border-b bg-card px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground",
-                          c.pinned && cn(selectable ? "left-9" : "left-0 pl-4", "z-30 shadow-[1px_0_0_var(--border)]"),
+                          "sticky top-0 z-20 h-9 border-b bg-card px-3 text-start text-xs font-medium whitespace-nowrap text-muted-foreground",
+                          c.pinned && cn(selectable ? "start-9" : "start-0 ps-4", "z-30 shadow-[1px_0_0_var(--border)]"),
                           c.sort && "cursor-pointer select-none hover:text-foreground",
                         )}
                         aria-sort={active ? (paging.dir === "asc" ? "ascending" : "descending") : undefined}
@@ -236,7 +236,7 @@ export function DataTable<T>({
                         }
                       >
                         {c.label}
-                        {active && (paging.dir === "asc" ? <ChevronUp className="ml-0.5 inline size-3" /> : <ChevronDown className="ml-0.5 inline size-3" />)}
+                        {active && (paging.dir === "asc" ? <ChevronUp className="ms-0.5 inline size-3" /> : <ChevronDown className="ms-0.5 inline size-3" />)}
                       </th>
                     );
                   })}
@@ -260,7 +260,7 @@ export function DataTable<T>({
                       )}
                     >
                       {selectable && (
-                        <td className={cn("sticky left-0 z-10 border-b bg-inherit pl-4", rowHeight)} onClick={(e) => e.stopPropagation()}>
+                        <td className={cn("sticky start-0 z-10 border-b bg-inherit ps-4", rowHeight)} onClick={(e) => e.stopPropagation()}>
                           <input type="checkbox" aria-label="Select row" className="accent-primary" checked={isSelected} onChange={() => toggle(id)} />
                         </td>
                       )}
@@ -270,7 +270,7 @@ export function DataTable<T>({
                           className={cn(
                             "border-b px-3 whitespace-nowrap",
                             rowHeight,
-                            c.pinned && cn("sticky z-10 bg-inherit shadow-[1px_0_0_var(--border)]", selectable ? "left-9" : "left-0 pl-4"),
+                            c.pinned && cn("sticky z-10 bg-inherit shadow-[1px_0_0_var(--border)]", selectable ? "start-9" : "start-0 ps-4"),
                             c.className,
                           )}
                         >
@@ -323,7 +323,7 @@ export function DataTable<T>({
             ))}
           </select>
         </label>
-        <nav aria-label="Pages" className="ml-auto flex items-center gap-0.5">
+        <nav aria-label="Pages" className="ms-auto flex items-center gap-0.5">
           <PageButton label="Previous page" disabled={paging.page <= 1} onClick={() => go(paging.page - 1)}>
             ‹
           </PageButton>
@@ -344,7 +344,7 @@ export function DataTable<T>({
         </nav>
       </div>
       {bulk && count > 0 && (
-        <div className="absolute bottom-14 left-1/2 z-40 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap items-center gap-1.5 rounded-xl bg-foreground py-1.5 pr-1.5 pl-3.5 text-background shadow-xl">
+        <div className="absolute bottom-14 left-1/2 z-40 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap items-center gap-1.5 rounded-xl bg-foreground py-1.5 pe-1.5 ps-3.5 text-background shadow-xl">
           <span className="text-xs font-semibold whitespace-nowrap">{count} selected</span>
           {bulk(count, clear)}
           <button aria-label="Clear selection" className="rounded-md p-1 hover:bg-background/15" onClick={clear}>

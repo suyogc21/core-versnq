@@ -309,7 +309,7 @@ function TaxRow({ rate }: { rate: TaxRate }) {
     <div className="flex items-center gap-3 px-4 py-2.5 text-sm" data-tax={rate.name}>
       <span className={cn("font-medium", !rate.is_active && "text-muted-foreground line-through")}>{rate.name}</span>
       <span className="text-xs text-muted-foreground">{rate.parts.length ? rate.parts.map((p) => `${p.name} ${percent(p.rate_bp)}%`).join(" + ") : "No tax"}</span>
-      <span className="ml-auto text-xs tabular-nums">{percent(total)}%</span>
+      <span className="ms-auto text-xs tabular-nums">{percent(total)}%</span>
       <Switch
         checked={rate.is_active}
         aria-label={`${rate.name} active`}
@@ -380,7 +380,7 @@ function Gateways() {
               for {entityName(g.entity_id)} · {g.mode === "test" ? "test mode" : "live"} · key {g.key_id ? `${g.key_id} · ` : ""}
               {g.secret_hint}
             </span>
-            <span className={cn("ml-auto text-xs", g.last_error ? "text-red-700 dark:text-red-300" : "text-emerald-700 dark:text-emerald-300")}>
+            <span className={cn("ms-auto text-xs", g.last_error ? "text-red-700 dark:text-red-300" : "text-emerald-700 dark:text-emerald-300")}>
               {!g.is_active ? "Disconnected" : g.last_error ? g.last_error : `Working · checked ${relative(g.last_checked_at)}`}
             </span>
           </div>

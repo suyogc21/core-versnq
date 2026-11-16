@@ -126,7 +126,7 @@ export default function CampaignPage() {
           {problems.length > 0 && (
             <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm" role="alert">
               <div className="mb-1 font-medium">Before launching:</div>
-              <ul className="list-disc pl-5">
+              <ul className="list-disc ps-5">
                 {problems.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
@@ -279,7 +279,7 @@ function Contacts({ c, manage, onChange }: { c: Campaign; manage: boolean; onCha
               {p.contact.email}
               {p.contact.company ? ` · ${p.contact.company}` : ""}
             </span>
-            <span className="ml-auto text-xs text-muted-foreground">
+            <span className="ms-auto text-xs text-muted-foreground">
               {PLACE_LABEL[p.status] ?? p.status}
               {p.ended_reason && p.status === "stopped" ? ` (${REASON_LABEL[p.ended_reason] ?? p.ended_reason})` : ""}
               {p.status === "active" && p.next_run_at ? ` · step ${p.position} ${relative(p.next_run_at)}` : ""}
@@ -348,7 +348,7 @@ function SequenceEditor({
               </label>
             )}
             {editable && !(locked && i < (steps.data?.length ?? 0)) && draft.length > 1 && (
-              <Button size="sm" variant="ghost" className="ml-auto" aria-label={`Remove step ${i + 1}`} onClick={() => setDraft(draft.filter((_, n) => n !== i))}>
+              <Button size="sm" variant="ghost" className="ms-auto" aria-label={`Remove step ${i + 1}`} onClick={() => setDraft(draft.filter((_, n) => n !== i))}>
                 <Trash2 />
               </Button>
             )}
@@ -358,7 +358,7 @@ function SequenceEditor({
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>Version {String.fromCharCode(65 + k)}</span>
                 <button
-                  className="ml-auto hover:underline"
+                  className="ms-auto hover:underline"
                   onClick={async () => {
                     try {
                       const r = unwrap(
@@ -471,7 +471,7 @@ function Sending({ c, manage, onChange }: { c: Campaign; manage: boolean; onChan
           <input type="radio" disabled={!editable} checked={chosen.length > 0} onChange={() => setChosen(pool.slice(0, 1).map((m) => m.id))} /> Only these:
         </label>
         {chosen.length > 0 && (
-          <div className="grid gap-1 pl-6 sm:grid-cols-2">
+          <div className="grid gap-1 ps-6 sm:grid-cols-2">
             {pool.map((m) => (
               <label key={m.id} className="flex items-center gap-2 text-sm">
                 <input
@@ -620,12 +620,12 @@ function Results({ id }: { id: string }) {
         <table className="w-full text-sm tabular-nums">
           <thead className="text-xs text-muted-foreground">
             <tr>
-              <th className="px-3 py-2 text-left font-normal"></th>
-              <th className="px-3 py-2 text-right font-normal">Sent</th>
-              <th className="px-3 py-2 text-right font-normal">Replied</th>
-              <th className="px-3 py-2 text-right font-normal">Opened</th>
-              <th className="px-3 py-2 text-right font-normal">Bounced</th>
-              <th className="px-3 py-2 text-right font-normal">Unsubscribed</th>
+              <th className="px-3 py-2 text-start font-normal"></th>
+              <th className="px-3 py-2 text-end font-normal">Sent</th>
+              <th className="px-3 py-2 text-end font-normal">Replied</th>
+              <th className="px-3 py-2 text-end font-normal">Opened</th>
+              <th className="px-3 py-2 text-end font-normal">Bounced</th>
+              <th className="px-3 py-2 text-end font-normal">Unsubscribed</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -639,13 +639,13 @@ function Results({ id }: { id: string }) {
             {rows.map((r) => (
               <tr key={r.key}>
                 <td className="px-3 py-2">{r.label}</td>
-                <td className="px-3 py-2 text-right">{r.sent}</td>
-                <td className="px-3 py-2 text-right">
+                <td className="px-3 py-2 text-end">{r.sent}</td>
+                <td className="px-3 py-2 text-end">
                   {r.replied} <span className="text-xs text-muted-foreground">{pct(r.replied, r.sent)}</span>
                 </td>
-                <td className="px-3 py-2 text-right">{r.opened || "—"}</td>
-                <td className="px-3 py-2 text-right">{r.bounced}</td>
-                <td className="px-3 py-2 text-right">{r.unsubscribed}</td>
+                <td className="px-3 py-2 text-end">{r.opened || "—"}</td>
+                <td className="px-3 py-2 text-end">{r.bounced}</td>
+                <td className="px-3 py-2 text-end">{r.unsubscribed}</td>
               </tr>
             ))}
           </tbody>

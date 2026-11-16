@@ -107,7 +107,7 @@ function Keys() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="ml-auto"
+                className="ms-auto"
                 onClick={() =>
                   confirm(`Revoke ${k.name}? Anything using it stops working at once.`) &&
                   save(async () => unwrap(await api.POST("/api/v1/integrations/keys/{key_id}/revoke", { params: { path: { key_id: k.id } } })), "Revoked")
@@ -245,7 +245,7 @@ function Webhooks() {
                 {w.name}
               </button>
               <span className="min-w-0 truncate text-xs text-muted-foreground">{w.url}</span>
-              <span className="ml-auto flex gap-1">
+              <span className="ms-auto flex gap-1">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -286,8 +286,8 @@ function Webhooks() {
             </div>
             <div className="text-xs text-muted-foreground">
               {w.events.includes("*") ? "Every event" : w.events.join(", ")}
-              {w.switched_off_reason && !w.is_active && <span className="ml-2 text-destructive">{w.switched_off_reason}</span>}
-              {w.failing_since && w.is_active && <span className="ml-2 text-amber-700 dark:text-amber-300">Failing since {when(w.failing_since)}</span>}
+              {w.switched_off_reason && !w.is_active && <span className="ms-2 text-destructive">{w.switched_off_reason}</span>}
+              {w.failing_since && w.is_active && <span className="ms-2 text-amber-700 dark:text-amber-300">Failing since {when(w.failing_since)}</span>}
             </div>
           </div>
         ))}
@@ -433,7 +433,7 @@ function ApiLog() {
             <span className="min-w-0 truncate font-mono">
               {r.method} {r.path}
             </span>
-            <span className={cn("ml-auto font-medium tabular-nums", tone(r.status))}>{r.status}</span>
+            <span className={cn("ms-auto font-medium tabular-nums", tone(r.status))}>{r.status}</span>
             <span className="text-muted-foreground tabular-nums">{r.duration_ms} ms</span>
           </div>
         ))}
@@ -466,11 +466,11 @@ function WebhookLog() {
       <div className="divide-y surface" data-webhook-log>
         {(log.data ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">{log.isLoading ? "Loading…" : "Nothing yet."}</p>}
         {(log.data ?? []).map((d) => (
-          <button key={d.id} className="flex w-full flex-wrap items-center gap-x-3 gap-y-0.5 px-3 py-2 text-left text-xs hover:bg-muted/50" onClick={() => setOpen(d)} data-delivery={d.event_type}>
+          <button key={d.id} className="flex w-full flex-wrap items-center gap-x-3 gap-y-0.5 px-3 py-2 text-start text-xs hover:bg-muted/50" onClick={() => setOpen(d)} data-delivery={d.event_type}>
             <span className="text-muted-foreground tabular-nums">{when(d.created_at)}</span>
             <span className="font-mono">{d.event_type}</span>
             <span className="text-muted-foreground">→ {hookName(d.endpoint_id)}</span>
-            <span className={cn("ml-auto font-medium", d.status === "ok" ? tone(200) : d.status === "failed" ? tone(500) : "text-amber-700 dark:text-amber-300")}>
+            <span className={cn("ms-auto font-medium", d.status === "ok" ? tone(200) : d.status === "failed" ? tone(500) : "text-amber-700 dark:text-amber-300")}>
               {STATUS[d.status]}
               {d.attempts > 1 ? ` · ${d.attempts} tries` : ""}
             </span>
@@ -568,7 +568,7 @@ function Archives() {
           <span className="font-medium">{a.kind === "api" ? "API calls" : "Webhook messages"}</span>
           <span className="text-muted-foreground">{a.month}</span>
           <span className="text-xs text-muted-foreground">{Math.max(1, Math.round(a.size / 1024))} KB</span>
-          <Button size="sm" variant="ghost" className="ml-auto" onClick={() => download(a.name)}>
+          <Button size="sm" variant="ghost" className="ms-auto" onClick={() => download(a.name)}>
             Download
           </Button>
         </div>

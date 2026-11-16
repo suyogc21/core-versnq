@@ -121,7 +121,7 @@ export default function AutomationsPage() {
                     checked={a.is_active}
                     onCheckedChange={(on) => save(async () => unwrap(await api.PATCH("/api/v1/automations/{auto_id}", { params: { path: { auto_id: a.id } }, body: { is_active: on } })))}
                   />
-                  <button className="min-w-0 flex-1 text-left" onClick={() => (setRunsOf(null), setEditing({ id: a.id, name: a.name, trigger: a.trigger as Draft["trigger"], conditions: a.conditions as Condition[], actions: a.actions as Action[], is_active: a.is_active }))}>
+                  <button className="min-w-0 flex-1 text-start" onClick={() => (setRunsOf(null), setEditing({ id: a.id, name: a.name, trigger: a.trigger as Draft["trigger"], conditions: a.conditions as Condition[], actions: a.actions as Action[], is_active: a.is_active }))}>
                     <div className="truncate font-medium">{a.name}</div>
                     <div className="truncate text-xs text-muted-foreground">
                       When {words(triggerLabel((a.trigger as { type: string }).type)).toLowerCase()} → {a.actions.length} action{a.actions.length === 1 ? "" : "s"}
@@ -226,7 +226,7 @@ function Builder({ draft, onDone }: { draft: Draft; onDone: () => void }) {
           Cancel
         </Button>
         {d.id && (
-          <Button variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={remove}>
+          <Button variant="ghost" className="ms-auto text-muted-foreground hover:text-destructive" onClick={remove}>
             Delete
           </Button>
         )}
@@ -533,7 +533,7 @@ function ActionEditor({ subject, value, onChange, onRemove }: { subject: "lead" 
         </>
       )}
       {onRemove && (
-        <button type="button" aria-label="Remove action" className="ml-auto p-1.5 text-muted-foreground hover:text-destructive" onClick={onRemove}>
+        <button type="button" aria-label="Remove action" className="ms-auto p-1.5 text-muted-foreground hover:text-destructive" onClick={onRemove}>
           <X className="size-3.5" />
         </button>
       )}
@@ -573,7 +573,7 @@ function TestBox({ autoId, subject, conditions, choices }: { autoId: string; sub
     <Step title="Test (saved version, changes nothing)">
       <Input aria-label="Test on" placeholder={`Find a ${subject === "lead" ? label("lead").toLowerCase() : label("deal").toLowerCase()} to test with…`} className="h-8" value={q} onChange={(e) => search(e.target.value)} />
       {hits.map((h) => (
-        <button key={h.id} className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-accent" onClick={() => run(h)}>
+        <button key={h.id} className="block w-full rounded px-2 py-1 text-start text-sm hover:bg-accent" onClick={() => run(h)}>
           {h.name}
         </button>
       ))}
@@ -622,7 +622,7 @@ function Runs({ auto, onClose }: { auto: Automation; onClose: () => void }) {
                   {r.subject_name ?? "Lead"}
                 </Link>
               ) : null}
-              <span className="ml-auto text-xs text-muted-foreground">{relative(r.created_at)}</span>
+              <span className="ms-auto text-xs text-muted-foreground">{relative(r.created_at)}</span>
             </div>
             {r.error && <div className="text-xs text-destructive">{r.error}</div>}
             <div className="text-xs text-muted-foreground">{r.detail.map((x) => String((x as { result?: string }).result)).join(" · ")}</div>

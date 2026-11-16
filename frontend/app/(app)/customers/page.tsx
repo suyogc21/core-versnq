@@ -137,7 +137,7 @@ export default function CustomersPage() {
             Clear all
           </Button>
         ) : null}
-        <div className="ml-auto hidden items-center gap-1 md:flex">
+        <div className="ms-auto hidden items-center gap-1 md:flex">
           {can("customers.export") && (
             <Button size="sm" variant="ghost" onClick={() => exportCsv("/api/v1/customers/export", { q: query.q, status: query.status, documents: query.documents, owner: query.owner }, plural.toLowerCase()).catch((e) => toast.error(e.message))}>
               <Download /> Export
@@ -168,7 +168,7 @@ export default function CustomersPage() {
             <div className="flex items-center gap-2">
               <span className="truncate font-medium">{c.name}</span>
               <span className="text-xs text-muted-foreground tabular-nums">{c.number}</span>
-              <span className="ml-auto">
+              <span className="ms-auto">
                 <Docs c={c} />
               </span>
             </div>

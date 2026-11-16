@@ -318,25 +318,25 @@ function DocumentRow({ customerId, doc, editable, onChange }: { customerId: stri
         </span>
         <StatusPill status={doc.status} />
       </div>
-      {doc.hint && doc.status === "pending" && <p className="mt-1 pl-6 text-[11px] text-muted-foreground">{doc.hint}</p>}
-      {doc.status === "rejected" && doc.reject_reason && <p className="mt-1 pl-6 text-[11px] text-destructive">Rejected: {doc.reject_reason}</p>}
+      {doc.hint && doc.status === "pending" && <p className="mt-1 ps-6 text-[11px] text-muted-foreground">{doc.hint}</p>}
+      {doc.status === "rejected" && doc.reject_reason && <p className="mt-1 ps-6 text-[11px] text-destructive">Rejected: {doc.reject_reason}</p>}
       {doc.status === "verified" && doc.reviewed_by_name && (
-        <p className="mt-1 pl-6 text-[11px] text-muted-foreground">
+        <p className="mt-1 ps-6 text-[11px] text-muted-foreground">
           Verified by {doc.reviewed_by_name} · {relative(doc.reviewed_at)}
         </p>
       )}
       {doc.files.length > 0 && (
-        <ul className="mt-1.5 space-y-1 pl-6">
+        <ul className="mt-1.5 space-y-1 ps-6">
           {doc.files.map((f) => (
             <li key={f.id} className="group flex items-center gap-1.5 text-xs">
               <Paperclip className="size-3 shrink-0 text-muted-foreground" />
-              <button className="min-w-0 truncate text-left hover:underline" onClick={() => open(f)}>
+              <button className="min-w-0 truncate text-start hover:underline" onClick={() => open(f)}>
                 {f.original_name}
               </button>
               <span className="shrink-0 text-muted-foreground">
                 {formatBytes(f.size_bytes)}
               </span>
-              <button aria-label={`Download ${f.original_name}`} className="ml-auto p-0.5 text-muted-foreground hover:text-foreground" onClick={() => open(f, true)}>
+              <button aria-label={`Download ${f.original_name}`} className="ms-auto p-0.5 text-muted-foreground hover:text-foreground" onClick={() => open(f, true)}>
                 <Download className="size-3.5" />
               </button>
               {can("leads.delete") && (
@@ -361,7 +361,7 @@ function DocumentRow({ customerId, doc, editable, onChange }: { customerId: stri
         </ul>
       )}
       {(editable || canReview) && (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-6">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 ps-6">
           {editable && (
             <>
               <input ref={input} type="file" multiple accept={accept} className="hidden" aria-label={`Upload ${doc.name}`} onChange={(e) => e.target.files?.length && send(e.target.files)} />
@@ -384,7 +384,7 @@ function DocumentRow({ customerId, doc, editable, onChange }: { customerId: stri
       )}
       {rejecting !== null && (
         <form
-          className="mt-2 flex gap-1.5 pl-6"
+          className="mt-2 flex gap-1.5 ps-6"
           onSubmit={(e) => {
             e.preventDefault();
             review(false, rejecting);

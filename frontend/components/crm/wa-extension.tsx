@@ -43,7 +43,7 @@ function Row({ e, showUser, onRevoke }: { e: Ext; showUser?: boolean; onRevoke: 
         </p>
       </div>
       {live && (
-        <Button size="sm" variant="ghost" className="ml-auto" onClick={() => onRevoke(e)}>
+        <Button size="sm" variant="ghost" className="ms-auto" onClick={() => onRevoke(e)}>
           Disconnect
         </Button>
       )}

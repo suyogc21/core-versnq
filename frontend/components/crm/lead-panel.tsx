@@ -185,7 +185,7 @@ export function Facts({ lead, showStage = true }: { lead: Lead; showStage?: bool
         <dt className="text-muted-foreground">Source</dt>
         <dd>
           {source?.name ?? "—"}
-          {lead.utm_campaign && <span className="ml-1 rounded border px-1 text-[10px] text-muted-foreground">{lead.utm_campaign}</span>}
+          {lead.utm_campaign && <span className="ms-1 rounded border px-1 text-[10px] text-muted-foreground">{lead.utm_campaign}</span>}
         </dd>
         {lead.last_disposition && (
           <>
@@ -452,7 +452,7 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
           </Button>
         )}
         {can("leads.delete") && (
-          <Button type="button" size="sm" variant="ghost" className="ml-auto text-destructive" onClick={remove}>
+          <Button type="button" size="sm" variant="ghost" className="ms-auto text-destructive" onClick={remove}>
             <Trash2 /> Delete
           </Button>
         )}

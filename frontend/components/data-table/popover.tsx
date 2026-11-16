@@ -41,7 +41,7 @@ export function Popover({
           role="dialog"
           className={cn(
             "absolute top-full z-50 mt-1 max-h-80 min-w-52 overflow-auto rounded-lg border bg-popover p-1 text-sm text-popover-foreground shadow-lg",
-            align === "end" ? "right-0" : "left-0",
+            align === "end" ? "end-0" : "start-0",
             className,
           )}
         >
@@ -61,7 +61,7 @@ export function PopoverItem({ children, onClick, active }: { children: React.Rea
     <button
       type="button"
       onClick={onClick}
-      className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-accent", active && "font-medium")}
+      className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start hover:bg-accent", active && "font-medium")}
     >
       {children}
     </button>

@@ -63,7 +63,7 @@ export default function KeyAccountsPage() {
             <Button size="sm" variant={mine ? "default" : "outline"} onClick={() => setMine(!mine)}>
               Mine
             </Button>
-            <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setCompetitors(true)}>
+            <Button size="sm" variant="ghost" className="ms-auto" onClick={() => setCompetitors(true)}>
               Competitors
             </Button>
           </div>
@@ -93,7 +93,7 @@ function AccountCard({ a }: { a: KeyAccount }) {
       <div className="flex items-center gap-2">
         <span className="truncate font-semibold">{a.name}</span>
         <TierPill tier={a.tier} />
-        <span className="ml-auto">
+        <span className="ms-auto">
           <HealthDot health={a.health} />
         </span>
       </div>

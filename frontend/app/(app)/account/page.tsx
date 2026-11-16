@@ -18,34 +18,83 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
+import { NativeSelect } from "@/components/app/native-select";
 import { useAuth } from "@/lib/auth";
+import { deviceLang, LANGUAGES, type Lang, useT } from "@/lib/i18n";
 
 /** Only inside the Versnq Android app. */
 function PhoneAppSection() {
-  const [inApp] = useState(() => typeof navigator !== "undefined" && navigator.userAgent.includes("VersnqCoreApp/"));
+  const [inApp] = useState(
+    () =>
+      typeof navigator !== "undefined" &&
+      navigator.userAgent.includes("VersnqCoreApp/"),
+  );
   if (!inApp)
     return (
       <GetTheApp
         wrap={(n) => (
-          <Section title="Android app" description="Calls on your phone go on the lead by themselves, with the recording.">
+          <Section
+            title="Android app"
+            description="Calls on your phone go on the lead by themselves, with the recording."
+          >
             {n}
           </Section>
         )}
       />
     );
   return (
-    <Section title="Call tracking" description="Every call on this phone with a lead's number goes on the lead's timeline, even when the app is closed.">
+    <Section
+      title="Call tracking"
+      description="Every call on this phone with a lead's number goes on the lead's timeline, even when the app is closed."
+    >
       <PhoneAppCallTracking />
     </Section>
   );
 }
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+/** This device's language; empty = the company's (Settings → Company). */
+function MyLanguage() {
+  const { setLang, t } = useT();
+  const [value, setValue] = useState<string>(() =>
+    typeof window === "undefined" ? "" : (deviceLang() ?? ""),
+  );
+  return (
+    <NativeSelect
+      aria-label={t("Language")}
+      className="max-w-xs"
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value);
+        setLang((e.target.value || null) as Lang | null);
+      }}
+    >
+      <option value="">{t("The company's language")}</option>
+      {LANGUAGES.map((l) => (
+        <option key={l.code} value={l.code}>
+          {l.name}
+        </option>
+      ))}
+    </NativeSelect>
+  );
+}
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  const { t } = useT();
   return (
     <section className="space-y-3 border-b pb-8 last:border-0">
       <div>
-        <h2 className="font-semibold">{title}</h2>
-        {description && <p className="text-muted-foreground">{description}</p>}
+        <h2 className="font-semibold">{t(title)}</h2>
+        {description && (
+          <p className="text-muted-foreground">{t(description)}</p>
+        )}
       </div>
       {children}
     </section>
@@ -68,15 +117,29 @@ export default function AccountPage() {
             <dt className="text-muted-foreground">Role</dt>
             <dd>{me.role.name}</dd>
           </dl>
-          <p className="text-xs text-muted-foreground">To change your name or role, ask an admin in your workspace.</p>
+          <p className="text-xs text-muted-foreground">
+            To change your name or role, ask an admin in your workspace.
+          </p>
+        </Section>
+        <Section
+          title="Language"
+          description="For this phone or computer only."
+        >
+          <MyLanguage />
         </Section>
         {can("inbox.reply") && <MyMailbox />}
         {can("inbox.reply") && <MyWhatsAppExtension />}
-        <Section title="My phone for calls" description="When your company calls through its own Twilio account, the Call button rings this phone first, then connects the lead.">
+        <Section
+          title="My phone for calls"
+          description="When your company calls through its own Twilio account, the Call button rings this phone first, then connects the lead."
+        >
           <MyCallingPhone />
         </Section>
         <PhoneAppSection />
-        <Section title="Phone notifications" description="New leads for you, missed calls and tasks that are due pop up on this phone or computer.">
+        <Section
+          title="Phone notifications"
+          description="New leads for you, missed calls and tasks that are due pop up on this phone or computer."
+        >
           <PhoneNotifications />
         </Section>
         <ChangePassword onDone={logout} />
@@ -112,7 +175,9 @@ function ChangePassword({ onDone }: { onDone: () => Promise<void> }) {
   const submit = form.handleSubmit(async ({ current, next }) => {
     try {
       unwrap(
-        await api.POST("/api/v1/auth/password/change", { body: { current_password: current, new_password: next } }),
+        await api.POST("/api/v1/auth/password/change", {
+          body: { current_password: current, new_password: next },
+        }),
       );
       toast.success("Password changed. Sign in with your new password.");
       await onDone(); // every session is revoked after a password change
@@ -121,7 +186,10 @@ function ChangePassword({ onDone }: { onDone: () => Promise<void> }) {
     }
   });
   return (
-    <Section title="Password" description="Changing it signs you out on every device.">
+    <Section
+      title="Password"
+      description="Changing it signs you out on every device."
+    >
       <form onSubmit={submit} className="space-y-3">
         <Field
           id="current"
@@ -129,7 +197,9 @@ function ChangePassword({ onDone }: { onDone: () => Promise<void> }) {
           type="password"
           autoComplete="current-password"
           error={errors.current?.message}
-          {...form.register("current", { required: "Enter your current password" })}
+          {...form.register("current", {
+            required: "Enter your current password",
+          })}
         />
         <Field
           id="next"
@@ -140,7 +210,10 @@ function ChangePassword({ onDone }: { onDone: () => Promise<void> }) {
           error={errors.next?.message}
           {...form.register("next", {
             required: "Enter a password",
-            minLength: { value: PASSWORD_RULE.minLength, message: "Use at least 10 characters" },
+            minLength: {
+              value: PASSWORD_RULE.minLength,
+              message: "Use at least 10 characters",
+            },
           })}
         />
         <Field
@@ -149,7 +222,9 @@ function ChangePassword({ onDone }: { onDone: () => Promise<void> }) {
           type="password"
           autoComplete="new-password"
           error={errors.confirm?.message}
-          {...form.register("confirm", { validate: (v, all) => v === all.next || "Passwords do not match" })}
+          {...form.register("confirm", {
+            validate: (v, all) => v === all.next || "Passwords do not match",
+          })}
         />
         <Button type="submit" disabled={isSubmitting}>
           Change password
@@ -168,8 +243,14 @@ function TwoFactor() {
 
   const turnOff = form.handleSubmit(async (body) => {
     try {
-      unwrap(await api.POST("/api/v1/auth/2fa/disable", { body: { password: body.password, code: body.code.trim() } }));
-      toast.success("Two-factor is off. Sign-in will ask for an emailed code instead.");
+      unwrap(
+        await api.POST("/api/v1/auth/2fa/disable", {
+          body: { password: body.password, code: body.code.trim() },
+        }),
+      );
+      toast.success(
+        "Two-factor is off. Sign-in will ask for an emailed code instead.",
+      );
       form.reset();
       await reloadMe();
     } catch (e) {
@@ -184,9 +265,13 @@ function TwoFactor() {
     >
       <div className="flex items-center gap-2">
         <span>Status</span>
-        <Badge variant={me.two_factor_enabled ? "secondary" : "outline"}>{me.two_factor_enabled ? "On" : "Off"}</Badge>
+        <Badge variant={me.two_factor_enabled ? "secondary" : "outline"}>
+          {me.two_factor_enabled ? "On" : "Off"}
+        </Badge>
       </div>
-      {me.two_factor_enabled && <NewBackupCodes left={me.recovery_codes_left ?? 0} onDone={reloadMe} />}
+      {me.two_factor_enabled && (
+        <NewBackupCodes left={me.recovery_codes_left ?? 0} onDone={reloadMe} />
+      )}
       {me.two_factor_enabled ? (
         <form onSubmit={turnOff} className="space-y-3">
           <p className="text-xs text-muted-foreground">
@@ -206,7 +291,10 @@ function TwoFactor() {
             autoComplete="one-time-code"
             maxLength={6}
             error={errors.code?.message}
-            {...form.register("code", { required: true, pattern: { value: /^\d{6}$/, message: "6 digits" } })}
+            {...form.register("code", {
+              required: true,
+              pattern: { value: /^\d{6}$/, message: "6 digits" },
+            })}
           />
           <Button type="submit" variant="outline" disabled={isSubmitting}>
             Turn off two-factor
@@ -229,13 +317,23 @@ function TwoFactor() {
 }
 
 /** Lost-phone backup codes (go-live G-4): how many are left, and ten new ones. */
-function NewBackupCodes({ left, onDone }: { left: number; onDone: () => Promise<void> }) {
+function NewBackupCodes({
+  left,
+  onDone,
+}: {
+  left: number;
+  onDone: () => Promise<void>;
+}) {
   const [open, setOpen] = useState(false);
   const [codes, setCodes] = useState<string[] | null>(null);
   const form = useForm<{ password: string; code: string }>();
   const submit = form.handleSubmit(async (body) => {
     try {
-      const r = unwrap(await api.POST("/api/v1/auth/2fa/recovery-codes", { body: { password: body.password, code: body.code.trim() } }));
+      const r = unwrap(
+        await api.POST("/api/v1/auth/2fa/recovery-codes", {
+          body: { password: body.password, code: body.code.trim() },
+        }),
+      );
       setCodes(r.recovery_codes);
       form.reset();
     } catch (e) {
@@ -260,7 +358,10 @@ function NewBackupCodes({ left, onDone }: { left: number; onDone: () => Promise<
     <div className="space-y-2 rounded-lg border p-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span>
-          Backup codes left: <strong className={left <= 2 ? "text-destructive" : undefined}>{left}</strong>
+          Backup codes left:{" "}
+          <strong className={left <= 2 ? "text-destructive" : undefined}>
+            {left}
+          </strong>
         </span>
         {!open && (
           <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
@@ -270,8 +371,16 @@ function NewBackupCodes({ left, onDone }: { left: number; onDone: () => Promise<
       </div>
       {open && (
         <form onSubmit={submit} className="space-y-2">
-          <p className="text-xs text-muted-foreground">Ten new codes; the old ones stop working.</p>
-          <Field id="bc-password" label="Password" type="password" autoComplete="current-password" {...form.register("password", { required: true })} />
+          <p className="text-xs text-muted-foreground">
+            Ten new codes; the old ones stop working.
+          </p>
+          <Field
+            id="bc-password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            {...form.register("password", { required: true })}
+          />
           <Field
             id="bc-code"
             label="Current 6-digit code"
@@ -279,9 +388,16 @@ function NewBackupCodes({ left, onDone }: { left: number; onDone: () => Promise<
             autoComplete="one-time-code"
             maxLength={6}
             error={form.formState.errors.code?.message}
-            {...form.register("code", { required: true, pattern: { value: /^\d{6}$/, message: "6 digits" } })}
+            {...form.register("code", {
+              required: true,
+              pattern: { value: /^\d{6}$/, message: "6 digits" },
+            })}
           />
-          <Button type="submit" size="sm" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={form.formState.isSubmitting}
+          >
             Show new codes
           </Button>
         </form>

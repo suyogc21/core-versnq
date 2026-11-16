@@ -140,7 +140,7 @@ function View({ c, onClose }: { c: LeadConversation; onClose?: () => void }) {
                 <UserPlus /> Add colleague
               </Button>
             ))}
-          <span className="ml-auto flex gap-1">
+          <span className="ms-auto flex gap-1">
             <Button size="sm" variant="ghost" className="h-7" onClick={() => act(async () => unwrap(await api.PATCH("/api/v1/conversations/{conv_id}", { ...path, body: { is_private: !c.is_private } })))}>
               {c.is_private ? "Make shared" : "Make private"}
             </Button>
@@ -168,7 +168,7 @@ function View({ c, onClose }: { c: LeadConversation; onClose?: () => void }) {
 function MessageBubble({ c, m, sorting }: { c: LeadConversation; m: ConversationDetail["messages"][number]; sorting?: Sorting }) {
   const mine = m.direction === "out";
   return (
-    <div className={cn("max-w-[92%] rounded-xl border p-3 text-sm", mine ? "ml-auto bg-primary/5" : "bg-card")} data-message={m.direction}>
+    <div className={cn("max-w-[92%] rounded-xl border p-3 text-sm", mine ? "ms-auto bg-primary/5" : "bg-card")} data-message={m.direction}>
       <div className="mb-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
         <span className="font-medium text-foreground">
           {mine ? (m.sent_by_name ?? (m.from_sequence ? "Sequence" : c.official ? "Automatic" : "You")) : (m.from_address ?? c.lead.name)}
@@ -176,7 +176,7 @@ function MessageBubble({ c, m, sorting }: { c: LeadConversation; m: Conversation
         <span>→ {m.to_address}</span>
         {m.cc.length > 0 && <span>cc {m.cc.join(", ")}</span>}
         {!mine && <CategoryChip convId={c.id} messageId={m.id} sorting={sorting} />}
-        <span className="ml-auto">{when(m.sent_at ?? m.created_at)}</span>
+        <span className="ms-auto">{when(m.sent_at ?? m.created_at)}</span>
       </div>
       {m.subject && <div className="mb-1 text-xs font-medium">{m.subject}</div>}
       <div className="break-words whitespace-pre-wrap">{m.body}</div>
@@ -208,8 +208,8 @@ function NoteBubble({ n }: { n: ConversationDetail["notes"][number] }) {
     <div className="mx-auto max-w-[92%] rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm" data-note>
       <div className="mb-1 flex text-[11px] text-muted-foreground">
         <span className="font-medium text-foreground">{n.user_name ?? "—"}</span>
-        <span className="ml-2">internal note — the lead never sees this</span>
-        <span className="ml-auto">{when(n.created_at)}</span>
+        <span className="ms-2">internal note — the lead never sees this</span>
+        <span className="ms-auto">{when(n.created_at)}</span>
       </div>
       <div className="break-words whitespace-pre-wrap">{n.body}</div>
     </div>
@@ -249,7 +249,7 @@ function Attachment({ conv, file }: { conv: LeadConversation; file: Conversation
       </button>
       <span className="text-muted-foreground">{Math.max(1, Math.round(file.size_bytes / 1024))} KB</span>
       {docs === null ? (
-        <button className="ml-1 text-muted-foreground hover:text-foreground" onClick={loadDocs}>
+        <button className="ms-1 text-muted-foreground hover:text-foreground" onClick={loadDocs}>
           Save to checklist
         </button>
       ) : (

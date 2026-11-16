@@ -99,7 +99,7 @@ function DealView({ deal }: { deal: Deal }) {
           <TagEditor kind="deal" id={deal.id} tags={deal.tags ?? []} editable={editable} />
           {deal.status === "won" && <WonCustomer leadId={deal.lead_id} dealId={deal.id} />}
           {can("deals.delete") && (
-            <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={remove}>
+            <Button size="sm" variant="ghost" className="ms-auto text-muted-foreground hover:text-destructive" onClick={remove}>
               Delete
             </Button>
           )}
@@ -183,12 +183,12 @@ function Stepper({ deal, editable }: { deal: Deal; editable: boolean }) {
             onClick={() => pick(s)}
             title={`Move to ${s.name}`}
             className={cn(
-              "min-w-28 flex-1 border-r px-3 py-1.5 whitespace-nowrap text-muted-foreground last:border-r-0 hover:bg-accent",
+              "min-w-28 flex-1 border-e px-3 py-1.5 whitespace-nowrap text-muted-foreground last:border-r-0 hover:bg-accent",
               deal.status === "open" && here > -1 && i < here && "bg-primary/10 text-foreground",
               s.id === deal.stage_id && "bg-primary font-semibold text-primary-foreground hover:bg-primary",
             )}
           >
-            {deal.status === "open" && here > -1 && i < here && <Check className="mr-1 inline size-3" />}
+            {deal.status === "open" && here > -1 && i < here && <Check className="me-1 inline size-3" />}
             {s.name}
           </button>
         ))}
@@ -438,7 +438,7 @@ function LinesEditor({ deal, lines, onDone }: { deal: Deal; lines: DealLine[]; o
             <span className="text-muted-foreground">Discount</span>
             <MoneyInput currency={deal.currency} value={r.discount_minor ?? 0} onChange={(v) => set(i, { discount_minor: v })} />
           </div>
-          <div className={cn("text-right tabular-nums", totalOf(r) < 0 && "text-destructive")}>
+          <div className={cn("text-end tabular-nums", totalOf(r) < 0 && "text-destructive")}>
             {totalOf(r) < 0 ? "Discount is more than the line" : formatMoney(totalOf(r), deal.currency)}
           </div>
         </div>

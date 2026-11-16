@@ -76,7 +76,7 @@ function Mailboxes() {
                 {m.last_error && ` · ${m.last_error}`}
               </p>
             </div>
-            <div className="ml-auto flex gap-1">
+            <div className="ms-auto flex gap-1">
               {m.status !== "off" && !m.in_pool && (
                 <Button
                   size="sm"

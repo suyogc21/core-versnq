@@ -96,7 +96,7 @@ function CampaignList() {
               {c.counts.contacts} contacts · {c.counts.sent} sent · {c.counts.replied} replies · {c.counts.bounced} bounced ·{" "}
               {c.counts.unsubscribed} unsubscribed
             </span>
-            {c.owner_name && <span className="ml-auto text-xs text-muted-foreground">{c.owner_name}</span>}
+            {c.owner_name && <span className="ms-auto text-xs text-muted-foreground">{c.owner_name}</span>}
           </div>
         ))}
       </div>
@@ -181,12 +181,12 @@ function Replies() {
             <button
               key={c.id}
               onClick={() => setOpen(c.id)}
-              className={cn("block w-full px-3 py-2.5 text-left text-sm hover:bg-muted/50", open === c.id && "bg-muted/60")}
+              className={cn("block w-full px-3 py-2.5 text-start text-sm hover:bg-muted/50", open === c.id && "bg-muted/60")}
               data-reply={c.contact.email}
             >
               <div className="flex items-center gap-2">
                 <span className="truncate font-medium">{[c.contact.first_name, c.contact.last_name].filter(Boolean).join(" ") || c.contact.email}</span>
-                <Badge variant={c.state === "new" ? "secondary" : "outline"} className="ml-auto shrink-0">
+                <Badge variant={c.state === "new" ? "secondary" : "outline"} className="ms-auto shrink-0">
                   {STATE_LABEL[c.state] ?? c.state}
                 </Badge>
               </div>
@@ -245,7 +245,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
             {c.contact.company ? ` · ${c.contact.company}` : ""} · {c.campaign_name}
           </div>
         </div>
-        <div className="ml-auto flex flex-wrap gap-1.5">
+        <div className="ms-auto flex flex-wrap gap-1.5">
           {can("leads.create") && c.contact.status !== "converted" && (
             <Button
               size="sm"
@@ -315,7 +315,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
                 />
               )}
               {m.status === "failed" && <Badge variant="destructive">Not sent</Badge>}
-              <span className="ml-auto">{m.sent_at ? relative(m.sent_at) : ""}</span>
+              <span className="ms-auto">{m.sent_at ? relative(m.sent_at) : ""}</span>
             </div>
             {m.subject && <div className="mb-1 font-medium">{m.subject}</div>}
             <div className="whitespace-pre-wrap break-words">{m.body}</div>

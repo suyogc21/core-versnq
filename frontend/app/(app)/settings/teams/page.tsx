@@ -77,14 +77,14 @@ export default function TeamsPage() {
         <p className="p-8 text-center text-muted-foreground">No teams yet.</p>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-          <nav className="max-h-56 w-full shrink-0 space-y-0.5 overflow-auto border-b p-2 md:max-h-none md:w-64 md:border-r md:border-b-0">
+          <nav className="max-h-56 w-full shrink-0 space-y-0.5 overflow-auto border-b p-2 md:max-h-none md:w-64 md:border-e md:border-b-0">
             {tree.map(({ team, depth }) => (
               <button
                 key={team.id}
                 onClick={() => setSelectedId(team.id)}
                 style={{ paddingLeft: 8 + depth * 16 }}
                 className={cn(
-                  "flex w-full items-center justify-between rounded-md py-1.5 pr-2 text-left hover:bg-accent",
+                  "flex w-full items-center justify-between rounded-md py-1.5 pe-2 text-start hover:bg-accent",
                   selected?.id === team.id && "bg-accent font-medium",
                 )}
               >
@@ -98,7 +98,7 @@ export default function TeamsPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-semibold">{selected.name}</h2>
                 {manage && (
-                  <div className="ml-auto flex gap-2">
+                  <div className="ms-auto flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => setDialog("members")}>
                       Edit members
                     </Button>
@@ -130,7 +130,7 @@ export default function TeamsPage() {
                         <span className="font-medium">{u?.name ?? "A user outside your view"}</span>
                         <span className="text-muted-foreground">{u?.email}</span>
                         {m.is_manager && (
-                          <Badge variant="secondary" className="ml-auto">
+                          <Badge variant="secondary" className="ms-auto">
                             Manager
                           </Badge>
                         )}

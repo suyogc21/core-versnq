@@ -47,7 +47,7 @@ export default function LandingPagesPage() {
                 </Link>
                 <span className="font-mono text-xs text-muted-foreground">{p.path}</span>
                 <span className={p.published ? "text-emerald-600" : "text-muted-foreground"}>{p.published ? "Published" : "Draft"}</span>
-                <span className="ml-auto tabular-nums text-muted-foreground">
+                <span className="ms-auto tabular-nums text-muted-foreground">
                   {p.visits} visits · {p.leads} leads
                 </span>
               </li>

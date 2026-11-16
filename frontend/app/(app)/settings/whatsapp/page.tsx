@@ -116,7 +116,7 @@ function NumberTab() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-base font-semibold">{a.display_number ?? "Connected"}</span>
             {a.verified_name && <span className="text-muted-foreground">{a.verified_name}</span>}
-            <span className={cn("ml-auto text-xs", a.status === "active" ? "text-emerald-700 dark:text-emerald-300" : "text-destructive")}>
+            <span className={cn("ms-auto text-xs", a.status === "active" ? "text-emerald-700 dark:text-emerald-300" : "text-destructive")}>
               {a.status === "active" ? "Connected" : "Needs attention"}
             </span>
           </div>
@@ -256,7 +256,7 @@ function TemplatesTab({ connected }: { connected: boolean }) {
                 {t.category} · {t.language}
               </span>
               <span className={cn("text-xs", WA_STATUS[t.status]?.[1])}>{WA_STATUS[t.status]?.[0] ?? t.status}</span>
-              <div className="ml-auto flex gap-1">
+              <div className="ms-auto flex gap-1">
                 <Button size="icon-sm" variant="ghost" aria-label={`Refresh ${t.name}`} onClick={() => run(async () => unwrap(await api.POST("/api/v1/whatsapp/templates/{tpl_id}/refresh", { params: { path: { tpl_id: t.id } } })))}>
                   <RefreshCw />
                 </Button>

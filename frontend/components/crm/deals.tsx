@@ -207,9 +207,9 @@ export function NewDealDialog({ lead, pipelineId, onClose }: { lead?: LeadHit; p
               <>
                 <Input id="deal-lead" autoFocus placeholder="Search by name, phone or email…" value={q} onChange={(e) => search(e.target.value)} />
                 {hits.map((h) => (
-                  <button key={h.id} type="button" className="flex w-full items-center gap-2 rounded px-1 py-1 text-left text-xs hover:bg-accent" onClick={() => setChosen(h)}>
+                  <button key={h.id} type="button" className="flex w-full items-center gap-2 rounded px-1 py-1 text-start text-xs hover:bg-accent" onClick={() => setChosen(h)}>
                     <span className="truncate">{h.name}</span>
-                    {h.hint && <span className="ml-auto truncate text-muted-foreground">{h.hint}</span>}
+                    {h.hint && <span className="ms-auto truncate text-muted-foreground">{h.hint}</span>}
                   </button>
                 ))}
                 {q.trim().length >= 2 && hits.length === 0 && <p className="text-xs text-muted-foreground">No match.</p>}
