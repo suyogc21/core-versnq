@@ -18854,6 +18854,21 @@
             "title": "Owner",
             "type": "string"
           },
+          "preset": {
+            "anyOf": [
+              {
+                "enum": [
+                  "hubspot",
+                  "leadsquared"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
           "source_id": {
             "anyOf": [
               {
@@ -18877,6 +18892,15 @@
               }
             ],
             "title": "Stage Id"
+          },
+          "unknown_values": {
+            "default": "fail",
+            "enum": [
+              "fail",
+              "note"
+            ],
+            "title": "Unknown Values",
+            "type": "string"
           }
         },
         "required": [
@@ -20966,6 +20990,32 @@
             "additionalProperties": true,
             "title": "Options",
             "type": "object"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "enum": [
+                  "hubspot",
+                  "leadsquared"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "preset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset Name"
           },
           "row_count": {
             "title": "Row Count",

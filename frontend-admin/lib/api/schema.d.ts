@@ -13175,10 +13175,18 @@ export interface components {
              * @default me
              */
             owner: string;
+            /** Preset */
+            preset?: ("hubspot" | "leadsquared") | null;
             /** Source Id */
             source_id?: string | null;
             /** Stage Id */
             stage_id?: string | null;
+            /**
+             * Unknown Values
+             * @default fail
+             * @enum {string}
+             */
+            unknown_values: "fail" | "note";
         };
         /** StepIn */
         StepIn: {
@@ -13903,6 +13911,10 @@ export interface components {
             options: {
                 [key: string]: unknown;
             };
+            /** Preset */
+            preset?: ("hubspot" | "leadsquared") | null;
+            /** Preset Name */
+            preset_name?: string | null;
             /** Row Count */
             row_count: number;
             /** Sample */

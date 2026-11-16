@@ -190,6 +190,7 @@ def parse(values: dict[str, list[str]], defs: dict[str, CustomFieldDefinition]) 
             p.fields["country_code"] = v.upper()
         else:
             p.problems.append(f"Country code '{v}' should be two letters like IN")
+            p.message_parts.append(f"Country: {v}")
     for key in ("campaign", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"):
         if v := first(key):
             p.fields[key] = v[:200]
@@ -197,8 +198,9 @@ def parse(values: dict[str, list[str]], defs: dict[str, CustomFieldDefinition]) 
         answer = yes_no(first(f"consent_{channel}"))
         if answer is not None:
             p.consents[channel] = "opted_in" if answer else "opted_out"
-    if v := first("message"):
-        p.message_parts.append(v[:4000])
+    notes = [v.strip() for v in values.get("message", []) if v and v.strip()]
+    if notes:  # several columns may be notes (e.g. a CRM export's extra fields)
+        p.message_parts.append("\n".join(notes)[:4000])
     p.external_id = (first("external_id") or "")[:200] or None
     p.owner_email = first("owner_email")
     p.stage, p.source = first("stage"), first("source")
