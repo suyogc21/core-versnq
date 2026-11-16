@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     vapid_public_key: str | None = None
     vapid_private_key: str | None = None
     vapid_subject: str = "mailto:support@versnq.in"
+    # Calling with the company's own Twilio (C3): "test" never reaches Twilio (dev, tests)
+    twilio_mode: Literal["test", "live"] = "test"
     # Outside production: connected inboxes (step 9b-3) are read from <dir>/<address>/<folder>/
     # <uid>.eml instead of a real IMAP server, so mailbox sync can be tried without one.
     mailbox_test_dir: str | None = None

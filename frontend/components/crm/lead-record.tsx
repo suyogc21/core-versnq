@@ -164,9 +164,25 @@ export function StageStepper({ lead }: { lead: Lead }) {
 
 function ContactActions({ lead, onLog }: { lead: Lead; onLog: (type: string) => void }) {
   const wa = lead.identities.find((i) => i.type === "phone" && i.is_whatsapp)?.value_normalized ?? lead.primary_phone;
+  // The company's own calling account (C3): Twilio rings the rep's phone, then the lead, and the
+  // call logs itself with its recording. Otherwise the phone's own dialer, logged by hand.
+  const calling = useQuery({ queryKey: ["my-phone"], queryFn: async () => unwrap(await api.GET("/api/v1/calling/my-phone")) });
+  const cloud = calling.data?.calling && calling.data.phone && lead.primary_phone;
+  async function callViaCompany() {
+    try {
+      unwrap(await api.POST("/api/v1/leads/{lead_id}/call", { params: { path: { lead_id: lead.id } } }));
+      toast.success(`Your phone (${calling.data?.phone}) is ringing. Answer it to be connected to ${lead.display_name}.`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
   return (
     <div className="flex flex-wrap gap-1.5">
-      <ActionButton icon={Phone} label="Call" primary href={lead.primary_phone ? `tel:${lead.primary_phone}` : undefined} onClick={() => onLog("call")} />
+      {cloud ? (
+        <ActionButton icon={Phone} label="Call" primary onClick={callViaCompany} />
+      ) : (
+        <ActionButton icon={Phone} label="Call" primary href={lead.primary_phone ? `tel:${lead.primary_phone}` : undefined} onClick={() => onLog("call")} />
+      )}
       {wa && <ActionButton icon={MessageCircle} label="WhatsApp" href={`https://wa.me/${wa.replace("+", "")}`} external />}
       {lead.primary_email && <ActionButton icon={Mail} label="Email" href={`mailto:${lead.primary_email}`} />}
       <ActionButton icon={StickyNote} label="Note" onClick={() => onLog("note")} />

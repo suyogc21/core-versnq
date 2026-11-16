@@ -528,6 +528,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/calling/my-phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Phone */
+        get: operations["calls-my_phone"];
+        /**
+         * Set My Phone
+         * @description The phone the Call button rings first (the rep's own mobile).
+         */
+        put: operations["calls-set_my_phone"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calling/twilio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Twilio */
+        get: operations["calls-get_twilio"];
+        /**
+         * Put Twilio
+         * @description Connect (or change) the company's own Twilio account. The token is checked with Twilio
+         *     first and stored encrypted; it is never shown again.
+         */
+        put: operations["calls-put_twilio"];
+        post?: never;
+        /** Delete Twilio */
+        delete: operations["calls-delete_twilio"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/calls": {
         parameters: {
             query?: never;
@@ -3469,6 +3513,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Call Lead
+         * @description Twilio rings the rep's phone; when the rep answers, it connects the lead.
+         */
+        post: operations["calls-call_lead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/consents": {
         parameters: {
             query?: never;
@@ -5681,6 +5745,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/twilio/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connect
+         * @description The rep answered (click-to-call): connect the lead.
+         */
+        post: operations["calls-connect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/twilio/dial-done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dial Done
+         * @description The dialled side finished: the call goes into the pipeline. Unanswered incoming calls
+         *     get the voicemail prompt.
+         */
+        post: operations["calls-dial_done"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/twilio/hangup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hangup
+         * @description After the voicemail: end the call.
+         */
+        post: operations["calls-hangup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/twilio/recording": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recording
+         * @description Twilio has the recording (or the voicemail): the worker fetches it into Core.
+         */
+        post: operations["calls-recording"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/twilio/voice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Incoming
+         * @description A call to one of the company's Twilio numbers: ring the lead's owner, then the company's
+         *     main number; nobody answers → voicemail.
+         */
+        post: operations["calls-incoming"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/u/{token}": {
         parameters: {
             query?: never;
@@ -7239,6 +7405,14 @@ export interface components {
              * @default true
              */
             record: boolean;
+        };
+        /** CallStartOut */
+        CallStartOut: {
+            /**
+             * Status
+             * @default ringing_you
+             */
+            status: string;
         };
         /** CampaignContactOut */
         CampaignContactOut: {
@@ -11135,6 +11309,18 @@ export interface components {
             /** Upcoming */
             upcoming: components["schemas"]["TaskOut"][];
         };
+        /** MyPhoneIn */
+        MyPhoneIn: {
+            /** Phone */
+            phone?: string | null;
+        };
+        /** MyPhoneOut */
+        MyPhoneOut: {
+            /** Calling */
+            calling: boolean;
+            /** Phone */
+            phone: string | null;
+        };
         /** Named */
         Named: {
             /** Count */
@@ -13357,6 +13543,35 @@ export interface components {
             /** New Leads */
             new_leads: number;
         };
+        /** TwilioIn */
+        TwilioIn: {
+            /** Account Sid */
+            account_sid: string;
+            /** Auth Token */
+            auth_token?: string | null;
+            /** Forward To */
+            forward_to?: string | null;
+            /** Numbers */
+            numbers: string[];
+        };
+        /** TwilioOut */
+        TwilioOut: {
+            /** Account Sid */
+            account_sid?: string | null;
+            /** Connected */
+            connected: boolean;
+            /** Forward To */
+            forward_to?: string | null;
+            /**
+             * Numbers
+             * @default []
+             */
+            numbers: string[];
+            /** Test Mode */
+            test_mode: boolean;
+            /** Voice Url */
+            voice_url: string;
+        };
         /** TwoFactorDisableIn */
         TwoFactorDisableIn: {
             /** Code */
@@ -15476,6 +15691,130 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    "calls-my_phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPhoneOut"];
+                };
+            };
+        };
+    };
+    "calls-set_my_phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MyPhoneIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPhoneOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-get_twilio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwilioOut"];
+                };
+            };
+        };
+    };
+    "calls-put_twilio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwilioIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwilioOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-delete_twilio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -22156,6 +22495,37 @@ export interface operations {
             };
         };
     };
+    "calls-call_lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallStartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "leads-consent_history": {
         parameters: {
             query?: never;
@@ -27344,6 +27714,137 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-connect": {
+        parameters: {
+            query?: {
+                ctx?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-dial_done": {
+        parameters: {
+            query?: {
+                ctx?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-hangup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    "calls-recording": {
+        parameters: {
+            query?: {
+                ctx?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-incoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

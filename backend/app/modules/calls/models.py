@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
+from app.core.models import TimestampMixin
 from app.modules.crm.models import TenantScoped
 
 CALL_DEFAULTS = {"record": True, "keep_days": 30, "new_leads": False}
@@ -30,7 +31,20 @@ class Call(TenantScoped, Base):
     recording_type: Mapped[str | None] = mapped_column(String(60))
     recording_bytes: Mapped[int | None] = mapped_column(BigInteger)
     recording_removed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    recording_pending_url: Mapped[str | None] = mapped_column(String(500))  # to fetch (C3)
     summary: Mapped[str | None] = mapped_column(Text)
     analysis: Mapped[dict] = mapped_column(JSONB, default=dict)
     analyzed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CallingAccount(TenantScoped, TimestampMixin, Base):
+    """The company's own calling account (C3): Twilio now, Exotel later the same way."""
+
+    __tablename__ = "calling_accounts"
+
+    provider: Mapped[str] = mapped_column(String(10))
+    account_sid: Mapped[str] = mapped_column(String(64))
+    auth_token_enc: Mapped[str] = mapped_column(Text)
+    numbers: Mapped[list] = mapped_column(JSONB, default=list)  # the company's numbers, E.164
+    forward_to: Mapped[str | None] = mapped_column(String(32))  # unanswered incoming calls

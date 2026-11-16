@@ -9,6 +9,7 @@ import { PhoneNotifications } from "@/components/app/phone-notifications";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { BackupCodes } from "@/components/app/backup-codes";
 import { TwoFactorSetupForm } from "@/components/app/restriction-screens";
+import { MyCallingPhone } from "@/components/crm/calling-settings";
 import { MyMailbox } from "@/components/crm/my-mailbox";
 import { MyWhatsAppExtension } from "@/components/crm/wa-extension";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,9 @@ export default function AccountPage() {
         </Section>
         {can("inbox.reply") && <MyMailbox />}
         {can("inbox.reply") && <MyWhatsAppExtension />}
+        <Section title="My phone for calls" description="When your company calls through its own Twilio account, the Call button rings this phone first, then connects the lead.">
+          <MyCallingPhone />
+        </Section>
         <Section title="Phone notifications" description="New leads for you, missed calls and tasks that are due pop up on this phone or computer.">
           <PhoneNotifications />
         </Section>

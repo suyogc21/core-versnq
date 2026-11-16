@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { TwilioSettings } from "@/components/crm/calling-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ export default function CallSettingsPage() {
             Calls with numbers that aren&apos;t a lead&apos;s are not kept, so personal calls stay out of the CRM.
           </p>
           {current.data ? <Form initial={current.data} /> : <p className="text-sm text-muted-foreground">Loading…</p>}
+          <TwilioSettings />
         </div>
       </div>
     </div>

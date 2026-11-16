@@ -140,6 +140,44 @@ async def webhooks_job(ctx) -> dict:
     return await run_all(await _active_tenants())
 
 
+async def call_recordings_job(ctx) -> int:
+    """Every minute (and right after Twilio says a recording is ready): fetch providers'
+    recordings into Core (C3). Given up after a day."""
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import select
+
+    from app.core.errors import Invalid
+    from app.core.tenancy import tenant_session
+    from app.modules.calls import service as S
+    from app.modules.calls import twilio as T
+    from app.modules.calls.models import Call, CallingAccount
+    from app.modules.crm.automation import _active_tenants
+
+    done = 0
+    for tenant_id in await _active_tenants():
+        async with tenant_session(tenant_id) as db:
+            pending = (await db.scalars(select(Call).where(
+                Call.recording_pending_url.is_not(None)).limit(50))).all()  # fmt: skip
+            if not pending:
+                continue
+            acct = await db.scalar(
+                select(CallingAccount).where(CallingAccount.provider == "twilio")
+            )
+            for call in pending:
+                data = await T.client(acct).recording(call.recording_pending_url) if acct else None
+                if data:
+                    try:
+                        await S.attach_recording(db, call, data, "recording.mp3")
+                        done += 1
+                    except Invalid:
+                        pass  # recording switched off, storage full, already there: drop it
+                    call.recording_pending_url = None
+                elif call.started_at < datetime.now(UTC) - timedelta(days=1):
+                    call.recording_pending_url = None
+    return done
+
+
 async def push_job(ctx) -> int:
     """Every 10 seconds: new notifications go to the phones where people turned them on (C2)."""
     from app.core.tenancy import tenant_session

@@ -48,3 +48,30 @@ test("a reported call shows on the lead with its recording and outcome", async (
   await expect(page.getByRole("link", { name: "Kiran" })).toBeVisible();
   await expect(page.getByText(/recorded/)).toBeVisible();
 });
+
+/** Step C3: with the company's own Twilio connected (test mode: nothing reaches Twilio), the
+ * Call button rings the rep's phone once they've saved it in My account. */
+test("click-to-call through the company's own Twilio", async ({ browser }) => {
+  const { base, manager, call } = await companyWithTeams("fourthcoffee");
+  await call("PUT", "/api/v1/calling/twilio", { account_sid: `AC${"1".repeat(32)}`, auth_token: "twilio-test-token", numbers: ["+14155550100"] });
+  const sources = (await call("GET", "/api/v1/lead-sources")) as { id: string; name: string }[];
+  const lead = await call("POST", "/api/v1/leads", {
+    first_name: "Meera",
+    identities: [{ type: "phone", value: "98555 66677", is_primary: true, is_whatsapp: false }],
+    source_id: sources[0].id,
+    owner_user_id: manager.id,
+  });
+
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+  await signIn(page, base, manager.email, manager.password);
+  await page.getByRole("heading", { name: "My Day" }).waitFor();
+  await page.goto(`${base}/account`);
+  await page.getByLabel("Your mobile number").fill("98200 11122");
+  await page.getByRole("button", { name: "Save" }).first().click();
+  await expect(page.getByText("Saved")).toBeVisible();
+
+  await page.goto(`${base}/leads/${lead.id}`);
+  await page.getByRole("button", { name: "Call" }).first().click();
+  await expect(page.getByText(/Your phone \(\+919820011122\) is ringing/)).toBeVisible();
+});
+

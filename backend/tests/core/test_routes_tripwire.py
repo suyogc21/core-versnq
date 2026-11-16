@@ -26,6 +26,13 @@ PUBLIC = {
     # Hosted forms (Nov 16): the page's questions, and sending it; only hosted, switched-on
     # forms answer; protected by rate limits and the spam trap.
     ("GET", "/api/v1/forms/{public_id}"),
+    # Calls with the company's own Twilio (C3): only requests with Twilio's signature (made
+    # with the company's own auth token) are answered; anything else is a 404.
+    ("POST", "/api/v1/twilio/voice"),
+    ("POST", "/api/v1/twilio/connect"),
+    ("POST", "/api/v1/twilio/dial-done"),
+    ("POST", "/api/v1/twilio/hangup"),
+    ("POST", "/api/v1/twilio/recording"),
     ("POST", "/api/v1/forms/{public_id}"),
     # Payment gateways tell Core a link was paid; only a valid signature is accepted (#34).
     ("POST", "/api/v1/webhooks/{gateway_name}/{account_id}"),

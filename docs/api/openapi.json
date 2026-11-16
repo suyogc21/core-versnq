@@ -2210,6 +2210,17 @@
         "title": "CallSettings",
         "type": "object"
       },
+      "CallStartOut": {
+        "properties": {
+          "status": {
+            "default": "ringing_you",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "CallStartOut",
+        "type": "object"
+      },
       "CampaignContactOut": {
         "properties": {
           "contact": {
@@ -13691,6 +13702,49 @@
         "title": "MyDayOut",
         "type": "object"
       },
+      "MyPhoneIn": {
+        "properties": {
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "title": "MyPhoneIn",
+        "type": "object"
+      },
+      "MyPhoneOut": {
+        "properties": {
+          "calling": {
+            "title": "Calling",
+            "type": "boolean"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "phone",
+          "calling"
+        ],
+        "title": "MyPhoneOut",
+        "type": "object"
+      },
       "Named": {
         "properties": {
           "count": {
@@ -20161,6 +20215,108 @@
         "title": "TrendMonth",
         "type": "object"
       },
+      "TwilioIn": {
+        "properties": {
+          "account_sid": {
+            "pattern": "^AC[0-9a-f]{32}$",
+            "title": "Account Sid",
+            "type": "string"
+          },
+          "auth_token": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 8,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auth Token"
+          },
+          "forward_to": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forward To"
+          },
+          "numbers": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Numbers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "account_sid",
+          "numbers"
+        ],
+        "title": "TwilioIn",
+        "type": "object"
+      },
+      "TwilioOut": {
+        "properties": {
+          "account_sid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Sid"
+          },
+          "connected": {
+            "title": "Connected",
+            "type": "boolean"
+          },
+          "forward_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forward To"
+          },
+          "numbers": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Numbers",
+            "type": "array"
+          },
+          "test_mode": {
+            "title": "Test Mode",
+            "type": "boolean"
+          },
+          "voice_url": {
+            "title": "Voice Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connected",
+          "voice_url",
+          "test_mode"
+        ],
+        "title": "TwilioOut",
+        "type": "object"
+      },
       "TwoFactorDisableIn": {
         "properties": {
           "code": {
@@ -24877,6 +25033,165 @@
           }
         ],
         "summary": "Put Call Settings",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
+    "/api/v1/calling/my-phone": {
+      "get": {
+        "operationId": "calls-my_phone",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyPhoneOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Phone",
+        "tags": [
+          "calls"
+        ]
+      },
+      "put": {
+        "description": "The phone the Call button rings first (the rep's own mobile).",
+        "operationId": "calls-set_my_phone",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyPhoneIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyPhoneOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set My Phone",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
+    "/api/v1/calling/twilio": {
+      "delete": {
+        "operationId": "calls-delete_twilio",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Twilio",
+        "tags": [
+          "calls"
+        ]
+      },
+      "get": {
+        "operationId": "calls-get_twilio",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwilioOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Twilio",
+        "tags": [
+          "calls"
+        ]
+      },
+      "put": {
+        "description": "Connect (or change) the company's own Twilio account. The token is checked with Twilio\nfirst and stored encrypted; it is never shown again.",
+        "operationId": "calls-put_twilio",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwilioIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwilioOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Twilio",
         "tags": [
           "calls"
         ]
@@ -37019,6 +37334,55 @@
         ]
       }
     },
+    "/api/v1/leads/{lead_id}/call": {
+      "post": {
+        "description": "Twilio rings the rep's phone; when the rep answers, it connects the lead.",
+        "operationId": "calls-call_lead",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallStartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Call Lead",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
     "/api/v1/leads/{lead_id}/consents": {
       "get": {
         "operationId": "leads-consent_history",
@@ -45353,6 +45717,167 @@
         "summary": "Preview Template",
         "tags": [
           "sequences"
+        ]
+      }
+    },
+    "/api/v1/twilio/connect": {
+      "post": {
+        "description": "The rep answered (click-to-call): connect the lead.",
+        "operationId": "calls-connect",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Ctx",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Connect",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
+    "/api/v1/twilio/dial-done": {
+      "post": {
+        "description": "The dialled side finished: the call goes into the pipeline. Unanswered incoming calls\nget the voicemail prompt.",
+        "operationId": "calls-dial_done",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Ctx",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dial Done",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
+    "/api/v1/twilio/hangup": {
+      "post": {
+        "description": "After the voicemail: end the call.",
+        "operationId": "calls-hangup",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Hangup",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
+    "/api/v1/twilio/recording": {
+      "post": {
+        "description": "Twilio has the recording (or the voicemail): the worker fetches it into Core.",
+        "operationId": "calls-recording",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Ctx",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recording",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
+    "/api/v1/twilio/voice": {
+      "post": {
+        "description": "A call to one of the company's Twilio numbers: ring the lead's owner, then the company's\nmain number; nobody answers \u2192 voicemail.",
+        "operationId": "calls-incoming",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Incoming",
+        "tags": [
+          "calls"
         ]
       }
     },
