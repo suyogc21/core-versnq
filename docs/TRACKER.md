@@ -63,17 +63,17 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 |---|---|---|
 | **Real forms: builder plus a hosted page to share or embed** (the old form "link" only accepted posts; opening it gave an error) | M | ✅ live Nov 16 (waiting for Suyog's own try) |
 | Green-tick walk-through of every feature on the live server, fixing what fails | L | ⬜ |
-| WhatsApp extras: photos and PDFs, templates with images and buttons | M | ⬜ |
-| Several brands and sending domains in one company | M | ⬜ |
+| WhatsApp extras: photos and PDFs, templates with images and buttons | M | 🟡 built Nov 16 (batch 3); waits on Meta verification |
+| Several brands and sending domains in one company | M | 🟡 built Nov 16 (batch 4) |
 
 ### Security (6)
 | Item | Size | |
 |---|---|---|
-| Login history plus "sign out everyone" | S | ⬜ |
-| Sign-out after idle time, per company | S | ⬜ |
-| IP allowlist, per company | S | ⬜ |
-| Email after repeated failed sign-ins | S | ⬜ |
-| Data protection: export everything, full erasure, breach runbook (DPDP and GDPR) | M | ⬜ |
+| Login history plus "sign out everyone" | S | 🟡 built Nov 16 (batch 1); live after the next deploy |
+| Sign-out after idle time, per company | S | 🟡 built Nov 16 (batch 1) |
+| IP allowlist, per company | S | 🟡 built Nov 16 (batch 1) |
+| Email after repeated failed sign-ins | S | 🟡 built Nov 16 (batch 1) |
+| Data protection: export everything, full erasure, breach runbook (DPDP and GDPR) | M | 🟡 built Nov 16 (batch 1; runbook in `security/breach-runbook.md`) |
 
 ### Phase 2: phone calls (7): decided Nov 16 (plan: `plans/calls-plan.md`)
 | Item | Size | |
@@ -105,7 +105,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | VAT and sales-tax setups for other countries | M | ⬜ |
 | The app in other languages | L | ⬜ |
 | Choice of data region (EU, US) | L | ⬜ |
-| Import from HubSpot and LeadSquared | M | ⬜ |
+| Import from HubSpot and LeadSquared | M | 🟡 built Nov 16 (batch 2); check one real export file from each |
 
 ### Later (2)
 | Item | Size | |
@@ -130,4 +130,5 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | 2026-11-16 | C2 installable app + phone notifications live; C3 Twilio calling built; Android app: download link first (Runo answers) |
 | 2026-11-16 | C3 Twilio calling live (migration 0037) |
 | 2026-11-16 | ACE lead summary in Core (0038, not deployed); Twilio dual-channel; Android C4.1 shell; ACE C5 built on fakes |
+| 2026-11-16 | Finishing plan batches 1–4 built: security, imports, WhatsApp extras, brands (migrations 0040–0042) |
 | 2026-11-16 | Android app C4.2–C4.4 built (call tracking, recordings, caller popup, download link) |
