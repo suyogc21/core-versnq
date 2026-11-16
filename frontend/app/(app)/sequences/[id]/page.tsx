@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/app/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import { relative, useFields } from "@/lib/crm";
@@ -113,8 +114,66 @@ function fromSaved(seq: Sequence): Draft[] {
       field: (c.field as string) ?? null,
       value: (c.value as string) ?? null,
       go_to: c.go_to !== undefined ? Number(c.go_to) : null,
+      split_b: 50,
+      ...abFrom(c.ab as Record<string, unknown> | undefined),
     };
   });
+}
+
+/** An email step's A/B test (batch 5a), from its saved config. */
+function abFrom(ab: Record<string, unknown> | undefined): Partial<StepIn> {
+  if (!ab) return {};
+  return {
+    b_subject: (ab.subject as string) ?? null,
+    b_body: (ab.body as string) ?? null,
+    split_b: Number(ab.split_b ?? 50),
+    auto_pick_after: ab.auto_pick_after ? Number(ab.auto_pick_after) : null,
+    winner: (ab.winner as StepIn["winner"]) ?? null,
+  };
+}
+
+/** Variant B for an email step: another subject and/or body, sent to a share of the people. */
+function AbTest({ st, i, set }: { st: Draft; i: number; set: (i: number, patch: Partial<StepIn>) => void }) {
+  const on = st.b_subject !== undefined && st.b_subject !== null ? true : st.b_body !== undefined && st.b_body !== null;
+  if (!on)
+    return (
+      <button type="button" className="text-xs underline" onClick={() => set(i, { b_subject: "", b_body: null, split_b: 50 })}>
+        A/B test…
+      </button>
+    );
+  return (
+    <div className="basis-full space-y-2 rounded-md border border-dashed p-2 text-xs">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-medium">Variant B</span>
+        <span className="text-muted-foreground">A is the template. Leave a box empty to keep the template&apos;s.</span>
+        <button type="button" className="ml-auto underline" onClick={() => set(i, { b_subject: null, b_body: null, winner: null, auto_pick_after: null })}>
+          Stop testing
+        </button>
+      </div>
+      <Input aria-label={`Step ${i + 1} variant B subject`} placeholder="Subject for B" value={st.b_subject ?? ""} onChange={(e) => set(i, { b_subject: e.target.value })} />
+      <Textarea aria-label={`Step ${i + 1} variant B body`} rows={4} placeholder="Body for B (optional)" value={st.b_body ?? ""} onChange={(e) => set(i, { b_body: e.target.value || null })} />
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="flex items-center gap-1">
+          B goes to
+          <Input aria-label={`Step ${i + 1} share for B`} type="number" min={1} max={99} className="h-7 w-16" value={st.split_b ?? 50} onChange={(e) => set(i, { split_b: Number(e.target.value) || 50 })} />% of people
+        </label>
+        <label className="flex items-center gap-1">
+          Pick the better one by itself after
+          <Input
+            aria-label={`Step ${i + 1} auto pick after`}
+            type="number"
+            min={10}
+            className="h-7 w-20"
+            placeholder="off"
+            value={st.auto_pick_after ?? ""}
+            onChange={(e) => set(i, { auto_pick_after: e.target.value ? Number(e.target.value) : null })}
+          />
+          emails
+        </label>
+        {st.winner && <span className="font-medium">Winner: {st.winner.toUpperCase()} (everyone gets it now)</span>}
+      </div>
+    </div>
+  );
 }
 
 const NEW: Record<StepIn["kind"], Partial<StepIn>> = {
@@ -138,7 +197,7 @@ function Steps({ seq }: { seq: Sequence }) {
     [out[i], out[i + by]] = [out[i + by], out[i]];
     setSteps(out);
   };
-  const add = (kind: StepIn["kind"]) => setSteps([...steps, { _k: ++counter, kind, due_in_hours: 0, task_type: "other", ...NEW[kind] } as Draft]);
+  const add = (kind: StepIn["kind"]) => setSteps([...steps, { _k: ++counter, kind, due_in_hours: 0, task_type: "other", split_b: 50, ...NEW[kind] } as Draft]);
 
   async function save() {
     try {
@@ -177,6 +236,7 @@ function Steps({ seq }: { seq: Sequence }) {
                 ))}
               </NativeSelect>
             )}
+            {st.kind === "email" && <AbTest st={st} i={i} set={set} />}
             {st.kind === "whatsapp" && (
               <NativeSelect aria-label={`Step ${i + 1} WhatsApp template`} className="h-8 w-60" value={st.template_id ?? ""} onChange={(e) => set(i, { template_id: e.target.value || null })}>
                 <option value="">Choose a WhatsApp template…</option>
@@ -379,6 +439,76 @@ function Results({ seq }: { seq: Sequence }) {
         </table>
       </div>
       <p className="text-xs text-muted-foreground">* Opens are estimated: some mail apps open every image, others block them.</p>
+      {d.steps
+        .filter((st) => (st.variants ?? []).length > 0)
+        .map((st) => (
+          <AbResult key={st.position} seqId={seq.id} st={st} pct={pct} />
+        ))}
+    </div>
+  );
+}
+
+type StepStat = NonNullable<ReturnType<typeof useSequenceStats>["data"]>["steps"][number];
+
+/** An A/B-tested step's two variants side by side, and picking the winner (batch 5a). */
+function AbResult({ seqId, st, pct }: { seqId: string; st: StepStat; pct: (n: number, of: number) => string }) {
+  const refresh = useRefreshSequences();
+  async function pick(winner: "a" | "b" | null) {
+    try {
+      unwrap(await api.POST("/api/v1/sequences/{s_id}/steps/{position}/winner", { params: { path: { s_id: seqId, position: st.position } }, body: { winner } }));
+      refresh();
+      toast.success(winner ? `Everyone gets ${winner.toUpperCase()} from now on` : "Testing again");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+  return (
+    <div className="surface space-y-2 p-3 text-sm" data-ab-step={st.position}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-medium">Step {st.position}: A/B test</span>
+        {st.winner ? (
+          <span className="text-muted-foreground">Winner: {st.winner.toUpperCase()}</span>
+        ) : st.leading ? (
+          <span className="text-muted-foreground">{st.leading.toUpperCase()} is ahead (replies, then opens)</span>
+        ) : (
+          <span className="text-muted-foreground">Not enough sent yet</span>
+        )}
+      </div>
+      <table className="w-full max-w-md text-sm">
+        <thead>
+          <tr className="text-left text-xs text-muted-foreground">
+            <th className="py-1 font-medium">Variant</th>
+            <th className="text-right font-medium">Sent</th>
+            <th className="text-right font-medium">Opened*</th>
+            <th className="text-right font-medium">Clicked</th>
+            <th className="text-right font-medium">Replied</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(st.variants ?? []).map((v) => (
+            <tr key={v.variant}>
+              <td className="py-1">{v.variant.toUpperCase()}</td>
+              <td className="text-right tabular-nums">{v.sent}</td>
+              <td className="text-right tabular-nums">{pct(v.opened, v.sent)}</td>
+              <td className="text-right tabular-nums">{pct(v.clicked, v.sent)}</td>
+              <td className="text-right tabular-nums">{pct(v.replied, v.sent)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={() => pick("a")}>
+          Send A to everyone
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => pick("b")}>
+          Send B to everyone
+        </Button>
+        {st.winner && (
+          <Button size="sm" variant="ghost" onClick={() => pick(null)}>
+            Test again
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

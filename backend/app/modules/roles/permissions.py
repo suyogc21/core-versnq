@@ -1,7 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
 # code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
-# 0017, 0018, 0019, 0021, 0023, 0024, 0028, 0030, 0031, 0033).
+# 0017, 0018, 0019, 0021, 0023, 0024, 0028, 0030, 0031, 0033, 0043).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -55,6 +55,7 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     ),
     # C13: Open ACE's console signed in with Core; the exchange is for ACE's key only
     "ace.use": ("settings", "Open ACE's console (signed in with Core)"),
+    "pages.manage": ("crm", "Build and publish landing pages"),  # batch 5a
     "ace.console_login": (
         "settings",
         "Sign people in to ACE's console with their one-time code (only for ACE's key)",

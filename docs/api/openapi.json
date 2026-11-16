@@ -15145,6 +15145,194 @@
         "title": "PageField",
         "type": "object"
       },
+      "PageIn": {
+        "properties": {
+          "blocks": {
+            "default": [],
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 40,
+            "title": "Blocks",
+            "type": "array"
+          },
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
+          "published": {
+            "default": false,
+            "title": "Published",
+            "type": "boolean"
+          },
+          "seo_description": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Description"
+          },
+          "seo_title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Title"
+          },
+          "slug": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Slug",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "slug"
+        ],
+        "title": "PageIn",
+        "type": "object"
+      },
+      "PageOut": {
+        "properties": {
+          "blocks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Blocks",
+            "type": "array"
+          },
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "leads": {
+            "default": 0,
+            "title": "Leads",
+            "type": "integer"
+          },
+          "path": {
+            "default": "",
+            "title": "Path",
+            "type": "string"
+          },
+          "published": {
+            "title": "Published",
+            "type": "boolean"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "seo_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Description"
+          },
+          "seo_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Title"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "visits": {
+            "title": "Visits",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "blocks",
+          "published",
+          "published_at",
+          "brand_id",
+          "seo_title",
+          "seo_description",
+          "visits",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PageOut",
+        "type": "object"
+      },
       "PaymentLinkIn": {
         "properties": {
           "installment_id": {
@@ -16140,6 +16328,96 @@
           "code"
         ],
         "title": "ProductRef",
+        "type": "object"
+      },
+      "PublicCompany": {
+        "properties": {
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "primary_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Color"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PublicCompany",
+        "type": "object"
+      },
+      "PublicPageOut": {
+        "properties": {
+          "blocks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Blocks",
+            "type": "array"
+          },
+          "company": {
+            "$ref": "#/components/schemas/PublicCompany"
+          },
+          "seo_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Description"
+          },
+          "seo_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Title"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "seo_title",
+          "seo_description",
+          "company",
+          "blocks"
+        ],
+        "title": "PublicPageOut",
         "type": "object"
       },
       "PushKeyOut": {
@@ -19558,6 +19836,43 @@
       },
       "StepIn": {
         "properties": {
+          "auto_pick_after": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 10.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Pick After"
+          },
+          "b_body": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "B Body"
+          },
+          "b_subject": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "B Subject"
+          },
           "check_if": {
             "anyOf": [
               {
@@ -19631,6 +19946,13 @@
             "title": "Kind",
             "type": "string"
           },
+          "split_b": {
+            "default": 50,
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Split B",
+            "type": "integer"
+          },
           "tag_id": {
             "anyOf": [
               {
@@ -19689,6 +20011,21 @@
               }
             ],
             "title": "Value"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "a",
+                  "b"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
           }
         },
         "required": [
@@ -19748,6 +20085,17 @@
             "title": "Kind",
             "type": "string"
           },
+          "leading": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leading"
+          },
           "opened": {
             "default": 0,
             "title": "Opened",
@@ -19771,6 +20119,25 @@
             "default": 0,
             "title": "Unsubscribed",
             "type": "integer"
+          },
+          "variants": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/VariantStats"
+            },
+            "title": "Variants",
+            "type": "array"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
           }
         },
         "required": [
@@ -22178,6 +22545,43 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "VariantStats": {
+        "properties": {
+          "clicked": {
+            "default": 0,
+            "title": "Clicked",
+            "type": "integer"
+          },
+          "opened": {
+            "default": 0,
+            "title": "Opened",
+            "type": "integer"
+          },
+          "replied": {
+            "default": 0,
+            "title": "Replied",
+            "type": "integer"
+          },
+          "sent": {
+            "default": 0,
+            "title": "Sent",
+            "type": "integer"
+          },
+          "variant": {
+            "enum": [
+              "a",
+              "b"
+            ],
+            "title": "Variant",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variant"
+        ],
+        "title": "VariantStats",
+        "type": "object"
+      },
       "ViewCounts": {
         "properties": {
           "all": {
@@ -23313,6 +23717,30 @@
           "brand_id"
         ],
         "title": "WhatsAppChannel",
+        "type": "object"
+      },
+      "WinnerIn": {
+        "properties": {
+          "winner": {
+            "anyOf": [
+              {
+                "enum": [
+                  "a",
+                  "b"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          }
+        },
+        "required": [
+          "winner"
+        ],
+        "title": "WinnerIn",
         "type": "object"
       },
       "app__modules__audit__router__AuditOut": {
@@ -37605,6 +38033,223 @@
         ]
       }
     },
+    "/api/v1/landing-pages": {
+      "get": {
+        "operationId": "landing-pages-list_pages",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PageOut"
+                  },
+                  "title": "Response Landing-Pages-List Pages",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Pages",
+        "tags": [
+          "landing-pages"
+        ]
+      },
+      "post": {
+        "operationId": "landing-pages-create_page",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Page",
+        "tags": [
+          "landing-pages"
+        ]
+      }
+    },
+    "/api/v1/landing-pages/{page_id}": {
+      "delete": {
+        "operationId": "landing-pages-delete_page",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Page Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Page",
+        "tags": [
+          "landing-pages"
+        ]
+      },
+      "get": {
+        "operationId": "landing-pages-get_page",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Page Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Page",
+        "tags": [
+          "landing-pages"
+        ]
+      },
+      "put": {
+        "operationId": "landing-pages-update_page",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Page Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Page",
+        "tags": [
+          "landing-pages"
+        ]
+      }
+    },
     "/api/v1/layouts/{entity}": {
       "delete": {
         "description": "Back to the default page.",
@@ -42782,6 +43427,85 @@
         ]
       }
     },
+    "/api/v1/pages/{slug}": {
+      "get": {
+        "description": "Public: a published page, for /p/<slug>.",
+        "operationId": "landing-pages-public_page",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Page",
+        "tags": [
+          "landing-pages"
+        ]
+      }
+    },
+    "/api/v1/pages/{slug}/visit": {
+      "post": {
+        "description": "Public: the page was opened. Counted once per visitor address per page every 30 minutes,\nwith no cookies; unknown or unpublished pages answer 404.",
+        "operationId": "landing-pages-count_visit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Count Visit",
+        "tags": [
+          "landing-pages"
+        ]
+      }
+    },
     "/api/v1/payment-links/{link_id}": {
       "delete": {
         "operationId": "money-cancel_payment_link",
@@ -47076,6 +47800,74 @@
           }
         ],
         "summary": "Set Steps",
+        "tags": [
+          "sequences"
+        ]
+      }
+    },
+    "/api/v1/sequences/{s_id}/steps/{position}/winner": {
+      "post": {
+        "description": "Pick the winner of an A/B-tested email step: from now on everyone gets it.",
+        "operationId": "sequences-pick_winner",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "s_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "S Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "position",
+            "required": true,
+            "schema": {
+              "title": "Position",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WinnerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Pick Winner",
         "tags": [
           "sequences"
         ]
