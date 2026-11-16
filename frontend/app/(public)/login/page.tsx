@@ -12,6 +12,12 @@ import { type CodeMethod, useAuth } from "@/lib/auth";
 
 type Creds = { email: string; password: string };
 
+/** Where to go after signing in: ?next= when it is a page of this app, otherwise My Day. */
+function safeNext(): string {
+  const next = new URLSearchParams(window.location.search).get("next") ?? "";
+  return /^\/(?![/\\])/.test(next) ? next : "/";
+}
+
 export default function LoginPage() {
   const { status, login, verifyTwoFactor, resendCode } = useAuth();
   const router = useRouter();
@@ -23,7 +29,7 @@ export default function LoginPage() {
   const code = useForm<{ code: string }>();
 
   useEffect(() => {
-    if (status === "signed-in") router.replace("/");
+    if (status === "signed-in") router.replace(safeNext());
   }, [status, router]);
 
   const submitCreds = creds.handleSubmit(async ({ email, password }) => {

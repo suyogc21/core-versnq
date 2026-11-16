@@ -9,13 +9,13 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import or_, select
 
-from app.core.errors import Forbidden, NotFound
+from app.core.errors import Forbidden, Invalid, NotFound
 from app.modules.auth.deps import ActiveUser, CurrentUser, has_permission, require
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.engage import inbox as IB
 from app.modules.engage.models import Conversation, Message
 from app.modules.replies import service as RS
-from app.modules.replies.models import Draft, MessageClassification
+from app.modules.replies.models import Draft, DraftRequest, MessageClassification
 
 router = APIRouter(prefix="/api/v1", tags=["replies"], dependencies=CRM)
 Admin = Annotated[CurrentUser, require("settings.manage")]
@@ -125,6 +125,17 @@ class DecideIn(BaseModel):
 class RejectIn(BaseModel):
     on_behalf_of_user_id: uuid.UUID | None = None
     reason: str | None = Field(default=None, max_length=500)
+
+
+class DeclineIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class DeclinedOut(BaseModel):
+    request_id: uuid.UUID
+    conversation_id: uuid.UUID
+    reason: str
+    declined_at: datetime
 
 
 class DecidedOut(BaseModel):
@@ -259,6 +270,24 @@ async def create_draft(conv_id: uuid.UUID, body: DraftIn, db: CrmDb, actor: Answ
         body=body.body, reasons=body.reasons, language=body.language,
     )  # fmt: skip
     return _draft_out(d)
+
+
+@router.post("/draft-requests/{request_id}/decline", response_model=DeclinedOut)
+async def decline_request(
+    request_id: uuid.UUID, body: DeclineIn, db: CrmDb, actor: Answerer
+) -> DeclinedOut:
+    """ACE won't draft this one (C14), with a reason the people answering see."""
+    req = await db.get(DraftRequest, request_id)
+    if req is None:
+        raise Invalid("Unknown request_id", code="unknown_request")
+    conv = await _conversation(db, actor, req.conversation_id)
+    if not await RS.can_answer(db, actor, conv):
+        raise Forbidden("permission_denied")
+    req = await RS.decline_request(db, actor, req, body.reason)
+    return DeclinedOut(
+        request_id=req.id, conversation_id=req.conversation_id,
+        reason=req.decline_reason or "", declined_at=req.declined_at,
+    )  # fmt: skip
 
 
 async def _draft(db, actor: CurrentUser, draft_id: uuid.UUID) -> Draft:

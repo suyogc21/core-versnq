@@ -3765,6 +3765,133 @@
         "title": "ConsentOut",
         "type": "object"
       },
+      "ConsoleCodeOut": {
+        "properties": {
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expires_in"
+        ],
+        "title": "ConsoleCodeOut",
+        "type": "object"
+      },
+      "ConsoleCompany": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name"
+        ],
+        "title": "ConsoleCompany",
+        "type": "object"
+      },
+      "ConsoleLoginIn": {
+        "properties": {
+          "code": {
+            "maxLength": 100,
+            "minLength": 10,
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "ConsoleLoginIn",
+        "type": "object"
+      },
+      "ConsoleLoginOut": {
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/ConsoleCompany"
+          },
+          "user": {
+            "$ref": "#/components/schemas/ConsolePerson"
+          }
+        },
+        "required": [
+          "user",
+          "company"
+        ],
+        "title": "ConsoleLoginOut",
+        "type": "object"
+      },
+      "ConsolePerson": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/ConsoleRole"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "permissions"
+        ],
+        "title": "ConsolePerson",
+        "type": "object"
+      },
+      "ConsoleRole": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "title": "ConsoleRole",
+        "type": "object"
+      },
       "ContactConvertOut": {
         "properties": {
           "lead_id": {
@@ -5611,6 +5738,52 @@
         "title": "DecidedOut",
         "type": "object"
       },
+      "DeclineIn": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "DeclineIn",
+        "type": "object"
+      },
+      "DeclinedOut": {
+        "properties": {
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "declined_at": {
+            "format": "date-time",
+            "title": "Declined At",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "conversation_id",
+          "reason",
+          "declined_at"
+        ],
+        "title": "DeclinedOut",
+        "type": "object"
+      },
       "DeliveryDetail": {
         "properties": {
           "attempts": {
@@ -6138,7 +6311,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 47,
+            "maxItems": 48,
             "minItems": 1,
             "title": "Events",
             "type": "array"
@@ -6245,7 +6418,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 47,
+                "maxItems": 48,
                 "minItems": 1,
                 "type": "array"
               },
@@ -12416,6 +12589,11 @@
       },
       "MeOut": {
         "properties": {
+          "ace_console": {
+            "default": false,
+            "title": "Ace Console",
+            "type": "boolean"
+          },
           "email": {
             "title": "Email",
             "type": "string"
@@ -22283,6 +22461,80 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/ace/console-code": {
+      "post": {
+        "description": "A one-time code for Open ACE (people only, with ace.use).",
+        "operationId": "ace-console_code",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsoleCodeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Console Code",
+        "tags": [
+          "ace"
+        ]
+      }
+    },
+    "/api/v1/ace/console-login": {
+      "post": {
+        "description": "ACE's key swaps a code for who the person is. Refusals: code_invalid, code_expired,\ncode_used, user_inactive, not_allowed.",
+        "operationId": "ace-console_login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsoleLoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsoleLoginOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Console Login",
+        "tags": [
+          "ace"
+        ]
+      }
+    },
     "/api/v1/activity-types": {
       "get": {
         "operationId": "crm-setup-list_types",
@@ -29089,6 +29341,65 @@
         "summary": "Update Requirement",
         "tags": [
           "customers"
+        ]
+      }
+    },
+    "/api/v1/draft-requests/{request_id}/decline": {
+      "post": {
+        "description": "ACE won't draft this one (C14), with a reason the people answering see.",
+        "operationId": "replies-decline_request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclinedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Decline Request",
+        "tags": [
+          "replies"
         ]
       }
     },

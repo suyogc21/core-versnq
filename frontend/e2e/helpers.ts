@@ -76,9 +76,9 @@ export async function turnOnTwoFactor(page: Page): Promise<string> {
 }
 
 /** Sign in from a fresh browser; enters the emailed code when the company asks for one. */
-export async function signIn(page: Page, url: string, email: string, password: string) {
+export async function signIn(page: Page, url: string, email: string, password: string, start = "/login") {
   const before = codesSentTo(email).length;
-  await page.goto(`${url}/login`);
+  await page.goto(`${url}${start}`); // a signed-in page sends them to /login?next=… first
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();

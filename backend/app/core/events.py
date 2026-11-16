@@ -39,6 +39,7 @@ CATALOGUE: dict[str, str] = {
     "draft.approved": "inbox",
     "draft.rejected": "inbox",
     "draft.superseded": "inbox",
+    "draft.declined": "inbox",  # C14: ACE won't draft this one
     "reply_categories.changed": "inbox",
     "deal.created": "crm",  # step 3 (Decision log #25)
     "deal.updated": "crm",

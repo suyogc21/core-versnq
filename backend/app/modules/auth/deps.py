@@ -15,7 +15,7 @@ from app.core.security import InvalidToken, decode_access_token
 from app.core.tenancy import tenant_session
 from app.modules.auth.service import restrictions
 from app.modules.roles.models import Role, RolePermission
-from app.modules.roles.permissions import ALL_CODES
+from app.modules.roles.permissions import ALL_CODES, KEY_ONLY
 from app.modules.users.models import User
 
 _bearer = HTTPBearer(auto_error=False)
@@ -36,7 +36,7 @@ async def effective_permissions(db: AsyncSession, role: Role) -> set[str]:
     """Owner holds every code (including future ones) except acting for other people, which only
     ACE's key gets (step O3); others hold their granted rows."""
     if role.key == "owner":
-        return set(ALL_CODES - {"drafts.approve_for_users"})
+        return set(ALL_CODES - KEY_ONLY)
     rows = await db.scalars(
         select(RolePermission.permission_code).where(RolePermission.role_id == role.id)
     )

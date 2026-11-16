@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Boxes, ChartColumn, Contact, Handshake, Inbox, LogOut, Megaphone, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Bot, Boxes, ChartColumn, Contact, Handshake, Inbox, LogOut, Megaphone, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -149,6 +149,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </>
         )}
         <div className="flex-1" />
+        {me.ace_console && (
+          <a
+            href="/ace/open"
+            target="_blank"
+            rel="noopener"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <Bot className="size-4" />
+            Open ACE
+          </a>
+        )}
         <div className="flex items-center gap-2 border-t px-2 pt-2.5">
           <Link
             href="/account"

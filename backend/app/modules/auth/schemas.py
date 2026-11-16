@@ -51,3 +51,4 @@ class MeOut(BaseModel):
     permissions: list[str]
     two_factor_enabled: bool
     recovery_codes_left: int = 0  # unused backup codes (go-live G-4)
+    ace_console: bool = False  # C13: show Open ACE (set up, and this person has ace.use)

@@ -4,6 +4,47 @@
  */
 
 export interface paths {
+    "/api/v1/ace/console-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Console Code
+         * @description A one-time code for Open ACE (people only, with ace.use).
+         */
+        post: operations["ace-console_code"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ace/console-login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Console Login
+         * @description ACE's key swaps a code for who the person is. Refusals: code_invalid, code_expired,
+         *     code_used, user_inactive, not_allowed.
+         */
+        post: operations["ace-console_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activity-types": {
         parameters: {
             query?: never;
@@ -1719,6 +1760,26 @@ export interface paths {
         head?: never;
         /** Update Requirement */
         patch: operations["customers-update_requirement"];
+        trace?: never;
+    };
+    "/api/v1/draft-requests/{request_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline Request
+         * @description ACE won't draft this one (C14), with a reason the people answering see.
+         */
+        post: operations["replies-decline_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/drafts/{draft_id}": {
@@ -7572,6 +7633,57 @@ export interface components {
             /** Wording */
             wording: string | null;
         };
+        /** ConsoleCodeOut */
+        ConsoleCodeOut: {
+            /** Expires In */
+            expires_in: number;
+            /** Url */
+            url: string;
+        };
+        /** ConsoleCompany */
+        ConsoleCompany: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+        };
+        /** ConsoleLoginIn */
+        ConsoleLoginIn: {
+            /** Code */
+            code: string;
+        };
+        /** ConsoleLoginOut */
+        ConsoleLoginOut: {
+            company: components["schemas"]["ConsoleCompany"];
+            user: components["schemas"]["ConsolePerson"];
+        };
+        /** ConsolePerson */
+        ConsolePerson: {
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Permissions */
+            permissions: string[];
+            role: components["schemas"]["ConsoleRole"];
+        };
+        /** ConsoleRole */
+        ConsoleRole: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
         /** ContactConvertOut */
         ContactConvertOut: {
             /**
@@ -8174,6 +8286,31 @@ export interface components {
             message_id?: string | null;
             /** Status */
             status: string;
+        };
+        /** DeclineIn */
+        DeclineIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** DeclinedOut */
+        DeclinedOut: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /**
+             * Declined At
+             * Format: date-time
+             */
+            declined_at: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
         };
         /** DeliveryDetail */
         DeliveryDetail: {
@@ -10390,6 +10527,11 @@ export interface components {
         };
         /** MeOut */
         MeOut: {
+            /**
+             * Ace Console
+             * @default false
+             */
+            ace_console: boolean;
             /** Email */
             email: string;
             /**
@@ -13753,6 +13895,59 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "ace-console_code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsoleCodeOut"];
+                };
+            };
+        };
+    };
+    "ace-console_login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsoleLoginIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsoleLoginOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "crm-setup-list_types": {
         parameters: {
             query?: never;
@@ -17663,6 +17858,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RequirementOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "replies-decline_request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeclinedOut"];
                 };
             };
             /** @description Validation Error */

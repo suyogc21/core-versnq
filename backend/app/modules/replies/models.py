@@ -74,6 +74,8 @@ class DraftRequest(TenantScoped, Base):
     rule_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     instructions: Mapped[str | None] = mapped_column(String(1000))
     draft_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    declined_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # C14
+    decline_reason: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

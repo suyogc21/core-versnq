@@ -3,7 +3,7 @@ from sqlalchemy import select
 from app.core.tenancy import tenant_session
 from app.modules.auth.deps import effective_permissions
 from app.modules.roles.models import Role
-from app.modules.roles.permissions import ALL_CODES, DEFAULT_GRANTS
+from app.modules.roles.permissions import ALL_CODES, DEFAULT_GRANTS, KEY_ONLY
 from tests.factories import login_as
 
 
@@ -15,7 +15,7 @@ async def _perms(tenant_id, key):
 
 async def test_owner_has_every_permission_except_acting_for_others(ws):
     tenant_id, _ = ws
-    assert await _perms(tenant_id, "owner") == set(ALL_CODES) - {"drafts.approve_for_users"}
+    assert await _perms(tenant_id, "owner") == set(ALL_CODES - KEY_ONLY)
 
 
 async def test_default_grants_seeded(ws):
@@ -64,6 +64,7 @@ async def test_me_lists_the_users_permissions(ws):
         "sequences.manage",
         "users.read",
     ]
-    assert set((await c.get("/api/v1/auth/me", headers=owner)).json()["permissions"]) == set(
-        ALL_CODES
-    ) - {"drafts.approve_for_users"}  # only ACE's key acts for other people (step O3)
+    assert (
+        set((await c.get("/api/v1/auth/me", headers=owner)).json()["permissions"])
+        == set(ALL_CODES) - KEY_ONLY
+    )  # only ACE's key: acting for people (O3), console sign-in (C13)

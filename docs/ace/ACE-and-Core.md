@@ -386,3 +386,32 @@ The Core-side additions ACE needs (§9, "Core screens ACE needs") are built **in
 ### Message for the ACE session (paste this)
 
 > Core and ACE now split the work this way (Decision #44, `ACE-and-Core.md` §13, and Core's `docs/plans/outreach-plan.md`). **Core** owns inboxes, cold contacts, campaigns, sending, rotation, tracking, reply categories, rules and drafts storage. **ACE** owns intent classification against the company's own categories, summaries, drafted replies from the knowledge base, and a Slack app for approving drafts. ACE does **not** build a sender, a contact/audience database, a campaign scheduler or n8n flows; drop those from the ACE plan (Decision #4 and D4 are replaced). Please (1) update `docs/plans/ace-plan.md` to this split, (2) list the Core endpoints and events ACE needs from §13 with the exact fields you want, and anything missing, and (3) propose how the Slack app maps Slack users to Core users and handles Approve / Edit / Reject. Mark everything Core hasn't built yet as Planned (O1–O5). Wait for approval before code.
+
+## 14. Sign in with Core (C13) and declining a draft (C14): built Nov 16
+
+Plan: `docs/plans/ace-c13-c14-plan.md` (approved by Suyog, Nov 16). Migration 0033.
+
+### C13 Sign in with Core for ACE's console
+- **Two ways in, one mechanism.** (a) In Core, a person with `ace.use` clicks **Open ACE** (left sidebar). (b) Someone starts at ACE: ACE sends the browser to `https://<company>.core.versnq.in/ace/open`. If they're signed out, Core signs them in first (password, plus the emailed code or the app), then comes back to `/ace/open`.
+- Either way Core sends the browser to **`{ACE_CONSOLE_URL}/sign-in/core?code=<code>&company=<slug>`**. `ACE_CONSOLE_URL` is one setting on Core's server for all companies; while it's empty, nobody sees Open ACE (`/ace/open` says so).
+- The code is one-time and good for **2 minutes**, kept in Redis only.
+- ACE swaps it: **`POST /api/v1/ace/console-login {code}`**, called on that company's address with **that company's** ACE key. The key's role needs **`ace.console_login`**. Like `drafts.approve_for_users`, it's never granted by default, not even to the Owner; an admin adds it to ACE's role.
+- The answer: `{user: {id, name, email, role: {key, name}, permissions}, company: {id, slug, name}}`. It contains no Core token, so ACE runs its own session.
+- Refusals (`code`):
+  - `code_invalid` (422)
+  - `code_expired` (422)
+  - `code_used` (422)
+  - `user_inactive` (422)
+  - `not_allowed` (403): the caller isn't ACE's key, the key lacks the permission, the code is from another company, or the person no longer has `ace.use`.
+- Each sign-in is in the company's audit log (`ace.console_login`, actor = the person).
+- By default `ace.use` is held by Owner and Admin; Owners can add it to other roles.
+
+### C14 ACE declines to draft
+- **`POST /api/v1/draft-requests/{request_id}/decline {reason}`**: reason 1–500 characters. Same rights as drafting (the key must be able to answer that conversation).
+- Core records it on the request and adds a note to the conversation: **"ACE didn't draft this: <reason>"**.
+- Event **`draft.declined`** `{request_id, conversation_id, message_id, reason}`.
+- Answer: `{request_id, conversation_id, reason, declined_at}`. Declining again answers the same (the first reason is kept).
+- Refusals (all 422):
+  - `unknown_request`: not found, or another company's request.
+  - `request_already_answered`: a draft was made. A later `POST /conversations/{id}/drafts` with a declined `request_id` also gets this.
+  - `request_superseded`: a newer reply came in.

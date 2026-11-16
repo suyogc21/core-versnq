@@ -361,6 +361,8 @@ async def create_draft(
         req = await db.get(DraftRequest, request_id)
         if req is None or req.conversation_id != conv.id:
             raise Invalid("Unknown request_id for this conversation", code="unknown_request")
+        if req.declined_at is not None:
+            raise Invalid("ACE already declined this request", code="request_already_answered")
     if conv.channel != "email":
         raise Invalid("Drafts are for email conversations", code="draft_channel_unsupported")
     if conv.status == "closed":
@@ -396,6 +398,33 @@ async def create_draft(
         "created_by": str(actor.user.id),
     })  # fmt: skip
     return d
+
+
+async def decline_request(
+    db: AsyncSession, actor: CurrentUser, req: DraftRequest, reason: str
+) -> DraftRequest:
+    """ACE won't draft this one (C14): recorded on the request, a note on the conversation for
+    the people who answer it, and draft.declined. Declining twice answers the same."""
+    from datetime import UTC, datetime
+
+    if req.declined_at is not None:
+        return req
+    if req.draft_id is not None:
+        raise Invalid("A draft was already made for this request", code="request_already_answered")
+    msg = await db.get(Message, req.message_id)
+    if msg is not None and await _newer_reply(db, req.conversation_id, msg):
+        raise Invalid("A newer reply arrived; this request is out of date",
+                      code="request_superseded")  # fmt: skip
+    reason = " ".join(reason.split())[:500]
+    req.declined_at, req.decline_reason = datetime.now(UTC), reason
+    await _note(db, await db.get(Conversation, req.conversation_id), actor,
+                f"ACE didn't draft this: {reason}")  # fmt: skip
+    await db.flush()
+    await emit(db, req.tenant_id, "draft.declined", {
+        "request_id": str(req.id), "conversation_id": str(req.conversation_id),
+        "message_id": str(req.message_id), "reason": reason,
+    })  # fmt: skip
+    return req
 
 
 async def _check_sendable(db: AsyncSession, conv: Conversation) -> None:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
@@ -10,10 +10,12 @@ import { useAuth } from "@/lib/auth";
 export default function SignedInLayout({ children }: { children: React.ReactNode }) {
   const { status, me } = useAuth();
   const router = useRouter();
+  const path = usePathname();
 
   useEffect(() => {
-    if (status === "signed-out") router.replace("/login");
-  }, [status, router]);
+    // after signing in, back to the page they asked for (e.g. /ace/open when ACE sent them)
+    if (status === "signed-out") router.replace(path && path !== "/" ? `/login?next=${encodeURIComponent(path)}` : "/login");
+  }, [status, router, path]);
 
   if (status !== "signed-in" || !me) {
     return <div className="grid h-screen place-items-center text-muted-foreground">Loading…</div>;

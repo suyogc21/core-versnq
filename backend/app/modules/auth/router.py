@@ -48,6 +48,7 @@ from app.modules.auth.schemas import (
     RoleOut,
     TenantRef,
 )
+from app.modules.integrations import ace_console
 from app.modules.users.models import User
 
 log = logging.getLogger("versnq.auth")
@@ -272,6 +273,7 @@ async def me(current: AnyUser, ws: WorkspaceDep, db: TenantDb) -> MeOut:
         permissions=sorted(current.permissions),
         two_factor_enabled=u.totp_enabled,
         recovery_codes_left=await service.recovery_codes_left(db, u.id) if u.totp_enabled else 0,
+        ace_console=ace_console.available(current),
     )
 
 

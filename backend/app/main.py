@@ -33,6 +33,7 @@ from app.modules.engage.router import router as engage_router
 from app.modules.engage.whatsapp_router import public as whatsapp_public_router
 from app.modules.engage.whatsapp_router import router as whatsapp_router
 from app.modules.integrations import logs as integration_logs
+from app.modules.integrations.ace_console import router as ace_console_router
 from app.modules.integrations.lead_api import router as lead_api_router
 from app.modules.integrations.router import router as integrations_router
 from app.modules.money.router import public as money_webhooks_router
@@ -95,6 +96,7 @@ app.include_router(mailbox_router)
 app.include_router(pool_router)
 app.include_router(outreach_router)
 app.include_router(replies_router)
+app.include_router(ace_console_router)
 app.include_router(extension_account_router)
 app.include_router(extension_router)
 app.include_router(whatsapp_router)
