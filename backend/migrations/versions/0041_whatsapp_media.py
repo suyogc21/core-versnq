@@ -8,7 +8,7 @@ when a template with a photo, video or document header is sent for approval.
 Photos, PDFs, voice notes and videos in and out use the existing message_attachments + files.
 
 Revision ID: 0041
-Revises: 0039
+Revises: 0040
 Create Date: 2026-11-16
 """
 
@@ -17,7 +17,7 @@ from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB
 
 revision = "0041"
-down_revision = "0039"
+down_revision = "0040"
 branch_labels = None
 depends_on = None
 
