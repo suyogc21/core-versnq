@@ -4,7 +4,7 @@ import { BadgeCheck, Bot, Boxes, Phone, ChartColumn, Contact, Handshake, Inbox, 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { InstallApp } from "@/components/app/install-app";
 import { NotificationBell } from "@/components/app/notification-bell";
@@ -61,6 +61,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    // The Android app's back button asks the page first (mobile/…/MainActivity.java): an open
+    // menu closes instead of leaving the page.
+    const w = window as unknown as { versnqBack?: () => boolean };
+    w.versnqBack = () => {
+      if (!menuOpen) return false;
+      setMenuOpen(false);
+      return true;
+    };
+    return () => {
+      delete w.versnqBack;
+    };
+  }, [menuOpen]);
   useWorkspaceSettings(); // loads labels and applies the workspace colour
   const label = useLabels();
   const recordTypes = useRecordTypes();
@@ -135,8 +148,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <NotificationBell />
             </div>
           )}
-          <button aria-label="Close menu" className="rounded p-1 hover:bg-accent md:hidden" onClick={close}>
-            <X className="size-4" />
+          <button aria-label="Close menu" className="-mr-1 rounded p-2 hover:bg-accent md:hidden" onClick={close}>
+            <X className="size-5" />
           </button>
         </div>
         {mainItems.map((i) => (

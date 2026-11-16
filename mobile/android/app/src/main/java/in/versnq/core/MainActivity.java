@@ -3,6 +3,8 @@ package in.versnq.core;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.webkit.WebView;
+import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.CapConfig;
 
@@ -44,6 +46,27 @@ public class MainActivity extends BridgeActivity {
                 .create();
         }
         super.onCreate(savedInstanceState);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                back();
+            }
+        });
+    }
+
+    /** Android's back button: Core's page first (it closes an open menu or dialog), then the
+     * page history, and on the first page the app goes to the background (it isn't closed). */
+    private void back() {
+        WebView web = getBridge() == null ? null : getBridge().getWebView();
+        if (web == null) {
+            moveTaskToBack(true);
+            return;
+        }
+        web.evaluateJavascript("(function(){try{return !!(window.versnqBack&&window.versnqBack())}catch(e){return false}})()", handled -> {
+            if ("true".equals(handled)) return;
+            if (web.canGoBack()) web.goBack();
+            else moveTaskToBack(true);
+        });
     }
 
     /** Opening the app sends any calls not yet in Core (the background job does it otherwise). */
