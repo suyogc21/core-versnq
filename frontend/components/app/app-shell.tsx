@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Bot, Boxes, Phone, ChartColumn, Contact, Handshake, Inbox, LogOut, Megaphone, Newspaper, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Bot, Boxes, Phone, ChartColumn, ChartPie, Contact, Handshake, Inbox, LogOut, Megaphone, Newspaper, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -89,7 +89,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ...(keyOn && can("leads.edit") ? [{ href: "/key-accounts", label: "Key accounts", icon: Star }] : []),
     ...(moneyOn && can("invoices.read") ? [{ href: "/money", label: "Money", icon: ReceiptText }] : []),
     ...(["leads.edit", "dashboards.team", "dashboards.business", "dashboards.money"].some((c) => can(c))
-      ? [{ href: "/dashboards", label: "Dashboards", icon: ChartColumn }]
+      ? [
+          { href: "/dashboards", label: "Dashboards", icon: ChartColumn },
+          { href: "/reports", label: "Reports", icon: ChartPie },
+        ]
       : []),
     ...(can("sequences.manage") ? [{ href: "/sequences", label: "Sequences", icon: Send }] : []),
     ...(can("newsletters.manage") ? [{ href: "/newsletters", label: "Newsletters", icon: Newspaper }] : []),
