@@ -105,7 +105,8 @@ async def test_click_to_call_rings_the_rep_then_connects_the_lead(ws, started):
     assert missing.json()["code"] == "my_phone_missing"
     assert placed["to"] == "+919820011122" and placed["from"] == NUMBER
     assert connect.status_code == 200 and "<Number>+919876543210</Number>" in connect.text
-    assert 'record="record-from-answer"' in connect.text and f'callerId="{NUMBER}"' in connect.text
+    assert 'record="record-from-answer-dual"' in connect.text
+    assert f'callerId="{NUMBER}"' in connect.text
     assert forged.status_code == 404
 
     ctx = parse_qs(urlparse(placed["url"]).query)["ctx"][0]

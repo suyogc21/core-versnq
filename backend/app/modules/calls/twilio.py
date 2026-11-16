@@ -151,7 +151,7 @@ def dial(
     base: str, token: str, number: str, caller_id: str, record: bool, timeout: int = 25
 ) -> str:
     rec = (
-        f' record="record-from-answer" recordingStatusCallbackEvent="completed"'
+        f' record="record-from-answer-dual" recordingStatusCallbackEvent="completed"'
         f" recordingStatusCallback={quoteattr(link(base, 'recording', ctx=token))}"
         if record
         else ""

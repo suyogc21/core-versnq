@@ -433,4 +433,5 @@ Plan: `docs/plans/calls-plan.md`. Every call comes through one pipeline in Core:
 **Recordings:**
 - Kept for the company's `keep_days` (default 30), then removed. The call itself stays.
 - A company can switch recording off; uploads are then refused with `recording_off`.
+- **Channels (Nov 16):** Twilio calls (`source` "twilio") are recorded dual-channel: channel 1 is the first leg Twilio placed, channel 2 is the person it connected. Outgoing (`direction` "out"): channel 1 is the rep, channel 2 is the lead. Incoming ("in"): channel 1 is the caller (the lead), channel 2 is the rep. Voicemails and recordings from the phone app are mono (one channel).
 - Speech-to-text is ACE's choice (D7).
