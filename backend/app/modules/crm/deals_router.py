@@ -40,6 +40,7 @@ class DealOut(BaseModel):
     name: str
     lead_id: uuid.UUID
     lead_name: str | None = None
+    brand_id: uuid.UUID | None = None
     pipeline_id: uuid.UUID
     stage_id: uuid.UUID
     stage_name: str | None = None
@@ -230,6 +231,7 @@ async def list_deals(
     status_: Annotated[Literal["open", "won", "lost"] | None, Query(alias="status")] = None,
     owner: Annotated[list[str], Query()] = [],  # noqa: B006
     lead_id: uuid.UUID | None = None,
+    brand_id: Annotated[list[uuid.UUID], Query()] = [],  # noqa: B006 — any of these brands
     close_from: date | None = None,
     close_to: date | None = None,
     q: str | None = None,
@@ -251,6 +253,8 @@ async def list_deals(
         where.append(_owner_filter(owner, actor))
     if lead_id:
         where.append(Deal.lead_id == lead_id)
+    if brand_id:
+        where.append(Deal.brand_id.in_(brand_id))
     if close_from:
         where.append(Deal.expected_close_on >= close_from)
     if close_to:
@@ -492,6 +496,7 @@ async def create_deal(body: DealIn, db: CrmDb, actor: ActiveUser) -> DealOut:
         expected_close_on=body.expected_close_on,
         custom_fields={},
         created_by_user_id=actor.user.id,
+        brand_id=lead.brand_id,  # a deal is always of its lead's brand
     )
     db.add(deal)
     await db.flush()

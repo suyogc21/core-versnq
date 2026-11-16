@@ -30,6 +30,7 @@ class LeadFilter(BaseModel):
     q: str | None = Field(default=None, max_length=200)
     stage_id: list[uuid.UUID] = []
     source_id: list[uuid.UUID] = []
+    brand_id: list[uuid.UUID] = Field(default=[], description="of any of these brands")
     owner: list[str] = Field(default=[], description="'me', 'unassigned' or user ids")
     status: Literal["open", "closed"] | None = None
     follow_up: Literal["overdue", "today", "none"] | None = None
@@ -71,6 +72,8 @@ async def where_clauses(db: AsyncSession, actor: CurrentUser, f: LeadFilter) -> 
         where.append(Lead.stage_id.in_(f.stage_id))
     if f.source_id:
         where.append(Lead.source_id.in_(f.source_id))
+    if f.brand_id:
+        where.append(Lead.brand_id.in_(f.brand_id))
     if f.owner:
         owners, unassigned = set(), False
         for o in f.owner:

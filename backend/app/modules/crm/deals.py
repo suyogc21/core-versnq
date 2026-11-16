@@ -8,7 +8,7 @@ A deal's timeline entries carry its lead too, so they appear on the lead's timel
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import false, func, or_, select, true
+from sqlalchemy import and_, false, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import money
@@ -35,14 +35,18 @@ MAX_LINES = 100
 
 # ---------- visibility ----------
 async def visibility_filter(db: AsyncSession, actor: CurrentUser):
+    """The deals this person may see: by owner and scope, and only of their brands (batch 4)."""
+    from app.modules.brands import service as B
+
+    brands = await B.condition(db, actor.user.id, Deal.brand_id)
     scope = actor.role.scope
     if scope == "all":
-        return true()
+        return brands
     visible = await visible_user_ids(db, actor.user.id, scope)
     owned = Deal.owner_user_id.in_(visible) if visible else false()
     if scope == "team":
-        return or_(owned, Deal.owner_user_id.is_(None))
-    return owned
+        return and_(or_(owned, Deal.owner_user_id.is_(None)), brands)
+    return and_(owned, brands)
 
 
 async def get_visible(db: AsyncSession, actor: CurrentUser, deal_id: uuid.UUID) -> Deal:

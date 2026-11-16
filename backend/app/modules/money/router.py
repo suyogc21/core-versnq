@@ -622,6 +622,7 @@ class InvoiceRow(BaseModel):
     status: str
     customer_id: uuid.UUID
     lead_id: uuid.UUID
+    brand_id: uuid.UUID | None = None
     deal_id: uuid.UUID | None
     entity_id: uuid.UUID
     currency: str
@@ -905,6 +906,7 @@ async def list_invoices(
     ] = [],  # noqa: B006
     entity_id: uuid.UUID | None = None,
     customer_id: uuid.UUID | None = None,
+    brand_id: Annotated[list[uuid.UUID], Query()] = [],  # noqa: B006 — any of these brands
     owner: Annotated[list[str], Query()] = [],  # noqa: B006
     overdue: bool = False,
     sort: Literal["-created", "due", "-total", "number"] = "-created",
@@ -922,6 +924,8 @@ async def list_invoices(
         where.append(Invoice.entity_id == entity_id)
     if customer_id:
         where.append(Invoice.customer_id == customer_id)
+    if brand_id:
+        where.append(Invoice.brand_id.in_(brand_id))
     if owner:
         ids = [uuid.UUID(o) for o in owner if o not in ("me", "none")]
         conds = [Lead.owner_user_id.in_(ids)] if ids else []

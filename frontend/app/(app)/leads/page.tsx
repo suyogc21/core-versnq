@@ -50,14 +50,15 @@ import {
 } from "@/lib/crm";
 import { useUsers } from "@/lib/directory";
 import { useTags, useViews } from "@/lib/organise";
+import { useBrandChoices } from "@/lib/brands";
 import { exportCsv } from "@/lib/reports";
 import { useLabels } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 import { accessOf, useLayout } from "@/lib/layouts";
 import { enrolLeads, useSequences } from "@/lib/sequences";
 
-type Filters = { stage_id: string[]; source_id: string[]; owner: string[]; tag: string[]; band: string[]; cf: Record<string, string[]> };
-const NO_FILTERS: Filters = { stage_id: [], source_id: [], owner: [], tag: [], band: [], cf: {} };
+type Filters = { stage_id: string[]; source_id: string[]; brand_id: string[]; owner: string[]; tag: string[]; band: string[]; cf: Record<string, string[]> };
+const NO_FILTERS: Filters = { stage_id: [], source_id: [], brand_id: [], owner: [], tag: [], band: [], cf: {} };
 
 const VIEW_QUERY: Record<string, LeadQuery> = {
   mine: { owner: ["me"], status: "open" },
@@ -111,6 +112,7 @@ function LeadsList() {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   const [filters, setFilters] = useState<Filters>(initial.filters);
+  const brands = useBrandChoices(); // the Brand filter shows only with two or more brands
   const [paging, setPaging] = useState<Paging>({ page: 1, size: 50, sort: "follow_up", dir: "asc" });
   const [selection, setSelection] = useState<Selection>(emptySelection);
   const [preview, setPreview] = useState<string | null>(null);
@@ -147,6 +149,7 @@ function LeadsList() {
     ...(q ? { q } : {}),
     ...(filters.stage_id.length ? { stage_id: filters.stage_id } : {}),
     ...(filters.source_id.length ? { source_id: filters.source_id } : {}),
+    ...(filters.brand_id.length ? { brand_id: filters.brand_id } : {}),
     ...(!viewOwns && filters.owner.length ? { owner: filters.owner } : {}),
     ...(filters.tag.length ? { tag: filters.tag } : {}),
     ...(created.from ? { created_from: created.from } : {}),
@@ -279,7 +282,7 @@ function LeadsList() {
     ...(users.data ?? []).filter((u) => u.id !== me?.id && u.status === "active").map((u) => ({ value: u.id, label: u.name })),
   ];
   const anyFilter =
-    q || created.from || created.to || filters.stage_id.length || filters.source_id.length || filters.owner.length || filters.tag.length || filters.band.length || Object.values(filters.cf).some((v) => v.length);
+    q || created.from || created.to || filters.stage_id.length || filters.source_id.length || filters.brand_id.length || filters.owner.length || filters.tag.length || filters.band.length || Object.values(filters.cf).some((v) => v.length);
   async function deleteView() {
     if (!saved || !window.confirm(`Delete the view "${saved.name}"?`)) return;
     try {
@@ -350,6 +353,17 @@ function LeadsList() {
             reset();
           }}
         />
+        {brands.length > 0 && (
+          <FilterChip
+            label="Brand"
+            options={brands.map((b) => ({ value: b.id, label: b.name }))}
+            values={filters.brand_id}
+            onChange={(v) => {
+              setFilters({ ...filters, brand_id: v });
+              reset();
+            }}
+          />
+        )}
         {selectFields.map((f) => (
           <FilterChip
             key={f.key}

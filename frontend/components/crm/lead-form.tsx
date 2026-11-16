@@ -13,6 +13,7 @@ import { api } from "@/lib/api/client";
 import { ApiError, unwrap } from "@/lib/api/errors";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
+import { useBrandChoices } from "@/lib/brands";
 import { fromLocalInput, identity, quickFollowUps, type Lead, useFields, useRefreshLead, useSources, useStages } from "@/lib/crm";
 import { accessOf, useLayout } from "@/lib/layouts";
 import { useUsers } from "@/lib/directory";
@@ -34,6 +35,8 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
   const [v, setV] = useState({ first_name: "", last_name: "", org_name: "", phone: "", email: "", linkedin: "", city: "" });
   const [sourceId, setSourceId] = useState("");
   const [stageId, setStageId] = useState("");
+  const brands = useBrandChoices(); // shown only with two or more brands
+  const [brandId, setBrandId] = useState("");
   const [owner, setOwner] = useState<string>(me?.id ?? "");
   const [followUp, setFollowUp] = useState("");
   const [custom, setCustom] = useState<Record<string, unknown>>({});
@@ -71,6 +74,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
             identities,
             source_id: sourceId,
             stage_id: stageId || null,
+            brand_id: brandId || null,
             owner_user_id: canAssign && owner && owner !== "none" && owner !== "rules" ? owner : null,
             assign_to_me: canAssign ? owner !== "none" && owner !== "rules" : true,
             assign_by_rules: canAssign && owner === "rules",
@@ -150,6 +154,19 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
                 ))}
               </NativeSelect>
             </div>
+            {brands.length > 0 && (
+              <div className="space-y-1.5">
+                <Label htmlFor="brand">Brand</Label>
+                <NativeSelect id="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)}>
+                  <option value="">{brands[0].name} (default)</option>
+                  {brands.slice(1).map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </div>
+            )}
             {canAssign && (
               <div className="space-y-1.5">
                 <Label htmlFor="owner">Owner</Label>

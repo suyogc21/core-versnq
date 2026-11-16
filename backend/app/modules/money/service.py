@@ -238,6 +238,22 @@ async def lines_from_deal(db: AsyncSession, deal: Deal) -> list[LineIn]:
     ]
 
 
+async def _brand_entity(db: AsyncSession, lead: Lead, deal: Deal | None) -> BillingEntity | None:
+    """The lead's brand bills through its own entity (its invoice header) when it has one that
+    is active and bills in the deal's currency."""
+    if lead.brand_id is None:
+        return None
+    from app.modules.brands.models import Brand
+
+    brand = await db.get(Brand, lead.brand_id)
+    if brand is None or brand.billing_entity_id is None:
+        return None
+    entity = await db.get(BillingEntity, brand.billing_entity_id)
+    if entity is None or not entity.is_active or (deal and deal.currency != entity.currency):
+        return None
+    return entity
+
+
 async def create_draft(
     db: AsyncSession,
     actor: CurrentUser,
@@ -256,7 +272,9 @@ async def create_draft(
         if deal and deal.currency != entity.currency:
             raise Invalid(f"This deal is in {deal.currency}; choose an entity that bills in it")
     else:
-        entity = await default_entity(db, deal.currency if deal else None)
+        entity = await _brand_entity(db, lead, deal) or await default_entity(
+            db, deal.currency if deal else None
+        )
     settings = await db.get(TenantSettings, customer.tenant_id)
     pay = settings.money_default_pay if settings else "both"
     inv = Invoice(
@@ -272,6 +290,7 @@ async def create_draft(
         notes=None,
         tax_breakdown=[],
         created_by_user_id=actor.user.id,
+        brand_id=lead.brand_id,  # an invoice is of its lead's brand (batch 4)
     )
     db.add(inv)
     await db.flush()

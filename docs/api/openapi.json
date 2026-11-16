@@ -1970,6 +1970,154 @@
         "title": "BoardOut",
         "type": "object"
       },
+      "BrandIn": {
+        "properties": {
+          "billing_entity_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billing Entity Id"
+          },
+          "colour": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Colour"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "pattern": "^https://\\S+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "pattern": "^https?://\\S+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "BrandIn",
+        "type": "object"
+      },
+      "BrandOut": {
+        "properties": {
+          "billing_entity_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billing Entity Id"
+          },
+          "colour": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Colour"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "colour",
+          "logo_url",
+          "website",
+          "billing_entity_id",
+          "is_default",
+          "is_active"
+        ],
+        "title": "BrandOut",
+        "type": "object"
+      },
       "Branding": {
         "properties": {
           "logo_url": {
@@ -3156,6 +3304,18 @@
       },
       "CaptureSourceIn": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "consent_text": {
             "anyOf": [
               {
@@ -3230,6 +3390,18 @@
       },
       "CaptureSourceOut": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "consent_text": {
             "anyOf": [
               {
@@ -3341,6 +3513,18 @@
       },
       "CaptureSourcePatch": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "consent_text": {
             "anyOf": [
               {
@@ -3443,6 +3627,18 @@
       },
       "CaptureSourceWithKey": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "consent_text": {
             "anyOf": [
               {
@@ -3857,6 +4053,51 @@
           "new_password"
         ],
         "title": "ChangePasswordIn",
+        "type": "object"
+      },
+      "ChannelBrandIn": {
+        "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          }
+        },
+        "title": "ChannelBrandIn",
+        "type": "object"
+      },
+      "ChannelsOut": {
+        "properties": {
+          "mailboxes": {
+            "items": {
+              "$ref": "#/components/schemas/MailboxChannel"
+            },
+            "title": "Mailboxes",
+            "type": "array"
+          },
+          "whatsapp": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WhatsAppChannel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "mailboxes",
+          "whatsapp"
+        ],
+        "title": "ChannelsOut",
         "type": "object"
       },
       "ChecklistOut": {
@@ -5723,6 +5964,18 @@
               }
             ],
             "title": "Amount Minor"
+          },
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
           },
           "close_note": {
             "anyOf": [
@@ -9941,6 +10194,18 @@
       },
       "InvoiceDetail": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -10493,6 +10758,18 @@
       },
       "InvoiceRow": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -11108,6 +11385,16 @@
             "title": "Band",
             "type": "array"
           },
+          "brand_id": {
+            "default": [],
+            "description": "of any of these brands",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Brand Id",
+            "type": "array"
+          },
           "cf": {
             "default": [],
             "description": "custom field filters as key:value",
@@ -11238,6 +11525,18 @@
             "default": true,
             "title": "Assign To Me",
             "type": "boolean"
+          },
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
           },
           "campaign": {
             "anyOf": [
@@ -11560,6 +11859,18 @@
               }
             ],
             "title": "Ace Summary At"
+          },
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
           },
           "campaign": {
             "anyOf": [
@@ -12057,6 +12368,18 @@
       },
       "LeadPatch": {
         "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
           "city": {
             "anyOf": [
               {
@@ -13253,6 +13576,38 @@
           "last_error"
         ],
         "title": "MailOut",
+        "type": "object"
+      },
+      "MailboxChannel": {
+        "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
+          "email_address": {
+            "title": "Email Address",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email_address",
+          "brand_id"
+        ],
+        "title": "MailboxChannel",
         "type": "object"
       },
       "MailboxIn": {
@@ -21550,6 +21905,45 @@
         "title": "UpsertOut",
         "type": "object"
       },
+      "UserBrandsIn": {
+        "properties": {
+          "brand_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Brand Ids",
+            "type": "array"
+          }
+        },
+        "title": "UserBrandsIn",
+        "type": "object"
+      },
+      "UserBrandsOut": {
+        "properties": {
+          "brand_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Brand Ids",
+            "type": "array"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "brand_ids"
+        ],
+        "title": "UserBrandsOut",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -22880,6 +23274,45 @@
           "kept"
         ],
         "title": "WaWebhookResult",
+        "type": "object"
+      },
+      "WhatsAppChannel": {
+        "properties": {
+          "brand_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Id"
+          },
+          "display_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Number"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_number",
+          "brand_id"
+        ],
+        "title": "WhatsAppChannel",
         "type": "object"
       },
       "app__modules__audit__router__AuditOut": {
@@ -25891,6 +26324,340 @@
         "summary": "Test Automation",
         "tags": [
           "automations"
+        ]
+      }
+    },
+    "/api/v1/brands": {
+      "get": {
+        "description": "The company's brands. Everyone sees the active ones (to pick from); admins can ask for\nswitched-off ones too. A company with none or one brand shows no brand choices anywhere.",
+        "operationId": "brands-list_brands",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BrandOut"
+                  },
+                  "title": "Response Brands-List Brands",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Brands",
+        "tags": [
+          "brands"
+        ]
+      },
+      "post": {
+        "operationId": "brands-create_brand",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Brand",
+        "tags": [
+          "brands"
+        ]
+      }
+    },
+    "/api/v1/brands/channels": {
+      "get": {
+        "description": "Settings \u2192 Brands: the company's inboxes and WhatsApp number, with their brand. Leads that\ncome in through one of them get its brand.",
+        "operationId": "brands-channels",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Channels",
+        "tags": [
+          "brands"
+        ]
+      }
+    },
+    "/api/v1/brands/channels/mailboxes/{mailbox_id}": {
+      "put": {
+        "operationId": "brands-set_mailbox_brand",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mailbox Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelBrandIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Mailbox Brand",
+        "tags": [
+          "brands"
+        ]
+      }
+    },
+    "/api/v1/brands/channels/whatsapp": {
+      "put": {
+        "operationId": "brands-set_whatsapp_brand",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelBrandIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Whatsapp Brand",
+        "tags": [
+          "brands"
+        ]
+      }
+    },
+    "/api/v1/brands/{brand_id}": {
+      "put": {
+        "operationId": "brands-update_brand",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brand_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brand Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Brand",
+        "tags": [
+          "brands"
+        ]
+      }
+    },
+    "/api/v1/brands/{brand_id}/default": {
+      "post": {
+        "operationId": "brands-make_default",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brand_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brand Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Make Default",
+        "tags": [
+          "brands"
         ]
       }
     },
@@ -30771,6 +31538,20 @@
           },
           {
             "in": "query",
+            "name": "brand_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Brand Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
             "name": "close_from",
             "required": false,
             "schema": {
@@ -34664,6 +35445,20 @@
           },
           {
             "in": "query",
+            "name": "brand_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Brand Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
             "name": "owner",
             "required": false,
             "schema": {
@@ -37443,6 +38238,22 @@
             }
           },
           {
+            "description": "of any of these brands",
+            "in": "query",
+            "name": "brand_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "description": "of any of these brands",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Brand Id",
+              "type": "array"
+            }
+          },
+          {
             "description": "'me', 'unassigned' or user ids",
             "in": "query",
             "name": "owner",
@@ -37842,6 +38653,22 @@
                 "type": "string"
               },
               "title": "Source Id",
+              "type": "array"
+            }
+          },
+          {
+            "description": "of any of these brands",
+            "in": "query",
+            "name": "brand_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "description": "of any of these brands",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Brand Id",
               "type": "array"
             }
           },
@@ -48196,6 +49023,111 @@
         "summary": "Reset Two Factor",
         "tags": [
           "users"
+        ]
+      }
+    },
+    "/api/v1/users/{user_id}/brands": {
+      "get": {
+        "operationId": "brands-user_brands",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBrandsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "User Brands",
+        "tags": [
+          "brands"
+        ]
+      },
+      "put": {
+        "description": "Limit a person to some brands (they see only those brands' leads, deals and money), or\nsend an empty list for every brand. Nobody can limit themselves (no lock-out).",
+        "operationId": "brands-set_user_brands",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBrandsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBrandsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set User Brands",
+        "tags": [
+          "brands"
         ]
       }
     },

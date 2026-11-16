@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import type { components } from "@/lib/api/schema";
+import { useBrandChoices } from "@/lib/brands";
 import { relative, useCrmRules, useFields, useSources, useStages } from "@/lib/crm";
 import { useTeams, useUsers } from "@/lib/directory";
 import { useLabels } from "@/lib/settings";
@@ -181,6 +182,8 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
   const [name, setName] = useState(form?.name ?? "");
   const [sourceId, setSourceId] = useState(form?.source_id ?? "");
   const [stageId, setStageId] = useState(form?.stage_id ?? "");
+  const brands = useBrandChoices(); // only with two or more brands
+  const [brandId, setBrandId] = useState(form?.brand_id ?? "");
   const [consent, setConsent] = useState(form?.consent_text ?? "");
   const [map, setMap] = useState<[string, string][]>(Object.entries((form?.field_map ?? {}) as Record<string, string>));
   const [hosted, setHosted] = useState(form ? form.hosted : true);
@@ -196,6 +199,7 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
       field_map: Object.fromEntries(map.filter(([a, b]) => a.trim() && b)),
       form: spec,
       hosted: hosted && !!spec,
+      ...(brands.length ? { brand_id: brandId || null } : {}),
     };
     const ok = await save(async () => {
       if (form) {
@@ -247,6 +251,20 @@ function FormDialog({ form, onClose, onKey }: { form: CaptureSource | null; onCl
                   ))}
               </NativeSelect>
             </div>
+            {brands.length > 0 && (
+              <div className="space-y-1.5">
+                <Label htmlFor="f-brand">Brand</Label>
+                <NativeSelect id="f-brand" value={brandId} onChange={(e) => setBrandId(e.target.value)}>
+                  <option value="">The default brand</option>
+                  {brands.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+                <p className="text-xs text-muted-foreground">Its leads get this brand; its page shows the brand&apos;s name, logo and colour.</p>
+              </div>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="f-consent">Consent wording (optional)</Label>

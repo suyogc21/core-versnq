@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import delete, false, or_, select, true, update
+from sqlalchemy import and_, delete, false, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,15 +39,19 @@ def now() -> datetime:
 # ---------- visibility ----------
 async def visibility_filter(db: AsyncSession, actor: CurrentUser):
     """SQL condition for the leads this person may see (own / team / all, Decision log #21:
-    unassigned leads are seen by team- and all-scope roles only)."""
+    unassigned leads are seen by team- and all-scope roles only), and only of the brands the
+    person is limited to (batch 4)."""
+    from app.modules.brands import service as B  # brands build on leads
+
+    brands = await B.condition(db, actor.user.id, Lead.brand_id)
     scope = actor.role.scope
     if scope == "all":
-        return true()
+        return brands
     visible = await visible_user_ids(db, actor.user.id, scope)
     owned = Lead.owner_user_id.in_(visible) if visible else false()
     if scope == "team":
-        return or_(owned, Lead.owner_user_id.is_(None))
-    return owned
+        return and_(or_(owned, Lead.owner_user_id.is_(None)), brands)
+    return and_(owned, brands)
 
 
 async def get_visible(db: AsyncSession, actor: CurrentUser, lead_id: uuid.UUID) -> Lead:

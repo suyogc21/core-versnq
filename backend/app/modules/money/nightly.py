@@ -133,6 +133,7 @@ async def repeat(db: AsyncSession) -> int:
             repeat_months=old.repeat_months,
             repeated_from_id=old.id,
             created_by_user_id=old.created_by_user_id,
+            brand_id=old.brand_id,
         )
         db.add(new)
         await db.flush()

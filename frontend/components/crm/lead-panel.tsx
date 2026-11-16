@@ -34,6 +34,7 @@ import {
   useTimeline,
   when,
 } from "@/lib/crm";
+import { useBrandChoices } from "@/lib/brands";
 import { useUsers } from "@/lib/directory";
 import { accessOf, type Layout, useLayout } from "@/lib/layouts";
 import { useLabels } from "@/lib/settings";
@@ -334,7 +335,9 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
     linkedin: first("linkedin"),
     city: lead.city ?? "",
     source_id: lead.source_id,
+    brand_id: lead.brand_id ?? "",
   });
+  const brands = useBrandChoices(); // only with two or more brands
   const [custom, setCustom] = useState<Record<string, unknown>>(lead.custom_fields as Record<string, unknown>);
   const [saving, setSaving] = useState(false);
   const editable = can("leads.edit");
@@ -366,6 +369,7 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
             ...(may("org_name") === "edit" ? { org_name: v.org_name || null } : {}),
             ...(may("city") === "edit" ? { city: v.city || null } : {}),
             source_id: v.source_id,
+            ...(brands.length && v.brand_id && v.brand_id !== lead.brand_id ? { brand_id: v.brand_id } : {}),
             identities,
             custom_fields: custom,
           },
@@ -422,6 +426,21 @@ export function EditLead({ lead, onDeleted }: { lead: Lead; onDeleted?: () => vo
               ))}
             </NativeSelect>
           </div>
+          {brands.length > 0 && (
+            <div className="space-y-1.5">
+              <label htmlFor="e-brand" className="text-sm font-medium">
+                Brand
+              </label>
+              <NativeSelect id="e-brand" value={v.brand_id} onChange={set("brand_id")}>
+                {!lead.brand_id && <option value="">No brand</option>}
+                {brands.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          )}
         </div>
         {(fields.data ?? []).length > 0 && <CustomFieldsEditor fields={fields.data ?? []} values={custom} onChange={setCustom} layout={layout.data} />}
         {can("crm.configure") && <AddFieldButton entity="lead" />}

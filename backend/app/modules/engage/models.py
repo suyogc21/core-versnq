@@ -262,6 +262,7 @@ class Mailbox(TenantScoped, TimestampMixin, Base):
     sync_requested: Mapped[bool] = mapped_column(Boolean, default=False)
     # per folder: {"INBOX": {"v": uidvalidity, "last": highest uid seen}}
     sync_state: Mapped[dict] = mapped_column(JSONB, default=dict)
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # its leads get this brand
 
 
 class CopyInAddress(TenantScoped, Base):
@@ -327,6 +328,7 @@ class WhatsAppAccount(TenantScoped, TimestampMixin, Base):
     quality_rating: Mapped[str | None] = mapped_column(String(20))
     messaging_limit: Mapped[str | None] = mapped_column(String(40))
     health_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # its leads get this brand
 
 
 class WhatsAppTemplate(TenantScoped, TimestampMixin, Base):

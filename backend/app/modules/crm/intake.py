@@ -67,6 +67,7 @@ class Incoming:
     enforce_required: bool = True  # forms never lose a lead over a missing optional answer
     via_label: str = "quick-add"  # "the Contact us form", "import of leads.csv"
     created_summary: str | None = None  # default: "Added via <via_label>"
+    brand_id: uuid.UUID | None = None  # the brand it came in through; None: the default (batch 4)
 
 
 @dataclass
@@ -118,7 +119,7 @@ async def find_matches(
 
 
 async def _visible(db: AsyncSession, actor: CurrentUser | None, lead: Lead) -> bool:
-    if actor is None or actor.role.scope == "all":
+    if actor is None:
         return True
     found = await db.scalar(
         select(Lead.id).where(Lead.id == lead.id, await L.visibility_filter(db, actor))
@@ -194,6 +195,9 @@ async def _create(
                 rules.check_value(name, None, inc.fields[attr])
     await L.check_source(db, inc.source_id)
     stage = await L.get_stage(db, inc.stage_id) if inc.stage_id else await L.default_stage(db)
+    from app.modules.brands import service as B  # brands build on leads
+
+    brand_id = await B.pick(db, actor.user.id if actor else None, inc.brand_id)
 
     lead = Lead(
         tenant_id=tenant_id,
@@ -209,6 +213,7 @@ async def _create(
         custom_fields={},
         attribution=inc.attribution or {},
         org_suggestions_dismissed=[],
+        brand_id=brand_id,
         **{k: v for k, v in inc.fields.items() if k in PLAIN_FIELDS + ATTRIBUTION},
     )
     db.add(lead)
