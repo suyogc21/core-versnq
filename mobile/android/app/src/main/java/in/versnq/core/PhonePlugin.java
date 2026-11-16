@@ -26,7 +26,10 @@ import java.util.UUID;
  */
 @CapacitorPlugin(
     name = "VersnqPhone",
-    permissions = { @Permission(alias = "calls", strings = { Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_PHONE_STATE }) }
+    permissions = {
+        @Permission(alias = "calls", strings = { Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_PHONE_STATE }),
+        @Permission(alias = "notify", strings = { Manifest.permission.POST_NOTIFICATIONS }),
+    }
 )
 public class PhonePlugin extends Plugin {
 
@@ -72,7 +75,9 @@ public class PhonePlugin extends Plugin {
         if (getPermissionState("calls") == PermissionState.GRANTED) {
             call.resolve(status());
         } else {
-            requestPermissionForAlias("calls", call, "afterPermission");
+            // the caller popup is a notification, so ask for that too (Android 13+)
+            String[] aliases = Build.VERSION.SDK_INT >= 33 ? new String[] { "calls", "notify" } : new String[] { "calls" };
+            requestPermissionForAliases(aliases, call, "afterPermission");
         }
     }
 

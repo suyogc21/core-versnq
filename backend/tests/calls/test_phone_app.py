@@ -79,3 +79,19 @@ async def test_api_keys_cant_make_phone_keys_and_other_companies_cant_use_them(w
 
     assert elsewhere.status_code == 401 and missing.status_code == 401
     assert junk.status_code == 422 and by_api.status_code == 403
+
+
+async def test_the_caller_popup_names_only_leads_the_rep_can_see(ws):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    key = bearer((await _connect(c, rep))["token"])
+    _, other_rep = await login_as(tenant_id, "sales_user")
+    other_key = bearer((await _connect(c, other_rep, install="install-other-1"))["token"])
+
+    mine = await c.get("/api/v1/phone/lookup", params={"number": "+91 98765 43210"}, headers=key)
+    unknown = await c.get("/api/v1/phone/lookup", params={"number": "98111 22233"}, headers=key)
+    hidden = await c.get("/api/v1/phone/lookup", params={"number": "9876543210"}, headers=other_key)
+    junk = await c.get("/api/v1/phone/lookup", params={"number": "abc"}, headers=key)
+
+    assert mine.status_code == 200 and mine.json()["lead_id"] == lead["id"]
+    assert mine.json()["is_yours"] is True and mine.json()["stage"]
+    assert unknown.json() is None and hidden.json() is None and junk.json() is None

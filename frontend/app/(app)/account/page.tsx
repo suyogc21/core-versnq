@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
-import { PhoneAppCallTracking } from "@/components/app/phone-app";
+import { GetTheApp, PhoneAppCallTracking } from "@/components/app/phone-app";
 import { PhoneNotifications } from "@/components/app/phone-notifications";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { BackupCodes } from "@/components/app/backup-codes";
@@ -22,7 +22,16 @@ import { useAuth } from "@/lib/auth";
 /** Only inside the Versnq Android app. */
 function PhoneAppSection() {
   const [inApp] = useState(() => typeof navigator !== "undefined" && navigator.userAgent.includes("VersnqCoreApp/"));
-  if (!inApp) return null;
+  if (!inApp)
+    return (
+      <GetTheApp
+        wrap={(n) => (
+          <Section title="Android app" description="Calls on your phone go on the lead by themselves, with the recording.">
+            {n}
+          </Section>
+        )}
+      />
+    );
   return (
     <Section title="Call tracking" description="Every call on this phone with a lead's number goes on the lead's timeline, even when the app is closed.">
       <PhoneAppCallTracking />

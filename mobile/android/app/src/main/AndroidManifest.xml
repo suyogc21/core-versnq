@@ -30,6 +30,14 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false" />
 
+        <!-- The caller popup while the phone rings (calls plan C4.4). -->
+        <!-- PHONE_STATE is a protected broadcast: only Android itself can send it. -->
+        <receiver android:name=".CallerPopup" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -49,4 +57,6 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!-- Keep the 15-minute call check after the phone restarts. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- The caller popup is a notification (Android 13+ asks the rep). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

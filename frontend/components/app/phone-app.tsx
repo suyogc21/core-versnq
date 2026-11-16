@@ -215,3 +215,28 @@ export function PhonesWithTheApp() {
     </div>
   );
 }
+
+export const APP_DOWNLOAD = "/app/versnq-core.apk";
+
+/** "Get the Android app": shown outside the app, once the server has the app file. */
+export function GetTheApp({ wrap = (n) => n }: { wrap?: (n: React.ReactNode) => React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (navigator.userAgent.includes("VersnqCoreApp/")) return;
+    fetch(APP_DOWNLOAD, { method: "HEAD" })
+      .then((r) => setReady(r.ok))
+      .catch(() => {});
+  }, []);
+  if (!ready) return null;
+  return wrap(
+    <div className="space-y-2 text-sm">
+      <p className="text-muted-foreground">
+        On an Android phone, download the app and open the file. Android asks once to allow installing it. In the app, type your company&apos;s address, sign in, then
+        turn on call tracking under My account.
+      </p>
+      <a className="inline-flex rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground" href={APP_DOWNLOAD} download>
+        Download the Android app
+      </a>
+    </div>,
+  );
+}

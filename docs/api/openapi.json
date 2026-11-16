@@ -2292,6 +2292,54 @@
         "title": "CallStartOut",
         "type": "object"
       },
+      "CallerOut": {
+        "properties": {
+          "is_yours": {
+            "title": "Is Yours",
+            "type": "boolean"
+          },
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          }
+        },
+        "required": [
+          "lead_id",
+          "name",
+          "stage",
+          "owner_name",
+          "is_yours"
+        ],
+        "title": "CallerOut",
+        "type": "object"
+      },
       "CampaignContactOut": {
         "properties": {
           "contact": {
@@ -41452,6 +41500,62 @@
           }
         ],
         "summary": "Remove",
+        "tags": [
+          "phone-app"
+        ]
+      }
+    },
+    "/api/v1/phone/lookup": {
+      "get": {
+        "description": "Who is calling: the lead with this number, among the leads this rep may see.",
+        "operationId": "phone-app-lookup",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CallerOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Phone-App-Lookup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Lookup",
         "tags": [
           "phone-app"
         ]

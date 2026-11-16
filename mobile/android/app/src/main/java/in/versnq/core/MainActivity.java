@@ -1,5 +1,6 @@
 package in.versnq.core;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -46,6 +47,7 @@ public class MainActivity extends BridgeActivity {
                 .create();
         }
         super.onCreate(savedInstanceState);
+        openFrom(getIntent());
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -78,5 +80,20 @@ public class MainActivity extends BridgeActivity {
             new Thread(() -> CallSync.run(context)).start();
             CallSyncJob.schedule(context);
         }
+    }
+
+    /** The caller popup was tapped: open that lead in the company's Core. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openFrom(intent);
+    }
+
+    private void openFrom(Intent intent) {
+        String path = intent == null ? null : intent.getStringExtra(CallerPopup.EXTRA_OPEN);
+        String slug = prefs(this).getString("slug", null);
+        if (path == null || slug == null || !path.matches("^/leads/[0-9a-f-]{36}$") || getBridge() == null) return;
+        intent.removeExtra(CallerPopup.EXTRA_OPEN);
+        getBridge().getWebView().loadUrl("https://" + companyHost(slug) + path);
     }
 }

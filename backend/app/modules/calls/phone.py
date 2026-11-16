@@ -5,7 +5,9 @@ phone (`POST /api/v1/phone/devices`) and hands it to the app's native part, whic
 then on, even while the app is closed. The key acts as the rep but works only on:
 - `POST /api/v1/calls`: report a call from the phone's call log;
 - `PUT /api/v1/calls/{id}/recording`: upload that call's recording;
-- `GET /api/v1/phone/me`: check the key and whether the company records calls.
+- `GET /api/v1/phone/me`: check the key and whether the company records calls;
+- `GET /api/v1/phone/lookup?number=`: who is calling (the caller popup, C4.4), only among the
+  leads this rep may see; the number isn't stored.
 Everything else answers 401. The rep (My account) or an admin (Settings → Calls) can remove a
 phone; reconnecting the same install replaces its old key.
 """
@@ -22,11 +24,14 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import NotFound
+from app.core.errors import Invalid, NotFound
 from app.modules.auth.deps import CurrentUser, WorkspaceDep, current_user, has_permission, require
 from app.modules.calls import service as S
 from app.modules.calls.models import PhoneDevice
+from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.identities import normalize
+from app.modules.crm.models import Lead, LeadIdentity, LeadStage
 from app.modules.users.models import User
 
 PREFIX = "vq_app_"
@@ -35,6 +40,7 @@ ALLOWED = (
     ("POST", re.compile(r"^/api/v1/calls$")),
     ("PUT", re.compile(r"^/api/v1/calls/[0-9a-fA-F-]{36}/recording$")),
     ("GET", re.compile(r"^/api/v1/phone/me$")),
+    ("GET", re.compile(r"^/api/v1/phone/lookup$")),
 )
 
 
@@ -103,6 +109,14 @@ class PhoneMeOut(BaseModel):
     record_calls: bool  # the company's setting: upload recordings or not
 
 
+class CallerOut(BaseModel):
+    lead_id: uuid.UUID
+    name: str
+    stage: str | None
+    owner_name: str | None
+    is_yours: bool
+
+
 async def _out(db, rows) -> list[DeviceOut]:
     ids = {r.user_id for r in rows}
     names = dict((await db.execute(select(User.id, User.name).where(User.id.in_(ids)))).all()) \
@@ -156,6 +170,31 @@ async def phone_me(db: CrmDb, actor: Phone, workspace: WorkspaceDep) -> PhoneMeO
     return PhoneMeOut(
         user_name=actor.user.name, company=workspace.slug, record_calls=bool(settings["record"])
     )
+
+
+@router.get("/lookup", response_model=CallerOut | None)
+async def lookup(number: str, db: CrmDb, actor: Phone) -> CallerOut | None:
+    """Who is calling: the lead with this number, among the leads this rep may see."""
+    try:
+        phone = normalize("phone", number[:40], await L.tenant_country(db, actor.user.tenant_id))
+    except Invalid:
+        return None
+    lead = await db.scalar(
+        select(Lead)
+        .join(LeadIdentity, LeadIdentity.lead_id == Lead.id)
+        .where(LeadIdentity.type == "phone", LeadIdentity.value_normalized == phone)
+        .where(await L.visibility_filter(db, actor))
+        .order_by(Lead.is_open.desc(), Lead.last_activity_at.desc().nulls_last())
+        .limit(1)
+    )
+    if lead is None:
+        return None
+    stage = await db.get(LeadStage, lead.stage_id)
+    owner = await db.get(User, lead.owner_user_id) if lead.owner_user_id else None
+    return CallerOut(
+        lead_id=lead.id, name=lead.display_name, stage=stage.name if stage else None,
+        owner_name=owner.name if owner else None, is_yours=lead.owner_user_id == actor.user.id,
+    )  # fmt: skip
 
 
 @router.get("/devices", response_model=list[DeviceOut])

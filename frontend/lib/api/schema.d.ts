@@ -4701,6 +4701,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/phone/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup
+         * @description Who is calling: the lead with this number, among the leads this rep may see.
+         */
+        get: operations["phone-app-lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/phone/me": {
         parameters: {
             query?: never;
@@ -7527,6 +7547,22 @@ export interface components {
              * @default ringing_you
              */
             status: string;
+        };
+        /** CallerOut */
+        CallerOut: {
+            /** Is Yours */
+            is_yours: boolean;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
+            /** Name */
+            name: string;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Stage */
+            stage: string | null;
         };
         /** CampaignContactOut */
         CampaignContactOut: {
@@ -25042,6 +25078,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "phone-app-lookup": {
+        parameters: {
+            query: {
+                number: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallerOut"] | null;
+                };
             };
             /** @description Validation Error */
             422: {
