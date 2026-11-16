@@ -72,7 +72,9 @@ Do not start a milestone until the previous one runs and is approved.
 
 ## Out of scope for now
 
-LMS integration, blog generation, LinkedIn send automation, telephony, native mobile apps. Mention them only if asked.
+LMS integration, blog generation, LinkedIn send automation. Mention them only if asked.
+
+Telephony and the phone app are **in scope since 2026-11-16** (Suyog): one call pipeline fed by the company's own Twilio and by our Android app reading the phone's own recorder folder. Plan: `docs/plans/calls-plan.md`.
 
 ## Coding guidelines (from andrej-karpathy-skills, MIT)
 

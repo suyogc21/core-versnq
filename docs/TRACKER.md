@@ -73,14 +73,14 @@ Each item has a size: S = 1, M = 2, L = 3.
 | Email after repeated failed sign-ins | S | ⬜ |
 | Data protection: export everything, full erasure, breach runbook (DPDP and GDPR) | M | ⬜ |
 
-### Phase 2: phone calls (7): needs your yes (currently out of scope in CLAUDE.md)
+### Phase 2: phone calls (7): decided Nov 16 (plan: `plans/calls-plan.md`)
 | Item | Size | |
 |---|---|---|
 | Click-to-call and every call on the timeline (Twilio for global; Exotel or Knowlarity for India) | L | ⬜ |
 | Recordings and missed-call follow-ups | M | ⬜ |
 | ACE analyses calls | M | ⬜ |
 
-### Phase 3: phone app (5): needs your yes (currently out of scope in CLAUDE.md)
+### Phase 3: phone app (5): decided Nov 16 (installable web app now, Android app next)
 | Item | Size | |
 |---|---|---|
 | Installable app (PWA): home-screen icon, notifications | M | ⬜ |
@@ -117,6 +117,7 @@ Each item has a size: S = 1, M = 2, L = 3.
 | Sign-in codes, invites, resets, error alerts | **Zoho SMTP** (set on the server) | ✅ working |
 | Campaigns, sequences, replies from the inbox | **Each company's own mailboxes** (Gmail, Zoho, any server) | ✅ no outside provider needed |
 | Copy-in addresses (receiving) and company sending domains | **Postmark** (chosen Nov 16) | ⬜ needs your Postmark account, then I build receiving |
+| Later, at scale: our own high-volume sending | Amazon SES | ⏸ when we grow (Suyog, Nov 16) |
 
 ## Change log
 | Date | Change |
