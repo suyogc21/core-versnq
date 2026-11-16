@@ -17,6 +17,7 @@ test("a new company goes from creation to a working, permission-limited team", a
   const staff = await (await browser.newContext()).newPage();
   await signIn(staff, STAFF, "e2e-staff@versnq.in", E2E_STAFF_PASSWORD);
   await turnOnTwoFactor(staff);
+  await expect(staff.getByRole("button", { name: "Backup codes: 10 left" })).toBeVisible();
   await staff.getByRole("button", { name: "Create company" }).click();
   await staff.getByLabel("Company name").fill("Northwind Learning");
   await staff.getByLabel("Address").fill(SLUG);

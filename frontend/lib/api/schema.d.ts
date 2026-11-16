@@ -5887,6 +5887,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform/auth/2fa/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * New Recovery Codes
+         * @description Ten new backup codes (the old ones stop working). Needs the password and the app. Audited.
+         */
+        post: operations["platform-auth-new_recovery_codes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/auth/2fa/setup": {
         parameters: {
             query?: never;
@@ -12092,6 +12112,11 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /**
+             * Recovery Codes Left
+             * @default 0
+             */
+            recovery_codes_left: number;
             /**
              * Restrictions
              * @default []
@@ -27102,6 +27127,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TwoFactorEnableIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "platform-auth-new_recovery_codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecoveryCodesIn"];
             };
         };
         responses: {

@@ -15,6 +15,7 @@ class StaffOut(BaseModel):
     email: str
     name: str
     restrictions: list[str] = []
+    recovery_codes_left: int = 0  # backup codes not yet used (go-live G-4)
 
 
 class ChangePasswordIn(BaseModel):

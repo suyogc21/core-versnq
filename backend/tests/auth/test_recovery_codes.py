@@ -160,3 +160,39 @@ async def test_another_companys_code_never_works(client_for):
     r = await b.post(VERIFY, json={"challenge_token": await _challenge(b, email_b),
                                    "code": codes_a[0]})  # fmt: skip
     assert r.status_code == 401
+
+
+async def test_staff_with_the_app_but_no_codes_get_new_ones_and_it_is_audited():
+    """A staff member who turned the app on before G-4 has no codes: password + app makes 10."""
+    from httpx import ASGITransport, AsyncClient
+
+    from app.core.tenancy import platform_session
+    from app.main import app
+    from app.platform.audit import PlatformAuditLog
+
+    secret = pyotp.random_base32()
+    email = await make_staff(totp_secret=secret)
+    url = "/platform/auth/2fa/recovery-codes"
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as s:
+        login = await s.post("/platform/auth/login",
+                             json={"email": email, "password": "s3cret-pass-123"})  # fmt: skip
+        challenge = login.json()["challenge_token"]
+        body = {"challenge_token": challenge, "code": pyotp.TOTP(secret).now()}
+        r = await s.post("/platform/auth/2fa/verify", json=body)
+        h = {"Authorization": f"Bearer {r.json()['access_token']}"}
+        before = (await s.get("/platform/auth/me", headers=h)).json()["recovery_codes_left"]
+        wrong = await s.post(url, json={"password": "nope-nope", "code": pyotp.TOTP(secret).now()},
+                             headers=h)  # fmt: skip
+        ok = await s.post(url, json={"password": "s3cret-pass-123",
+                                     "code": pyotp.TOTP(secret).now()}, headers=h)  # fmt: skip
+        after = (await s.get("/platform/auth/me", headers=h)).json()["recovery_codes_left"]
+        no_token = await s.post(url, json={"password": "s3cret-pass-123", "code": "123456"})
+    async with platform_session() as db:
+        logged = await db.scalar(
+            select(func.count())
+            .select_from(PlatformAuditLog)
+            .where(PlatformAuditLog.action == "staff.2fa_backup_codes_renewed")  # fmt: skip
+        )
+    assert before == 0 and wrong.status_code == 400 and no_token.status_code == 401
+    assert ok.status_code == 200 and len(ok.json()["recovery_codes"]) == 10 and after == 10
+    assert logged >= 1

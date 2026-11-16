@@ -1,5 +1,6 @@
 """Staff authentication: login, refresh-token rotation with reuse detection, logout."""
 
+import uuid
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select, update
@@ -130,6 +131,19 @@ async def issue_recovery_codes(db: AsyncSession, staff: PlatformStaff) -> list[s
     db.add_all(StaffRecoveryCode(staff_id=staff.id, code_hash=RC.code_hash(c)) for c in codes)
     await db.flush()
     return codes
+
+
+async def recovery_codes_left(db: AsyncSession, staff_id: uuid.UUID) -> int:
+    from app.platform.staff.models import StaffRecoveryCode
+
+    return (
+        await db.scalar(
+            select(func.count())
+            .select_from(StaffRecoveryCode)
+            .where(StaffRecoveryCode.staff_id == staff_id, StaffRecoveryCode.used_at.is_(None))
+        )
+        or 0
+    )
 
 
 async def use_recovery_code(db: AsyncSession, staff: PlatformStaff, code: str) -> bool:

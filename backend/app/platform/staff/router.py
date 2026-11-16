@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import ratelimit
 from app.core.auth_schemas import (
     LoginOut,
+    RecoveryCodesIn,
     RecoveryCodesOut,
     TwoFactorEnableIn,
     TwoFactorSetupOut,
@@ -175,9 +176,14 @@ async def logout(
 
 
 @router.get("/me", response_model=StaffOut)
-async def me(staff: AnyStaff) -> StaffOut:
+async def me(staff: AnyStaff, db: Db) -> StaffOut:
+    left = await service.recovery_codes_left(db, staff.id) if staff.totp_enabled else 0
     return StaffOut(
-        id=staff.id, email=staff.email, name=staff.name, restrictions=service.restrictions(staff)
+        id=staff.id,
+        email=staff.email,
+        name=staff.name,
+        restrictions=service.restrictions(staff),
+        recovery_codes_left=left,
     )
 
 
@@ -209,3 +215,30 @@ async def enable_two_factor(body: TwoFactorEnableIn, staff: AnyStaff, db: Db) ->
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid code")
     staff.totp_enabled = True
     return RecoveryCodesOut(recovery_codes=await service.issue_recovery_codes(db, staff))
+
+
+@router.post("/2fa/recovery-codes", response_model=RecoveryCodesOut)
+async def new_recovery_codes(
+    body: RecoveryCodesIn, request: Request, staff: AnyStaff, db: Db
+) -> RecoveryCodesOut:
+    """Ten new backup codes (the old ones stop working). Needs the password and the app. Audited."""
+    from app.core.security import verify_password
+    from app.platform import audit
+
+    await ratelimit.enforce(f"rl:staff-2fa-codes:{staff.id}", *MFA_TRIES)
+    if not staff.totp_enabled or not staff.totp_secret_enc:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Two-factor is not enabled")
+    if not verify_password(body.password, staff.password_hash) or not verify_code(
+        decrypt_secret(staff.totp_secret_enc), body.code
+    ):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Password or code is wrong")
+    codes = await service.issue_recovery_codes(db, staff)
+    await audit.record(
+        db,
+        staff_id=staff.id,
+        action="staff.2fa_backup_codes_renewed",
+        target_type="staff",
+        target_id=staff.id,
+        ip=_ip(request),
+    )
+    return RecoveryCodesOut(recovery_codes=codes)

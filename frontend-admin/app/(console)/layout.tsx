@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { NewBackupCodes } from "@/components/app/new-backup-codes";
 import { ChangePasswordScreen, TwoFactorSetupScreen } from "@/components/app/sign-in";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -56,6 +57,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
         </nav>
         <div className="ml-auto flex items-center gap-3">
           <span className="text-muted-foreground">{me.email}</span>
+          <NewBackupCodes left={me.recovery_codes_left ?? 0} />
           <Button size="sm" variant="outline" onClick={logout}>
             Sign out
           </Button>

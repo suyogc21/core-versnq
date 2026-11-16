@@ -17443,6 +17443,11 @@
             "title": "Name",
             "type": "string"
           },
+          "recovery_codes_left": {
+            "default": 0,
+            "title": "Recovery Codes Left",
+            "type": "integer"
+          },
           "restrictions": {
             "default": [],
             "items": {
@@ -45080,6 +45085,53 @@
           }
         ],
         "summary": "Enable Two Factor",
+        "tags": [
+          "platform-auth"
+        ]
+      }
+    },
+    "/platform/auth/2fa/recovery-codes": {
+      "post": {
+        "description": "Ten new backup codes (the old ones stop working). Needs the password and the app. Audited.",
+        "operationId": "platform-auth-new_recovery_codes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryCodesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "New Recovery Codes",
         "tags": [
           "platform-auth"
         ]
