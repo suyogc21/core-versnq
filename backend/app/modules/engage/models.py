@@ -321,6 +321,7 @@ class WhatsAppAccount(TenantScoped, TimestampMixin, Base):
     access_token_enc: Mapped[str] = mapped_column(Text)
     app_secret_enc: Mapped[str] = mapped_column(Text)
     verify_token: Mapped[str] = mapped_column(String(64))
+    app_id: Mapped[str | None] = mapped_column(String(40))  # Meta app id: header examples
     status: Mapped[str] = mapped_column(String(8), default="active")
     last_error: Mapped[str | None] = mapped_column(String(500))
     quality_rating: Mapped[str | None] = mapped_column(String(20))
@@ -339,6 +340,9 @@ class WhatsAppTemplate(TenantScoped, TimestampMixin, Base):
     body: Mapped[str] = mapped_column(Text)
     variables: Mapped[list] = mapped_column(JSONB, default=list)  # {{1}}, {{2}}… in order
     footer: Mapped[str | None] = mapped_column(String(60))
+    # batch 3: {format: text|image|video|document, text?, path?, content_type?, name?, media_id?}
+    header: Mapped[dict | None] = mapped_column(JSONB)
+    buttons: Mapped[list] = mapped_column(JSONB, default=list)  # quick_reply / url / phone
     meta_id: Mapped[str | None] = mapped_column(String(60))
     status: Mapped[str] = mapped_column(String(10), default="pending")
     reason: Mapped[str | None] = mapped_column(String(500))

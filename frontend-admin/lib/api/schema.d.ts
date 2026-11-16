@@ -1276,6 +1276,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations/{conv_id}/whatsapp-media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Whatsapp Media
+         * @description A photo or document on the company number (finish plan, batch 3): the body is the file,
+         *     X-File-Name its name; only inside the 24-hour window.
+         */
+        post: operations["inbox-send_whatsapp_media"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/conversations/{conv_id}/whatsapp-template": {
         parameters: {
             query?: never;
@@ -3874,6 +3895,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/whatsapp/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Media To Lead
+         * @description A photo (JPG/PNG) or document (PDF, Word, Excel) from the company number, inside the
+         *     24-hour window. The body is the file; X-File-Name gives its name.
+         */
+        post: operations["whatsapp-send_media_to_lead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/link-types": {
         parameters: {
             query?: never;
@@ -6279,6 +6321,27 @@ export interface paths {
          * @description Written with our variables; sent to Meta for approval straight away.
          */
         post: operations["whatsapp-create_template"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whatsapp/templates/header-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Header File
+         * @description The example photo, video or PDF of a template header (the body is the file; X-File-Name
+         *     gives its name). Gives a key to use in the template within an hour.
+         */
+        post: operations["whatsapp-upload_header_file"];
         delete?: never;
         options?: never;
         head?: never;
@@ -14166,6 +14229,8 @@ export interface components {
         WaAccountIn: {
             /** Access Token */
             access_token?: string | null;
+            /** App Id */
+            app_id?: string | null;
             /** App Secret */
             app_secret?: string | null;
             /** Phone Number Id */
@@ -14175,6 +14240,8 @@ export interface components {
         };
         /** WaAccountOut */
         WaAccountOut: {
+            /** App Id */
+            app_id?: string | null;
             /** Connected */
             connected: boolean;
             /** Display Number */
@@ -14201,6 +14268,73 @@ export interface components {
             waba_id?: string | null;
             /** Webhook Url */
             webhook_url?: string | null;
+        };
+        /**
+         * WaButtonIn
+         * @description A quick reply, a website (its address may end with one variable, e.g.
+         *     https://example.com/pay/{{lead.cf.ref}}), or a phone number.
+         */
+        WaButtonIn: {
+            /** Phone */
+            phone?: string | null;
+            /** Text */
+            text: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "quick_reply" | "url" | "phone";
+            /** Url */
+            url?: string | null;
+        };
+        /** WaButtonOut */
+        WaButtonOut: {
+            /** Phone */
+            phone?: string | null;
+            /** Text */
+            text: string;
+            /** Type */
+            type: string;
+            /** Url */
+            url?: string | null;
+        };
+        /** WaHeaderFileOut */
+        WaHeaderFileOut: {
+            /** Content Type */
+            content_type: string;
+            /** Format */
+            format: string;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * WaHeaderIn
+         * @description A text header, or a photo / video / document header whose example file was uploaded
+         *     first (POST /whatsapp/templates/header-file gives the key).
+         */
+        WaHeaderIn: {
+            /** File Key */
+            file_key?: string | null;
+            /**
+             * Format
+             * @enum {string}
+             */
+            format: "text" | "image" | "video" | "document";
+            /** Text */
+            text?: string | null;
+        };
+        /** WaHeaderOut */
+        WaHeaderOut: {
+            /** Content Type */
+            content_type?: string | null;
+            /** Format */
+            format: string;
+            /** Name */
+            name?: string | null;
+            /** Text */
+            text?: string | null;
         };
         /** WaMessageIn */
         WaMessageIn: {
@@ -14277,12 +14411,18 @@ export interface components {
             /** Body */
             body: string;
             /**
+             * Buttons
+             * @default []
+             */
+            buttons: components["schemas"]["WaButtonIn"][];
+            /**
              * Category
              * @enum {string}
              */
             category: "marketing" | "utility";
             /** Footer */
             footer?: string | null;
+            header?: components["schemas"]["WaHeaderIn"] | null;
             /**
              * Language
              * @default en
@@ -14295,6 +14435,11 @@ export interface components {
         WaTemplateOut: {
             /** Body */
             body: string;
+            /**
+             * Buttons
+             * @default []
+             */
+            buttons: components["schemas"]["WaButtonOut"][];
             /** Category */
             category: string;
             /**
@@ -14304,6 +14449,7 @@ export interface components {
             created_at: string;
             /** Footer */
             footer: string | null;
+            header?: components["schemas"]["WaHeaderOut"] | null;
             /**
              * Id
              * Format: uuid
@@ -17602,6 +17748,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversationSortingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "inbox-send_whatsapp_media": {
+        parameters: {
+            query?: {
+                caption?: string | null;
+            };
+            header?: never;
+            path: {
+                conv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
                 };
             };
             /** @description Validation Error */
@@ -23430,6 +23609,39 @@ export interface operations {
             };
         };
     };
+    "whatsapp-send_media_to_lead": {
+        parameters: {
+            query?: {
+                caption?: string | null;
+            };
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaSentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "record-types-list_link_types": {
         parameters: {
             query?: never;
@@ -28993,6 +29205,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "whatsapp-upload_header_file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaHeaderFileOut"];
                 };
             };
         };

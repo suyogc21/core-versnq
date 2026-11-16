@@ -2,7 +2,7 @@
 
 import { Lock, MessageCircle, Paperclip, Send, StickyNote, UserPlus, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
@@ -240,6 +240,8 @@ function Attachment({ conv, file }: { conv: LeadConversation; file: Conversation
     }
   }
   return (
+    <span className="flex flex-col gap-1">
+      {file.content_type.startsWith("image/") && <PhotoPreview conv={conv} file={file} />}
     <span className="flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs" data-attachment={file.name}>
       <Paperclip className="size-3" />
       <button className="hover:underline" onClick={download}>
@@ -276,6 +278,42 @@ function Attachment({ conv, file }: { conv: LeadConversation; file: Conversation
         </NativeSelect>
       )}
     </span>
+    </span>
+  );
+}
+
+/** A photo sent or received on WhatsApp, shown small; fetched with the signed-in person's access. */
+function PhotoPreview({ conv, file }: { conv: LeadConversation; file: ConversationDetail["messages"][number]["attachments"][number] }) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    let url: string | null = null;
+    api
+      .GET("/api/v1/conversations/{conv_id}/attachments/{file_id}", { params: { path: { conv_id: conv.id, file_id: file.file_id } }, parseAs: "blob" })
+      .then((res) => {
+        if (res.data) {
+          url = URL.createObjectURL(res.data as Blob);
+          setSrc(url);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [conv.id, file.file_id]);
+  if (!src) return null;
+  // eslint-disable-next-line @next/next/no-img-element -- a private blob URL, not an optimisable asset
+  return <img src={src} alt={file.name} className="max-h-48 max-w-64 rounded-md border object-contain" />;
+}
+
+/** Photo (JPG/PNG) or document (PDF, Word, Excel) on the company number; the reply text is its caption. */
+async function sendWhatsAppFile(convId: string, file: File, caption: string) {
+  return unwrap(
+    await api.POST("/api/v1/conversations/{conv_id}/whatsapp-media", {
+      params: { path: { conv_id: convId }, query: caption.trim() ? { caption: caption.trim().slice(0, 1024) } : {} },
+      body: file as unknown as undefined, // the raw file (the API reads the request body)
+      bodySerializer: (b: unknown) => b as BodyInit,
+      headers: { "Content-Type": "application/octet-stream", "X-File-Name": encodeURIComponent(file.name).slice(0, 200) },
+    }),
   );
 }
 
@@ -419,7 +457,34 @@ function Composer({ c }: { c: LeadConversation }) {
         value={body}
         onChange={(e) => setBody(e.target.value)}
       />
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-2">
+        {official && mode === "reply" && windowOpen && (
+          <label className={cn("inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-accent", busy && "pointer-events-none opacity-50")}>
+            <Paperclip className="size-3" /> Photo or PDF
+            <input
+              type="file"
+              className="sr-only"
+              aria-label="Send a photo or PDF"
+              accept="image/jpeg,image/png,application/pdf,.doc,.docx,.xls,.xlsx"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                setBusy(true);
+                try {
+                  await sendWhatsAppFile(c.id, f, body);
+                  toast.success(body.trim() ? "Sent with your text as the caption" : "Sent");
+                  setBody("");
+                  refresh();
+                } catch (err) {
+                  toast.error((err as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            />
+          </label>
+        )}
         <Button size="sm" disabled={!body.trim() || busy} onClick={send}>
           {mode === "reply" ? (
             <>
