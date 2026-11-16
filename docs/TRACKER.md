@@ -86,7 +86,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | Item | Size | |
 |---|---|---|
 | Installable app (PWA): home-screen icon, offline page, phone notifications (C2) | M | ✅ live Nov 16 (waiting for your own try) |
-| Android app (plan: `plans/android-app-plan.md`): C4.1 shell built Nov 16 (same Core screens, company picker, GitHub build); C4.2 call log, C4.3 recorder folder, C4.4 caller popup next; iOS later | L | 🟡 C4.1 built, first GitHub build being checked |
+| Android app (plan: `plans/android-app-plan.md`): shell, call tracking (C4.2), recordings from the phone recorder (C4.3), caller popup and download link (C4.4), back button; built Nov 16; iOS later | L | 🟡 built; needs the deploy, then a try on a real phone |
 
 ### Phase 4: marketing (13)
 | Item | Size | |
@@ -130,3 +130,4 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | 2026-11-16 | C2 installable app + phone notifications live; C3 Twilio calling built; Android app: download link first (Runo answers) |
 | 2026-11-16 | C3 Twilio calling live (migration 0037) |
 | 2026-11-16 | ACE lead summary in Core (0038, not deployed); Twilio dual-channel; Android C4.1 shell; ACE C5 built on fakes |
+| 2026-11-16 | Android app C4.2–C4.4 built (call tracking, recordings, caller popup, download link) |

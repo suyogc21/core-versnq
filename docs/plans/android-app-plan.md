@@ -1,6 +1,6 @@
 # Android app (step C4): plan
 
-Status: **proposal, waiting for Suyog's approval** (Nov 16). Nothing is built yet.
+Status: **C4.1–C4.4 built Nov 16** (approved by Suyog). Waiting for a try on a real phone. Push inside the app needs Firebase (later).
 Parent plan: `calls-plan.md`. Decisions so far: Runo model (the phone's own recorder folder), a download link first and Google Play later.
 
 ## What the app is
