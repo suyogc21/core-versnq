@@ -215,7 +215,8 @@ async def save_analysis(db: AsyncSession, call: Call, summary: str, analysis: di
         return call
     call.summary, call.analysis, call.analyzed_at = summary, analysis, datetime.now(UTC)
     if act := await _activity(db, call):
-        act.data = {**act.data, "summary": summary[:2000]}
+        shown = {k: analysis.get(k) for k in ("intent", "next_step", "red_flags")}
+        act.data = {**act.data, "summary": summary[:2000], **shown}
     await db.flush()
     await emit(db, call.tenant_id, "call.analyzed", {
         "call_id": str(call.id), "lead_id": str(call.lead_id) if call.lead_id else None,

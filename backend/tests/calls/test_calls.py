@@ -176,6 +176,7 @@ async def test_recording_off_and_ace_analysis(ws):
     async with tenant_session(tenant_id) as db:
         act = await db.get(Activity, uuid.UUID(call["activity_id"]))
     assert act.data["summary"].startswith("Asked about weekend")
+    assert act.data["intent"] == "warm" and act.data["red_flags"] == ["price concern"]
 
 
 async def test_another_company_sees_no_calls_and_settings_need_admin(ws, client_for):

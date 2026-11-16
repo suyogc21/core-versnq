@@ -11,7 +11,20 @@ import { unwrap } from "@/lib/api/errors";
 import { type FieldDef, fromLocalInput, quickFollowUps, useActivityTypes, useLead, useRefreshLead } from "@/lib/crm";
 import { useWorkspaceSettings } from "@/lib/settings";
 
-type CallData = { call_id?: string; recording?: boolean; recording_removed?: boolean; summary?: string };
+type CallData = {
+  call_id?: string;
+  recording?: boolean;
+  recording_removed?: boolean;
+  summary?: string;
+  intent?: string | null;
+  next_step?: string | null;
+  red_flags?: string[] | null;
+};
+
+const INTENTS: Record<string, string> = {
+  interested: "Interested", not_now: "Not now", not_interested: "Not interested",
+  wrong_person: "Wrong person", callback: "Wants a call back", unclear: "Unclear",
+};
 
 /** A reported call on the timeline (step C1): the recording, ACE's summary, and the Outcome. */
 export function CallEntry({ leadId, data, outcome }: { leadId: string; data: CallData; outcome: string | null }) {
@@ -39,6 +52,13 @@ export function CallEntry({ leadId, data, outcome }: { leadId: string; data: Cal
         <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1 whitespace-pre-wrap">
           <span className="font-medium">ACE summary: </span>
           {data.summary}
+          {data.intent && <div className="mt-1"><span className="font-medium">Intent:</span> {INTENTS[data.intent] ?? data.intent}</div>}
+          {data.next_step && <div><span className="font-medium">Next step:</span> {data.next_step}</div>}
+          {(data.red_flags ?? []).length > 0 && (
+            <ul className="mt-1 list-disc pl-4 text-destructive">
+              {(data.red_flags ?? []).map((f) => <li key={f}>{f}</li>)}
+            </ul>
+          )}
         </div>
       )}
       {data.recording &&
