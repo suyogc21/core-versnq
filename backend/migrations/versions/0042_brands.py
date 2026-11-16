@@ -7,7 +7,7 @@ limited to (none listed = every brand). Brands are never deleted, only switched 
 brand_id columns need no ON DELETE rule.
 
 Revision ID: 0042
-Revises: 0039 (re-chained after batches 1-3 at merge)
+Revises: 0041
 Create Date: 2026-11-16
 """
 
