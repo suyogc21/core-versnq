@@ -8,6 +8,9 @@ ACE uses an ordinary API key; nothing here is special to ACE, so any tool can us
   `external_id` makes retries safe.
 - `PUT /leads/{id}/intent`: hot / warm / cold / not interested; writes an activity and emits
   `lead.intent_changed`.
+- `PUT /leads/{id}/ace-summary`: ACE's latest summary of the lead (only an integration key).
+  Shown at the top of the lead; no timeline line, no version bump; the same body twice is a
+  no-op; a change emits `lead.summary_changed`.
 """
 
 import uuid
@@ -18,7 +21,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from app.core.errors import Invalid
+from app.core.errors import Forbidden, Invalid
+from app.core.events import emit
 from app.modules.auth.deps import CurrentUser, require
 from app.modules.crm import intake as I
 from app.modules.crm import leads as L
@@ -52,6 +56,18 @@ class ConversationIn(BaseModel):
     external_id: str | None = Field(
         default=None, max_length=200, description="your id for this conversation (safe retries)"
     )
+
+
+class AceSummaryIn(BaseModel):
+    summary: str = Field(min_length=1, max_length=600)
+    next_step: str | None = Field(default=None, max_length=200)
+    prompt_version: str | None = Field(default=None, max_length=50)
+
+
+class AceSummaryOut(BaseModel):
+    lead_id: uuid.UUID
+    ace_summary_at: datetime | None
+    changed: bool
 
 
 class IntentIn(BaseModel):
@@ -240,3 +256,20 @@ async def put_intent(lead_id: uuid.UUID, body: IntentIn, db: CrmDb, actor: Edito
         intent_updated_at=lead.intent_updated_at,
         changed=changed,
     )
+
+
+@router.put("/{lead_id}/ace-summary", response_model=AceSummaryOut)
+async def put_ace_summary(
+    lead_id: uuid.UUID, body: AceSummaryIn, db: CrmDb, actor: Editor
+) -> AceSummaryOut:
+    if actor.user.status != "integration":
+        raise Forbidden("Only ACE's API key can write the ACE summary", code="integration_only")
+    lead = await L.get_visible(db, actor, lead_id)
+    summary, next_step = body.summary.strip(), (body.next_step or "").strip() or None
+    changed = (lead.ace_summary, lead.ace_next_step) != (summary, next_step)
+    if changed:
+        lead.ace_summary, lead.ace_next_step = summary, next_step
+        lead.ace_prompt_version, lead.ace_summary_at = body.prompt_version, L.now()
+        await emit(db, lead.tenant_id, "lead.summary_changed", {"lead_id": str(lead.id)})
+    await db.flush()
+    return AceSummaryOut(lead_id=lead.id, ace_summary_at=lead.ace_summary_at, changed=changed)

@@ -3495,6 +3495,23 @@ export interface paths {
         patch: operations["leads-update_lead"];
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/ace-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Ace Summary */
+        put: operations["lead-api-put_ace_summary"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/activities": {
         parameters: {
             query?: never;
@@ -6823,6 +6840,27 @@ export interface components {
             tier: string;
             /** Version */
             version: number;
+        };
+        /** AceSummaryIn */
+        AceSummaryIn: {
+            /** Next Step */
+            next_step?: string | null;
+            /** Prompt Version */
+            prompt_version?: string | null;
+            /** Summary */
+            summary: string;
+        };
+        /** AceSummaryOut */
+        AceSummaryOut: {
+            /** Ace Summary At */
+            ace_summary_at: string | null;
+            /** Changed */
+            changed: boolean;
+            /**
+             * Lead Id
+             * Format: uuid
+             */
+            lead_id: string;
         };
         /** ActivityIn */
         ActivityIn: {
@@ -10531,6 +10569,12 @@ export interface components {
         };
         /** LeadOut */
         LeadOut: {
+            /** Ace Next Step */
+            ace_next_step?: string | null;
+            /** Ace Summary */
+            ace_summary?: string | null;
+            /** Ace Summary At */
+            ace_summary_at?: string | null;
             /** Campaign */
             campaign: string | null;
             /** City */
@@ -22413,6 +22457,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "lead-api-put_ace_summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AceSummaryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AceSummaryOut"];
                 };
             };
             /** @description Validation Error */

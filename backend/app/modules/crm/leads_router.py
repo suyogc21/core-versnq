@@ -130,6 +130,9 @@ class LeadOut(BaseModel):
     score_band: str | None = None
     tags: list[TagRef] = []
     intent: str | None
+    ace_summary: str | None = None
+    ace_next_step: str | None = None
+    ace_summary_at: datetime | None = None
     origin: str
     source_id: uuid.UUID
     created_via: str

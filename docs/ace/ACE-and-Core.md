@@ -223,6 +223,7 @@ All under `https://<slug>.<base domain>`. See `docs/api/openapi.json` for exact 
 | Create or find a lead | `POST /api/v1/leads/upsert` | phones/emails, name, `source`, `origin: "outbound_ace"`, optional `intent` and `conversation` in the same call. Normal duplicate rules and routing apply. |
 | Log a conversation that happened outside Core (e.g. an ACE campaign) | `POST /api/v1/leads/{id}/conversation` | channel, messages (`sender: lead|us`), `summary`, `external_id` for safe retries |
 | Set intent | `PUT /api/v1/leads/{id}/intent` | `hot|warm|cold|not_interested` plus `reason`. Writes a timeline entry and emits `lead.intent_changed`. |
+| Lead summary (built Nov 16) | `PUT /api/v1/leads/{id}/ace-summary` | `{summary ≤600, next_step? ≤200, prompt_version? ≤50}`. Integration key only (`integration_only` otherwise). Shown as the "ACE summary" panel at the top of the lead. No timeline entry, no version change, no follow-up side effects. The same summary and next step twice is a no-op (`changed: false`). A change emits `lead.summary_changed {lead_id}` (an ACE event: sent only while the ACE module is on). |
 | Reply in a conversation | `POST /api/v1/conversations/{id}/reply` | email, or WhatsApp free text inside the 24 h window (Core refuses outside it) |
 | Send a WhatsApp template | `POST /api/v1/conversations/{id}/whatsapp-template` or `POST /api/v1/leads/{id}/whatsapp` | approved templates only; marketing needs opt-in |
 | Email a lead | `POST /api/v1/leads/{id}/emails` | |

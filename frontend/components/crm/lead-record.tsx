@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Mail, MessageCircle, Phone, StickyNote, X } from "lucide-react";
+import { Check, Mail, MessageCircle, Phone, Sparkles, StickyNote, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -218,6 +218,25 @@ function Section({ title, children, action }: { title: string; children: React.R
 }
 
 /** The full record (mockup v2): details · timeline with logging · follow-up and tasks. */
+/** ACE's latest summary of the lead (written by ACE through the API; not on the timeline). */
+function AceSummary({ lead }: { lead: Lead }) {
+  if (!lead.ace_summary) return null;
+  return (
+    <div className="surface flex gap-3 p-3 text-sm" data-testid="ace-summary">
+      <Sparkles className="mt-0.5 size-4 shrink-0 text-violet-500" />
+      <div className="min-w-0 space-y-1">
+        <p>{lead.ace_summary}</p>
+        {lead.ace_next_step && (
+          <p className="text-muted-foreground">
+            <span className="font-medium text-foreground">Next step:</span> {lead.ace_next_step}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground">ACE summary{lead.ace_summary_at ? ` · updated ${relative(lead.ace_summary_at)}` : ""}</p>
+      </div>
+    </div>
+  );
+}
+
 export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (lead: Lead) => void }) {
   const { can } = useAuth();
   const lead = useLead(leadId);
@@ -260,6 +279,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
         </div>
         <StageStepper lead={l} />
         <DuplicateBanner key={`dupes-${l.version}`} lead={l} />
+        <AceSummary lead={l} />
       </div>
       <div className="grid min-h-0 flex-1 items-start gap-4 p-4 md:px-6 lg:grid-cols-[300px_minmax(0,1fr)_300px]">
         <div className="space-y-4">

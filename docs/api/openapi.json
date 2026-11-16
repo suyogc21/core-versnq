@@ -652,6 +652,77 @@
         "title": "AccountRow",
         "type": "object"
       },
+      "AceSummaryIn": {
+        "properties": {
+          "next_step": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Step"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "summary": {
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "title": "AceSummaryIn",
+        "type": "object"
+      },
+      "AceSummaryOut": {
+        "properties": {
+          "ace_summary_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ace Summary At"
+          },
+          "changed": {
+            "title": "Changed",
+            "type": "boolean"
+          },
+          "lead_id": {
+            "format": "uuid",
+            "title": "Lead Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id",
+          "ace_summary_at",
+          "changed"
+        ],
+        "title": "AceSummaryOut",
+        "type": "object"
+      },
       "ActivityIn": {
         "properties": {
           "body": {
@@ -6711,7 +6782,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 49,
+            "maxItems": 50,
             "minItems": 1,
             "title": "Events",
             "type": "array"
@@ -6818,7 +6889,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 49,
+                "maxItems": 50,
                 "minItems": 1,
                 "type": "array"
               },
@@ -11300,6 +11371,40 @@
       },
       "LeadOut": {
         "properties": {
+          "ace_next_step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ace Next Step"
+          },
+          "ace_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ace Summary"
+          },
+          "ace_summary_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ace Summary At"
+          },
           "campaign": {
             "anyOf": [
               {
@@ -37194,6 +37299,64 @@
         "summary": "Update Lead",
         "tags": [
           "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{lead_id}/ace-summary": {
+      "put": {
+        "operationId": "lead-api-put_ace_summary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AceSummaryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AceSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Ace Summary",
+        "tags": [
+          "lead-api"
         ]
       }
     },

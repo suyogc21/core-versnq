@@ -164,6 +164,10 @@ class Lead(TenantScoped, TimestampMixin, Base):
     score_band: Mapped[str | None] = mapped_column(String(4))  # hot / warm / cold
     intent: Mapped[str | None] = mapped_column(String(20))
     intent_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ace_summary: Mapped[str | None] = mapped_column(String(600))  # ACE's latest summary
+    ace_next_step: Mapped[str | None] = mapped_column(String(200))
+    ace_prompt_version: Mapped[str | None] = mapped_column(String(50))
+    ace_summary_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     origin: Mapped[str] = mapped_column(String(20))
     source_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     created_via: Mapped[str] = mapped_column(String(12))
