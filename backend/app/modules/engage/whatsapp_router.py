@@ -8,6 +8,7 @@ import secrets
 import uuid
 from datetime import datetime
 from typing import Annotated, Literal
+from urllib.parse import unquote
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import PlainTextResponse
@@ -15,9 +16,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.core import secrets as SEC
+from app.core import storage
 from app.core.config import get_settings
 from app.core.errors import Invalid, NotFound
 from app.core.modules import require_module
+from app.core.ratelimit import get_redis
 from app.modules.auth.deps import CurrentUser, TenantDb, WorkspaceDep, require
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
@@ -41,6 +44,8 @@ class WaAccountIn(BaseModel):
     waba_id: str = Field(pattern=r"^\d{5,30}$")
     access_token: str | None = Field(default=None, max_length=1000)  # needed to connect
     app_secret: str | None = Field(default=None, max_length=200)
+    # Only for templates with a photo, video or document header (Meta's example upload).
+    app_id: str | None = Field(default=None, pattern=r"^\d{5,30}$")
 
 
 class WaAccountOut(BaseModel):
@@ -57,6 +62,7 @@ class WaAccountOut(BaseModel):
     health_checked_at: datetime | None = None
     webhook_url: str | None = None
     verify_token: str | None = None
+    app_id: str | None = None
 
 
 class WaToggle(BaseModel):
@@ -73,12 +79,54 @@ class WaSettingsIO(BaseModel):
     reminder_template_id: uuid.UUID | None = None  # payment reminders on WhatsApp (utility)
 
 
+class WaHeaderIn(BaseModel):
+    """A text header, or a photo / video / document header whose example file was uploaded
+    first (POST /whatsapp/templates/header-file gives the key)."""
+
+    format: Literal["text", "image", "video", "document"]
+    text: str | None = Field(default=None, max_length=60)
+    file_key: str | None = Field(default=None, max_length=64)
+
+
+class WaButtonIn(BaseModel):
+    """A quick reply, a website (its address may end with one variable, e.g.
+    https://example.com/pay/{{lead.cf.ref}}), or a phone number."""
+
+    type: Literal["quick_reply", "url", "phone"]
+    text: str = Field(min_length=1, max_length=25)
+    url: str | None = Field(default=None, max_length=2000)
+    phone: str | None = Field(default=None, max_length=20)
+
+
 class WaTemplateIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     language: str = Field(default="en", pattern=r"^[a-z]{2,3}(_[A-Z]{2})?$")
     category: Literal["marketing", "utility"]
     body: str = Field(min_length=1, max_length=1024)
     footer: str | None = Field(default=None, max_length=60)
+    header: WaHeaderIn | None = None
+    buttons: list[WaButtonIn] = Field(default=[], max_length=10)
+
+
+class WaHeaderOut(BaseModel):
+    format: str
+    text: str | None = None
+    name: str | None = None  # the example file's name
+    content_type: str | None = None
+
+
+class WaButtonOut(BaseModel):
+    type: str
+    text: str
+    url: str | None = None
+    phone: str | None = None
+
+
+class WaHeaderFileOut(BaseModel):
+    key: str
+    name: str
+    content_type: str
+    format: str  # image / video / document
 
 
 class WaTemplateOut(BaseModel):
@@ -88,6 +136,8 @@ class WaTemplateOut(BaseModel):
     category: str
     body: str
     footer: str | None
+    header: WaHeaderOut | None = None
+    buttons: list[WaButtonOut] = []
     status: str
     reason: str | None
     created_at: datetime
@@ -131,10 +181,19 @@ def _account_out(acct: WhatsAppAccount | None, request: Request) -> WaAccountOut
         health_checked_at=acct.health_checked_at,
         webhook_url=f"{_base(request)}/api/v1/whatsapp/webhook",
         verify_token=acct.verify_token,
+        app_id=acct.app_id,
     )
 
 
+def _button_out(b: dict) -> WaButtonOut:
+    url = b.get("url")
+    if url and b.get("url_var"):
+        url = f"{url}{{{{{b['url_var']}}}}}"  # shown as written: …/{{lead.cf.ref}}
+    return WaButtonOut(type=b["type"], text=b["text"], url=url, phone=b.get("phone"))
+
+
 def _tpl_out(t: WhatsAppTemplate) -> WaTemplateOut:
+    h = t.header or None
     return WaTemplateOut(
         id=t.id,
         name=t.name,
@@ -142,10 +201,116 @@ def _tpl_out(t: WhatsAppTemplate) -> WaTemplateOut:
         category=t.category,
         body=t.body,
         footer=t.footer,
+        header=WaHeaderOut(
+            format=h["format"],
+            text=h.get("text"),
+            name=h.get("name"),
+            content_type=h.get("content_type"),
+        )
+        if h
+        else None,  # fmt: skip
+        buttons=[_button_out(b) for b in t.buttons or []],
         status=t.status,
         reason=t.reason,
         created_at=t.created_at,
     )
+
+
+# ---------- template headers and buttons (finish plan, batch 3) ----------
+HEADER_FILE_SECONDS = 3600
+URL_VAR = re.compile(r"^(https://[^\s{}]+?)\{\{\s*([a-z_.0-9]+)\s*\}\}$")
+# What WhatsApp takes as a template header (Meta: images JPG/PNG up to 5 MB, video MP4 and
+# documents PDF up to 16 MB).
+HEADER_TYPES = {
+    "image": ({"image/jpeg", "image/png"}, WA.MAX_PHOTO),
+    "video": ({"video/mp4"}, WA.MAX_FILE),
+    "document": ({"application/pdf"}, WA.MAX_FILE),
+}
+
+
+def _header_format(content_type: str) -> str | None:
+    for fmt, (types, _) in HEADER_TYPES.items():
+        if content_type in types:
+            return fmt
+    return None
+
+
+async def _header(body: WaHeaderIn | None, tenant_id: uuid.UUID) -> dict | None:
+    if body is None:
+        return None
+    if body.format == "text":
+        text = (body.text or "").strip()
+        if not text or "{{" in text:
+            raise Invalid("Write the header text (variables aren't supported in headers)")
+        return {"format": "text", "text": text}
+    if not body.file_key:
+        raise Invalid("Upload the header's example file first", code="whatsapp_header_file")
+    raw = await get_redis().get(f"wa:hdr:{tenant_id}:{body.file_key}")
+    if not raw:
+        raise Invalid("The header file expired; upload it again", code="whatsapp_header_file")
+    f = json.loads(raw)
+    if f["format"] != body.format:
+        raise Invalid(f"That file is a {f['format']}, not a {body.format}")
+    return {"format": body.format, "path": f["path"], "content_type": f["content_type"],
+            "name": f["name"]}  # fmt: skip
+
+
+def _buttons(items: list[WaButtonIn], keys: set[str]) -> list[dict]:
+    """Meta's limits: up to 10 buttons, at most 2 websites and 1 phone number."""
+    if sum(b.type == "url" for b in items) > 2:
+        raise Invalid("WhatsApp allows at most 2 website buttons")
+    if sum(b.type == "phone" for b in items) > 1:
+        raise Invalid("WhatsApp allows at most 1 phone button")
+    out = []
+    for b in items:
+        item = {"type": b.type, "text": b.text.strip()}
+        if b.type == "url":
+            url = (b.url or "").strip()
+            m = URL_VAR.match(url)
+            if m:
+                R.check("{{" + m.group(2) + "}}", keys, WA.INVOICE_VARS)
+                item["url"], item["url_var"] = m.group(1), m.group(2)
+            elif url.startswith("https://") and "{{" not in url and " " not in url:
+                item["url"] = url
+            else:
+                raise Invalid("A website button needs an https:// address; one variable may end it")
+        elif b.type == "phone":
+            phone = re.sub(r"[\s-]", "", b.phone or "")
+            if not re.fullmatch(r"\+\d{7,15}", phone):
+                raise Invalid("A phone button needs the number with its country code, like +91…")
+            item["phone"] = phone
+        out.append(item)
+    return out
+
+
+@router.post(
+    "/whatsapp/templates/header-file",
+    response_model=WaHeaderFileOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_header_file(request: Request, db: CrmDb, actor: Manager) -> WaHeaderFileOut:
+    """The example photo, video or PDF of a template header (the body is the file; X-File-Name
+    gives its name). Gives a key to use in the template within an hour."""
+    data = await storage.read_upload(request, limit=WA.MAX_FILE)
+    name = storage.clean_name(unquote(request.headers.get("x-file-name", "header")))
+    content_type, ext = storage.check_media(
+        data, name, "video" if name.lower().endswith(".mp4") else None
+    )
+    fmt = _header_format(content_type)
+    if fmt is None:
+        raise Invalid("A header file is a JPG or PNG photo, an MP4 video or a PDF")
+    if len(data) > HEADER_TYPES[fmt][1]:
+        raise Invalid(f"WhatsApp takes header {fmt}s up to {HEADER_TYPES[fmt][1] // 2**20} MB")
+    saved = storage.save(actor.user.tenant_id, data, ext, content_type)
+    key = secrets.token_urlsafe(18)
+    if "." not in name:
+        name = f"{name}.{ext}"
+    await get_redis().set(
+        f"wa:hdr:{actor.user.tenant_id}:{key}",
+        json.dumps({"path": saved.path, "content_type": content_type, "name": name, "format": fmt}),
+        ex=HEADER_FILE_SECONDS,
+    )
+    return WaHeaderFileOut(key=key, name=name, content_type=content_type, format=fmt)
 
 
 # ---------- the number ----------
@@ -172,6 +337,8 @@ async def connect(request: Request, body: WaAccountIn, db: CrmDb, actor: Manager
         acct.access_token_enc = SEC.encrypt(body.access_token.strip())
     if body.app_secret:
         acct.app_secret_enc = SEC.encrypt(body.app_secret.strip())
+    if body.app_id:
+        acct.app_id = body.app_id
     await WA.refresh_health(db, acct)
     if acct.status == "error":
         raise Invalid(acct.last_error or "WhatsApp refused these keys")
@@ -275,6 +442,8 @@ async def create_template(body: WaTemplateIn, db: CrmDb, actor: Manager) -> WaTe
         category=body.category,
         body=body.body.strip(),
         footer=(body.footer or "").strip() or None,
+        header=await _header(body.header, actor.user.tenant_id),
+        buttons=_buttons(body.buttons, keys),
         created_by_user_id=actor.user.id,
     )
     await WA.submit(db, acct, tpl)
@@ -325,6 +494,27 @@ async def send_to_lead(lead_id: uuid.UUID, body: WaSendIn, db: CrmDb, actor: Rep
     elif not (body.text or "").strip():
         raise Invalid("Choose a template or write a message")
     msg = await WA.send(db, lead, text=body.text, template=tpl, actor=actor)
+    return WaSentOut(conversation_id=msg.conversation_id, message_id=msg.id, status=msg.status)
+
+
+@router.post(
+    "/leads/{lead_id}/whatsapp/media",
+    response_model=WaSentOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def send_media_to_lead(
+    lead_id: uuid.UUID,
+    request: Request,
+    db: CrmDb,
+    actor: Replier,
+    caption: Annotated[str | None, Query(max_length=1024)] = None,
+) -> WaSentOut:
+    """A photo (JPG/PNG) or document (PDF, Word, Excel) from the company number, inside the
+    24-hour window. The body is the file; X-File-Name gives its name."""
+    lead = await L.get_visible(db, actor, lead_id)
+    data = await storage.read_upload(request, limit=WA.MAX_FILE)
+    name = unquote(request.headers.get("x-file-name", "file"))  # sent URL-encoded
+    msg = await WA.send_media(db, lead, data, name, caption, actor)
     return WaSentOut(conversation_id=msg.conversation_id, message_id=msg.id, status=msg.status)
 
 

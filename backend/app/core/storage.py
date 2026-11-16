@@ -102,6 +102,35 @@ def sniff_audio(head: bytes, name: str) -> tuple[str, str] | None:
     return None
 
 
+_VIDEO_BRANDS = (b"isom", b"mp42", b"mp41", b"avc1", b"iso2", b"iso4", b"iso5", b"iso6", b"M4V ")
+_3GP_BRANDS = (b"3gp4", b"3gp5", b"3gp6", b"3gp7", b"3gp8", b"3gp9")
+
+
+def check_media(data: bytes, name: str, kind: str | None = None) -> tuple[str, str]:
+    """WhatsApp media (finish plan, batch 3): documents and photos as for any upload, plus voice
+    notes and audio (as call recordings) and MP4 / 3GP video. `kind` is WhatsApp's own word for
+    the message ("video", "audio"…), used only where the bytes alone are ambiguous (an MP4 can
+    hold sound or a film)."""
+    head = data[:16]
+    if kind == "video" and head[4:8] == b"ftyp":
+        if head[8:12] in _3GP_BRANDS:
+            return "video/3gpp", "3gp"
+        if head[8:12] in _VIDEO_BRANDS:
+            return "video/mp4", "mp4"
+    kind_found = sniff(head, name)
+    if kind_found is not None:
+        return kind_found[0], kind_found[1]
+    audio = sniff_audio(head, name)
+    if audio is not None:
+        return audio
+    if head[4:8] == b"ftyp" and head[8:12] in _VIDEO_BRANDS:
+        return "video/mp4", "mp4"
+    raise Invalid(
+        "This kind of file is not accepted here. Use a photo (JPG, PNG, WEBP), PDF, Word or "
+        "Excel file, a voice note or an MP4 video."
+    )
+
+
 def clean_name(name: str) -> str:
     """The original file name, kept for display only (never used on disk)."""
     name = os.path.basename(name.replace("\\", "/")).strip()

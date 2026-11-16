@@ -29,9 +29,10 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import secrets as SEC
+from app.core import storage
 from app.core.config import get_settings
 from app.core.errors import Invalid
-from app.core.storage import check_type, clean_name, save
+from app.core.storage import check_media, clean_name, save
 from app.modules.auth.deps import CurrentUser
 from app.modules.crm import consent as C
 from app.modules.crm import intake as I
@@ -58,7 +59,10 @@ WINDOW = timedelta(hours=24)
 AUTO_PER_DAY = 2
 AUTO_LABEL = {"welcome": "Automatic reply: welcome", "away": "Automatic reply: away"}
 AWAY_EVERY = timedelta(hours=12)
-MAX_FILE = 15 * 1024 * 1024
+MAX_FILE = 16 * 1024 * 1024  # Meta's own cap for audio and video
+MAX_PHOTO = 5 * 1024 * 1024  # Meta's cap for images
+MEDIA_KEEP = timedelta(days=25)  # Meta keeps an uploaded media id 30 days; re-upload before
+HEADER_FORMATS = ("text", "image", "video", "document")
 LABEL = {
     "image": "[photo]",
     "video": "[video]",
@@ -151,6 +155,41 @@ class MetaClient:
         )
         return data.get("data", [])
 
+    async def upload_media(self, data: bytes, mime: str, name: str) -> str:
+        """Meta's media upload for sending (POST /{phone-number-id}/media, multipart)."""
+        out = await self._call(
+            "POST",
+            f"{self.acct.phone_number_id}/media",
+            data={"messaging_product": "whatsapp", "type": mime},
+            files={"file": (name, data, mime)},
+        )
+        return out["id"]
+
+    async def upload_example(self, data: bytes, mime: str) -> str:
+        """A header example for template approval: Meta's Resumable Upload API on the company's
+        own app (start a session, then send the bytes), giving the handle `h`."""
+        if not self.acct.app_id:
+            raise Invalid(
+                "Add your Meta app ID in Settings → WhatsApp first: WhatsApp needs it to receive "
+                "the example file of a template with a photo, video or document",
+                code="whatsapp_app_id_missing",
+            )
+        start = await self._call(
+            "POST",
+            f"{self.acct.app_id}/uploads",
+            params={"file_length": len(data), "file_type": mime},
+        )
+        async with httpx.AsyncClient(timeout=60, follow_redirects=False) as http:
+            r = await http.post(
+                f"{self.base}/{start['id']}",
+                headers={"Authorization": f"OAuth {self.token}", "file_offset": "0"},
+                content=data,
+            )
+        body = r.json() if r.content else {}
+        if r.status_code >= 400 or not body.get("h"):
+            raise Invalid("WhatsApp didn't accept the example file", code="whatsapp_send_failed")
+        return body["h"]
+
     async def media(self, media_id: str) -> tuple[bytes, str] | None:
         info = await self._call("GET", media_id)
         url = info.get("url")
@@ -188,6 +227,12 @@ class TestClient:
 
     async def media(self, media_id: str) -> tuple[bytes, str] | None:
         return None
+
+    async def upload_media(self, data: bytes, mime: str, name: str) -> str:
+        return f"TESTMEDIA{secrets.token_hex(6)}"
+
+    async def upload_example(self, data: bytes, mime: str) -> str:
+        return f"4::TEST{secrets.token_hex(6)}"
 
 
 def client(acct: WhatsAppAccount):  # patched in tests
@@ -259,6 +304,18 @@ async def submit(db: AsyncSession, acct: WhatsAppAccount, tpl: WhatsAppTemplate)
             "body_text": [[SAMPLE.get(v["name"], v.get("fallback") or "sample") for v in variables]]
         }
     components = [body] + ([{"type": "FOOTER", "text": tpl.footer}] if tpl.footer else [])
+    header = tpl.header or {}
+    if header.get("format") == "text":
+        components.insert(0, {"type": "HEADER", "format": "TEXT", "text": header["text"]})
+    elif header.get("format") in ("image", "video", "document"):
+        data = storage.full_path(header["path"]).read_bytes()
+        handle = await client(acct).upload_example(data, header["content_type"])
+        components.insert(0, {
+            "type": "HEADER", "format": header["format"].upper(),
+            "example": {"header_handle": [handle]},
+        })  # fmt: skip
+    if tpl.buttons:
+        components.append({"type": "BUTTONS", "buttons": [_meta_button(b) for b in tpl.buttons]})
     out = await client(acct).submit_template(
         {
             "name": tpl.name,
@@ -272,6 +329,38 @@ async def submit(db: AsyncSession, acct: WhatsAppAccount, tpl: WhatsAppTemplate)
     if tpl.status not in ("pending", "approved", "rejected", "paused", "disabled"):
         tpl.status = "pending"
     tpl.reason = "Test mode: approved at once (nothing was sent to Meta)" if test_mode() else None
+
+
+def _meta_button(b: dict) -> dict:
+    """One button as Meta's template API spells it."""
+    if b["type"] == "quick_reply":
+        return {"type": "QUICK_REPLY", "text": b["text"]}
+    if b["type"] == "phone":
+        return {"type": "PHONE_NUMBER", "text": b["text"], "phone_number": b["phone"]}
+    if b.get("url_var"):  # a variable at the end of the address: {{1}}, with an example
+        example = b["url"] + SAMPLE.get(b["url_var"], "example")
+        return {"type": "URL", "text": b["text"], "url": b["url"] + "{{1}}", "example": [example]}
+    return {"type": "URL", "text": b["text"], "url": b["url"]}
+
+
+def button_line(tpl: WhatsAppTemplate) -> str:
+    """How the buttons read on the timeline and in the inbox."""
+    return "[Buttons: " + " · ".join(b["text"] for b in tpl.buttons) + "]" if tpl.buttons else ""
+
+
+async def _header_media_id(acct: WhatsAppAccount, tpl: WhatsAppTemplate) -> str:
+    """The template's header file as a Meta media id (uploaded once, again after 25 days)."""
+    h = dict(tpl.header or {})
+    at = datetime.fromisoformat(h["media_at"]) if h.get("media_at") else None
+    if h.get("media_id") and at and now() - at < MEDIA_KEEP:
+        return h["media_id"]
+    data = storage.full_path(h["path"]).read_bytes()
+    h["media_id"] = await client(acct).upload_media(
+        data, h["content_type"], h.get("name") or "file"
+    )
+    h["media_at"] = now().isoformat()
+    tpl.header = h  # a new dict, so the change is saved
+    return h["media_id"]
 
 
 async def refresh_template(db: AsyncSession, acct: WhatsAppAccount, tpl: WhatsAppTemplate) -> None:
@@ -374,17 +463,37 @@ async def send(
             )
         params = params_for(template, values)
         body = R.fill(template.body, values)
+        components: list[dict] = []
+        header = template.header or {}
+        if header.get("format") in ("image", "video", "document"):
+            fmt = header["format"]
+            media = {"id": await _header_media_id(acct, template)}
+            if fmt == "document":
+                media["filename"] = header.get("name") or "document.pdf"
+            components.append({"type": "header", "parameters": [{"type": fmt, fmt: media}]})
+            body = f"{LABEL[fmt]} {body}"
+        elif header.get("format") == "text":
+            body = f"{header['text']}\n{body}"
+        if params:
+            components.append(
+                {"type": "body", "parameters": [{"type": "text", "text": p} for p in params]}
+            )
+        for i, b in enumerate(template.buttons or []):
+            if b["type"] == "url" and b.get("url_var"):
+                value = str(values.get(b["url_var"]) or "").strip() or "-"
+                components.append({
+                    "type": "button", "sub_type": "url", "index": str(i),
+                    "parameters": [{"type": "text", "text": value[:200]}],
+                })  # fmt: skip
+        if template.buttons:
+            body = f"{body}\n{button_line(template)}"
         payload = {
             "to": to,
             "type": "template",
             "template": {
                 "name": template.name,
                 "language": {"code": template.language},
-                "components": [
-                    {"type": "body", "parameters": [{"type": "text", "text": p} for p in params]}
-                ]
-                if params
-                else [],
+                "components": components,
             },
         }
     else:
@@ -454,6 +563,97 @@ async def send(
     return msg
 
 
+async def send_media(
+    db: AsyncSession, lead: Lead, data: bytes, name: str, caption: str | None, actor: CurrentUser
+) -> Message:
+    """A photo or document from the company number (finish plan, batch 3): like free text, only
+    inside the 24-hour window and never to someone who opted out. The file is also kept on the
+    lead (same checks and storage quota as any upload). Photos: JPG or PNG up to 5 MB (Meta's
+    limit); documents: PDF, Word or Excel up to 16 MB."""
+    acct = await require_account(db)
+    to = _to(lead)
+    conv = await conversation(db, acct, lead, by=actor.user.id)
+    if window_ends(conv) is None:
+        raise Invalid(
+            "The 24-hour window is closed: WhatsApp allows only an approved template now",
+            code="whatsapp_window_closed",
+        )
+    if await _opted_out(db, lead):
+        raise Invalid(f"{lead.display_name} opted out of WhatsApp", code="whatsapp_opted_out")
+    name = clean_name(name or "file")
+    content_type, ext = storage.check_type(data, name, allow_office=True)
+    if content_type in ("image/jpeg", "image/png"):
+        kind, limit = "image", MAX_PHOTO
+    elif content_type.startswith("image/"):
+        raise Invalid("WhatsApp takes photos as JPG or PNG", code="whatsapp_media_type")
+    else:
+        kind, limit = "document", MAX_FILE
+    if len(data) > limit:
+        raise Invalid(
+            f"WhatsApp takes {kind}s up to {limit // (1024 * 1024)} MB", code="whatsapp_media_size"
+        )
+    settings = await db.get(TenantSettings, lead.tenant_id)
+    if await storage_used(db) + len(data) > settings.storage_quota_bytes:
+        raise Invalid("Your company's file storage is full", code="storage_full")
+    caption = (caption or "").strip()[:1024]
+    if "." not in name:
+        name = f"{name}.{ext}"
+    body = f"{LABEL[kind]} {caption}".strip()
+    msg = Message(
+        id=uuid.uuid4(),
+        tenant_id=lead.tenant_id,
+        lead_id=lead.id,
+        channel="whatsapp",
+        direction="out",
+        conversation_id=conv.id,
+        to_address="+" + to,
+        from_address=acct.display_number,
+        body=body,
+        token=secrets.token_urlsafe(24),
+        status="queued",
+        sent_by_user_id=actor.user.id,
+    )
+    db.add(msg)
+    await db.flush()
+    try:
+        media_id = await client(acct).upload_media(data, content_type, name)
+        media: dict = {"id": media_id}
+        if caption:
+            media["caption"] = caption
+        if kind == "document":
+            media["filename"] = name
+        msg.provider_id = await client(acct).send({"to": to, "type": kind, kind: media})
+    except Invalid as err:
+        msg.status, msg.error = "failed", str(err.detail)[:300]
+        await db.flush()
+        raise
+    msg.status, msg.sent_at, msg.external_id = "sent", now(), msg.provider_id
+    saved = save(lead.tenant_id, data, ext, content_type)
+    stored = StoredFile(
+        tenant_id=lead.tenant_id, lead_id=lead.id, path=saved.path, original_name=name,
+        content_type=content_type, size_bytes=saved.size_bytes, sha256=saved.sha256,
+        uploaded_by_user_id=actor.user.id,
+    )  # fmt: skip
+    db.add(stored)
+    await db.flush()
+    db.add(MessageAttachment(tenant_id=lead.tenant_id, message_id=msg.id, file_id=stored.id))
+    E_touch(conv, msg)
+    await L.log(
+        db, lead, "whatsapp_sent", f"WhatsApp sent: {body[:120]}", actor,
+        {"message_id": str(msg.id), "conversation_id": str(conv.id), "via": "official",
+         "template": None, "file_id": str(stored.id)},
+        body=body[:2000],
+    )  # fmt: skip
+    from app.modules.engage.inbox import message_event
+
+    await message_event(db, msg, channel="whatsapp", official=True)
+    lead.last_activity_at = now()
+    lead.last_contacted_at = max(filter(None, [lead.last_contacted_at, now()]))
+    lead.first_response_at = lead.first_response_at or now()
+    await mark_contacted(db, lead)
+    return msg
+
+
 def E_touch(conv: Conversation, msg: Message) -> None:
     from app.modules.engage import inbox as IB  # inbox builds on engine
 
@@ -518,7 +718,7 @@ async def _new_lead(
 
 
 async def _keep_file(
-    db: AsyncSession, acct: WhatsAppAccount, lead: Lead, msg: Message, media: dict
+    db: AsyncSession, acct: WhatsAppAccount, lead: Lead, msg: Message, media: dict, kind: str
 ) -> None:
     got = await client(acct).media(media.get("id", ""))
     if got is None:
@@ -527,7 +727,7 @@ async def _keep_file(
     name = clean_name(media.get("filename") or f"whatsapp-{msg.external_id or msg.id}")
     settings = await db.get(TenantSettings, lead.tenant_id)
     try:
-        content_type, ext = check_type(data, name, allow_office=True)
+        content_type, ext = check_media(data, name, kind)
         if await storage_used(db) + len(data) > settings.storage_quota_bytes:
             raise Invalid("storage full")
     except Invalid as e:
@@ -616,7 +816,7 @@ async def _incoming(
     db.add(msg)
     await db.flush()
     if media:
-        await _keep_file(db, acct, lead, msg, media)
+        await _keep_file(db, acct, lead, msg, media, m.get("type", ""))
     E_touch(conv, msg)
     await L.log(
         db,

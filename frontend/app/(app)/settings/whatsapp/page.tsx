@@ -106,7 +106,7 @@ function NumberTab() {
   const run = useRun();
   const a = account.data;
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ phone_number_id: "", waba_id: "", access_token: "", app_secret: "" });
+  const [form, setForm] = useState({ phone_number_id: "", waba_id: "", access_token: "", app_secret: "", app_id: "" });
   if (!a) return null;
   const showForm = !a.connected || editing;
   return (
@@ -168,7 +168,7 @@ function NumberTab() {
               async () =>
                 unwrap(
                   await api.PUT("/api/v1/whatsapp/account", {
-                    body: { ...form, access_token: form.access_token || null, app_secret: form.app_secret || null },
+                    body: { ...form, access_token: form.access_token || null, app_secret: form.app_secret || null, app_id: form.app_id.trim() || null },
                   }),
                 ),
               "WhatsApp number connected",
@@ -188,6 +188,7 @@ function NumberTab() {
                 ["waba_id", "WhatsApp Business Account ID", a.waba_id],
                 ["access_token", "Access token", null],
                 ["app_secret", "App secret", null],
+                ["app_id", "App ID (only for templates with a photo, video or PDF)", a.app_id],
               ] as const
             ).map(([k, label, now]) => (
               <div key={k} className="space-y-1.5">
@@ -210,10 +211,38 @@ function NumberTab() {
 }
 
 // ---------- templates ----------
+type HeaderFormat = "" | "text" | "image" | "video" | "document";
+type WaButton = { type: "quick_reply" | "url" | "phone"; text: string; url?: string; phone?: string };
+const HEADER_ACCEPT: Record<string, string> = { image: "image/jpeg,image/png", video: "video/mp4", document: "application/pdf" };
+const BUTTON_KIND: Record<WaButton["type"], string> = { quick_reply: "Quick reply", url: "Website", phone: "Call" };
+
 function TemplatesTab({ connected }: { connected: boolean }) {
   const list = useWaTemplates();
   const run = useRun();
   const [form, setForm] = useState({ name: "", category: "utility" as "utility" | "marketing", language: "en", body: "", footer: "" });
+  const [header, setHeader] = useState<{ format: HeaderFormat; text: string; key: string | null; name: string | null }>({ format: "", text: "", key: null, name: null });
+  const [buttons, setButtons] = useState<WaButton[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  async function uploadHeader(file: File) {
+    setUploading(true);
+    try {
+      const out = unwrap(
+        await api.POST("/api/v1/whatsapp/templates/header-file", {
+          body: file as unknown as undefined, // the raw file (the API reads the request body)
+          bodySerializer: (b: unknown) => b as BodyInit,
+          headers: { "Content-Type": "application/octet-stream", "X-File-Name": encodeURIComponent(file.name).slice(0, 200) },
+        }),
+      );
+      setHeader((h) => ({ ...h, key: out.key, name: out.name }));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
+  const headerBody = header.format === "" ? null : header.format === "text" ? { format: header.format, text: header.text } : { format: header.format, file_key: header.key };
+  const headerReady = header.format === "" || (header.format === "text" ? !!header.text.trim() : !!header.key);
   if (!connected) return <p className="text-sm text-muted-foreground">Connect the number first (Number tab).</p>;
   return (
     <div className="space-y-6">
@@ -241,7 +270,21 @@ function TemplatesTab({ connected }: { connected: boolean }) {
                 </Button>
               </div>
             </div>
+            {t.header && (
+              <p className="text-xs font-medium text-muted-foreground">
+                Header: {t.header.format === "text" ? t.header.text : `${t.header.format} (${t.header.name ?? "file"})`}
+              </p>
+            )}
             <p className="text-xs whitespace-pre-wrap text-muted-foreground">{t.body}</p>
+            {(t.buttons ?? []).length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {(t.buttons ?? []).map((b, i) => (
+                  <span key={i} className="rounded-full border px-2 py-0.5 text-xs" title={b.url ?? b.phone ?? undefined}>
+                    {b.text}
+                  </span>
+                ))}
+              </div>
+            )}
             {t.reason && <p className="text-xs text-muted-foreground italic">{t.reason}</p>}
           </div>
         ))}
@@ -250,8 +293,15 @@ function TemplatesTab({ connected }: { connected: boolean }) {
         className="space-y-3"
         onSubmit={async (e) => {
           e.preventDefault();
-          const ok = await run(async () => unwrap(await api.POST("/api/v1/whatsapp/templates", { body: { ...form, footer: form.footer || null } })), "Sent to WhatsApp for approval");
-          if (ok) setForm({ ...form, name: "", body: "", footer: "" });
+          const ok = await run(
+            async () => unwrap(await api.POST("/api/v1/whatsapp/templates", { body: { ...form, footer: form.footer || null, header: headerBody, buttons } })),
+            "Sent to WhatsApp for approval",
+          );
+          if (ok) {
+            setForm({ ...form, name: "", body: "", footer: "" });
+            setHeader({ format: "", text: "", key: null, name: null });
+            setButtons([]);
+          }
         }}
       >
         <h2 className="font-semibold">New template</h2>
@@ -284,6 +334,40 @@ function TemplatesTab({ connected }: { connected: boolean }) {
           </div>
         </div>
         <div className="space-y-1.5">
+          <Label htmlFor="wt-header">Header (optional)</Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <NativeSelect id="wt-header" className="w-48" value={header.format} onChange={(e) => setHeader({ format: e.target.value as HeaderFormat, text: "", key: null, name: null })}>
+              <option value="">No header</option>
+              <option value="text">Text</option>
+              <option value="image">Photo</option>
+              <option value="video">Video</option>
+              <option value="document">PDF</option>
+            </NativeSelect>
+            {header.format === "text" && (
+              <Input aria-label="Header text" className="max-w-xs" maxLength={60} value={header.text} onChange={(e) => setHeader({ ...header, text: e.target.value })} placeholder="Your demo is booked" />
+            )}
+            {header.format !== "" && header.format !== "text" && (
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-accent">
+                {uploading ? "Uploading…" : header.name ? `Example: ${header.name} (change)` : "Choose the example file"}
+                <input
+                  type="file"
+                  className="sr-only"
+                  aria-label="Header example file"
+                  accept={HEADER_ACCEPT[header.format]}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) uploadHeader(f);
+                  }}
+                />
+              </label>
+            )}
+          </div>
+          {header.format !== "" && header.format !== "text" && (
+            <p className="text-xs text-muted-foreground">This file goes with every message. WhatsApp checks it with the template; your Meta app ID must be saved on the Number tab.</p>
+          )}
+        </div>
+        <div className="space-y-1.5">
           <Label htmlFor="wt-body">Message</Label>
           <Textarea id="wt-body" rows={4} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="Hi {{lead.first_name|there}}, your demo with {{owner.name}} is confirmed for tomorrow." />
         </div>
@@ -291,7 +375,36 @@ function TemplatesTab({ connected }: { connected: boolean }) {
           <Label htmlFor="wt-footer">Footer (optional)</Label>
           <Input id="wt-footer" maxLength={60} value={form.footer} onChange={(e) => setForm({ ...form, footer: e.target.value })} placeholder="Reply STOP to opt out" />
         </div>
-        <Button type="submit" disabled={!form.name.trim() || !form.body.trim()}>
+        <div className="space-y-2">
+          <Label>Buttons (optional)</Label>
+          {buttons.map((b, i) => {
+            const set = (patch: Partial<WaButton>) => setButtons(buttons.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+            return (
+              <div key={i} className="flex flex-wrap items-center gap-2" data-wa-button>
+                <span className="w-24 text-xs text-muted-foreground">{BUTTON_KIND[b.type]}</span>
+                <Input aria-label="Button text" className="w-40" maxLength={25} value={b.text} onChange={(e) => set({ text: e.target.value })} placeholder="Button text" />
+                {b.type === "url" && (
+                  <Input aria-label="Website address" className="min-w-56 flex-1" value={b.url ?? ""} onChange={(e) => set({ url: e.target.value })} placeholder="https://example.com/pay/{{lead.cf.ref}}" />
+                )}
+                {b.type === "phone" && <Input aria-label="Phone number" className="w-44" value={b.phone ?? ""} onChange={(e) => set({ phone: e.target.value })} placeholder="+91 98200 11122" />}
+                <Button type="button" size="icon-sm" variant="ghost" aria-label="Remove button" onClick={() => setButtons(buttons.filter((_, j) => j !== i))}>
+                  <Trash2 />
+                </Button>
+              </div>
+            );
+          })}
+          {buttons.length < 10 && (
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(BUTTON_KIND) as WaButton["type"][]).map((type) => (
+                <Button key={type} type="button" size="sm" variant="outline" onClick={() => setButtons([...buttons, { type, text: "" }])}>
+                  + {BUTTON_KIND[type]}
+                </Button>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">Up to 10 buttons: at most 2 websites and 1 phone number. A website address may end with one variable.</p>
+        </div>
+        <Button type="submit" disabled={!form.name.trim() || !form.body.trim() || !headerReady || uploading || buttons.some((b) => !b.text.trim())}>
           Send for approval
         </Button>
       </form>

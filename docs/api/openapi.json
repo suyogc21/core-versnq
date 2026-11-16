@@ -22132,6 +22132,18 @@
             ],
             "title": "Access Token"
           },
+          "app_id": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{5,30}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Id"
+          },
           "app_secret": {
             "anyOf": [
               {
@@ -22164,6 +22176,17 @@
       },
       "WaAccountOut": {
         "properties": {
+          "app_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Id"
+          },
           "connected": {
             "title": "Connected",
             "type": "boolean"
@@ -22300,6 +22323,214 @@
           "test_mode"
         ],
         "title": "WaAccountOut",
+        "type": "object"
+      },
+      "WaButtonIn": {
+        "description": "A quick reply, a website (its address may end with one variable, e.g.\nhttps://example.com/pay/{{lead.cf.ref}}), or a phone number.",
+        "properties": {
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "text": {
+            "maxLength": 25,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "quick_reply",
+              "url",
+              "phone"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ],
+        "title": "WaButtonIn",
+        "type": "object"
+      },
+      "WaButtonOut": {
+        "properties": {
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ],
+        "title": "WaButtonOut",
+        "type": "object"
+      },
+      "WaHeaderFileOut": {
+        "properties": {
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "format": {
+            "title": "Format",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "content_type",
+          "format"
+        ],
+        "title": "WaHeaderFileOut",
+        "type": "object"
+      },
+      "WaHeaderIn": {
+        "description": "A text header, or a photo / video / document header whose example file was uploaded\nfirst (POST /whatsapp/templates/header-file gives the key).",
+        "properties": {
+          "file_key": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Key"
+          },
+          "format": {
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "document"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "required": [
+          "format"
+        ],
+        "title": "WaHeaderIn",
+        "type": "object"
+      },
+      "WaHeaderOut": {
+        "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "format": {
+            "title": "Format",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "required": [
+          "format"
+        ],
+        "title": "WaHeaderOut",
         "type": "object"
       },
       "WaMessageIn": {
@@ -22474,6 +22705,15 @@
             "title": "Body",
             "type": "string"
           },
+          "buttons": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/WaButtonIn"
+            },
+            "maxItems": 10,
+            "title": "Buttons",
+            "type": "array"
+          },
           "category": {
             "enum": [
               "marketing",
@@ -22493,6 +22733,16 @@
               }
             ],
             "title": "Footer"
+          },
+          "header": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WaHeaderIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "language": {
             "default": "en",
@@ -22521,6 +22771,14 @@
             "title": "Body",
             "type": "string"
           },
+          "buttons": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/WaButtonOut"
+            },
+            "title": "Buttons",
+            "type": "array"
+          },
           "category": {
             "title": "Category",
             "type": "string"
@@ -22540,6 +22798,16 @@
               }
             ],
             "title": "Footer"
+          },
+          "header": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WaHeaderOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "id": {
             "format": "uuid",
@@ -28493,6 +28761,72 @@
         "summary": "Conversation Sorting",
         "tags": [
           "replies"
+        ]
+      }
+    },
+    "/api/v1/conversations/{conv_id}/whatsapp-media": {
+      "post": {
+        "description": "A photo or document on the company number (finish plan, batch 3): the body is the file,\nX-File-Name its name; only inside the 24-hour window.",
+        "operationId": "inbox-send_whatsapp_media",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conv_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conv Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "caption",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Caption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send Whatsapp Media",
+        "tags": [
+          "inbox"
         ]
       }
     },
@@ -39351,6 +39685,72 @@
         ]
       }
     },
+    "/api/v1/leads/{lead_id}/whatsapp/media": {
+      "post": {
+        "description": "A photo (JPG/PNG) or document (PDF, Word, Excel) from the company number, inside the\n24-hour window. The body is the file; X-File-Name gives its name.",
+        "operationId": "whatsapp-send_media_to_lead",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "caption",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Caption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaSentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send Media To Lead",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
     "/api/v1/link-types": {
       "get": {
         "operationId": "record-types-list_link_types",
@@ -48546,6 +48946,33 @@
           }
         ],
         "summary": "Create Template",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/whatsapp/templates/header-file": {
+      "post": {
+        "description": "The example photo, video or PDF of a template header (the body is the file; X-File-Name\ngives its name). Gives a key to use in the template within an hour.",
+        "operationId": "whatsapp-upload_header_file",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaHeaderFileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Header File",
         "tags": [
           "whatsapp"
         ]

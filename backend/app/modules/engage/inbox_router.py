@@ -4,6 +4,7 @@ notes, saved replies, attachments, and a test inbound endpoint until real mail a
 import uuid
 from datetime import datetime
 from typing import Annotated, Literal
+from urllib.parse import unquote
 
 from fastapi import APIRouter, Query, Request, status
 from fastapi.responses import FileResponse
@@ -487,6 +488,29 @@ async def reply(conv_id: uuid.UUID, body: ReplyIn, db: CrmDb, actor: Replier) ->
     if not subject.lower().startswith("re:"):
         subject = f"Re: {subject}"
     await IB.send(db, actor, lead, conv, subject=subject, body=body.body, cc=body.cc)
+    await _mark_read(db, actor, conv)
+    await db.flush()
+    return await _detail(db, actor, conv)
+
+
+@router.post("/conversations/{conv_id}/whatsapp-media", response_model=ConversationDetail)
+async def send_whatsapp_media(
+    conv_id: uuid.UUID,
+    request: Request,
+    db: CrmDb,
+    actor: Replier,
+    caption: Annotated[str | None, Query(max_length=1024)] = None,
+) -> ConversationDetail:
+    """A photo or document on the company number (finish plan, batch 3): the body is the file,
+    X-File-Name its name; only inside the 24-hour window."""
+    conv = await IB.get_visible(db, actor, conv_id)
+    if conv.whatsapp_account_id is None:
+        raise Invalid(
+            "Files go from the company's WhatsApp number only", code="whatsapp_not_company_number"
+        )
+    data = await storage.read_upload(request, limit=WA.MAX_FILE)
+    name = unquote(request.headers.get("x-file-name", "file"))  # sent URL-encoded
+    await WA.send_media(db, await db.get(Lead, conv.lead_id), data, name, caption, actor)
     await _mark_read(db, actor, conv)
     await db.flush()
     return await _detail(db, actor, conv)
