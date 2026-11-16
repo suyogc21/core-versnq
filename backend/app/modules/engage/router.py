@@ -175,6 +175,12 @@ class StepIn(BaseModel):
     field: str | None = Field(default=None, max_length=60)
     value: str | None = Field(default=None, max_length=200)
     go_to: int | None = Field(default=None, ge=1)
+    # A/B test on an email step (batch 5a): variant B's subject and/or body
+    b_subject: str | None = Field(default=None, max_length=300)
+    b_body: str | None = Field(default=None, max_length=20000)
+    split_b: int = Field(default=50, ge=1, le=99)  # share of people who get B, in percent
+    auto_pick_after: int | None = Field(default=None, ge=10, le=100000)  # sends, then the better
+    winner: Literal["a", "b"] | None = None  # once picked, everyone gets the winner
 
 
 class StepOut(BaseModel):
@@ -338,6 +344,13 @@ async def set_steps(s_id: uuid.UUID, body: list[StepIn], db: CrmDb, actor: Manag
             if t is None or t.channel != "email":
                 raise Invalid(f"Step {i}: choose an email template")
             cfg = {"template_id": str(t.id)}
+            b_subject, b_body = (st.b_subject or "").strip(), (st.b_body or "").strip()
+            if b_subject or b_body:
+                cfg["ab"] = {
+                    "subject": b_subject or None, "body": b_body or None,
+                    "split_b": st.split_b, "auto_pick_after": st.auto_pick_after,
+                    "winner": st.winner,
+                }  # fmt: skip
         elif st.kind == "whatsapp":
             from app.core.modules import is_enabled
             from app.modules.engage.models import WhatsAppTemplate
@@ -551,9 +564,20 @@ async def stop_enrolment(e_id: uuid.UUID, db: CrmDb, actor: Editor) -> Enrolment
 
 
 # ---------- results ----------
+class VariantStats(BaseModel):
+    variant: Literal["a", "b"]
+    sent: int = 0
+    opened: int = 0
+    clicked: int = 0
+    replied: int = 0
+
+
 class StepStats(BaseModel):
     position: int
     kind: str
+    variants: list[VariantStats] = []  # an A/B-tested email step (batch 5a)
+    winner: str | None = None
+    leading: str | None = None  # the better so far (reply rate, then open rate)
     sent: int = 0
     delivered: int = 0
     opened: int = 0
@@ -656,6 +680,13 @@ async def sequence_stats(s_id: uuid.UUID, db: CrmDb, actor: Manager) -> Sequence
                 ),
             )
         )
+        ab = st.config.get("ab") if st.kind == "email" else None
+        if ab:
+            per = await E.variant_stats(db, st.id)
+            out[-1].variants = [VariantStats(variant=k, **per[v]) for v, k in ((0, "a"), (1, "b"))]
+            out[-1].winner = ab.get("winner")
+            if per[0]["sent"] and per[1]["sent"]:
+                out[-1].leading = E.better(per)
     return SequenceStats(
         enrolled=sum(by_status.values()),
         active=by_status.get("active", 0),
@@ -665,6 +696,32 @@ async def sequence_stats(s_id: uuid.UUID, db: CrmDb, actor: Manager) -> Sequence
         became_customers=became,
         steps=out,
     )
+
+
+class WinnerIn(BaseModel):
+    winner: Literal["a", "b"] | None  # None: back to testing
+
+
+@router.post("/sequences/{s_id}/steps/{position}/winner", response_model=SequenceStats)
+async def pick_winner(
+    s_id: uuid.UUID, position: int, body: WinnerIn, db: CrmDb, actor: Manager
+) -> SequenceStats:
+    """Pick the winner of an A/B-tested email step: from now on everyone gets it."""
+    s = await _sequence(db, s_id)
+    step = await db.scalar(
+        select(SequenceStep).where(
+            SequenceStep.sequence_id == s.id, SequenceStep.position == position
+        )
+    )
+    if step is None or not step.config.get("ab"):
+        raise NotFound("This step has no A/B test")
+    picked = "person" if body.winner else None
+    step.config = {**step.config, "ab": {**step.config["ab"], "winner": body.winner,
+                                         "picked": picked}}  # fmt: skip
+    await audit(db, actor, "sequence.ab_winner", "sequence", s.id, None,
+                {"step": position, "winner": body.winner})  # fmt: skip
+    await db.flush()
+    return await sequence_stats(s_id, db, actor)
 
 
 # ---------- sending settings ----------

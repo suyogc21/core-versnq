@@ -7,6 +7,7 @@ the stop rules are checked, and at every email consent, unsubscribes and the sup
 are checked again (rule 8), so nobody is emailed after opting out, even mid-sequence.
 """
 
+import hashlib
 import secrets
 import uuid
 from datetime import UTC, datetime, time, timedelta
@@ -327,6 +328,60 @@ async def _check(db: AsyncSession, e: Enrolment, lead: Lead, cfg: dict) -> bool:
     return False
 
 
+# ---------- A/B tests on email steps (finishing plan, batch 5a) ----------
+def ab_variant(ab: dict, enrolment_id: uuid.UUID, position: int) -> int:
+    """0 = A (the template), 1 = B. A picked winner is sent to everyone; otherwise each person
+    gets the same variant every time (from their enrolment), split by the step's share for B."""
+    if ab.get("winner") in ("a", "b"):
+        return 0 if ab["winner"] == "a" else 1
+    digest = hashlib.sha256(f"{enrolment_id}:{position}".encode()).digest()
+    return 1 if int.from_bytes(digest[:4], "big") % 100 < int(ab.get("split_b", 50)) else 0
+
+
+async def variant_stats(db: AsyncSession, step_id: uuid.UUID) -> dict[int, dict[str, int]]:
+    rows = (
+        await db.execute(
+            select(
+                Message.variant,
+                func.count().filter(Message.sent_at.isnot(None)),
+                func.count().filter(Message.opened_at.isnot(None)),
+                func.count().filter(Message.clicked_at.isnot(None)),
+                func.count().filter(Message.replied_at.isnot(None)),
+            )
+            .where(Message.step_id == step_id, Message.variant.isnot(None))
+            .group_by(Message.variant)
+        )
+    ).all()
+    out = {0: dict.fromkeys(("sent", "opened", "clicked", "replied"), 0), 1: {}}
+    out[1] = dict(out[0])
+    for v, sent, opened, clicked, replied in rows:
+        out[v] = {"sent": sent, "opened": opened, "clicked": clicked, "replied": replied}
+    return out
+
+
+def better(stats: dict[int, dict[str, int]]) -> str:
+    """The variant with the higher reply rate, then open rate; A when they're level."""
+
+    def rate(v: int, key: str) -> float:
+        return stats[v][key] / stats[v]["sent"] if stats[v]["sent"] else 0.0
+
+    for key in ("replied", "opened"):
+        if rate(0, key) != rate(1, key):
+            return "a" if rate(0, key) > rate(1, key) else "b"
+    return "a"
+
+
+async def auto_pick(db: AsyncSession, step: SequenceStep) -> str | None:
+    """Once both variants together have been sent auto_pick_after times, the better one wins."""
+    ab = step.config.get("ab") or {}
+    stats = await variant_stats(db, step.id)
+    if stats[0]["sent"] + stats[1]["sent"] < int(ab["auto_pick_after"]):
+        return None
+    winner = better(stats)
+    step.config = {**step.config, "ab": {**ab, "winner": winner, "picked": "auto"}}
+    return winner
+
+
 async def _email(
     db: AsyncSession, e: Enrolment, seq: Sequence, step: SequenceStep, lead: Lead, tenant: Tenant
 ) -> str:
@@ -359,8 +414,13 @@ async def _email(
         )
         return "skipped"
     values = await values_for(db, lead, tenant.name)
-    subject = R.fill(tpl.subject or "", values).strip() or tpl.name
-    body = R.fill(tpl.body, values)
+    ab = step.config.get("ab")
+    variant = ab_variant(ab, e.id, step.position) if ab else None
+    raw_subject, raw_body = tpl.subject or "", tpl.body
+    if variant == 1:  # A/B test (batch 5a): variant B replaces the subject and/or the body
+        raw_subject, raw_body = ab.get("subject") or raw_subject, ab.get("body") or raw_body
+    subject = R.fill(raw_subject, values).strip() or tpl.name
+    body = R.fill(raw_body, values)
     token = secrets.token_urlsafe(24)
     base = workspace_url(tenant.slug)
     unsubscribe = f"{base}/api/v1/u/{token}"
@@ -409,6 +469,7 @@ async def _email(
         message_id_header=header_id,
         conversation_id=conv.id,
         mailbox_id=sender_mb.id if sender_mb else None,
+        variant=variant,
     )
     db.add(msg)
     await db.flush()
@@ -451,6 +512,9 @@ async def _email(
             return "skipped"
         return "retry"
     msg.status, msg.sent_at = "sent", now()
+    if ab and ab.get("auto_pick_after") and not ab.get("winner"):
+        await db.flush()
+        await auto_pick(db, step)
     IB._touch(conv, msg)
     await L.log(
         db,

@@ -34,6 +34,10 @@ PUBLIC = {
     ("POST", "/api/v1/twilio/hangup"),
     ("POST", "/api/v1/twilio/recording"),
     ("POST", "/api/v1/forms/{public_id}"),
+    # Landing pages (batch 5a): a published page, and counting a visit to it (once per
+    # address per page every 30 minutes, rate-limited); unpublished pages are a 404.
+    ("GET", "/api/v1/pages/{slug}"),
+    ("POST", "/api/v1/pages/{slug}/visit"),
     # Payment gateways tell Core a link was paid; only a valid signature is accepted (#34).
     ("POST", "/api/v1/webhooks/{gateway_name}/{account_id}"),
     # Inside every sequence email (#39): open pixel, tracked links (only to links that were in

@@ -3397,6 +3397,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/landing-pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Pages */
+        get: operations["landing-pages-list_pages"];
+        put?: never;
+        /** Create Page */
+        post: operations["landing-pages-create_page"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/landing-pages/{page_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Page */
+        get: operations["landing-pages-get_page"];
+        /** Update Page */
+        put: operations["landing-pages-update_page"];
+        post?: never;
+        /** Delete Page */
+        delete: operations["landing-pages-delete_page"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/layouts/{entity}": {
         parameters: {
             query?: never;
@@ -5001,6 +5038,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pages/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Page
+         * @description Public: a published page, for /p/<slug>.
+         */
+        get: operations["landing-pages-public_page"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/{slug}/visit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Count Visit
+         * @description Public: the page was opened. Counted once per visitor address per page every 30 minutes,
+         *     with no cookies; unknown or unpublished pages answer 404.
+         */
+        post: operations["landing-pages-count_visit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payment-links/{link_id}": {
         parameters: {
             query?: never;
@@ -6201,6 +6279,26 @@ export interface paths {
          */
         put: operations["sequences-set_steps"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sequences/{s_id}/steps/{position}/winner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pick Winner
+         * @description Pick the winner of an A/B-tested email step: from now on everyone gets it.
+         */
+        post: operations["sequences-pick_winner"];
         delete?: never;
         options?: never;
         head?: never;
@@ -12695,6 +12793,79 @@ export interface components {
             /** Required */
             required: boolean;
         };
+        /** PageIn */
+        PageIn: {
+            /**
+             * Blocks
+             * @default []
+             */
+            blocks: {
+                [key: string]: unknown;
+            }[];
+            /** Brand Id */
+            brand_id?: string | null;
+            /**
+             * Published
+             * @default false
+             */
+            published: boolean;
+            /** Seo Description */
+            seo_description?: string | null;
+            /** Seo Title */
+            seo_title?: string | null;
+            /** Slug */
+            slug: string;
+            /** Title */
+            title: string;
+        };
+        /** PageOut */
+        PageOut: {
+            /** Blocks */
+            blocks: {
+                [key: string]: unknown;
+            }[];
+            /** Brand Id */
+            brand_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Leads
+             * @default 0
+             */
+            leads: number;
+            /**
+             * Path
+             * @default
+             */
+            path: string;
+            /** Published */
+            published: boolean;
+            /** Published At */
+            published_at: string | null;
+            /** Seo Description */
+            seo_description: string | null;
+            /** Seo Title */
+            seo_title: string | null;
+            /** Slug */
+            slug: string;
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Visits */
+            visits: number;
+        };
         /** PaymentLinkIn */
         PaymentLinkIn: {
             /** Installment Id */
@@ -13053,6 +13224,31 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** PublicCompany */
+        PublicCompany: {
+            /** Logo Url */
+            logo_url?: string | null;
+            /** Name */
+            name: string;
+            /** Primary Color */
+            primary_color?: string | null;
+        };
+        /** PublicPageOut */
+        PublicPageOut: {
+            /** Blocks */
+            blocks: {
+                [key: string]: unknown;
+            }[];
+            company: components["schemas"]["PublicCompany"];
+            /** Seo Description */
+            seo_description: string | null;
+            /** Seo Title */
+            seo_title: string | null;
+            /** Slug */
+            slug: string;
+            /** Title */
+            title: string;
         };
         /** PushKeyOut */
         PushKeyOut: {
@@ -14454,6 +14650,12 @@ export interface components {
         };
         /** StepIn */
         StepIn: {
+            /** Auto Pick After */
+            auto_pick_after?: number | null;
+            /** B Body */
+            b_body?: string | null;
+            /** B Subject */
+            b_subject?: string | null;
             /** Check If */
             check_if?: ("opened" | "clicked" | "replied" | "tag" | "field") | null;
             /**
@@ -14472,6 +14674,11 @@ export interface components {
              * @enum {string}
              */
             kind: "email" | "whatsapp" | "task" | "wait" | "check";
+            /**
+             * Split B
+             * @default 50
+             */
+            split_b: number;
             /** Tag Id */
             tag_id?: string | null;
             /**
@@ -14486,6 +14693,8 @@ export interface components {
             title?: string | null;
             /** Value */
             value?: string | null;
+            /** Winner */
+            winner?: ("a" | "b") | null;
         };
         /** StepOut */
         StepOut: {
@@ -14522,6 +14731,8 @@ export interface components {
             delivered: number;
             /** Kind */
             kind: string;
+            /** Leading */
+            leading?: string | null;
             /**
              * Opened
              * @default 0
@@ -14544,6 +14755,13 @@ export interface components {
              * @default 0
              */
             unsubscribed: number;
+            /**
+             * Variants
+             * @default []
+             */
+            variants: components["schemas"]["VariantStats"][];
+            /** Winner */
+            winner?: string | null;
         };
         /** StorageOut */
         StorageOut: {
@@ -15362,6 +15580,34 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** VariantStats */
+        VariantStats: {
+            /**
+             * Clicked
+             * @default 0
+             */
+            clicked: number;
+            /**
+             * Opened
+             * @default 0
+             */
+            opened: number;
+            /**
+             * Replied
+             * @default 0
+             */
+            replied: number;
+            /**
+             * Sent
+             * @default 0
+             */
+            sent: number;
+            /**
+             * Variant
+             * @enum {string}
+             */
+            variant: "a" | "b";
+        };
         /** ViewCounts */
         ViewCounts: {
             /** All */
@@ -15733,6 +15979,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+        };
+        /** WinnerIn */
+        WinnerIn: {
+            /** Winner */
+            winner: ("a" | "b") | null;
         };
         /** AuditOut */
         app__modules__audit__router__AuditOut: {
@@ -23620,6 +23871,154 @@ export interface operations {
             };
         };
     };
+    "landing-pages-list_pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageOut"][];
+                };
+            };
+        };
+    };
+    "landing-pages-create_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "landing-pages-get_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "landing-pages-update_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "landing-pages-delete_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "layouts-get_layout": {
         parameters: {
             query?: never;
@@ -27070,6 +27469,66 @@ export interface operations {
             };
         };
     };
+    "landing-pages-public_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "landing-pages-count_visit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "money-cancel_payment_link": {
         parameters: {
             query?: never;
@@ -29962,6 +30421,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SequenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "sequences-pick_winner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                s_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WinnerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SequenceStats"];
                 };
             };
             /** @description Validation Error */

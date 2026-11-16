@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Bot, Boxes, Phone, ChartColumn, ChartPie, Contact, Handshake, Inbox, LogOut, Megaphone, Newspaper, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Bot, Boxes, Phone, ChartColumn, ChartPie, Contact, Handshake, Inbox, LayoutTemplate, LogOut, Megaphone, Newspaper, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -96,6 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       : []),
     ...(can("sequences.manage") ? [{ href: "/sequences", label: "Sequences", icon: Send }] : []),
     ...(can("newsletters.manage") ? [{ href: "/newsletters", label: "Newsletters", icon: Newspaper }] : []),
+    ...(can("pages.manage") ? [{ href: "/landing-pages", label: "Landing pages", icon: LayoutTemplate }] : []),
     ...(outreachOn && (can("campaigns.manage") || can("outreach.reply")) ? [{ href: "/outreach", label: "Outreach", icon: Megaphone }] : []),
     // Each record type the company made (Property, Batch...) that this person may view.
     ...(me.restrictions.length ? [] : (recordTypes.data ?? [])).map((t) => ({ href: `/r/${t.key}`, label: t.plural, icon: Boxes })),
