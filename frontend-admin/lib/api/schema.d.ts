@@ -510,6 +510,117 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Brands
+         * @description The company's brands. Everyone sees the active ones (to pick from); admins can ask for
+         *     switched-off ones too. A company with none or one brand shows no brand choices anywhere.
+         */
+        get: operations["brands-list_brands"];
+        put?: never;
+        /** Create Brand */
+        post: operations["brands-create_brand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brands/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Channels
+         * @description Settings → Brands: the company's inboxes and WhatsApp number, with their brand. Leads that
+         *     come in through one of them get its brand.
+         */
+        get: operations["brands-channels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brands/channels/mailboxes/{mailbox_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Mailbox Brand */
+        put: operations["brands-set_mailbox_brand"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brands/channels/whatsapp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Whatsapp Brand */
+        put: operations["brands-set_whatsapp_brand"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brands/{brand_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Brand */
+        put: operations["brands-update_brand"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brands/{brand_id}/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make Default */
+        post: operations["brands-make_default"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/call-settings": {
         parameters: {
             query?: never;
@@ -6060,6 +6171,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users/{user_id}/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User Brands */
+        get: operations["brands-user_brands"];
+        /**
+         * Set User Brands
+         * @description Limit a person to some brands (they see only those brands' leads, deals and money), or
+         *     send an empty list for every brand. Nobody can limit themselves (no lock-out).
+         */
+        put: operations["brands-set_user_brands"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/{user_id}/disable": {
         parameters: {
             query?: never;
@@ -7424,6 +7557,46 @@ export interface components {
             /** Won Minor */
             won_minor: number | null;
         };
+        /** BrandIn */
+        BrandIn: {
+            /** Billing Entity Id */
+            billing_entity_id?: string | null;
+            /** Colour */
+            colour?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Logo Url */
+            logo_url?: string | null;
+            /** Name */
+            name: string;
+            /** Website */
+            website?: string | null;
+        };
+        /** BrandOut */
+        BrandOut: {
+            /** Billing Entity Id */
+            billing_entity_id: string | null;
+            /** Colour */
+            colour: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Is Default */
+            is_default: boolean;
+            /** Logo Url */
+            logo_url: string | null;
+            /** Name */
+            name: string;
+            /** Website */
+            website: string | null;
+        };
         /** Branding */
         Branding: {
             /** Logo Url */
@@ -7897,6 +8070,8 @@ export interface components {
         };
         /** CaptureSourceIn */
         CaptureSourceIn: {
+            /** Brand Id */
+            brand_id?: string | null;
             /** Consent Text */
             consent_text?: string | null;
             /**
@@ -7929,6 +8104,8 @@ export interface components {
         };
         /** CaptureSourceOut */
         CaptureSourceOut: {
+            /** Brand Id */
+            brand_id?: string | null;
             /** Consent Text */
             consent_text: string | null;
             /**
@@ -7971,6 +8148,8 @@ export interface components {
         };
         /** CaptureSourcePatch */
         CaptureSourcePatch: {
+            /** Brand Id */
+            brand_id?: string | null;
             /** Consent Text */
             consent_text?: string | null;
             /** Field Map */
@@ -7991,6 +8170,8 @@ export interface components {
         };
         /** CaptureSourceWithKey */
         CaptureSourceWithKey: {
+            /** Brand Id */
+            brand_id?: string | null;
             /** Consent Text */
             consent_text: string | null;
             /**
@@ -8138,6 +8319,17 @@ export interface components {
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ChannelBrandIn */
+        ChannelBrandIn: {
+            /** Brand Id */
+            brand_id?: string | null;
+        };
+        /** ChannelsOut */
+        ChannelsOut: {
+            /** Mailboxes */
+            mailboxes: components["schemas"]["MailboxChannel"][];
+            whatsapp: components["schemas"]["WhatsAppChannel"] | null;
         };
         /** ChecklistOut */
         ChecklistOut: {
@@ -8770,6 +8962,8 @@ export interface components {
         DealOut: {
             /** Amount Minor */
             amount_minor: number | null;
+            /** Brand Id */
+            brand_id?: string | null;
             /** Close Note */
             close_note: string | null;
             /** Closed At */
@@ -10175,6 +10369,8 @@ export interface components {
         };
         /** InvoiceDetail */
         InvoiceDetail: {
+            /** Brand Id */
+            brand_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -10350,6 +10546,8 @@ export interface components {
         };
         /** InvoiceRow */
         InvoiceRow: {
+            /** Brand Id */
+            brand_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -10568,6 +10766,12 @@ export interface components {
              */
             band: ("hot" | "warm" | "cold")[];
             /**
+             * Brand Id
+             * @description of any of these brands
+             * @default []
+             */
+            brand_id: string[];
+            /**
              * Cf
              * @description custom field filters as key:value
              * @default []
@@ -10624,6 +10828,8 @@ export interface components {
              * @default true
              */
             assign_to_me: boolean;
+            /** Brand Id */
+            brand_id?: string | null;
             /** Campaign */
             campaign?: string | null;
             /** City */
@@ -10699,6 +10905,8 @@ export interface components {
             ace_summary?: string | null;
             /** Ace Summary At */
             ace_summary_at?: string | null;
+            /** Brand Id */
+            brand_id?: string | null;
             /** Campaign */
             campaign: string | null;
             /** City */
@@ -10835,6 +11043,8 @@ export interface components {
         };
         /** LeadPatch */
         LeadPatch: {
+            /** Brand Id */
+            brand_id?: string | null;
             /** City */
             city?: string | null;
             /** Country Code */
@@ -11206,6 +11416,18 @@ export interface components {
             security: string;
             /** Username */
             username: string;
+        };
+        /** MailboxChannel */
+        MailboxChannel: {
+            /** Brand Id */
+            brand_id: string | null;
+            /** Email Address */
+            email_address: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
         };
         /** MailboxIn */
         MailboxIn: {
@@ -13978,6 +14200,24 @@ export interface components {
              */
             result: "created" | "existing";
         };
+        /** UserBrandsIn */
+        UserBrandsIn: {
+            /**
+             * Brand Ids
+             * @default []
+             */
+            brand_ids: string[];
+        };
+        /** UserBrandsOut */
+        UserBrandsOut: {
+            /** Brand Ids */
+            brand_ids: string[];
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
         /** UserOut */
         UserOut: {
             /** Email */
@@ -14335,6 +14575,18 @@ export interface components {
         WaWebhookResult: {
             /** Kept */
             kept: number;
+        };
+        /** WhatsAppChannel */
+        WhatsAppChannel: {
+            /** Brand Id */
+            brand_id: string | null;
+            /** Display Number */
+            display_number: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
         };
         /** AuditOut */
         app__modules__audit__router__AuditOut: {
@@ -15840,6 +16092,224 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-list_brands": {
+        parameters: {
+            query?: {
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-create_brand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelsOut"];
+                };
+            };
+        };
+    };
+    "brands-set_mailbox_brand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mailbox_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelBrandIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-set_whatsapp_brand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelBrandIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-update_brand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brand_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-make_default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brand_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandOut"];
                 };
             };
             /** @description Validation Error */
@@ -18538,6 +19008,7 @@ export interface operations {
                 status?: ("open" | "won" | "lost") | null;
                 owner?: string[];
                 lead_id?: string | null;
+                brand_id?: string[];
                 close_from?: string | null;
                 close_to?: string | null;
                 q?: string | null;
@@ -20754,6 +21225,7 @@ export interface operations {
                 status?: ("draft" | "issued" | "partly_paid" | "paid" | "void")[];
                 entity_id?: string | null;
                 customer_id?: string | null;
+                brand_id?: string[];
                 owner?: string[];
                 overdue?: boolean;
                 sort?: "-created" | "due" | "-total" | "number";
@@ -22299,6 +22771,8 @@ export interface operations {
                 q?: string | null;
                 stage_id?: string[];
                 source_id?: string[];
+                /** @description of any of these brands */
+                brand_id?: string[];
                 /** @description 'me', 'unassigned' or user ids */
                 owner?: string[];
                 status?: ("open" | "closed") | null;
@@ -22435,6 +22909,8 @@ export interface operations {
                 q?: string | null;
                 stage_id?: string[];
                 source_id?: string[];
+                /** @description of any of these brands */
+                brand_id?: string[];
                 /** @description 'me', 'unassigned' or user ids */
                 owner?: string[];
                 status?: ("open" | "closed") | null;
@@ -28486,6 +28962,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-user_brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserBrandsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "brands-set_user_brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserBrandsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserBrandsOut"];
                 };
             };
             /** @description Validation Error */

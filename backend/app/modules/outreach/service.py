@@ -390,6 +390,14 @@ async def convert(db: AsyncSession, actor: CurrentUser, contact: Contact) -> Lea
         .order_by(CampaignContact.updated_at.desc())
         .limit(1)
     )
+    # several brands: the lead gets the brand of the inbox that wrote to this contact
+    inbox_id = await db.scalar(
+        select(CampaignContact.mailbox_id)
+        .where(CampaignContact.contact_id == contact.id, CampaignContact.mailbox_id.is_not(None))
+        .order_by(CampaignContact.updated_at.desc())
+        .limit(1)
+    )
+    inbox = await db.get(Mailbox, inbox_id) if inbox_id else None
     identities = [L.IdentityInput("email", contact.email, is_primary=True)]
     if contact.phone:
         identities.append(L.IdentityInput("phone", contact.phone, is_primary=True))
@@ -407,6 +415,7 @@ async def convert(db: AsyncSession, actor: CurrentUser, contact: Contact) -> Lea
         origin="outbound_ace",  # the spec's "Outbound" way in (campaigns are in Core since #44)
         enforce_required=False,
         via_label=f"Outreach ({campaign.name})" if campaign else "Outreach",
+        brand_id=inbox.brand_id if inbox else None,
     )
     try:
         outcome = await I.intake(db, contact.tenant_id, inc, policy="skip", actor=actor)

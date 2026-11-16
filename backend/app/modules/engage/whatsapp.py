@@ -498,6 +498,7 @@ async def _new_lead(
     if source is None:
         return None
     first, _, last = (name or "").strip().partition(" ")
+    acct = await db.scalar(select(WhatsAppAccount))  # its brand, when the company has brands
     out = await I.intake(
         db,
         tenant_id,
@@ -511,6 +512,7 @@ async def _new_lead(
             owner=I.RULES,
             enforce_required=False,
             via_label="WhatsApp",
+            brand_id=acct.brand_id if acct else None,
         ),
         policy="update",
     )

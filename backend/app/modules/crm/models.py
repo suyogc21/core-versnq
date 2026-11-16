@@ -163,6 +163,7 @@ class Lead(TenantScoped, TimestampMixin, Base):
     engagement_score: Mapped[int] = mapped_column(Integer, default=0)
     score_band: Mapped[str | None] = mapped_column(String(4))  # hot / warm / cold
     intent: Mapped[str | None] = mapped_column(String(20))
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # several brands (batch 4)
     intent_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ace_summary: Mapped[str | None] = mapped_column(String(600))  # ACE's latest summary
     ace_next_step: Mapped[str | None] = mapped_column(String(200))
@@ -287,6 +288,7 @@ class CaptureSource(TenantScoped, TimestampMixin, Base):
     hosted: Mapped[bool] = mapped_column(Boolean, default=False)
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # leads from it get this brand
 
 
 class Import(TenantScoped, TimestampMixin, Base):
@@ -675,6 +677,7 @@ class Deal(TenantScoped, TimestampMixin, Base):
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     version: Mapped[int] = mapped_column(Integer, default=1)
     account_unit_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # key accounts (step 7b)
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # the lead's brand (batch 4)
 
 
 class DealProduct(TenantScoped, TimestampMixin, Base):

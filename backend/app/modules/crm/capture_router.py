@@ -95,6 +95,7 @@ class CaptureSourceIn(BaseModel):
     is_active: bool = True
     form: FormSpec | None = None
     hosted: bool = False
+    brand_id: uuid.UUID | None = None  # several brands: its leads get this brand, its page its look
 
 
 class CaptureSourcePatch(BaseModel):
@@ -106,6 +107,7 @@ class CaptureSourcePatch(BaseModel):
     is_active: bool | None = None
     form: FormSpec | None = None
     hosted: bool | None = None
+    brand_id: uuid.UUID | None = None
 
 
 class CaptureSourceOut(BaseModel):
@@ -121,6 +123,7 @@ class CaptureSourceOut(BaseModel):
     form: FormSpec | None = None
     hosted: bool = False
     public_id: str | None = None  # the hosted page is /f/<public_id>
+    brand_id: uuid.UUID | None = None
     last_used_at: datetime | None
     created_at: datetime
 
@@ -155,6 +158,12 @@ async def _check(db, src: CaptureSource) -> None:
             raise Invalid(f"'{target}' is not a field you can fill from a form")
     if src.form:
         _check_form(src.form, defs)
+    if src.brand_id:
+        from app.modules.brands.models import Brand
+
+        brand = await db.get(Brand, src.brand_id)
+        if brand is None or not brand.is_active:
+            raise Invalid("Choose an active brand", code="brand_invalid")
     if src.hosted:
         if not src.form:
             raise Invalid("Build the form before switching its page on")
@@ -220,7 +229,7 @@ async def update_capture_source(
     src = await _get(db, src_id)
     changes = body.model_dump(exclude_unset=True)
     for key, value in changes.items():
-        if value is not None or key in ("stage_id", "consent_text", "form"):
+        if value is not None or key in ("stage_id", "consent_text", "form", "brand_id"):
             setattr(src, key, value)
     await _check(db, src)
     await audit(db, actor, "capture_source.updated", "capture_source", src.id, None, changes)
@@ -357,6 +366,7 @@ async def _capture(db, tenant_id, src: CaptureSource, data, request: Request, ip
                 filter(None, [message, *(f"{k}: {v}" for k, v in p.custom_fields.items())])
             ),
             attribution=attribution,
+            brand_id=src.brand_id,
             enforce_required=False,
             via_label=f"the {src.name} form",
         )
@@ -443,6 +453,13 @@ async def form_page(public_id: str, ws: WorkspaceDep, db: CrmDb) -> FormPageOut:
     brand = (settings.branding if settings else None) or {}
     company = PageCompany(name=ws.name, logo_url=brand.get("logo_url"),
                           primary_color=brand.get("primary_color"))  # fmt: skip
+    if src.brand_id:  # the form's brand: its name, logo and colour (batch 4)
+        from app.modules.brands.models import Brand
+
+        own = await db.get(Brand, src.brand_id)
+        if own is not None and own.is_active:
+            company = PageCompany(name=own.name, logo_url=own.logo_url or company.logo_url,
+                                  primary_color=own.colour or company.primary_color)  # fmt: skip
     if not src.is_active:
         return FormPageOut(closed=True, company=company)
     form = src.form

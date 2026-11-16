@@ -11,7 +11,7 @@ customers but does not work leads (Finance) sees every customer, read-only.
 import uuid
 from datetime import timedelta
 
-from sqlalchemy import false, func, select, true
+from sqlalchemy import false, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,8 +40,10 @@ async def visibility(db: AsyncSession, actor: CurrentUser):
     """SQL condition on Lead for the customers this person may see."""
     if not L.can(actor, "customers.read"):
         return false()
-    if not L.can(actor, "leads.edit"):  # Finance: every customer, read-only
-        return true()
+    if not L.can(actor, "leads.edit"):  # Finance: every customer (of their brands), read-only
+        from app.modules.brands import service as B
+
+        return await B.condition(db, actor.user.id, Lead.brand_id)
     return await L.visibility_filter(db, actor)
 
 

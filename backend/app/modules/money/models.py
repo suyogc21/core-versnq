@@ -102,6 +102,7 @@ class Invoice(TenantScoped, TimestampMixin, Base):
     void_reason: Mapped[str | None] = mapped_column(String(500))
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     version: Mapped[int] = mapped_column(Integer, default=1)
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # the lead's brand (batch 4)
 
 
 class InvoiceLine(TenantScoped, Base):

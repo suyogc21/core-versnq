@@ -28,6 +28,7 @@ import { BulkButton, type Column, DataTable, emptySelection, type Paging, type S
 import { FilterChip, ViewTabs } from "@/components/data-table/filters";
 import { Popover, PopoverItem } from "@/components/data-table/popover";
 import { type Role, type User, useRoles, useTeams } from "@/lib/directory";
+import { useBrandChoices } from "@/lib/brands";
 
 type Row = components["schemas"]["UserRow"];
 
@@ -474,7 +475,60 @@ function EditDialog({ user, roles, onClose }: { user: User; roles: Role[]; onClo
             </Button>
           </DialogFooter>
         </form>
+        {user.id !== me?.id && <BrandLimits userId={user.id} />}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Several brands (batch 4): limit a person to some brands. They then see only those brands'
+ * leads, deals and money. Shown only in companies with two or more brands. */
+function BrandLimits({ userId }: { userId: string }) {
+  const brands = useBrandChoices();
+  const { can } = useAuth();
+  const current = useQuery({
+    queryKey: ["user-brands", userId],
+    queryFn: async () => unwrap(await api.GET("/api/v1/users/{user_id}/brands", { params: { path: { user_id: userId } } })),
+    enabled: brands.length > 1 && can("users.manage"),
+  });
+  const [picked, setPicked] = useState<string[] | null>(null);
+  const [saving, setSaving] = useState(false);
+  if (brands.length < 2 || !can("users.manage") || !current.data) return null;
+  const chosen = picked ?? current.data.brand_ids;
+
+  async function save() {
+    setSaving(true);
+    try {
+      unwrap(await api.PUT("/api/v1/users/{user_id}/brands", { params: { path: { user_id: userId } }, body: { brand_ids: chosen } }));
+      toast.success(chosen.length ? "Brands saved." : "This person now sees every brand.");
+      setPicked(null);
+      current.refetch();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-2 border-t pt-4 text-sm">
+      <Label>Brands</Label>
+      <p className="text-xs text-muted-foreground">Tick none for every brand. With some ticked, this person sees only those brands&apos; leads, deals and money.</p>
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {brands.map((b) => (
+          <label key={b.id} className="flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              checked={chosen.includes(b.id)}
+              onChange={(e) => setPicked(e.target.checked ? [...chosen, b.id] : chosen.filter((x) => x !== b.id))}
+            />
+            {b.name}
+          </label>
+        ))}
+      </div>
+      <Button size="sm" variant="outline" disabled={saving || picked === null} onClick={save}>
+        Save brands
+      </Button>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ from app.core.health import router as health_router
 from app.modules.accounts.router import router as accounts_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
+from app.modules.brands.router import router as brands_router
 from app.modules.calls.phone import router as phone_router
 from app.modules.calls.router import router as calls_router
 from app.modules.calls.twilio_router import public as twilio_public_router
@@ -108,6 +109,7 @@ app.include_router(phone_router)
 app.include_router(twilio_router)
 app.include_router(twilio_public_router)
 app.include_router(push_router)
+app.include_router(brands_router)
 app.include_router(ace_console_router)
 app.include_router(extension_account_router)
 app.include_router(extension_router)

@@ -82,6 +82,7 @@ class LeadIn(LeadFields):
     utm_campaign: str | None = Field(default=None, **TEXT)
     utm_term: str | None = Field(default=None, **TEXT)
     utm_content: str | None = Field(default=None, **TEXT)
+    brand_id: uuid.UUID | None = None  # several brands: None = the default brand
 
 
 class LeadPatch(LeadFields):
@@ -92,6 +93,7 @@ class LeadPatch(LeadFields):
     stage_id: uuid.UUID | None = None
     next_follow_up_at: datetime | None = None
     custom_fields: dict | None = None
+    brand_id: uuid.UUID | None = None  # move the lead (its deals and invoices follow)
 
 
 class TagRef(BaseModel):
@@ -130,6 +132,7 @@ class LeadOut(BaseModel):
     score_band: str | None = None
     tags: list[TagRef] = []
     intent: str | None
+    brand_id: uuid.UUID | None = None
     ace_summary: str | None = None
     ace_next_step: str | None = None
     ace_summary_at: datetime | None = None
@@ -393,6 +396,7 @@ async def create_lead(body: LeadIn, db: CrmDb, actor: Creator) -> LeadOut:
         owner=owner,
         next_follow_up_at=body.next_follow_up_at,
         created_summary=f"Added by {actor.user.name}",
+        brand_id=body.brand_id,
     )
     if body.unqualified_reason:
         inc.fields["unqualified_reason"] = body.unqualified_reason
@@ -431,6 +435,12 @@ async def update_lead(lead_id: uuid.UUID, body: LeadPatch, db: CrmDb, actor: Edi
             changed.append(key)
     if lead.kind == "organisation" and not lead.org_name:
         raise Invalid("An organisation needs a name")
+    if changes.get("brand_id") and changes["brand_id"] != lead.brand_id:
+        from app.modules.brands import service as B
+
+        lead.brand_id = await B.pick(db, actor.user.id, changes["brand_id"])
+        await B.follow_lead(db, lead)
+        changed.append("brand")
     if "source_id" in changes and changes["source_id"] != lead.source_id:
         await L.check_source(db, changes["source_id"])
         lead.source_id = changes["source_id"]
