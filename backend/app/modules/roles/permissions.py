@@ -1,7 +1,7 @@
 """Permission catalogue and default grants. Owner implicitly holds every code."""
 
 # code: (module, description). New codes go here and in a migration (0007, 0010, 0011, 0013, 0015,
-# 0017, 0018, 0019, 0021, 0023, 0024, 0028, 0030, 0031, 0033).
+# 0017, 0018, 0019, 0021, 0023, 0024, 0028, 0030, 0031, 0033, 0044).
 CATALOGUE: dict[str, tuple[str, str]] = {
     "users.read": ("users", "See team members"),
     "users.manage": ("users", "Invite, edit and disable users"),
@@ -43,6 +43,7 @@ CATALOGUE: dict[str, tuple[str, str]] = {
     "mailboxes.manage": ("settings", "See connected inboxes, set the exclusion list"),
     "whatsapp.manage": ("settings", "Connect the WhatsApp number, write its templates"),
     "campaigns.manage": ("crm", "Create campaigns, import contacts, launch and pause them"),
+    "newsletters.manage": ("crm", "Write and send newsletters"),
     "outreach.reply": (
         "crm",
         "Read and answer campaign replies (all campaigns with campaigns.manage, otherwise the "
@@ -90,6 +91,7 @@ DEFAULT_GRANTS: dict[str, set[str]] = {
         "payments.record",
         "campaigns.manage",
         "outreach.reply",
+        "newsletters.manage",
     },
     "sales_user": {
         "leads.create",

@@ -59,6 +59,7 @@ async def test_me_lists_the_users_permissions(ws):
         "leads.edit",
         "leads.import",
         "leads.merge",
+        "newsletters.manage",
         "outreach.reply",
         "payments.record",
         "sequences.manage",

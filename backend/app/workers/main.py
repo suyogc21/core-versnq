@@ -13,6 +13,7 @@ from app.workers.jobs import (
     mailboxes_job,
     money_mail_job,
     money_mail_sweep_job,
+    newsletters_job,
     nightly_job,
     no_response_job,
     notify_due_tasks_job,
@@ -55,6 +56,7 @@ class WorkerSettings:
         push_job,
         webhooks_job,
         sequences_job,
+        newsletters_job,
         campaigns_job,
         mailboxes_job,
         whatsapp_health_job,
@@ -74,6 +76,7 @@ class WorkerSettings:
         cron(push_job, second=set(range(4, 60, 10)), unique=True),  # every 10 seconds (C2)
         cron(sequences_job, second={15, 45}, unique=True),  # every 30 seconds
         cron(campaigns_job, second={0, 30}, unique=True),  # every 30 seconds
+        cron(newsletters_job, second={10, 40}, unique=True),  # every 30 seconds (batch 5b)
         cron(mailboxes_job, second=25, unique=True),
         cron(nightly_job, hour=21, minute=30, second=10),  # 03:00 in India
         cron(whatsapp_health_job, hour=2, minute=0, second=40),  # 07:30 in India

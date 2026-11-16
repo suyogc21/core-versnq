@@ -4778,6 +4778,137 @@ export interface paths {
         patch: operations["money-update_tax_rate"];
         trace?: never;
     };
+    "/api/v1/newsletters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Newsletters */
+        get: operations["newsletters-list_newsletters"];
+        put?: never;
+        /** Create */
+        post: operations["newsletters-create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/newsletters/audience-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Audience Count */
+        post: operations["newsletters-audience_count"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/newsletters/{nl_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Newsletter */
+        get: operations["newsletters-get_newsletter"];
+        put?: never;
+        post?: never;
+        /** Delete */
+        delete: operations["newsletters-delete"];
+        options?: never;
+        head?: never;
+        /** Update */
+        patch: operations["newsletters-update"];
+        trace?: never;
+    };
+    "/api/v1/newsletters/{nl_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel
+         * @description Stops it: copies not sent yet are not sent.
+         */
+        post: operations["newsletters-cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/newsletters/{nl_id}/recipients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recipients */
+        get: operations["newsletters-recipients"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/newsletters/{nl_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send
+         * @description Fixes the list now; sends now or at `send_at`.
+         */
+        post: operations["newsletters-send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/newsletters/{nl_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Send
+         * @description A copy to you, filled with a sample lead's details.
+         */
+        post: operations["newsletters-test_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications": {
         parameters: {
             query?: never;
@@ -7739,6 +7870,27 @@ export interface components {
             /** Size Bytes */
             size_bytes: number;
         };
+        /** Audience */
+        Audience: {
+            /**
+             * Customers Only
+             * @default false
+             */
+            customers_only: boolean;
+            /**
+             * Filter
+             * @description lead filters (tag, stage_id, brand_id…)
+             * @default {}
+             */
+            filter: {
+                [key: string]: unknown;
+            };
+            /**
+             * View Id
+             * @description a saved view of leads
+             */
+            view_id?: string | null;
+        };
         /** AutomationIn */
         AutomationIn: {
             /** Actions */
@@ -9103,6 +9255,13 @@ export interface components {
             create_leads: boolean;
             /** Source Id */
             source_id?: string | null;
+        };
+        /** CountOut */
+        CountOut: {
+            /** Matching */
+            matching: number;
+            /** Reachable */
+            reachable: number;
         };
         /** CrmRules */
         CrmRules: {
@@ -12116,6 +12275,116 @@ export interface components {
             /** Phone */
             phone?: string | null;
         };
+        /** NewsletterIn */
+        NewsletterIn: {
+            /**
+             * @default {
+             *       "customers_only": false,
+             *       "filter": {}
+             *     }
+             */
+            audience: components["schemas"]["Audience"];
+            /** Body */
+            body: string;
+            /** From Email */
+            from_email?: string | null;
+            /** From Name */
+            from_name?: string | null;
+            /** Mailbox Id */
+            mailbox_id?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Path
+             * @default mailboxes
+             * @enum {string}
+             */
+            path: "mailboxes" | "postmark";
+            /** Preheader */
+            preheader?: string | null;
+            /** Subject */
+            subject: string;
+        };
+        /** NewsletterOut */
+        NewsletterOut: {
+            /** Audience */
+            audience: {
+                [key: string]: unknown;
+            };
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** From Email */
+            from_email: string | null;
+            /** From Name */
+            from_name: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mailbox Id */
+            mailbox_id: string | null;
+            /** Name */
+            name: string;
+            /** Path */
+            path: string;
+            /** Preheader */
+            preheader: string | null;
+            /**
+             * @default {
+             *       "bounced": 0,
+             *       "clicked": 0,
+             *       "failed": 0,
+             *       "opened": 0,
+             *       "queued": 0,
+             *       "recipients": 0,
+             *       "sent": 0,
+             *       "skipped": 0,
+             *       "unsubscribed": 0
+             *     }
+             */
+            report: components["schemas"]["Report"];
+            /** Send At */
+            send_at: string | null;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** NewsletterPatch */
+        NewsletterPatch: {
+            audience?: components["schemas"]["Audience"] | null;
+            /** Body */
+            body?: string | null;
+            /** From Email */
+            from_email?: string | null;
+            /** From Name */
+            from_name?: string | null;
+            /** Mailbox Id */
+            mailbox_id?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Path */
+            path?: ("mailboxes" | "postmark") | null;
+            /** Preheader */
+            preheader?: string | null;
+            /** Subject */
+            subject?: string | null;
+        };
         /** NoteOut */
         NoteOut: {
             /** Body */
@@ -12715,6 +12984,29 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** RecipientOut */
+        RecipientOut: {
+            /** Bounced */
+            bounced: boolean;
+            /** Clicked */
+            clicked: boolean;
+            /** Email */
+            email: string;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Name */
+            name: string | null;
+            /** Opened */
+            opened: boolean;
+            /** Reason */
+            reason: string | null;
+            /** Sent At */
+            sent_at: string | null;
+            /** Status */
+            status: string;
+            /** Unsubscribed */
+            unsubscribed: boolean;
+        };
         /** RecordActivityOut */
         RecordActivityOut: {
             /** Actor Id */
@@ -12981,6 +13273,54 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** Report */
+        Report: {
+            /**
+             * Bounced
+             * @default 0
+             */
+            bounced: number;
+            /**
+             * Clicked
+             * @default 0
+             */
+            clicked: number;
+            /**
+             * Failed
+             * @default 0
+             */
+            failed: number;
+            /**
+             * Opened
+             * @default 0
+             */
+            opened: number;
+            /**
+             * Queued
+             * @default 0
+             */
+            queued: number;
+            /**
+             * Recipients
+             * @default 0
+             */
+            recipients: number;
+            /**
+             * Sent
+             * @default 0
+             */
+            sent: number;
+            /**
+             * Skipped
+             * @default 0
+             */
+            skipped: number;
+            /**
+             * Unsubscribed
+             * @default 0
+             */
+            unsubscribed: number;
         };
         /** ReportOut */
         ReportOut: {
@@ -13361,6 +13701,14 @@ export interface components {
             ip_allowlist: string[];
             /** Your Ip */
             your_ip: string;
+        };
+        /** SendIn */
+        SendIn: {
+            /**
+             * Send At
+             * @description empty = now
+             */
+            send_at?: string | null;
         };
         /** SendingSettings */
         SendingSettings: {
@@ -25999,6 +26347,316 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TaxOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-list_newsletters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsletterOut"][];
+                };
+            };
+        };
+    };
+    "newsletters-create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewsletterIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsletterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-audience_count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Audience"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-get_newsletter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsletterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewsletterPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsletterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsletterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-recipients": {
+        parameters: {
+            query?: {
+                status?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipientOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsletterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "newsletters-test_send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nl_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
