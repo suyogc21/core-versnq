@@ -144,6 +144,11 @@ STEP10_SYSTEM_TYPES = [
         "loggable": False,
     },
 ]
+# SMS (finishing plan, batch 5d); frozen copy in migration 0046.
+BATCH5D_SYSTEM_TYPES = [
+    {"key": "sms_sent", "label": "SMS sent", "icon": "message-square", "loggable": False},
+    {"key": "sms_received", "label": "SMS received", "icon": "message-square", "loggable": False},
+]
 # Money (step 6, Decision log #34); frozen copy in migration 0017.
 STEP6_SYSTEM_TYPES = [
     {"key": key, "label": label, "icon": icon, "loggable": False}
@@ -179,6 +184,7 @@ def system_activity_types(dispositions: list[str]) -> list[dict]:
         *STEP9A_SYSTEM_TYPES,
         *STEP9B_SYSTEM_TYPES,
         *STEP10_SYSTEM_TYPES,
+        *BATCH5D_SYSTEM_TYPES,
     ]
 
 

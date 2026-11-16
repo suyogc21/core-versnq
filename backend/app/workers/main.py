@@ -10,6 +10,7 @@ from app.workers.jobs import (
     data_export_sweep_job,
     import_job,
     import_sweep_job,
+    lead_ads_job,
     mailboxes_job,
     money_mail_job,
     money_mail_sweep_job,
@@ -41,6 +42,7 @@ class WorkerSettings:
 
     functions = [
         ping_job,
+        lead_ads_job,
         data_export_job,
         data_export_sweep_job,
         notify_due_tasks_job,
@@ -72,6 +74,7 @@ class WorkerSettings:
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
         cron(webhooks_job, second=set(range(7, 60, 10)), unique=True),  # every 10 seconds
         cron(call_recordings_job, second=35, unique=True),  # every minute (C3)
+        cron(lead_ads_job, second=5, unique=True),  # every minute (batch 5d)
         cron(data_export_sweep_job, second=55, unique=True),  # batch 1
         cron(push_job, second=set(range(4, 60, 10)), unique=True),  # every 10 seconds (C2)
         cron(sequences_job, second={15, 45}, unique=True),  # every 30 seconds

@@ -42,6 +42,8 @@ from app.modules.integrations import logs as integration_logs
 from app.modules.integrations.ace_console import router as ace_console_router
 from app.modules.integrations.lead_api import router as lead_api_router
 from app.modules.integrations.router import router as integrations_router
+from app.modules.leadads.router import public as lead_ads_public_router
+from app.modules.leadads.router import router as lead_ads_router
 from app.modules.marketing.pages import public as pages_public_router
 from app.modules.marketing.pages import router as pages_router
 from app.modules.money.router import public as money_webhooks_router
@@ -55,6 +57,8 @@ from app.modules.reports.router import router as reports_router
 from app.modules.roles.router import router as roles_router
 from app.modules.security.router import router as security_router
 from app.modules.settings.router import router as settings_router
+from app.modules.sms.router import public as sms_public_router
+from app.modules.sms.router import router as sms_router
 from app.modules.teams.router import router as teams_router
 from app.modules.users.router import router as users_router
 from app.platform.staff.accounts import router as staff_accounts_router
@@ -112,6 +116,10 @@ app.include_router(outreach_router)
 app.include_router(replies_router)
 app.include_router(calls_router)
 app.include_router(phone_router)
+app.include_router(lead_ads_router)
+app.include_router(lead_ads_public_router)
+app.include_router(sms_router)
+app.include_router(sms_public_router)
 app.include_router(security_router)
 app.include_router(pages_router)
 app.include_router(pages_public_router)

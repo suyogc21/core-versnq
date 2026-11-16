@@ -20,7 +20,7 @@ from app.modules.auth.deps import CurrentUser
 from app.modules.crm import leads as L
 from app.modules.crm.models import Consent, Lead, LeadIdentity, Suppression
 
-CHANNELS = ("email", "whatsapp")
+CHANNELS = ("email", "whatsapp", "sms")
 AUTOMATIC = ("form", "import", "api")
 
 
@@ -120,7 +120,7 @@ async def record(
                 Suppression.reason == "opt_out",
             )
         )
-    label = "Email" if channel == "email" else "WhatsApp"
+    label = {"email": "Email", "whatsapp": "WhatsApp", "sms": "SMS"}[channel]
     await L.log(
         db,
         lead,

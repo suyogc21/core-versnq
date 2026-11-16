@@ -191,6 +191,7 @@ class Lead(TenantScoped, TimestampMixin, Base):
     possible_duplicate_of_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     email_consent: Mapped[str | None] = mapped_column(String(10))  # opted_in / opted_out
     whatsapp_consent: Mapped[str | None] = mapped_column(String(10))
+    sms_consent: Mapped[str | None] = mapped_column(String(10))  # batch 5d
     leak_alerted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     org_suggestions_dismissed: Mapped[list] = mapped_column(JSONB, default=list)
 
