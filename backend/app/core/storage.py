@@ -35,6 +35,7 @@ _XLSX = ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "x
 _DOC = ("application/msword", "doc", True)
 _XLS = ("application/vnd.ms-excel", "xls", True)
 PREVIEWABLE = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
+MAX_AUDIO_BYTES = 50 * 1024 * 1024  # call recordings (step C1)
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,27 @@ def sniff(head: bytes, name: str) -> tuple[str, str, bool] | None:
             return _DOC
         if lower.endswith(".xls"):
             return _XLS
+    return None
+
+
+def sniff_audio(head: bytes, name: str) -> tuple[str, str] | None:
+    """Call recordings (step C1): what phone recorders and Twilio save. None = not audio."""
+    lower = name.lower()
+    if head.startswith(b"ID3") or head[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"):
+        return ("audio/mpeg", "mp3")
+    if head[:2] in (b"\xff\xf1", b"\xff\xf9"):
+        return ("audio/aac", "aac")
+    if head[4:8] == b"ftyp" and head[8:12] in (b"M4A ", b"mp42", b"isom", b"3gp4", b"3gp5",
+                                                b"3gp6", b"mp41", b"M4B "):  # fmt: skip
+        return ("audio/mp4", "m4a")
+    if head.startswith(b"#!AMR"):
+        return ("audio/amr", "amr")
+    if head[:4] == b"RIFF" and head[8:12] == b"WAVE":
+        return ("audio/wav", "wav")
+    if head.startswith(b"OggS"):
+        return ("audio/ogg", "ogg")
+    if head[:4] == b"\x1aE\xdf\xa3" and lower.endswith((".webm", ".mka")):
+        return ("audio/webm", "webm")
     return None
 
 

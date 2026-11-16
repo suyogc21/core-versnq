@@ -510,6 +510,121 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/call-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Call Settings */
+        get: operations["calls-get_call_settings"];
+        /** Put Call Settings */
+        put: operations["calls-put_call_settings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Calls */
+        get: operations["calls-list_calls"];
+        put?: never;
+        /** Report Call */
+        post: operations["calls-report_call"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calls/{call_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Call */
+        get: operations["calls-get_call"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calls/{call_id}/analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Analysis
+         * @description ACE's summary of the call (only an integration key, i.e. ACE, sends this).
+         */
+        put: operations["calls-save_analysis"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calls/{call_id}/outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Log Outcome
+         * @description The rep's Outcome and next follow-up for a reported call: the usual one-step rules.
+         */
+        post: operations["calls-log_outcome"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calls/{call_id}/recording": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Play Recording */
+        get: operations["calls-play_recording"];
+        /**
+         * Upload Recording
+         * @description The raw audio as the body; X-File-Name gives its name. Only the call's own rep (their
+         *     phone) or an integration may send it.
+         */
+        put: operations["calls-upload_recording"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns": {
         parameters: {
             query?: never;
@@ -6585,6 +6700,27 @@ export interface components {
             /** Minor */
             minor: number;
         };
+        /**
+         * AnalysisIn
+         * @description ACE's analysis of the recording (step C5).
+         */
+        AnalysisIn: {
+            /** Intent */
+            intent?: string | null;
+            /** Language */
+            language?: string | null;
+            /** Next Step */
+            next_step?: string | null;
+            /**
+             * Red Flags
+             * @default []
+             */
+            red_flags: string[];
+            /** Summary */
+            summary: string;
+            /** Transcript */
+            transcript?: string | null;
+        };
         /** ApiKeyIn */
         ApiKeyIn: {
             /** Name */
@@ -6954,6 +7090,99 @@ export interface components {
             previous: components["schemas"]["Headline"];
             /** Trend */
             trend: components["schemas"]["TrendMonth"][];
+        };
+        /**
+         * CallIn
+         * @description Reported by our phone app for the signed-in rep (the rep's own SIM).
+         */
+        CallIn: {
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "in" | "out";
+            /**
+             * Duration Seconds
+             * @default 0
+             */
+            duration_seconds: number;
+            /** External Id */
+            external_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "answered" | "missed" | "no_answer" | "busy" | "failed";
+        };
+        /** CallOut */
+        CallOut: {
+            /** Activity Id */
+            activity_id: string | null;
+            /** Analysis */
+            analysis: {
+                [key: string]: unknown;
+            };
+            /** Analyzed At */
+            analyzed_at: string | null;
+            /** Direction */
+            direction: string;
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Has Recording */
+            has_recording: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Lead Name */
+            lead_name?: string | null;
+            /** Number */
+            number: string;
+            /** Outcome */
+            outcome?: string | null;
+            /** Recording Removed */
+            recording_removed: boolean;
+            /** Source */
+            source: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string | null;
+            /** User Id */
+            user_id: string | null;
+        };
+        /** CallSettings */
+        CallSettings: {
+            /**
+             * Keep Days
+             * @default 30
+             */
+            keep_days: number;
+            /**
+             * New Leads
+             * @default false
+             */
+            new_leads: boolean;
+            /**
+             * Record
+             * @default true
+             */
+            record: boolean;
         };
         /** CampaignContactOut */
         CampaignContactOut: {
@@ -10957,6 +11186,15 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** OutcomeIn */
+        OutcomeIn: {
+            /** Body */
+            body?: string | null;
+            /** Disposition */
+            disposition: string;
+            /** Next Follow Up At */
+            next_follow_up_at?: string | null;
+        };
         /** OutreachConversation */
         OutreachConversation: {
             /** Assignee User Id */
@@ -11704,6 +11942,12 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** ReportOut */
+        ReportOut: {
+            call?: components["schemas"]["CallOut"] | null;
+            /** Tracked */
+            tracked: boolean;
         };
         /** RequirementIn */
         RequirementIn: {
@@ -15085,6 +15329,290 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-get_call_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallSettings"];
+                };
+            };
+        };
+    };
+    "calls-put_call_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CallSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallSettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-list_calls": {
+        parameters: {
+            query?: {
+                lead_id?: string | null;
+                user_id?: string | null;
+                status?: ("answered" | "missed" | "no_answer" | "busy" | "failed") | null;
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-report_call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CallIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-get_call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                call_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-save_analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                call_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalysisIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-log_outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                call_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutcomeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-play_recording": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                call_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-upload_recording": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                call_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOut"];
                 };
             };
             /** @description Validation Error */

@@ -437,12 +437,17 @@ async def remind_pending(db: AsyncSession) -> int:
 
 async def clean_files(db: AsyncSession, tenant_id: uuid.UUID) -> dict:
     """Remove files on disk that lost their record; report records whose file is missing."""
+    from app.modules.calls.models import Call  # call recordings live on disk too (step C1)
+
     known = set((await db.scalars(select(StoredFile.path))).all())
+    recordings = set((await db.scalars(select(Call.recording_path).where(
+        Call.recording_path.is_not(None)))).all())  # fmt: skip
+    keep = known | recordings
     on_disk = storage.stored_paths(tenant_id)
     hour_ago = L.now().timestamp() - 3600
     removed = 0
     for rel in on_disk:
-        if rel not in known and storage.full_path(rel).stat().st_mtime < hour_ago:
+        if rel not in keep and storage.full_path(rel).stat().st_mtime < hour_ago:
             storage.remove(rel)
             removed += 1
     for part in storage.leftover_parts(tenant_id):

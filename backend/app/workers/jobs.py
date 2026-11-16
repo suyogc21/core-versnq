@@ -59,6 +59,7 @@ async def nightly_job(ctx) -> dict:
     repeat invoices, payment reminders, and payment links whose webhook was missed; API and
     webhook logs older than 30 days move to the archive files."""
     from app.core.tenancy import tenant_session
+    from app.modules.calls.service import expire_recordings
     from app.modules.crm import customers
     from app.modules.crm.automation import _active_tenants
     from app.modules.crm.calc import recalc_tenant
@@ -66,7 +67,7 @@ async def nightly_job(ctx) -> dict:
     from app.modules.integrations.logs import archive_tenant
     from app.modules.money.worker import nightly_tenant
 
-    rescored = recalced = reminded = removed = logs_archived = 0
+    rescored = recalced = reminded = removed = logs_archived = recordings_removed = 0
     missing: dict[str, list[str]] = {}
     money: dict[str, dict] = {}
     for t in await _active_tenants():
@@ -81,6 +82,8 @@ async def nightly_job(ctx) -> dict:
             missing[str(t)] = report["missing"]
         if done := await nightly_tenant(t):
             money[str(t)] = done
+        async with tenant_session(t) as db:
+            recordings_removed += await expire_recordings(db, t)
         archived = await archive_tenant(t)
         logs_archived += archived["api"] + archived["webhooks"]
     from app.core.alerts import send_daily_count
@@ -88,6 +91,7 @@ async def nightly_job(ctx) -> dict:
     return {
         "errors_yesterday": await send_daily_count(),  # emailed to staff when any (G-2)
         "logs_archived": logs_archived,
+        "recordings_removed": recordings_removed,
         "money": money,
         "rescored": rescored,
         "recalculated": recalced,

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { NativeSelect } from "@/components/app/native-select";
 import { CustomFieldsEditor, StagePill } from "@/components/crm/bits";
+import { CallEntry } from "@/components/crm/call-entry";
 import { AddFieldButton } from "@/components/crm/field-settings";
 import { LabeledInput } from "@/components/crm/lead-form";
 import { Button } from "@/components/ui/button";
@@ -301,6 +302,9 @@ export function Timeline({ leadId, filter = "All" }: { leadId: string; filter?: 
               {a.actor_type === "automation" && ` · Automation: ${(a.data as { automation?: string }).automation ?? ""}`}
             </div>
             <div className="font-medium">{a.summary}</div>
+            {a.type_key === "call" && (a.data as { call_id?: string }).call_id && (
+              <CallEntry leadId={leadId} data={a.data as Record<string, never>} outcome={a.disposition} />
+            )}
             {a.body && a.type_key !== "note" && <div className="mt-1 rounded-md bg-muted px-2 py-1 whitespace-pre-wrap">{a.body}</div>}
             {a.body && a.type_key === "note" && a.body.includes("\n") && (
               <div className="mt-1 rounded-md bg-muted px-2 py-1 whitespace-pre-wrap">{a.body}</div>

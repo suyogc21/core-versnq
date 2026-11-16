@@ -6,6 +6,7 @@ from app.core.health import router as health_router
 from app.modules.accounts.router import router as accounts_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
+from app.modules.calls.router import router as calls_router
 from app.modules.crm.automations_router import router as automations_router
 from app.modules.crm.capture_router import forms_public
 from app.modules.crm.capture_router import public as capture_public_router
@@ -98,6 +99,7 @@ app.include_router(mailbox_router)
 app.include_router(pool_router)
 app.include_router(outreach_router)
 app.include_router(replies_router)
+app.include_router(calls_router)
 app.include_router(ace_console_router)
 app.include_router(extension_account_router)
 app.include_router(extension_router)

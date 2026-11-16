@@ -76,9 +76,9 @@ Each item has a size: S = 1, M = 2, L = 3.
 ### Phase 2: phone calls (7): decided Nov 16 (plan: `plans/calls-plan.md`)
 | Item | Size | |
 |---|---|---|
-| Click-to-call and every call on the timeline (Twilio for global; Exotel or Knowlarity for India) | L | ⬜ |
-| Recordings and missed-call follow-ups | M | ⬜ |
-| ACE analyses calls | M | ⬜ |
+| Click-to-call with the company's own Twilio (C3; Exotel later) | L | ⬜ next |
+| **C1 call pipeline:** every call on the timeline, recordings (30 days), missed-call tasks, Outcome in one tap, Calls list, Settings → Calls | M | 🟡 built and tested Nov 16 (deploy pending) |
+| ACE analyses calls (Core side built in C1: `call.recorded`, `PUT /calls/{id}/analysis`) | M | ⬜ ACE session |
 
 ### Phase 3: phone app (5): decided Nov 16 (installable web app now, Android app next)
 | Item | Size | |
@@ -124,3 +124,4 @@ Each item has a size: S = 1, M = 2, L = 3.
 |---|---|
 | 2026-11-16 | Tracker created; goal reset to global and level with LeadSquared and HubSpot |
 | 2026-11-16 | Real forms built (builder, hosted page /f/<id>, embed); email provider: Postmark |
+| 2026-11-16 | Calls and phone app in scope; C1 call pipeline built |

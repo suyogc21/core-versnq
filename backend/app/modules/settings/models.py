@@ -49,6 +49,10 @@ class TenantSettings(TimestampMixin, Base):
     )
     # Official WhatsApp number (step 10b): unknown number → lead, STOP words, autoresponder.
     whatsapp: Mapped[dict] = mapped_column(JSONB, default=lambda: dict(WHATSAPP_DEFAULTS))
+    # calls (0035): record or not, days recordings are kept, unknown incoming → new lead
+    calls: Mapped[dict] = mapped_column(
+        JSONB, default=lambda: {"record": True, "keep_days": 30, "new_leads": False}
+    )
     # Anti-leakage rule: open leads must get a next follow-up when worked (Decision log #21).
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=True)
     # Duplicates on automatic capture (R5): update the existing lead / flag / always create.

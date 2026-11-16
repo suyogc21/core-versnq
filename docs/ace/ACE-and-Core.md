@@ -415,3 +415,22 @@ Plan: `docs/plans/ace-c13-c14-plan.md` (approved by Suyog, Nov 16). Migration 00
   - `unknown_request`: not found, or another company's request.
   - `request_already_answered`: a draft was made. A later `POST /conversations/{id}/drafts` with a declined `request_id` also gets this.
   - `request_superseded`: a newer reply came in.
+
+## 15. Calls (step C1 built Nov 16; ACE's part is C5)
+
+Plan: `docs/plans/calls-plan.md`. Every call comes through one pipeline in Core: the Versnq Android app (the rep's own SIM, picking up the phone's own recording), the company's own Twilio (C3), later Exotel.
+
+**What ACE gets:**
+- **`call.recorded`** `{call_id, lead_id, duration_seconds, content_type, recording_url}`. It's sent only while the company's ACE module is on.
+- To fetch the audio, call `GET {recording_url}` (`/api/v1/calls/{id}/recording`) with the company's ACE key. That key's role needs `leads.edit` and lead visibility "all".
+- `call.logged` `{call_id, lead_id, direction, status, duration_seconds, source, user_id}` is also sent for every call, recorded or not.
+
+**What ACE sends back:**
+- **`PUT /api/v1/calls/{id}/analysis`** `{summary (≤4000), intent?, next_step?, red_flags[] (≤10), language?, transcript? (≤200k)}`.
+- Only an integration key may send this; a person gets 403.
+- Core shows the summary on the call in the lead's timeline and emits **`call.analyzed`** `{call_id, lead_id, summary}`.
+
+**Recordings:**
+- Kept for the company's `keep_days` (default 30), then removed. The call itself stays.
+- A company can switch recording off; uploads are then refused with `recording_off`.
+- Speech-to-text is ACE's choice (D7).

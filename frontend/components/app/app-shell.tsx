@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Bot, Boxes, ChartColumn, Contact, Handshake, Inbox, LogOut, Megaphone, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
+import { BadgeCheck, Bot, Boxes, Phone, ChartColumn, Contact, Handshake, Inbox, LogOut, Megaphone, Send, Star, type LucideIcon, Menu, Moon, ReceiptText, Settings, Sun, Sunrise, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -71,6 +71,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const mainItems = [
     ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) => (i.href === "/" ? i : { ...i, label: label(i.label, true) })),
     ...(can("inbox.reply") ? [{ href: "/inbox", label: "Inbox", icon: Inbox, count: inboxCounts.data?.mine_unread }] : []),
+    ...(can("leads.edit") ? [{ href: "/calls", label: "Calls", icon: Phone }] : []),
     ...(keyOn && can("leads.edit") ? [{ href: "/key-accounts", label: "Key accounts", icon: Star }] : []),
     ...(moneyOn && can("invoices.read") ? [{ href: "/money", label: "Money", icon: ReceiptText }] : []),
     ...(["leads.edit", "dashboards.team", "dashboards.business", "dashboards.money"].some((c) => can(c))

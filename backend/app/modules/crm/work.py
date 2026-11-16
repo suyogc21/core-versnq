@@ -33,7 +33,10 @@ async def log_activity(
     data: dict,
     occurred_at: datetime | None,
     next_follow_up_at: datetime | None,
+    existing: Activity | None = None,
 ) -> Activity:
+    """Log an activity, or (existing) complete one Core already put on the timeline, such as a
+    reported call getting its Outcome (step C1). The same rules apply either way."""
     kind = await db.scalar(select(ActivityType).where(ActivityType.key == type_key))
     if kind is None or not kind.is_active or not kind.is_loggable:
         raise Invalid("Choose an activity type you can log")
@@ -78,17 +81,24 @@ async def log_activity(
         summary = f"{kind.label}: {disposition_label}"
     else:
         summary = kind.label
-    activity = await L.log(
-        db,
-        lead,
-        type_key,
-        summary,
-        actor,
-        clean,
-        disposition=disposition_label,
-        body=(body or "").strip() or None,
-        occurred_at=when,
-    )
+    if existing is not None:
+        activity = existing
+        activity.summary = summary[:500]
+        activity.data = {**(activity.data or {}), **clean}
+        activity.disposition = disposition_label
+        activity.body = (body or "").strip() or activity.body
+    else:
+        activity = await L.log(
+            db,
+            lead,
+            type_key,
+            summary,
+            actor,
+            clean,
+            disposition=disposition_label,
+            body=(body or "").strip() or None,
+            occurred_at=when,
+        )
 
     # One-step logging (#21): the due follow-up is done, not left as a separate task.
     await db.execute(

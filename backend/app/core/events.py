@@ -23,6 +23,7 @@ CATALOGUE: dict[str, str] = {
     "link.created": "crm",
     "link.deleted": "crm",  # produced by ACE through the API (Decision log #5)
     "activity.logged": "crm",
+    "call.logged": "crm",  # step C1: a call from the app, Twilio or Exotel is on the lead
     "call.recorded": "ace",  # call intelligence belongs to ACE (Decision log #3)
     "call.analyzed": "ace",
     "task.created": "crm",
