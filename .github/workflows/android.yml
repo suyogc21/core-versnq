@@ -1,0 +1,43 @@
+# Builds the Versnq Core Android app (mobile/) into an .apk on GitHub's servers, so nothing has to
+# be installed on anyone's Mac (calls plan, step C4). Download the .apk from the run's artifacts.
+# Debug-signed for the dry run; a release signing key comes before reps install it for real.
+name: Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ["mobile/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci --ignore-scripts
+      - run: npx cap sync android
+      - name: Build the .apk
+        working-directory: mobile/android
+        run: ./gradlew --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: versnq-core-android
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

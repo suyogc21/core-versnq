@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Versnq Core</title>
+<link rel="stylesheet" href="shell.css">
+</head>
+<body>
+<main>
+  <img src="icon.png" alt="" width="64" height="64">
+  <h1>Sign in to your company</h1>
+  <p class="muted">Type your company's Core address. You'll find it in the browser when you use Core, for example <b>acme.core.versnq.in</b>.</p>
+  <form id="f">
+    <label for="addr">Company address</label>
+    <div class="addr"><input id="addr" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="acme" required><span>.core.versnq.in</span></div>
+    <p id="err" class="err" role="alert"></p>
+    <button type="submit">Continue</button>
+  </form>
+</main>
+<script src="shell.js"></script>
+</body>
+</html>

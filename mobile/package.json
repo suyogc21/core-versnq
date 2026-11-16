@@ -1,0 +1,16 @@
+{
+  "name": "versnq-core-mobile",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Versnq Core for Android: the Core web app in a native shell, plus the phone part (calls plan C4).",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  }
+}

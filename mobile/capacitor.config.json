@@ -1,0 +1,9 @@
+{
+  "appId": "in.versnq.core",
+  "appName": "Versnq Core",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

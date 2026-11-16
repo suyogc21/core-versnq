@@ -44,3 +44,7 @@ backend/var/
 
 # Built WhatsApp extension (make extension)
 extension/dist/
+
+# Android build output and local copies of built apps
+mobile/android/app/build/
+frontend/public/app/*.apk

@@ -1,0 +1,18 @@
+/* The same look as Core's web app (frontend/app/globals.css tokens). */
+:root { --bg:#f5f5f7; --fg:#1d1d1f; --muted:#6e6e73; --border:#e5e5ea; --card:#fff; --err:#d70015; --r:.625rem; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f0f11; --fg:#f5f5f7; --muted:#9a9aa2; --border:#2a2a2e; --card:#18181b; --err:#ff6961; } }
+* { box-sizing: border-box; }
+body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--fg);
+  font:15px/1.5 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; padding:24px 16px; }
+main { width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:calc(var(--r)*1.6); padding:28px 22px; }
+img { border-radius:14px; display:block; margin-bottom:16px; }
+h1 { font-size:22px; letter-spacing:-.02em; margin:0 0 6px; }
+.muted { color:var(--muted); margin:0 0 20px; font-size:14px; }
+label { font-size:13px; font-weight:600; display:block; margin-bottom:6px; }
+.addr { display:flex; align-items:center; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; background:var(--bg); }
+.addr input { flex:1; min-width:0; border:0; background:transparent; color:var(--fg); font:inherit; padding:11px 12px; outline:none; }
+.addr span { color:var(--muted); padding-right:12px; font-size:14px; }
+.addr:focus-within { border-color:var(--fg); }
+.err { color:var(--err); font-size:13px; min-height:20px; margin:6px 0; }
+button { width:100%; border:0; border-radius:var(--r); background:var(--fg); color:var(--bg); font:600 15px/1 inherit; padding:13px; margin-top:6px; }
+button.link { background:transparent; color:var(--muted); font-weight:500; }
