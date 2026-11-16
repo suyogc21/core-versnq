@@ -168,6 +168,7 @@ class Lead(TenantScoped, TimestampMixin, Base):
     ace_next_step: Mapped[str | None] = mapped_column(String(200))
     ace_prompt_version: Mapped[str | None] = mapped_column(String(50))
     ace_summary_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    erased_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # DPDP / GDPR
     origin: Mapped[str] = mapped_column(String(20))
     source_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     created_via: Mapped[str] = mapped_column(String(12))

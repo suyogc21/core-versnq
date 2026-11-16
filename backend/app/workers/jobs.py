@@ -66,8 +66,10 @@ async def nightly_job(ctx) -> dict:
     from app.modules.crm.scoring import rescore_tenant
     from app.modules.integrations.logs import archive_tenant
     from app.modules.money.worker import nightly_tenant
+    from app.modules.security import service as SEC
 
     rescored = recalced = reminded = removed = logs_archived = recordings_removed = 0
+    sign_ins_pruned = 0
     missing: dict[str, list[str]] = {}
     money: dict[str, dict] = {}
     for t in await _active_tenants():
@@ -84,6 +86,8 @@ async def nightly_job(ctx) -> dict:
             money[str(t)] = done
         async with tenant_session(t) as db:
             recordings_removed += await expire_recordings(db, t)
+        async with tenant_session(t) as db:
+            sign_ins_pruned += await SEC.prune(db)  # 180-day sign-ins, expired exports
         archived = await archive_tenant(t)
         logs_archived += archived["api"] + archived["webhooks"]
     from app.core.alerts import send_daily_count
@@ -92,6 +96,7 @@ async def nightly_job(ctx) -> dict:
         "errors_yesterday": await send_daily_count(),  # emailed to staff when any (G-2)
         "logs_archived": logs_archived,
         "recordings_removed": recordings_removed,
+        "sign_ins_pruned": sign_ins_pruned,
         "money": money,
         "rescored": rescored,
         "recalculated": recalced,
@@ -239,3 +244,37 @@ async def money_mail_sweep_job(ctx) -> int:
     from app.modules.money.worker import sweep
 
     return await sweep(await _active_tenants())
+
+
+async def data_export_job(ctx, tenant_id: str, export_id: str) -> None:
+    """One company's "export everything" zip (finishing plan, batch 1)."""
+    import uuid
+
+    from app.modules.security.service import build_export
+
+    await build_export(uuid.UUID(tenant_id), uuid.UUID(export_id))
+
+
+async def data_export_sweep_job(ctx) -> int:
+    """Every minute: exports still queued (the queue was down when asked) are built."""
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import select
+
+    from app.core.tenancy import tenant_session
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.security.models import DataExport
+    from app.modules.security.service import build_export
+
+    done = 0
+    for t in await _active_tenants():
+        async with tenant_session(t) as db:
+            waiting = select(DataExport.id).where(
+                DataExport.status == "queued",
+                DataExport.created_at < datetime.now(UTC) - timedelta(minutes=1),
+            )
+            ids = (await db.scalars(waiting)).all()
+        for export_id in ids:
+            await build_export(t, export_id)
+            done += 1
+    return done

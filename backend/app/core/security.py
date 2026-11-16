@@ -32,6 +32,7 @@ class TokenClaims:
     sub: uuid.UUID
     typ: TokenType
     tenant_id: uuid.UUID | None
+    issued_at: int = 0  # seconds since 1970 ("iat")
 
 
 def hash_password(plain: str) -> str:
@@ -80,7 +81,10 @@ def decode_access_token(token: str, expected_typ: TokenType) -> TokenClaims:
             raise InvalidToken("wrong token type")
         tid = data.get("tid")
         return TokenClaims(
-            sub=uuid.UUID(data["sub"]), typ=data["typ"], tenant_id=uuid.UUID(tid) if tid else None
+            sub=uuid.UUID(data["sub"]),
+            typ=data["typ"],
+            tenant_id=uuid.UUID(tid) if tid else None,
+            issued_at=int(data["iat"]),
         )
     except (jwt.PyJWTError, ValueError, KeyError) as exc:
         raise InvalidToken(str(exc)) from exc

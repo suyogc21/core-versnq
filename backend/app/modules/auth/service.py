@@ -7,6 +7,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import (
+    ACCESS_TOKEN_MINUTES,
     DUMMY_PASSWORD_HASH,
     REFRESH_TOKEN_DAYS,
     create_access_token,
@@ -67,12 +68,27 @@ async def open_session(
     return create_access_token(user.id, "user", user.tenant_id), plain
 
 
+SIGNED_OUT_KEY = "auth:signed-out:{}"  # tokens issued before this time stop working at once
+
+
 async def revoke_all_sessions(db: AsyncSession, user_id: uuid.UUID) -> None:
     await db.execute(
         update(UserSession)
         .where(UserSession.user_id == user_id, UserSession.revoked_at.is_(None))
         .values(revoked_at=_now())
     )
+    # Access tokens live 15 minutes; this makes "sign out everywhere" immediate (batch 1).
+    from app.core.ratelimit import get_redis
+
+    stamp = int(_now().timestamp())
+    await get_redis().set(SIGNED_OUT_KEY.format(user_id), stamp, ex=ACCESS_TOKEN_MINUTES * 60 + 60)
+
+
+async def signed_out_after(user_id: uuid.UUID, issued_at: int) -> bool:
+    from app.core.ratelimit import get_redis
+
+    stamp = await get_redis().get(SIGNED_OUT_KEY.format(user_id))
+    return stamp is not None and issued_at < int(stamp)
 
 
 async def refresh(
@@ -92,6 +108,16 @@ async def refresh(
         raise AuthError
     user = await db.get(User, row.user_id)
     if row.expires_at <= _now() or user is None or user.status != "active":
+        raise AuthError
+    from app.modules.security import service as SEC
+
+    sec = await SEC.settings_of(db, row.tenant_id)
+    idle = int(sec.get("idle_minutes") or 0)
+    # The page renews its sign-in every 15 minutes while it's used, so a session not renewed
+    # for the company's idle time means nobody used it: it ends (finishing plan, batch 1).
+    if (idle and _now() - row.created_at > timedelta(minutes=idle)) or not SEC.ip_allowed(sec, ip):
+        row.revoked_at = _now()
+        await db.commit()
         raise AuthError
     row.revoked_at = _now()
     return await open_session(db, user, ip, ua)

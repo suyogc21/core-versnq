@@ -6861,7 +6861,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 50,
+            "maxItems": 51,
             "minItems": 1,
             "title": "Events",
             "type": "array"
@@ -6968,7 +6968,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 50,
+                "maxItems": 51,
                 "minItems": 1,
                 "type": "array"
               },
@@ -7923,6 +7923,20 @@
         "title": "EntityPatch",
         "type": "object"
       },
+      "EraseIn": {
+        "properties": {
+          "confirm": {
+            "const": "ERASE",
+            "title": "Confirm",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm"
+        ],
+        "title": "EraseIn",
+        "type": "object"
+      },
       "EventTypeOut": {
         "properties": {
           "module": {
@@ -7956,6 +7970,69 @@
           "items"
         ],
         "title": "Exclusions",
+        "type": "object"
+      },
+      "ExportOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "size_bytes",
+          "created_at",
+          "finished_at",
+          "expires_at"
+        ],
+        "title": "ExportOut",
         "type": "object"
       },
       "ExtensionMeOut": {
@@ -11561,6 +11638,18 @@
             "default": 0,
             "title": "Engagement Score",
             "type": "integer"
+          },
+          "erased_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Erased At"
           },
           "first_name": {
             "anyOf": [
@@ -17667,6 +17756,65 @@
         "title": "Section",
         "type": "object"
       },
+      "SecuritySettings": {
+        "properties": {
+          "alert_failed_sign_ins": {
+            "default": true,
+            "title": "Alert Failed Sign Ins",
+            "type": "boolean"
+          },
+          "idle_minutes": {
+            "default": 0,
+            "description": "0 = off; otherwise 30 to 1440",
+            "title": "Idle Minutes",
+            "type": "integer"
+          },
+          "ip_allowlist": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Ip Allowlist",
+            "type": "array"
+          }
+        },
+        "title": "SecuritySettings",
+        "type": "object"
+      },
+      "SecuritySettingsOut": {
+        "properties": {
+          "alert_failed_sign_ins": {
+            "default": true,
+            "title": "Alert Failed Sign Ins",
+            "type": "boolean"
+          },
+          "idle_minutes": {
+            "default": 0,
+            "description": "0 = off; otherwise 30 to 1440",
+            "title": "Idle Minutes",
+            "type": "integer"
+          },
+          "ip_allowlist": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Ip Allowlist",
+            "type": "array"
+          },
+          "your_ip": {
+            "title": "Your Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "your_ip"
+        ],
+        "title": "SecuritySettingsOut",
+        "type": "object"
+      },
       "SendingSettings": {
         "properties": {
           "daily_cap": {
@@ -18146,6 +18294,150 @@
           "channel"
         ],
         "title": "SharedIn",
+        "type": "object"
+      },
+      "SignInOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "email",
+          "success",
+          "method",
+          "reason",
+          "ip",
+          "user_agent",
+          "created_at"
+        ],
+        "title": "SignInOut",
+        "type": "object"
+      },
+      "SignedInDevice": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "last_active_at": {
+            "format": "date-time",
+            "title": "Last Active At",
+            "type": "string"
+          },
+          "this_device": {
+            "title": "This Device",
+            "type": "boolean"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "required": [
+          "id",
+          "ip",
+          "user_agent",
+          "last_active_at",
+          "this_device"
+        ],
+        "title": "SignedInDevice",
         "type": "object"
       },
       "Skipped": {
@@ -29907,6 +30199,106 @@
         ]
       }
     },
+    "/api/v1/data-exports": {
+      "get": {
+        "operationId": "security-list_exports",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExportOut"
+                  },
+                  "title": "Response Security-List Exports",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Exports",
+        "tags": [
+          "security"
+        ]
+      },
+      "post": {
+        "operationId": "security-start_export",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Start Export",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/api/v1/data-exports/{export_id}/download": {
+      "get": {
+        "operationId": "security-download_export",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "export_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Export Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Download Export",
+        "tags": [
+          "security"
+        ]
+      }
+    },
     "/api/v1/deals": {
       "get": {
         "operationId": "deals-list_deals",
@@ -38199,6 +38591,58 @@
         ]
       }
     },
+    "/api/v1/leads/{lead_id}/erase": {
+      "post": {
+        "description": "Erase a person on their request (DPDP / GDPR). This can't be undone.",
+        "operationId": "security-erase",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EraseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Erase",
+        "tags": [
+          "security"
+        ]
+      }
+    },
     "/api/v1/leads/{lead_id}/intent": {
       "put": {
         "operationId": "lead-api-put_intent",
@@ -39706,6 +40150,106 @@
         ]
       }
     },
+    "/api/v1/me/devices": {
+      "get": {
+        "operationId": "security-my_devices",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "user_refresh",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Refresh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SignedInDevice"
+                  },
+                  "title": "Response Security-My Devices",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Devices",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/api/v1/me/devices/{session_id}/sign-out": {
+      "post": {
+        "description": "That device can't renew its sign-in; it is signed out within 15 minutes at most.",
+        "operationId": "security-sign_out_device",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sign Out Device",
+        "tags": [
+          "security"
+        ]
+      }
+    },
     "/api/v1/me/extension/code": {
       "post": {
         "description": "A one-time code to connect the WhatsApp extension in one browser (10 minutes).",
@@ -39883,6 +40427,36 @@
         "summary": "Sync Now",
         "tags": [
           "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/me/sign-ins": {
+      "get": {
+        "operationId": "security-my_sign_ins",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SignInOut"
+                  },
+                  "title": "Response Security-My Sign Ins",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Sign Ins",
+        "tags": [
+          "security"
         ]
       }
     },
@@ -44109,6 +44683,234 @@
         "summary": "Set Score Settings",
         "tags": [
           "organise"
+        ]
+      }
+    },
+    "/api/v1/security/settings": {
+      "get": {
+        "operationId": "security-get_settings_",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecuritySettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Settings ",
+        "tags": [
+          "security"
+        ]
+      },
+      "put": {
+        "operationId": "security-put_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecuritySettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecuritySettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Settings",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/api/v1/security/sign-ins": {
+      "get": {
+        "operationId": "security-all_sign_ins",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "failed",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Failed",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SignInOut"
+                  },
+                  "title": "Response Security-All Sign Ins",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "All Sign Ins",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/api/v1/security/sign-out-everyone": {
+      "post": {
+        "description": "Everyone in the company, including you, is signed out at once (a suspected breach).",
+        "operationId": "security-sign_out_everyone",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sign Out Everyone",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/api/v1/security/users/{user_id}/sign-out": {
+      "post": {
+        "description": "Sign one person out everywhere, at once.",
+        "operationId": "security-sign_out_user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sign Out User",
+        "tags": [
+          "security"
         ]
       }
     },

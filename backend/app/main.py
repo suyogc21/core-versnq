@@ -48,6 +48,7 @@ from app.modules.push.router import router as push_router
 from app.modules.replies.router import router as replies_router
 from app.modules.reports.router import router as reports_router
 from app.modules.roles.router import router as roles_router
+from app.modules.security.router import router as security_router
 from app.modules.settings.router import router as settings_router
 from app.modules.teams.router import router as teams_router
 from app.modules.users.router import router as users_router
@@ -105,6 +106,7 @@ app.include_router(outreach_router)
 app.include_router(replies_router)
 app.include_router(calls_router)
 app.include_router(phone_router)
+app.include_router(security_router)
 app.include_router(twilio_router)
 app.include_router(twilio_public_router)
 app.include_router(push_router)

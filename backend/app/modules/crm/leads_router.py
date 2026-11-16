@@ -133,6 +133,7 @@ class LeadOut(BaseModel):
     ace_summary: str | None = None
     ace_next_step: str | None = None
     ace_summary_at: datetime | None = None
+    erased_at: datetime | None = None  # erased on request (DPDP / GDPR)
     origin: str
     source_id: uuid.UUID
     created_via: str

@@ -1,4 +1,4 @@
-import { Activity, Boxes, Building2, Code, Inbox, Mail, MessageCircle, Phone, ReceiptText, Shield, Tags, Users, UsersRound, Workflow } from "lucide-react";
+import { Activity, Boxes, Building2, Code, Inbox, Lock, Mail, MessageCircle, Phone, ReceiptText, Shield, Tags, Users, UsersRound, Workflow } from "lucide-react";
 
 /** Every settings page, its group and who may open it. The sidebar shows one "Settings"
  * entry when any of these is allowed; typing an address you may not use is refused. */
@@ -27,6 +27,7 @@ export const SETTINGS_PAGES: SettingsPage[] = [
   { href: "/settings/reply-categories", title: "Reply categories", hint: "How replies are sorted (by ACE or a person) and what happens for each: lead, draft, stop", group: "Automation", permission: "settings.manage", icon: Tags },
   { href: "/settings/automations", title: "Automations", hint: "When something happens, do something: tasks, tags, owners, stages, alerts, webhooks", group: "Automation", permission: "crm.configure", icon: Workflow },
   { href: "/settings/developers", title: "Developers", hint: "API keys, webhooks, and the log of every call and message", group: "Developers", permission: "integrations.manage", icon: Code },
+  { href: "/settings/security", title: "Security", hint: "Sign-in rules, IP allowlist, everyone's sign-ins, sign out everyone, export everything", group: "Security", permission: "settings.manage", icon: Lock },
   { href: "/settings/audit", title: "Audit log", hint: "Who changed what, and when", group: "Security", permission: "audit.read", icon: Activity },
 ];
 

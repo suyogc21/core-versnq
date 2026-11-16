@@ -49,6 +49,7 @@ from app.modules.auth.schemas import (
     TenantRef,
 )
 from app.modules.integrations import ace_console
+from app.modules.security import service as SEC
 from app.modules.users.models import User
 
 log = logging.getLogger("versnq.auth")
@@ -120,6 +121,18 @@ async def _audit_self(db, user: User, action: str, after: dict, request: Request
     )
 
 
+IP_REFUSED = "Your company only allows sign-in from its own network. Ask your admin."
+
+
+async def _failed(db, tenant_id, email: str, user, method: str, reason: str, request) -> None:
+    """A failed sign-in, saved before the error response (which would roll it back)."""
+    await SEC.record_sign_in(
+        db, tenant_id, email=email, user_id=user.id if user else None, success=False,
+        method=method, reason=reason, ip=_ip(request), user_agent=request.headers.get("user-agent"),
+    )  # fmt: skip
+    await db.commit()
+
+
 async def _send(mailer: Mailer, email: Email) -> None:
     try:
         await mailer.send(email)
@@ -138,13 +151,23 @@ async def login(
     user_device: Annotated[str | None, Cookie()] = None,
 ) -> LoginOut:
     await ratelimit.enforce(f"rl:login:ip:{_ip(request)}", *LOGIN_PER_IP)
+    ua = request.headers.get("user-agent")
+    sec = await SEC.settings_of(db, ws.id)
+    if not SEC.ip_allowed(sec, _ip(request)):
+        known = await service.find_by_email(db, body.email)
+        await _failed(db, ws.id, body.email, known, "password", "ip_not_allowed", request)
+        raise HTTPException(status.HTTP_403_FORBIDDEN, IP_REFUSED)
     fail_key = f"rl:login:fail:{ws.id}:{body.email.lower()}"
     if await ratelimit.count(fail_key) >= FAILS_PER_ACCOUNT[0]:
         raise ratelimit.too_many()
     try:
         user = await service.authenticate(db, body.email, body.password)
     except service.AuthError:
+        known = await service.find_by_email(db, body.email)
         await ratelimit.hit(fail_key, *FAILS_PER_ACCOUNT)
+        if known is not None and await ratelimit.count(fail_key) == FAILS_PER_ACCOUNT[0]:
+            await SEC.alert_failed_sign_ins(db, mailer, ws.id, known, ws.name, _ip(request))
+        await _failed(db, ws.id, body.email, known, "password", "wrong_password", request)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, _GENERIC_401) from None
     await ratelimit.clear(fail_key)
     if user.totp_enabled:
@@ -158,9 +181,11 @@ async def login(
         return LoginOut(
             two_factor_required=True, challenge_token=challenge, two_factor_method="email"
         )
-    access, refresh_plain = await service.open_session(
-        db, user, _ip(request), request.headers.get("user-agent")
-    )
+    access, refresh_plain = await service.open_session(db, user, _ip(request), ua)
+    await SEC.record_sign_in(
+        db, ws.id, email=user.email, user_id=user.id, success=True, method="password",
+        reason=None, ip=_ip(request), user_agent=ua,
+    )  # fmt: skip
     return _issue(response, access, refresh_plain)
 
 
@@ -188,8 +213,13 @@ async def verify_two_factor(
         ok = verify_code(decrypt_secret(user.totp_secret_enc), body.code)
     else:
         ok = await email_code.check(body.challenge_token, body.code)
+    method = "backup_code" if used_backup else "app_code" if user.totp_enabled else "email_code"
     if not ok:
+        await _failed(db, ws.id, user.email, user, method, "wrong_code", request)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid code")
+    if not SEC.ip_allowed(await SEC.settings_of(db, ws.id), _ip(request)):
+        await _failed(db, ws.id, user.email, user, method, "ip_not_allowed", request)
+        raise HTTPException(status.HTTP_403_FORBIDDEN, IP_REFUSED)
     if not user.totp_enabled:
         _remember_browser(response, user)
     if used_backup:
@@ -205,9 +235,12 @@ async def verify_two_factor(
                 "you, change your password now and tell your admin.\n",
             ),
         )
-    access, refresh_plain = await service.open_session(
-        db, user, _ip(request), request.headers.get("user-agent")
-    )
+    ua = request.headers.get("user-agent")
+    access, refresh_plain = await service.open_session(db, user, _ip(request), ua)
+    await SEC.record_sign_in(
+        db, ws.id, email=user.email, user_id=user.id, success=True, method=method,
+        reason=None, ip=_ip(request), user_agent=ua,
+    )  # fmt: skip
     return _issue(response, access, refresh_plain)
 
 

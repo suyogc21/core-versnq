@@ -218,6 +218,47 @@ function Section({ title, children, action }: { title: string; children: React.R
 }
 
 /** The full record (mockup v2): details · timeline with logging · follow-up and tasks. */
+/** Erase a person on their request (DPDP / GDPR, finishing plan batch 1). Admins only; typed
+ * confirmation; it can't be undone. Money records keep amounts and dates only. */
+function EraseLead({ lead }: { lead: Lead }) {
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const refresh = useRefreshLead();
+  async function erase() {
+    try {
+      unwrap(await api.POST("/api/v1/leads/{lead_id}/erase", { params: { path: { lead_id: lead.id } }, body: { confirm: "ERASE" } }));
+      toast.success("This person's data is erased.");
+      refresh();
+      setOpen(false);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+  if (!open)
+    return (
+      <button type="button" className="text-xs text-muted-foreground underline hover:text-destructive" onClick={() => setOpen(true)}>
+        Erase this person…
+      </button>
+    );
+  return (
+    <div className="space-y-2 rounded-md border border-destructive/40 p-3 text-sm">
+      <p>
+        <span className="font-medium">Erase {lead.display_name}?</span> Their details, timeline, messages, calls, recordings and files are deleted for good. Deals and
+        invoices keep only amounts and dates. Connected systems (like ACE) are told to delete their copy.
+      </p>
+      <Input aria-label="Type ERASE to confirm" placeholder="Type ERASE" value={typed} onChange={(e) => setTyped(e.target.value)} />
+      <div className="flex gap-2">
+        <Button variant="destructive" size="sm" disabled={typed !== "ERASE"} onClick={erase}>
+          Erase for good
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /** ACE's latest summary of the lead (written by ACE through the API; not on the timeline). */
 function AceSummary({ lead }: { lead: Lead }) {
   if (!lead.ace_summary) return null;
@@ -297,6 +338,7 @@ export function LeadRecord({ leadId, onLogged }: { leadId: string; onLogged?: (l
           <Section title="Consent">
             <ConsentCard lead={l} />
           </Section>
+          {can("settings.manage") && !l.erased_at && <EraseLead lead={l} />}
         </div>
         <div className="space-y-4">
           <LogActivityForm lead={l} type={logType} onTypeChange={setLogType} onLogged={onLogged} />

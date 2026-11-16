@@ -16,6 +16,7 @@ CATALOGUE: dict[str, str] = {
     "lead.stage_changed": "crm",
     "lead.merged": "crm",  # step 1 (Decision log #22): survivor id + merged lead id
     "lead.intent_changed": "crm",
+    "lead.erased": "crm",  # a person erased on request (DPDP / GDPR): delete your copy
     "lead.summary_changed": "ace",  # ACE wrote a new summary of the lead (ACE step 1)
     "record.created": "crm",  # step 2 (Decision log #23): company-defined record types
     "record.updated": "crm",

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/app/app-shell";
 import { GetTheApp, PhoneAppCallTracking } from "@/components/app/phone-app";
 import { PhoneNotifications } from "@/components/app/phone-notifications";
+import { MyDevices } from "@/components/app/sign-ins";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { BackupCodes } from "@/components/app/backup-codes";
 import { TwoFactorSetupForm } from "@/components/app/restriction-screens";
@@ -84,6 +85,7 @@ export default function AccountPage() {
           title="Signed-in devices"
           description="Lost a phone or used a shared computer? Sign out everywhere, including here."
         >
+          <MyDevices />
           <Button
             variant="outline"
             onClick={async () => {

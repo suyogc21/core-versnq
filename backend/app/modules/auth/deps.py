@@ -143,6 +143,17 @@ async def current_user_any(
     user = await db.get(User, claims.sub)
     if user is None or user.status != "active":
         raise _unauthorized()
+    from app.core.client_ip import client_ip
+    from app.modules.auth.service import signed_out_after
+    from app.modules.security import service as SEC
+
+    if await signed_out_after(user.id, claims.issued_at):  # "sign out everywhere" just happened
+        raise _unauthorized()
+
+    # The company's IP allowlist applies to people's sessions on every request (batch 1).
+    # API keys, the WhatsApp extension and the phone app work from anywhere.
+    if not SEC.ip_allowed(await SEC.settings_of(db, workspace.id), client_ip(request)):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "ip_not_allowed")
     request_actor.set((user.id, "user"))
     role = await db.get(Role, user.role_id)
     return CurrentUser(

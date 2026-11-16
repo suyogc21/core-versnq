@@ -44,6 +44,8 @@ class TenantSettings(TimestampMixin, Base):
     # Connected inboxes (step 9b-3): addresses and @domains never synced from anyone's mailbox.
     mail_exclusions: Mapped[list] = mapped_column(JSONB, default=list)
     # Copy-in address (step 9b-2): does an email with an unknown person create a lead, and how.
+    # Security (finishing plan, batch 1): idle_minutes, ip_allowlist, alert_failed_sign_ins.
+    security: Mapped[dict] = mapped_column(JSONB, default=dict)
     copy_in: Mapped[dict] = mapped_column(
         JSONB, default=lambda: {"create_leads": False, "source_id": None}
     )

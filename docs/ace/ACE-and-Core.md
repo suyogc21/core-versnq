@@ -163,6 +163,7 @@ def verify(secret: str, headers: dict, raw: bytes) -> bool:
 |---|---|
 | `lead.created`, `lead.updated`, `lead.assigned`, `lead.stage_changed`, `lead.merged` | keep its view of leads fresh; re-point data on merge |
 | `lead.intent_changed` | know when intent changed (ACE is usually the producer) |
+| `lead.erased` (Nov 16) | a person was erased on request (DPDP / GDPR): **delete everything ACE keeps about that lead** (summaries, transcripts, drafts, runs) |
 | `activity.logged` | see notes and calls people log (not every system activity) |
 | `message.received`, `message.sent` | **the main trigger**: a message arrived or went out; refresh that lead's summary and intent |
 | `sequence.enrolled`, `sequence.replied` | know a sequence got a reply |

@@ -1653,6 +1653,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/data-exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Exports */
+        get: operations["security-list_exports"];
+        put?: never;
+        /** Start Export */
+        post: operations["security-start_export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-exports/{export_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Export */
+        get: operations["security-download_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/deals": {
         parameters: {
             query?: never;
@@ -3660,6 +3695,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Erase
+         * @description Erase a person on their request (DPDP / GDPR). This can't be undone.
+         */
+        post: operations["security-erase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/intent": {
         parameters: {
             query?: never;
@@ -4135,6 +4190,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Devices */
+        get: operations["security-my_devices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/devices/{session_id}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Out Device
+         * @description That device can't renew its sign-in; it is signed out within 15 minutes at most.
+         */
+        post: operations["security-sign_out_device"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/extension/code": {
         parameters: {
             query?: never;
@@ -4208,6 +4300,23 @@ export interface paths {
         put?: never;
         /** Sync Now */
         post: operations["mailboxes-sync_now"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/sign-ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Sign Ins */
+        get: operations["security-my_sign_ins"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5289,6 +5398,81 @@ export interface paths {
         /** Set Score Settings */
         put: operations["organise-set_score_settings"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/security/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings */
+        get: operations["security-get_settings_"];
+        /** Put Settings */
+        put: operations["security-put_settings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/security/sign-ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All Sign Ins */
+        get: operations["security-all_sign_ins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/security/sign-out-everyone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Out Everyone
+         * @description Everyone in the company, including you, is signed out at once (a suspected breach).
+         */
+        post: operations["security-sign_out_everyone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/security/users/{user_id}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Out User
+         * @description Sign one person out everywhere, at once.
+         */
+        post: operations["security-sign_out_user"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9460,6 +9644,14 @@ export interface components {
             /** Yearly Reset */
             yearly_reset?: boolean | null;
         };
+        /** EraseIn */
+        EraseIn: {
+            /**
+             * Confirm
+             * @constant
+             */
+            confirm: "ERASE";
+        };
         /** EventTypeOut */
         EventTypeOut: {
             /** Module */
@@ -9471,6 +9663,27 @@ export interface components {
         Exclusions: {
             /** Items */
             items: string[];
+        };
+        /** ExportOut */
+        ExportOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Expires At */
+            expires_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Size Bytes */
+            size_bytes: number | null;
+            /** Status */
+            status: string;
         };
         /** ExtensionMeOut */
         ExtensionMeOut: {
@@ -10727,6 +10940,8 @@ export interface components {
              * @default 0
              */
             engagement_score: number;
+            /** Erased At */
+            erased_at?: string | null;
             /** First Name */
             first_name: string | null;
             /**
@@ -12730,6 +12945,46 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** SecuritySettings */
+        SecuritySettings: {
+            /**
+             * Alert Failed Sign Ins
+             * @default true
+             */
+            alert_failed_sign_ins: boolean;
+            /**
+             * Idle Minutes
+             * @description 0 = off; otherwise 30 to 1440
+             * @default 0
+             */
+            idle_minutes: number;
+            /**
+             * Ip Allowlist
+             * @default []
+             */
+            ip_allowlist: string[];
+        };
+        /** SecuritySettingsOut */
+        SecuritySettingsOut: {
+            /**
+             * Alert Failed Sign Ins
+             * @default true
+             */
+            alert_failed_sign_ins: boolean;
+            /**
+             * Idle Minutes
+             * @description 0 = off; otherwise 30 to 1440
+             * @default 0
+             */
+            idle_minutes: number;
+            /**
+             * Ip Allowlist
+             * @default []
+             */
+            ip_allowlist: string[];
+            /** Your Ip */
+            your_ip: string;
+        };
         /** SendingSettings */
         SendingSettings: {
             /** Daily Cap */
@@ -12893,6 +13148,54 @@ export interface components {
              * @enum {string}
              */
             channel: "whatsapp" | "copy";
+        };
+        /** SignInOut */
+        SignInOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /** Method */
+            method: string;
+            /** Reason */
+            reason: string | null;
+            /** Success */
+            success: boolean;
+            /** User Agent */
+            user_agent: string | null;
+            /** User Id */
+            user_id: string | null;
+            /** User Name */
+            user_name?: string | null;
+        };
+        /** SignedInDevice */
+        SignedInDevice: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /**
+             * Last Active At
+             * Format: date-time
+             */
+            last_active_at: string;
+            /** This Device */
+            this_device: boolean;
+            /** User Agent */
+            user_agent: string | null;
         };
         /** Skipped */
         Skipped: {
@@ -18530,6 +18833,77 @@ export interface operations {
             };
         };
     };
+    "security-list_exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportOut"][];
+                };
+            };
+        };
+    };
+    "security-start_export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportOut"];
+                };
+            };
+        };
+    };
+    "security-download_export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                export_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "deals-list_deals": {
         parameters: {
             query?: {
@@ -23037,6 +23411,39 @@ export interface operations {
             };
         };
     };
+    "security-erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EraseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "lead-api-put_intent": {
         parameters: {
             query?: never;
@@ -23987,6 +24394,66 @@ export interface operations {
             };
         };
     };
+    "security-my_devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                user_refresh?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedInDevice"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "security-sign_out_device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     "extension-make_code": {
         parameters: {
             query?: never;
@@ -24114,6 +24581,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MailboxOut"];
+                };
+            };
+        };
+    };
+    "security-my_sign_ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignInOut"][];
                 };
             };
         };
@@ -26710,6 +27197,140 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ScoreSettings"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "security-get_settings_": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecuritySettingsOut"];
+                };
+            };
+        };
+    };
+    "security-put_settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecuritySettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecuritySettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "security-all_sign_ins": {
+        parameters: {
+            query?: {
+                user_id?: string | null;
+                failed?: boolean;
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignInOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "security-sign_out_everyone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "security-sign_out_user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
