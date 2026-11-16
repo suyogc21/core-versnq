@@ -12,8 +12,8 @@ Each item has a size: S = 1, M = 2, L = 3.
 | | Points | Share |
 |---|---|---|
 | ✅ Live and usable | 45 | **41%** |
-| 🟡 Built, waiting on an account, key or your try | 32 | 29% |
-| ⬜ Not built | 33 | 30% |
+| 🟡 Built, waiting on an account, key or your try | 35 | 32% |
+| ⬜ Not built | 30 | 27% |
 | **Total (goal above)** | 110 | |
 
 Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 done" counted the 🟡 rows in the Done table as done. It's a rough count by size, not hours; most of what's left is the new scope: calls, apps, marketing and global.
@@ -103,7 +103,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 |---|---|---|
 | GDPR (Europe) | M | 🟡 built Nov 16 (batch 1 + 6): export, a person's data, erasure, breach runbook, DPA template; the DPA needs a lawyer's read |
 | VAT and sales-tax setups for other countries | M | 🟡 built Nov 16 (batch 6): presets for the Gulf, UK, 10 EU countries, SG, AU, CA, NZ; US is a placeholder (state taxes) |
-| The app in other languages | L | ⬜ groundwork only (translation hooks); Arabic and Hindi next |
+| The app in other languages | L | 🟡 built Nov 16 (batch 6): Arabic (right to left) and Hindi for the menu, page titles, Settings and My account; the rest of each screen still English; needs a native speaker's read |
 | Choice of data region (EU, US) | L | ⬜ |
 | Import from HubSpot and LeadSquared | M | 🟡 built Nov 16 (batch 2); check one real export file from each |
 
@@ -133,3 +133,4 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | 2026-11-16 | Finishing plan batches 1–4 built: security, imports, WhatsApp extras, brands (migrations 0040–0042) |
 | 2026-11-16 | Android app C4.2–C4.4 built (call tracking, recordings, caller popup, download link) |
 | 2026-11-16 | Batches 5a–5d (landing pages, A/B, newsletters, custom reports, lead ads, SMS; migrations 0043–0046) and batch 6 part 1 (tax presets, a person's data) merged and tested (676 tests); unknown calls never become leads by themselves. Not deployed yet |
+| 2026-11-16 | Arabic and Hindi (partly translated), right-to-left layout; 14 browser tests green |
