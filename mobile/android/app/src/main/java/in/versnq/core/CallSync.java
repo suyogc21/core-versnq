@@ -165,8 +165,8 @@ final class CallSync {
 
     /** POST JSON with the phone key. */
     static Response post(String url, String token, JSONObject body) {
-        Response out = new Response();
-        out.code = -1;
+        Response res = new Response();
+        res.code = -1;
         HttpURLConnection http = null;
         try {
             http = (HttpURLConnection) new URL(url).openConnection();
@@ -181,23 +181,23 @@ final class CallSync {
             try (OutputStream out = http.getOutputStream()) {
                 out.write(body.toString().getBytes(StandardCharsets.UTF_8));
             }
-            out.code = http.getResponseCode();
-            try (InputStream in = out.code < 400 ? http.getInputStream() : http.getErrorStream()) {
+            res.code = http.getResponseCode();
+            try (InputStream in = res.code < 400 ? http.getInputStream() : http.getErrorStream()) {
                 if (in != null) {
                     java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
                     byte[] chunk = new byte[8192];
                     int n;
                     while ((n = in.read(chunk)) != -1 && buf.size() < 1_000_000) buf.write(chunk, 0, n);
                     try {
-                        out.json = new JSONObject(buf.toString("UTF-8"));
+                        res.json = new JSONObject(buf.toString("UTF-8"));
                     } catch (org.json.JSONException e) {
-                        out.json = null;
+                        res.json = null;
                     }
                 }
             }
-            return out;
+            return res;
         } catch (IOException e) {
-            return out;
+            return res;
         } finally {
             if (http != null) http.disconnect();
         }
