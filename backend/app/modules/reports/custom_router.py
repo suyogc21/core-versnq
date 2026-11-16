@@ -19,12 +19,12 @@ from sqlalchemy import or_, select
 from app.core.errors import Forbidden, Invalid, NotFound
 from app.modules.auth.deps import ActiveUser, CurrentUser
 from app.modules.crm import leads as L
-from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.deps import CRM, SCREENS, CrmDb, audit
 from app.modules.reports import custom as R
 from app.modules.reports.models import SavedReport
 from app.modules.roles.models import Role
 
-router = APIRouter(prefix="/api/v1/reports", tags=["reports"], dependencies=CRM)
+router = APIRouter(prefix="/api/v1/reports", tags=["reports"], dependencies=[*CRM, *SCREENS])
 SHARERS = ("dashboards.business", "settings.manage")
 
 

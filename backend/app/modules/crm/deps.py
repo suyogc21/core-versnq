@@ -13,6 +13,8 @@ from app.modules.crm.setup import ensure_crm_setup
 
 # Every CRM route sits behind the crm module switch (404 when off).
 CRM = [require_module("crm")]
+# Off on the "Calls + WhatsApp" plan: the company works in its own CRM.
+SCREENS = [require_module("crm_screens")]
 
 
 async def _crm_db(ws: WorkspaceDep, db: TenantDb) -> AsyncSession:

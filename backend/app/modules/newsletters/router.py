@@ -12,14 +12,16 @@ from sqlalchemy import select
 from app.core.errors import Conflict, Invalid, NotFound
 from app.modules.auth.deps import CurrentUser, require
 from app.modules.crm import leads as L
-from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.deps import CRM, SCREENS, CrmDb, audit
 from app.modules.crm.models import Lead
 from app.modules.engage.models import Mailbox, Message
 from app.modules.newsletters import postmark as PM
 from app.modules.newsletters import service as S
 from app.modules.newsletters.models import Newsletter, NewsletterSend
 
-router = APIRouter(prefix="/api/v1/newsletters", tags=["newsletters"], dependencies=CRM)
+router = APIRouter(
+    prefix="/api/v1/newsletters", tags=["newsletters"], dependencies=[*CRM, *SCREENS]
+)
 Manager = Annotated[CurrentUser, require("newsletters.manage")]
 
 

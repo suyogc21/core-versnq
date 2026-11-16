@@ -145,6 +145,14 @@ async def webhooks_job(ctx) -> dict:
     return await run_all(await _active_tenants())
 
 
+async def crm_sync_job(ctx) -> dict:
+    """Every 10 seconds: calls and WhatsApp messages go to each company's connected CRM."""
+    from app.modules.connectors.service import run_all
+    from app.modules.crm.automation import _active_tenants
+
+    return await run_all(await _active_tenants())
+
+
 async def call_recordings_job(ctx) -> int:
     """Every minute (and right after Twilio says a recording is ready): fetch providers'
     recordings into Core (C3). Given up after a day."""

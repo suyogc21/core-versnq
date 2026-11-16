@@ -25,12 +25,12 @@ from app.core.client_ip import client_ip
 from app.core.errors import Conflict, Invalid, NotFound
 from app.core.ratelimit import get_redis, hit
 from app.modules.auth.deps import CurrentUser, WorkspaceDep, require
-from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.deps import CRM, SCREENS, CrmDb, audit
 from app.modules.crm.models import CaptureSource, Lead
 from app.modules.marketing.models import LandingPage
 from app.modules.settings.models import TenantSettings
 
-router = APIRouter(prefix="/api/v1", tags=["landing-pages"], dependencies=CRM)
+router = APIRouter(prefix="/api/v1", tags=["landing-pages"], dependencies=[*CRM, *SCREENS])
 public = APIRouter(prefix="/api/v1/pages", tags=["landing-pages"], dependencies=CRM)
 Builder = Annotated[CurrentUser, require("pages.manage")]
 

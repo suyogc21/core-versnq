@@ -1466,6 +1466,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/crm-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Connection */
+        get: operations["crm-connection-get_connection"];
+        /** Put Connection */
+        put: operations["crm-connection-put_connection"];
+        post?: never;
+        /** Disconnect */
+        delete: operations["crm-connection-disconnect"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm-connection/syncs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Syncs */
+        get: operations["crm-connection-list_syncs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm-connection/syncs/{sync_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Sync */
+        post: operations["crm-connection-retry_sync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm-connection/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Connection
+         * @description Looks a number up in the CRM: proves the keys and addresses work.
+         */
+        post: operations["crm-connection-test_connection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/crm-rules": {
         parameters: {
             query?: never;
@@ -9659,6 +9732,108 @@ export interface components {
             /** Reachable */
             reachable: number;
         };
+        /** CrmConnectionIn */
+        CrmConnectionIn: {
+            /** Access Key */
+            access_key?: string | null;
+            /** Activity Event */
+            activity_event?: number | null;
+            /** Activity Url */
+            activity_url?: string | null;
+            /**
+             * Create Leads
+             * @default true
+             */
+            create_leads: boolean;
+            /** Create Url */
+            create_url?: string | null;
+            /** Host */
+            host?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Lookup Url */
+            lookup_url?: string | null;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "custom" | "leadsquared";
+            /** Secret Key */
+            secret_key?: string | null;
+            /**
+             * Send Calls
+             * @default true
+             */
+            send_calls: boolean;
+            /**
+             * Send Whatsapp
+             * @default true
+             */
+            send_whatsapp: boolean;
+        };
+        /** CrmConnectionOut */
+        CrmConnectionOut: {
+            /** Activity Event */
+            activity_event?: number | null;
+            /** Activity Url */
+            activity_url?: string | null;
+            /** Connected */
+            connected: boolean;
+            /**
+             * Create Leads
+             * @default true
+             */
+            create_leads: boolean;
+            /** Create Url */
+            create_url?: string | null;
+            /** Host */
+            host?: string | null;
+            /**
+             * Is Active
+             * @default false
+             */
+            is_active: boolean;
+            /** Key Hint */
+            key_hint?: string | null;
+            /** Last Error */
+            last_error?: string | null;
+            /** Last Ok At */
+            last_ok_at?: string | null;
+            /** Lookup Url */
+            lookup_url?: string | null;
+            /** Provider */
+            provider?: string | null;
+            /**
+             * Regions
+             * @default {
+             *       "api-ca12.leadsquared.com": "Canada",
+             *       "api-in21.leadsquared.com": "India (Mumbai)",
+             *       "api-in22.leadsquared.com": "India (Hyderabad)",
+             *       "api-ir31.leadsquared.com": "Ireland",
+             *       "api-me61.leadsquared.com": "Middle East",
+             *       "api-us11.leadsquared.com": "United States",
+             *       "api.leadsquared.com": "Singapore"
+             *     }
+             */
+            regions: {
+                [key: string]: string;
+            };
+            /**
+             * Send Calls
+             * @default true
+             */
+            send_calls: boolean;
+            /**
+             * Send Whatsapp
+             * @default true
+             */
+            send_whatsapp: boolean;
+            /** Signing Secret */
+            signing_secret?: string | null;
+        };
         /** CrmRules */
         CrmRules: {
             /**
@@ -9693,6 +9868,33 @@ export interface components {
             leakage_hours?: number | null;
             /** Org Grouping */
             org_grouping?: ("off" | "suggest" | "auto") | null;
+        };
+        /** CrmSyncOut */
+        CrmSyncOut: {
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** External Lead Id */
+            external_lead_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Last Error */
+            last_error: string | null;
+            /** Lead Id */
+            lead_id: string | null;
+            /** Sent At */
+            sent_at: string | null;
+            /** Status */
+            status: string;
         };
         /** CustomerMoney */
         CustomerMoney: {
@@ -15566,21 +15768,17 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** TestIn */
+        TestIn: {
+            /** Phone */
+            phone: string;
+        };
         /** TestInboundOut */
         TestInboundOut: {
             /** Conversation Id */
             conversation_id?: string | null;
             /** Stored */
             stored: boolean;
-        };
-        /** TestOut */
-        TestOut: {
-            /** Conditions */
-            conditions: {
-                [key: string]: unknown;
-            }[];
-            /** Matches */
-            matches: boolean;
         };
         /** ToDocumentIn */
         ToDocumentIn: {
@@ -16444,6 +16642,24 @@ export interface components {
             device_id: string;
             /** Token */
             token: string;
+        };
+        /** TestOut */
+        app__modules__connectors__router__TestOut: {
+            /** Error */
+            error?: string | null;
+            /** Lead Id */
+            lead_id?: string | null;
+            /** Ok */
+            ok: boolean;
+        };
+        /** TestOut */
+        app__modules__crm__automations_router__TestOut: {
+            /** Conditions */
+            conditions: {
+                [key: string]: unknown;
+            }[];
+            /** Matches */
+            matches: boolean;
         };
         /** RejectIn */
         app__modules__crm__customers_router__RejectIn: {
@@ -17889,7 +18105,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TestOut"];
+                    "application/json": components["schemas"]["app__modules__crm__automations_router__TestOut"];
                 };
             };
             /** @description Validation Error */
@@ -20020,6 +20236,161 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CompanyCopyInOut"];
+                };
+            };
+        };
+    };
+    "crm-connection-get_connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmConnectionOut"];
+                };
+            };
+        };
+    };
+    "crm-connection-put_connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrmConnectionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-connection-disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "crm-connection-list_syncs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmSyncOut"][];
+                };
+            };
+        };
+    };
+    "crm-connection-retry_sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sync_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmSyncOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "crm-connection-test_connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__modules__connectors__router__TestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -16,7 +16,7 @@ from app.modules.crm import access as A
 from app.modules.crm import deals as D
 from app.modules.crm import leads as L
 from app.modules.crm import tags as T
-from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.deps import CRM, SCREENS, CrmDb, audit
 from app.modules.crm.leads_router import TagRef
 from app.modules.crm.models import (
     Activity,
@@ -30,7 +30,7 @@ from app.modules.crm.models import (
 )
 from app.modules.users.models import User
 
-router = APIRouter(prefix="/api/v1", tags=["deals"], dependencies=CRM)
+router = APIRouter(prefix="/api/v1", tags=["deals"], dependencies=[*CRM, *SCREENS])
 
 
 # ---------- schemas ----------

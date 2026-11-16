@@ -106,4 +106,7 @@ export const ar: Record<string, string> = {
     "مزوّد الرسائل النصية (MSG91 أو Twilio)، نصوص الرسائل ومعرّفات قوالب DLT",
   "Your records": "سجلاتك",
   "{n} unread": "{n} غير مقروءة",
+  "Connected CRM": "CRM المتصل",
+  "Send calls and WhatsApp messages to LeadSquared or any other CRM":
+    "أرسل المكالمات ورسائل واتساب إلى LeadSquared أو أي CRM آخر",
 };

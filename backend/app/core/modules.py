@@ -35,6 +35,11 @@ MODULES: dict[str, Module] = {
     "whatsapp_number": Module("Company WhatsApp number (official API)", core=False, default=False),
     "copy_in": Module("Copy-in email addresses", core=False, default=False),
     "outreach": Module("Outreach campaigns (cold email)", core=False, default=False),
+    # Off on the "Calls + WhatsApp" plan (docs/plans/crm-connectors-plan.md): the company keeps
+    # its own CRM; deals, customers, reports, newsletters and landing pages are hidden.
+    "crm_screens": Module(
+        "Core CRM screens (deals, customers, reports, marketing)", core=False, default=True
+    ),  # fmt: skip
 }
 
 

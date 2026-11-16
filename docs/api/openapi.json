@@ -5461,6 +5461,286 @@
         "title": "CountOut",
         "type": "object"
       },
+      "CrmConnectionIn": {
+        "properties": {
+          "access_key": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Key"
+          },
+          "activity_event": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Event"
+          },
+          "activity_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Url"
+          },
+          "create_leads": {
+            "default": true,
+            "title": "Create Leads",
+            "type": "boolean"
+          },
+          "create_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Create Url"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "lookup_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookup Url"
+          },
+          "provider": {
+            "enum": [
+              "custom",
+              "leadsquared"
+            ],
+            "title": "Provider",
+            "type": "string"
+          },
+          "secret_key": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Key"
+          },
+          "send_calls": {
+            "default": true,
+            "title": "Send Calls",
+            "type": "boolean"
+          },
+          "send_whatsapp": {
+            "default": true,
+            "title": "Send Whatsapp",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "provider"
+        ],
+        "title": "CrmConnectionIn",
+        "type": "object"
+      },
+      "CrmConnectionOut": {
+        "properties": {
+          "activity_event": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Event"
+          },
+          "activity_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Url"
+          },
+          "connected": {
+            "title": "Connected",
+            "type": "boolean"
+          },
+          "create_leads": {
+            "default": true,
+            "title": "Create Leads",
+            "type": "boolean"
+          },
+          "create_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Create Url"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          },
+          "is_active": {
+            "default": false,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "key_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Hint"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_ok_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Ok At"
+          },
+          "lookup_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookup Url"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "regions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {
+              "api-ca12.leadsquared.com": "Canada",
+              "api-in21.leadsquared.com": "India (Mumbai)",
+              "api-in22.leadsquared.com": "India (Hyderabad)",
+              "api-ir31.leadsquared.com": "Ireland",
+              "api-me61.leadsquared.com": "Middle East",
+              "api-us11.leadsquared.com": "United States",
+              "api.leadsquared.com": "Singapore"
+            },
+            "title": "Regions",
+            "type": "object"
+          },
+          "send_calls": {
+            "default": true,
+            "title": "Send Calls",
+            "type": "boolean"
+          },
+          "send_whatsapp": {
+            "default": true,
+            "title": "Send Whatsapp",
+            "type": "boolean"
+          },
+          "signing_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signing Secret"
+          }
+        },
+        "required": [
+          "connected"
+        ],
+        "title": "CrmConnectionOut",
+        "type": "object"
+      },
       "CrmRules": {
         "properties": {
           "duplicate_policy": {
@@ -5591,6 +5871,91 @@
           }
         },
         "title": "CrmRulesPatch",
+        "type": "object"
+      },
+      "CrmSyncOut": {
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "external_lead_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Lead Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "lead_id",
+          "external_lead_id",
+          "status",
+          "attempts",
+          "last_error",
+          "created_at",
+          "sent_at"
+        ],
+        "title": "CrmSyncOut",
         "type": "object"
       },
       "CustomerMoney": {
@@ -22946,6 +23311,21 @@
         "title": "TenantUpdate",
         "type": "object"
       },
+      "TestIn": {
+        "properties": {
+          "phone": {
+            "maxLength": 32,
+            "minLength": 4,
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "title": "TestIn",
+        "type": "object"
+      },
       "TestInboundOut": {
         "properties": {
           "conversation_id": {
@@ -22969,28 +23349,6 @@
           "stored"
         ],
         "title": "TestInboundOut",
-        "type": "object"
-      },
-      "TestOut": {
-        "properties": {
-          "conditions": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "title": "Conditions",
-            "type": "array"
-          },
-          "matches": {
-            "title": "Matches",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "matches",
-          "conditions"
-        ],
-        "title": "TestOut",
         "type": "object"
       },
       "ToDocumentIn": {
@@ -25549,6 +25907,63 @@
           "device_id"
         ],
         "title": "ConnectOut",
+        "type": "object"
+      },
+      "app__modules__connectors__router__TestOut": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "title": "TestOut",
+        "type": "object"
+      },
+      "app__modules__crm__automations_router__TestOut": {
+        "properties": {
+          "conditions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "matches": {
+            "title": "Matches",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "matches",
+          "conditions"
+        ],
+        "title": "TestOut",
         "type": "object"
       },
       "app__modules__crm__customers_router__RejectIn": {
@@ -28359,7 +28774,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestOut"
+                  "$ref": "#/components/schemas/app__modules__crm__automations_router__TestOut"
                 }
               }
             },
@@ -31810,6 +32225,218 @@
         "summary": "Reset Company Copy In",
         "tags": [
           "mailboxes"
+        ]
+      }
+    },
+    "/api/v1/crm-connection": {
+      "delete": {
+        "operationId": "crm-connection-disconnect",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disconnect",
+        "tags": [
+          "crm-connection"
+        ]
+      },
+      "get": {
+        "operationId": "crm-connection-get_connection",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmConnectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Connection",
+        "tags": [
+          "crm-connection"
+        ]
+      },
+      "put": {
+        "operationId": "crm-connection-put_connection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmConnectionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmConnectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Connection",
+        "tags": [
+          "crm-connection"
+        ]
+      }
+    },
+    "/api/v1/crm-connection/syncs": {
+      "get": {
+        "operationId": "crm-connection-list_syncs",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CrmSyncOut"
+                  },
+                  "title": "Response Crm-Connection-List Syncs",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Syncs",
+        "tags": [
+          "crm-connection"
+        ]
+      }
+    },
+    "/api/v1/crm-connection/syncs/{sync_id}/retry": {
+      "post": {
+        "operationId": "crm-connection-retry_sync",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sync_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Sync Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmSyncOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Retry Sync",
+        "tags": [
+          "crm-connection"
+        ]
+      }
+    },
+    "/api/v1/crm-connection/test": {
+      "post": {
+        "description": "Looks a number up in the CRM: proves the keys and addresses work.",
+        "operationId": "crm-connection-test_connection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__connectors__router__TestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Connection",
+        "tags": [
+          "crm-connection"
         ]
       }
     },

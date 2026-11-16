@@ -17,7 +17,7 @@ from app.modules.auth.deps import ActiveUser, CurrentUser, require
 from app.modules.crm import access as A
 from app.modules.crm import customers as C
 from app.modules.crm import leads as L
-from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.deps import CRM, SCREENS, CrmDb, audit
 from app.modules.crm.models import (
     Customer,
     Deal,
@@ -30,7 +30,7 @@ from app.modules.crm.models import (
 from app.modules.settings.models import TenantSettings
 from app.modules.users.models import User
 
-router = APIRouter(prefix="/api/v1", tags=["customers"], dependencies=CRM)
+router = APIRouter(prefix="/api/v1", tags=["customers"], dependencies=[*CRM, *SCREENS])
 Configurer = Annotated[CurrentUser, require("crm.configure")]
 # A file opened in the browser can never run scripts or load anything else.
 CSP = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"

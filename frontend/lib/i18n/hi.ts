@@ -106,4 +106,7 @@ export const hi: Record<string, string> = {
     "आपका SMS प्रदाता (MSG91 या Twilio), SMS टेक्स्ट और DLT टेम्पलेट आईडी",
   "Your records": "आपके रिकॉर्ड",
   "{n} unread": "{n} अपठित",
+  "Connected CRM": "जुड़ा हुआ CRM",
+  "Send calls and WhatsApp messages to LeadSquared or any other CRM":
+    "कॉल और WhatsApp संदेश LeadSquared या किसी भी दूसरे CRM में भेजें",
 };

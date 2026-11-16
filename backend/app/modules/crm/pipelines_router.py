@@ -14,7 +14,7 @@ from app.core.errors import Conflict, Invalid
 from app.modules.auth.deps import ActiveUser
 from app.modules.crm import deals as D
 from app.modules.crm import leads as L
-from app.modules.crm.deps import CRM, CrmDb, audit
+from app.modules.crm.deps import CRM, SCREENS, CrmDb, audit
 from app.modules.crm.models import (
     Deal,
     DealProduct,
@@ -34,7 +34,7 @@ from app.modules.crm.setup_router import (
 )
 from app.modules.settings.models import TenantSettings
 
-router = APIRouter(prefix="/api/v1", tags=["deal setup"], dependencies=CRM)
+router = APIRouter(prefix="/api/v1", tags=["deal setup"], dependencies=[*CRM, *SCREENS])
 
 Kind = Literal["open", "won", "lost"]
 

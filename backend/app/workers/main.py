@@ -6,6 +6,7 @@ from app.workers.jobs import (
     automation_job,
     call_recordings_job,
     campaigns_job,
+    crm_sync_job,
     data_export_job,
     data_export_sweep_job,
     import_job,
@@ -57,6 +58,7 @@ class WorkerSettings:
         call_recordings_job,
         push_job,
         webhooks_job,
+        crm_sync_job,
         sequences_job,
         newsletters_job,
         campaigns_job,
@@ -73,6 +75,7 @@ class WorkerSettings:
         cron(money_mail_sweep_job, second=30),
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
         cron(webhooks_job, second=set(range(7, 60, 10)), unique=True),  # every 10 seconds
+        cron(crm_sync_job, second=set(range(3, 60, 10)), unique=True),
         cron(call_recordings_job, second=35, unique=True),  # every minute (C3)
         cron(lead_ads_job, second=5, unique=True),  # every minute (batch 5d)
         cron(data_export_sweep_job, second=55, unique=True),  # batch 1

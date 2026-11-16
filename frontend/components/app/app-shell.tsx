@@ -131,9 +131,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const moneyOn = useMoneyOn();
   const keyOn = useKeyAccountsOn();
   const outreachOn = useModuleOn("outreach");
+  // Off on the "Calls + WhatsApp" plan: the company works in its own CRM (My Day, Calls, Inbox stay).
+  const screens = useModuleOn("crm_screens");
   const inboxCounts = useInboxCounts(!!me && can("inbox.reply"));
   if (!me) return null;
-  const mainItems = [
+  const allItems = [
     ...MAIN.filter((i) => !i.permission || can(i.permission)).map((i) =>
       i.href === "/" ? i : { ...i, label: label(i.label, true) },
     ),
@@ -192,6 +194,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: Boxes,
     })),
   ];
+  // "Calls + WhatsApp" plan: only the places a rep needs beside their own CRM.
+  const mainItems = screens
+    ? allItems
+    : allItems.filter((i) => ["/", "/calls", "/inbox"].includes(i.href));
   // One Settings entry for everything set up once; shown when any settings page is allowed.
   const workspaceItems: NavItem[] = SETTINGS_PAGES.some((p) =>
     can(p.permission),

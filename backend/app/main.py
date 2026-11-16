@@ -11,6 +11,7 @@ from app.modules.calls.phone import router as phone_router
 from app.modules.calls.router import router as calls_router
 from app.modules.calls.twilio_router import public as twilio_public_router
 from app.modules.calls.twilio_router import router as twilio_router
+from app.modules.connectors.router import router as crm_connection_router
 from app.modules.crm.automations_router import router as automations_router
 from app.modules.crm.capture_router import forms_public
 from app.modules.crm.capture_router import public as capture_public_router
@@ -117,6 +118,7 @@ app.include_router(replies_router)
 app.include_router(calls_router)
 app.include_router(phone_router)
 app.include_router(lead_ads_router)
+app.include_router(crm_connection_router)
 app.include_router(lead_ads_public_router)
 app.include_router(sms_router)
 app.include_router(sms_public_router)
