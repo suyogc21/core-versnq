@@ -13820,6 +13820,21 @@
             "title": "Ace Console",
             "type": "boolean"
           },
+          "brand_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand Ids"
+          },
           "email": {
             "title": "Email",
             "type": "string"

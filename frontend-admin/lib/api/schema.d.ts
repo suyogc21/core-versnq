@@ -11855,6 +11855,8 @@ export interface components {
              * @default false
              */
             ace_console: boolean;
+            /** Brand Ids */
+            brand_ids?: string[] | null;
             /** Email */
             email: string;
             /**

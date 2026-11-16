@@ -117,6 +117,9 @@ async def test_a_person_limited_to_a_brand_sees_only_that_brand(ws):
                              json={"brand_ids": [a["id"]]}, headers=admin)  # fmt: skip
     set_ = await c.put(f"/api/v1/users/{limited_id}/brands", json={"brand_ids": [a["id"]]},
                        headers=admin)  # fmt: skip
+    me = (await c.get("/api/v1/auth/me", headers=limited)).json()
+    assert me["brand_ids"] == [a["id"]]  # ACE's connect check reads this
+    assert (await c.get("/api/v1/auth/me", headers=admin)).json()["brand_ids"] is None
     key = await c.post("/api/v1/integrations/keys", json={"name": "Brand A tool",
                        "role_id": str(role)}, headers=admin)  # fmt: skip
     async with tenant_session(tenant_id) as db:

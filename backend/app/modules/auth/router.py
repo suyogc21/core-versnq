@@ -48,6 +48,7 @@ from app.modules.auth.schemas import (
     RoleOut,
     TenantRef,
 )
+from app.modules.brands import service as brands
 from app.modules.integrations import ace_console
 from app.modules.security import service as SEC
 from app.modules.users.models import User
@@ -307,6 +308,7 @@ async def me(current: AnyUser, ws: WorkspaceDep, db: TenantDb) -> MeOut:
         two_factor_enabled=u.totp_enabled,
         recovery_codes_left=await service.recovery_codes_left(db, u.id) if u.totp_enabled else 0,
         ace_console=ace_console.available(current),
+        brand_ids=await brands.limited_to(db, u.id),
     )
 
 
