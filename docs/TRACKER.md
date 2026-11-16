@@ -78,13 +78,13 @@ Each item has a size: S = 1, M = 2, L = 3.
 |---|---|---|
 | Click-to-call and incoming calls with the company's own Twilio (C3; Exotel later) | L | ✅ live Nov 16; the first real call needs a Twilio account (a trial is fine) |
 | **C1 call pipeline:** every call on the timeline, recordings (30 days), missed-call tasks, Outcome in one tap, Calls list, Settings → Calls | M | ✅ live Nov 16 (the phone app that feeds it is C4) |
-| ACE analyses calls (Core side built in C1: `call.recorded`, `PUT /calls/{id}/analysis`) | M | ⬜ ACE session |
+| ACE analyses calls (Core side built in C1: `call.recorded`, `PUT /calls/{id}/analysis`; the timeline shows intent, next step and red flags) | M | 🟡 ACE built C5 on fakes Nov 16; needs the Sarvam/Deepgram + Anthropic keys and ACE hosted |
 
 ### Phase 3: phone app (5): decided Nov 16 (installable web app now, Android app next)
 | Item | Size | |
 |---|---|---|
 | Installable app (PWA): home-screen icon, offline page, phone notifications (C2) | M | ✅ live Nov 16 (waiting for your own try) |
-| Native iOS and Android app | L | ⬜ |
+| Android app (plan: `plans/android-app-plan.md`): C4.1 shell built Nov 16 (same Core screens, company picker, GitHub build); C4.2 call log, C4.3 recorder folder, C4.4 caller popup next; iOS later | L | 🟡 C4.1 built, first GitHub build being checked |
 
 ### Phase 4: marketing (13)
 | Item | Size | |
@@ -127,3 +127,4 @@ Each item has a size: S = 1, M = 2, L = 3.
 | 2026-11-16 | Calls and phone app in scope; C1 call pipeline built |
 | 2026-11-16 | C2 installable app + phone notifications live; C3 Twilio calling built; Android app: download link first (Runo answers) |
 | 2026-11-16 | C3 Twilio calling live (migration 0037) |
+| 2026-11-16 | ACE lead summary in Core (0038, not deployed); Twilio dual-channel; Android C4.1 shell; ACE C5 built on fakes |
