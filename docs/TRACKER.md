@@ -59,7 +59,7 @@ Each item has a size: S = 1, M = 2, L = 3.
 ### Phase 1: green ticks on what we have (9)
 | Item | Size | |
 |---|---|---|
-| **Real forms: builder plus a hosted page to share or embed** (the old form "link" only accepted posts; opening it gave an error) | M | 🟡 built and tested Nov 16; ✅ once deployed |
+| **Real forms: builder plus a hosted page to share or embed** (the old form "link" only accepted posts; opening it gave an error) | M | ✅ live Nov 16 (waiting for Suyog's own try) |
 | Green-tick walk-through of every feature on the live server, fixing what fails | L | ⬜ |
 | WhatsApp extras: photos and PDFs, templates with images and buttons | M | ⬜ |
 | Several brands and sending domains in one company | M | ⬜ |
