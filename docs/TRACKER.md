@@ -76,7 +76,7 @@ Each item has a size: S = 1, M = 2, L = 3.
 ### Phase 2: phone calls (7): decided Nov 16 (plan: `plans/calls-plan.md`)
 | Item | Size | |
 |---|---|---|
-| Click-to-call and incoming calls with the company's own Twilio (C3; Exotel later) | L | 🟡 built and tested Nov 16 (deploy pending); a live call needs a Twilio account |
+| Click-to-call and incoming calls with the company's own Twilio (C3; Exotel later) | L | ✅ live Nov 16; the first real call needs a Twilio account (a trial is fine) |
 | **C1 call pipeline:** every call on the timeline, recordings (30 days), missed-call tasks, Outcome in one tap, Calls list, Settings → Calls | M | ✅ live Nov 16 (the phone app that feeds it is C4) |
 | ACE analyses calls (Core side built in C1: `call.recorded`, `PUT /calls/{id}/analysis`) | M | ⬜ ACE session |
 
@@ -126,3 +126,4 @@ Each item has a size: S = 1, M = 2, L = 3.
 | 2026-11-16 | Real forms built (builder, hosted page /f/<id>, embed); email provider: Postmark |
 | 2026-11-16 | Calls and phone app in scope; C1 call pipeline built |
 | 2026-11-16 | C2 installable app + phone notifications live; C3 Twilio calling built; Android app: download link first (Runo answers) |
+| 2026-11-16 | C3 Twilio calling live (migration 0037) |
