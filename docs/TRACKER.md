@@ -9,12 +9,14 @@ This file replaces the status parts of `OWNER-TODO.md` and `plans/ROADMAP.md`; p
 
 Each item has a size: S = 1, M = 2, L = 3.
 
-| | Done | Left | Total | % done |
-|---|---|---|---|---|
-| **All of it (goal above)** | 46 | 64 | 110 | **42%** |
-| The first version (no phones, apps, marketing or global) | 46 | 27 | 73 | **63%** |
+| | Points | Share |
+|---|---|---|
+| ✅ Live and usable | 45 | **41%** |
+| 🟡 Built, waiting on an account, key or your try | 15 | 14% |
+| ⬜ Not built | 50 | 45% |
+| **Total (goal above)** | 110 | |
 
-**58% is left.** It's a rough count by size, not hours; most of what's left is the new scope: calls, apps, marketing and global.
+Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 done" counted the 🟡 rows in the Done table as done. It's a rough count by size, not hours; most of what's left is the new scope: calls, apps, marketing and global.
 
 ## Done (46)
 
