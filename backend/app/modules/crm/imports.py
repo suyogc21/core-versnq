@@ -130,6 +130,12 @@ async def check_mapping(
         raise Invalid("Match at least one column to a phone, email or LinkedIn field")
     if "source" not in targets and not options.get("source_id"):
         raise Invalid("Choose a source for these leads, or match a Source column")
+    if (
+        options.get("unknown_values") == "note"
+        and "source" in targets
+        and not options.get("source_id")
+    ):
+        raise Invalid("Choose a source for rows whose source isn't in Core")
     if options.get("source_id"):
         source = await db.get(LeadSource, uuid.UUID(options["source_id"]))
         if source is None or not source.is_active:
@@ -161,34 +167,55 @@ async def _row(
     row: ImportRow,
     lookups: dict,
 ) -> None:
+    opts = imp.options
+    keep = opts.get("unknown_values") == "note"  # a CRM export: unknown values go to a note
+    notes_from = [c for c in imp.headers if imp.mapping.get(c) == "message"]
     values: dict[str, list[str]] = {}
     for i, column in enumerate(imp.headers):
         target = imp.mapping.get(column)
         if target and i < len(row.data):
-            values.setdefault(target, []).append(row.data[i])
+            value = row.data[i]
+            if target == "message" and len(notes_from) > 1 and value.strip():
+                value = f"{column}: {value.strip()}"  # several note columns: say which is which
+            values.setdefault(target, []).append(value)
     p = MP.parse(values, lookups["defs"])
-    if p.problems:
+    if p.problems and not keep:
         raise Invalid("; ".join(p.problems))
-    opts = imp.options
+    unknown: list[str] = []  # values from the file that aren't in Core (keep mode)
 
     source_id = uuid.UUID(opts["source_id"]) if opts.get("source_id") else None
     if p.source:
-        source_id = lookups["sources"].get(p.source.lower())
-        if source_id is None:
+        found = lookups["sources"].get(p.source.lower())
+        if found is None and not keep:
             raise Invalid(f"Unknown source '{p.source}'")
+        if found is None:
+            unknown.append(f"Source in the file: {p.source}")
+        source_id = found or source_id
     stage_id = uuid.UUID(opts["stage_id"]) if opts.get("stage_id") else None
     if p.stage:
-        stage_id = lookups["stages"].get(p.stage.lower())
-        if stage_id is None:
+        found = lookups["stages"].get(p.stage.lower())
+        if found is None and not keep:
             raise Invalid(f"Unknown stage '{p.stage}'")
+        if found is None:
+            unknown.append(f"Stage in the file: {p.stage}")
+        stage_id = found or stage_id
 
     owner: uuid.UUID | str | None
     choice = opts.get("owner", "me")
+    named = None
     if p.owner_email:
-        owner = lookups["users"].get(p.owner_email.lower())
-        if owner is None:
+        named = lookups["users"].get(p.owner_email.lower())
+        if named is None and keep:  # CRM exports often give the owner's name, not email
+            named = lookups["user_names"].get(" ".join(p.owner_email.lower().split()))
+        if named is None and not keep:
             raise Invalid(f"No active person with the email {p.owner_email}")
+        if named is None:
+            unknown.append(f"Owner in the file: {p.owner_email}")
+    if named is not None:
+        owner = named
         await L.check_assignable(db, actor, owner)
+    elif p.owner_email and keep:
+        owner = I.RULES  # the owner isn't in Core: the assignment rules decide
     elif choice == "me":
         owner = actor.user.id
     elif choice == "rules":
@@ -210,7 +237,7 @@ async def _row(
         consents=p.consents,
         consent_wording=f"Recorded in the imported file {imp.file_name}",
         external=("csv", p.external_id) if p.external_id else None,
-        message="\n".join(p.message_parts) or None,
+        message="\n".join(p.message_parts + unknown) or None,
         via_label=f"import of {imp.file_name}",
     )
     out = await I.intake(
@@ -226,6 +253,14 @@ async def _row(
 
 
 async def _lookups(db: AsyncSession) -> dict:
+    people = (
+        await db.execute(select(User.email, User.name, User.id).where(User.status == "active"))
+    ).all()
+    names: dict[str, uuid.UUID | None] = {}
+    for _, name, i in people:
+        n = " ".join((name or "").lower().split())
+        if n:
+            names[n] = None if n in names else i  # two people with one name: neither
     return {
         "defs": await L.lead_fields(db),
         "sources": {
@@ -235,12 +270,8 @@ async def _lookups(db: AsyncSession) -> dict:
         "stages": {
             n.lower(): i for n, i in (await db.execute(select(LeadStage.name, LeadStage.id))).all()
         },
-        "users": {
-            e.lower(): i
-            for e, i in (
-                await db.execute(select(User.email, User.id).where(User.status == "active"))
-            ).all()
-        },
+        "users": {e.lower(): i for e, _, i in people},
+        "user_names": {n: i for n, i in names.items() if i is not None},  # unique names only
     }
 
 

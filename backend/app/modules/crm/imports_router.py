@@ -12,6 +12,7 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.core.errors import Invalid, NotFound
 from app.modules.auth.deps import CurrentUser, require
+from app.modules.crm import import_presets as PR
 from app.modules.crm import imports as IM
 from app.modules.crm import mapping as MP
 from app.modules.crm.deps import CRM, CrmDb, audit
@@ -55,6 +56,8 @@ class UploadOut(ImportOut):
     sample: list[list[str]]
     suggested: dict[str, str]
     targets: list[Target]
+    preset: Literal["hubspot", "leadsquared"] | None = None  # the CRM that made the file
+    preset_name: str | None = None
 
 
 async def _targets(db) -> list[Target]:
@@ -72,11 +75,17 @@ async def upload(body: UploadIn, db: CrmDb, actor: Importer) -> UploadOut:
     await db.flush()
     await db.refresh(imp)
     defs = list((await lead_fields(db)).values())
+    suggested = MP.suggest(imp.headers, defs, import_mode=True)
+    preset = PR.detect(imp.headers)
+    if preset:
+        suggested = PR.suggest(preset, imp.headers, suggested)
     return UploadOut(
         **ImportOut.model_validate(imp).model_dump(),
         sample=sample,
-        suggested=MP.suggest(imp.headers, defs, import_mode=True),
+        suggested=suggested,
         targets=await _targets(db),
+        preset=preset,
+        preset_name=PR.NAMES.get(preset) if preset else None,
     )
 
 
@@ -106,6 +115,10 @@ class StartIn(BaseModel):
     stage_id: uuid.UUID | None = None
     duplicate_policy: Literal["update", "skip", "create", "flag"] = "update"
     owner: str = "me"  # me / rules / none / a user id
+    # A CRM export: a stage, owner or source that isn't in Core gets the default and the value
+    # is kept in the lead's note, instead of failing the row.
+    unknown_values: Literal["fail", "note"] = "fail"
+    preset: Literal["hubspot", "leadsquared"] | None = None
 
 
 @router.post("/{import_id}/start", response_model=ImportOut)
@@ -121,6 +134,8 @@ async def start(import_id: uuid.UUID, body: StartIn, db: CrmDb, actor: Importer)
         "stage_id": str(body.stage_id) if body.stage_id else None,
         "duplicate_policy": body.duplicate_policy,
         "owner": body.owner,
+        "unknown_values": body.unknown_values,
+        "preset": body.preset,
     }
     if body.owner not in ("me", "rules", "none"):
         try:

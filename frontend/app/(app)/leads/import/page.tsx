@@ -23,6 +23,7 @@ type Upload = components["schemas"]["UploadOut"];
 type ImportItem = components["schemas"]["ImportOut"];
 const MAX_BYTES = 20 * 1024 * 1024;
 const IDENTITY = new Set(["phone", "whatsapp", "email", "linkedin"]);
+const REPEATABLE = ["phone", "email", "message"]; // several columns may feed these
 
 /** Upload a CSV → match its columns → run in the background → see what happened. */
 export default function ImportPage() {
@@ -130,7 +131,9 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
   const [sourceId, setSourceId] = useState("");
   const [stageId, setStageId] = useState("");
   const [policy, setPolicy] = useState<"update" | "skip" | "create" | "flag">("update");
-  const [owner, setOwner] = useState("me");
+  const [owner, setOwner] = useState(upload.preset ? "rules" : "me");
+  // A CRM export (HubSpot, LeadSquared): values Core doesn't know go to the lead's note.
+  const [keepUnknown, setKeepUnknown] = useState(Boolean(upload.preset));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -143,6 +146,7 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
     setError(null);
     if (!hasIdentity) return setError("Match at least one column to Phone, Email, WhatsApp number or LinkedIn profile.");
     if (!sourceId && !mappedSource) return setError("Choose where these came from.");
+    if (keepUnknown && mappedSource && !sourceId) return setError("Choose a source for rows whose source isn't in Core.");
     setBusy(true);
     try {
       const started = unwrap(
@@ -154,6 +158,8 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
             stage_id: stageId || null,
             duplicate_policy: policy,
             owner,
+            unknown_values: keepUnknown ? "note" : "fail",
+            preset: upload.preset ?? null,
           },
         }),
       );
@@ -167,6 +173,12 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
 
   return (
     <div className="space-y-6">
+      {upload.preset_name && (
+        <p className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+          <b>Detected: {upload.preset_name} export.</b> Its columns are matched for you. Check them below, since every account exports a little
+          differently.
+        </p>
+      )}
       <p className="text-sm">
         <b>{upload.file_name}</b> · {upload.row_count.toLocaleString()} rows. Check what each column is. Columns left on &quot;Don&apos;t import&quot; are
         ignored.
@@ -195,7 +207,7 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
                   <NativeSelect aria-label={`Import ${h} as`} value={mapping[h] ?? ""} onChange={(e) => setMapping({ ...mapping, [h]: e.target.value })}>
                     <option value="">Don&apos;t import</option>
                     {targets.map((t) => (
-                      <option key={t.key} value={t.key} disabled={used.has(t.key) && mapping[h] !== t.key && !["phone", "email"].includes(t.key)}>
+                      <option key={t.key} value={t.key} disabled={used.has(t.key) && mapping[h] !== t.key && !REPEATABLE.includes(t.key)}>
                         {t.label}
                       </option>
                     ))}
@@ -259,6 +271,16 @@ function MapColumns({ upload, onBack, onStarted }: { upload: Upload; onBack: () 
           </NativeSelect>
         </div>
       </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={keepUnknown} onChange={(e) => setKeepUnknown(e.target.checked)} />
+        <span>
+          Keep rows whose stage, owner or source isn&apos;t in Core
+          <span className="block text-xs text-muted-foreground">
+            They get the stage, owner and source chosen above, and the value from the file is kept in the lead&apos;s note. Owners are matched by email
+            or by name.
+          </span>
+        </span>
+      </label>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex gap-2">
         <Button variant="outline" onClick={onBack}>
