@@ -137,6 +137,20 @@ Every call, from the app, Twilio, or later Exotel, goes through the same steps i
   - a small native Android part for the call log and the recordings.
 - **iPhone:** Apple doesn't let apps read the call log or recordings. iPhone users get the same app without SIM tracking, and use Twilio calling (C3) instead.
 
+**Decided Nov 16 (Suyog, answers about Runo; Google policy checked):**
+- Runo is **not** the default dialer. It starts calls from its own button, yet **logs every call** (it reads the call history). The recording comes from the **phone's own recorder** (older handsets).
+- **Our app can't record calls itself:**
+  - Android 10+ blocks call audio for ordinary apps.
+  - Google Play has banned accessibility-based call recording since May 11, 2022.
+  - The phone's built-in recorder is not affected.
+
+  So the SIM route uses the phone's recorder. Phones without one use cloud calling (C3), which records on the provider's side and works on any phone, iPhone included. A company can mix both.
+- **Call history** (`READ_CALL_LOG`): Google Play allows it for the default phone app, otherwise only by a case-by-case exception.
+- **Distribution, decided:**
+  - a **download link first** for pilot companies (no Play review);
+  - Google Play later, as the calling app or with the exception, applied for in parallel.
+  - Still to confirm on a real phone: Android's extra prompts for apps installed from a link.
+
 ### Step C5: ACE analyses calls (in the ACE project)
 - ACE listens for `call.recorded`, fetches the recording, turns it into text, writes the summary, then sends it back with `PUT /calls/{id}/analysis`.
 - Same pattern as drafts (C13 and C14). The speech-to-text service is ACE's decision (D7).
