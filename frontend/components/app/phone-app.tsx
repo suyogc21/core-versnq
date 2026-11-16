@@ -17,6 +17,9 @@ type PhoneStatus = {
   lastSyncAt?: number;
   lastError?: string | null;
   sent?: number;
+  folder?: string | null;
+  pendingRecordings?: number;
+  recordingsFound?: number;
 };
 type VersnqPhone = {
   info(): Promise<PhoneStatus>;
@@ -24,6 +27,8 @@ type VersnqPhone = {
   connect(o: { token: string }): Promise<PhoneStatus>;
   disconnect(): Promise<PhoneStatus>;
   syncNow(): Promise<PhoneStatus>;
+  pickRecordingFolder(): Promise<PhoneStatus>;
+  forgetRecordingFolder(): Promise<PhoneStatus>;
 };
 
 /** The phone part, present only when Core is open inside the Versnq Android app. */
@@ -110,6 +115,55 @@ export function PhoneAppCallTracking() {
           Turn off
         </Button>
       </div>
+      <Recordings status={status} busy={busy} run={run} phone={phone} />
+    </div>
+  );
+}
+
+/** Recordings (C4.3): the folder the phone's own recorder saves calls to. */
+function Recordings({ status, busy, run, phone }: { status: PhoneStatus; busy: boolean; run: (a: () => Promise<PhoneStatus>, ok?: string) => Promise<void>; phone: VersnqPhone }) {
+  const pick = () =>
+    run(async () => {
+      const s = await phone.pickRecordingFolder();
+      if (s.folder && s.recordingsFound === 0) toast.warning("No recordings in that folder yet. Make a test call, then check again.");
+      else if (s.folder) toast.success(`Found ${s.recordingsFound} recordings. New calls' recordings will go to the lead.`);
+      return s;
+    });
+  return (
+    <div className="mt-3 space-y-2 border-t pt-3">
+      <h3 className="font-medium">Recordings</h3>
+      {status.folder ? (
+        <>
+          <p>
+            From <span className="font-medium">{status.folder}</span>
+            {status.pendingRecordings ? ` · ${status.pendingRecordings} waiting to upload` : ""}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" disabled={busy} onClick={pick}>
+              Change folder
+            </Button>
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => run(() => phone.forgetRecordingFolder(), "Recordings are off on this phone")}>
+              Stop sending recordings
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-muted-foreground">
+            If your phone records calls itself, choose the folder it saves them to. Each call&apos;s recording then goes to the lead, so your manager can listen and ACE can summarise it.
+          </p>
+          <p className="text-muted-foreground">Where it usually is (it differs by phone and version):</p>
+          <ul className="list-disc pl-5 text-muted-foreground">
+            <li>Samsung: Recordings → Call</li>
+            <li>Xiaomi, Redmi, Poco: MIUI → sound_recorder → call_rec</li>
+            <li>OnePlus, Oppo, Realme: Music → Recordings → Call Recordings</li>
+            <li>Others: open the phone&apos;s Files app and look for &quot;Call&quot; or &quot;Recordings&quot;</li>
+          </ul>
+          <Button size="sm" disabled={busy} onClick={pick}>
+            Choose recorder folder
+          </Button>
+        </>
+      )}
     </div>
   );
 }

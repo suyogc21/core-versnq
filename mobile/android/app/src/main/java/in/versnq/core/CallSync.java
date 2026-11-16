@@ -23,6 +23,7 @@ import org.json.JSONObject;
  * and, each run, sends every newer call in order, with the call log's own id as external_id, so
  * Core never logs a call twice. No internet: nothing advances and the next run sends it.
  * Core keeps only calls with a lead's number (the company's own rule); others are dropped there.
+ * Answered calls Core kept then wait for their recording (Recordings, C4.3).
  */
 final class CallSync {
 
@@ -79,7 +80,8 @@ final class CallSync {
                     long seconds = c.getLong(4);
                     JSONObject body = toCall(id, number, type, date, seconds);
                     if (body != null) {
-                        int code = post(base + "/api/v1/calls", token, body);
+                        Response r = post(base + "/api/v1/calls", token, body);
+                        int code = r.code;
                         if (code == 401) {
                             result.error = "signed_out"; // the phone was removed in Core
                             break;
@@ -89,12 +91,19 @@ final class CallSync {
                             break;
                         }
                         result.sent++; // 2xx, or a call Core can't take (4xx): don't retry it
+                        JSONObject kept = r.json == null ? null : r.json.optJSONObject("call");
+                        if (code < 300 && kept != null && "answered".equals(kept.optString("status"))) {
+                            Recordings.queue(context, kept.optString("id"), date, seconds, number);
+                        }
                     }
                     after = date;
                     prefs.edit().putLong(KEY_CURSOR, after).apply();
                 }
             } catch (SecurityException e) {
                 result.error = "no_permission";
+            }
+            if (result.error == null && !Recordings.uploadPending(context, base, token)) {
+                result.error = "offline";
             }
             save(prefs, result);
             return result;
@@ -149,8 +158,15 @@ final class CallSync {
         }
     }
 
-    /** POST JSON with the phone key; the HTTP status, or -1 when Core can't be reached. */
-    static int post(String url, String token, JSONObject body) {
+    static final class Response {
+        int code; // -1 when Core can't be reached
+        JSONObject json;
+    }
+
+    /** POST JSON with the phone key. */
+    static Response post(String url, String token, JSONObject body) {
+        Response out = new Response();
+        out.code = -1;
         HttpURLConnection http = null;
         try {
             http = (HttpURLConnection) new URL(url).openConnection();
@@ -165,13 +181,23 @@ final class CallSync {
             try (OutputStream out = http.getOutputStream()) {
                 out.write(body.toString().getBytes(StandardCharsets.UTF_8));
             }
-            int code = http.getResponseCode();
-            try (InputStream in = code < 400 ? http.getInputStream() : http.getErrorStream()) {
-                if (in != null) while (in.read() != -1) {} // read the body so the connection is reused
+            out.code = http.getResponseCode();
+            try (InputStream in = out.code < 400 ? http.getInputStream() : http.getErrorStream()) {
+                if (in != null) {
+                    java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+                    byte[] chunk = new byte[8192];
+                    int n;
+                    while ((n = in.read(chunk)) != -1 && buf.size() < 1_000_000) buf.write(chunk, 0, n);
+                    try {
+                        out.json = new JSONObject(buf.toString("UTF-8"));
+                    } catch (org.json.JSONException e) {
+                        out.json = null;
+                    }
+                }
             }
-            return code;
+            return out;
         } catch (IOException e) {
-            return -1;
+            return out;
         } finally {
             if (http != null) http.disconnect();
         }
