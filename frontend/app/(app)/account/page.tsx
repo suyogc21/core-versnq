@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { PhoneAppCallTracking } from "@/components/app/phone-app";
 import { PhoneNotifications } from "@/components/app/phone-notifications";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { BackupCodes } from "@/components/app/backup-codes";
@@ -17,6 +18,17 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth";
+
+/** Only inside the Versnq Android app. */
+function PhoneAppSection() {
+  const [inApp] = useState(() => typeof navigator !== "undefined" && navigator.userAgent.includes("VersnqCoreApp/"));
+  if (!inApp) return null;
+  return (
+    <Section title="Call tracking" description="Every call on this phone with a lead's number goes on the lead's timeline, even when the app is closed.">
+      <PhoneAppCallTracking />
+    </Section>
+  );
+}
 
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -53,6 +65,7 @@ export default function AccountPage() {
         <Section title="My phone for calls" description="When your company calls through its own Twilio account, the Call button rings this phone first, then connects the lead.">
           <MyCallingPhone />
         </Section>
+        <PhoneAppSection />
         <Section title="Phone notifications" description="New leads for you, missed calls and tasks that are due pop up on this phone or computer.">
           <PhoneNotifications />
         </Section>

@@ -4094,56 +4094,6 @@
         "title": "Condition",
         "type": "object"
       },
-      "ConnectIn": {
-        "properties": {
-          "code": {
-            "maxLength": 20,
-            "minLength": 6,
-            "title": "Code",
-            "type": "string"
-          },
-          "device": {
-            "anyOf": [
-              {
-                "maxLength": 120,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Device"
-          }
-        },
-        "required": [
-          "code"
-        ],
-        "title": "ConnectIn",
-        "type": "object"
-      },
-      "ConnectOut": {
-        "properties": {
-          "token": {
-            "title": "Token",
-            "type": "string"
-          },
-          "user_name": {
-            "title": "User Name",
-            "type": "string"
-          },
-          "workspace": {
-            "title": "Workspace",
-            "type": "string"
-          }
-        },
-        "required": [
-          "token",
-          "user_name",
-          "workspace"
-        ],
-        "title": "ConnectOut",
-        "type": "object"
-      },
       "ConsentIn": {
         "properties": {
           "channel": {
@@ -6502,6 +6452,87 @@
           "created_at"
         ],
         "title": "DeliveryOut",
+        "type": "object"
+      },
+      "DeviceOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_call_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Call At"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "user_name",
+          "device",
+          "version",
+          "created_at",
+          "last_used_at",
+          "last_call_at"
+        ],
+        "title": "DeviceOut",
         "type": "object"
       },
       "DocumentOut": {
@@ -15077,6 +15108,29 @@
         "title": "PersonOut",
         "type": "object"
       },
+      "PhoneMeOut": {
+        "properties": {
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "record_calls": {
+            "title": "Record Calls",
+            "type": "boolean"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_name",
+          "company",
+          "record_calls"
+        ],
+        "title": "PhoneMeOut",
+        "type": "object"
+      },
       "PipelineIn": {
         "properties": {
           "currency": {
@@ -22287,6 +22341,65 @@
         "title": "RoleOut",
         "type": "object"
       },
+      "app__modules__calls__phone__ConnectIn": {
+        "properties": {
+          "device": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "install_id": {
+            "maxLength": 64,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Install Id",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "install_id"
+        ],
+        "title": "ConnectIn",
+        "type": "object"
+      },
+      "app__modules__calls__phone__ConnectOut": {
+        "properties": {
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "device_id"
+        ],
+        "title": "ConnectOut",
+        "type": "object"
+      },
       "app__modules__crm__customers_router__RejectIn": {
         "properties": {
           "reason": {
@@ -23041,6 +23154,56 @@
           }
         },
         "title": "StagePatch",
+        "type": "object"
+      },
+      "app__modules__engage__extension__ConnectIn": {
+        "properties": {
+          "code": {
+            "maxLength": 20,
+            "minLength": 6,
+            "title": "Code",
+            "type": "string"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "ConnectIn",
+        "type": "object"
+      },
+      "app__modules__engage__extension__ConnectOut": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "user_name": {
+            "title": "User Name",
+            "type": "string"
+          },
+          "workspace": {
+            "title": "Workspace",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "user_name",
+          "workspace"
+        ],
+        "title": "ConnectOut",
         "type": "object"
       },
       "app__modules__engage__extension__LinkIn": {
@@ -31424,7 +31587,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ConnectIn"
+                "$ref": "#/components/schemas/app__modules__engage__extension__ConnectIn"
               }
             }
           },
@@ -31435,7 +31598,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectOut"
+                  "$ref": "#/components/schemas/app__modules__engage__extension__ConnectOut"
                 }
               }
             },
@@ -41144,6 +41307,179 @@
         "summary": "List Permissions",
         "tags": [
           "roles"
+        ]
+      }
+    },
+    "/api/v1/phone/all-devices": {
+      "get": {
+        "operationId": "phone-app-all_devices",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response Phone-App-All Devices",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "All Devices",
+        "tags": [
+          "phone-app"
+        ]
+      }
+    },
+    "/api/v1/phone/devices": {
+      "get": {
+        "operationId": "phone-app-my_devices",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response Phone-App-My Devices",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Devices",
+        "tags": [
+          "phone-app"
+        ]
+      },
+      "post": {
+        "description": "A key for this phone, asked for by the signed-in rep's page inside the app. Only a person\nsigned in normally can ask (not an API key, not another phone).",
+        "operationId": "phone-app-connect",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__modules__calls__phone__ConnectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__calls__phone__ConnectOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Connect",
+        "tags": [
+          "phone-app"
+        ]
+      }
+    },
+    "/api/v1/phone/devices/{device_id}/remove": {
+      "post": {
+        "description": "The rep removes their own phone; an admin (settings.manage) anyone's.",
+        "operationId": "phone-app-remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove",
+        "tags": [
+          "phone-app"
+        ]
+      }
+    },
+    "/api/v1/phone/me": {
+      "get": {
+        "operationId": "phone-app-phone_me",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneMeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Phone Me",
+        "tags": [
+          "phone-app"
         ]
       }
     },

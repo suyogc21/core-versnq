@@ -13,6 +13,7 @@ from sqlalchemy import select
 from app.core import storage
 from app.core.errors import Forbidden, NotFound
 from app.modules.auth.deps import CurrentUser, require
+from app.modules.calls import phone
 from app.modules.calls import service as S
 from app.modules.calls.models import Call
 from app.modules.crm import leads as L
@@ -127,7 +128,8 @@ async def _visible(db, actor: CurrentUser, call_id: uuid.UUID) -> Call:
 
 
 @router.post("/calls", response_model=ReportOut)
-async def report_call(body: CallIn, db: CrmDb, actor: Worker) -> ReportOut:
+async def report_call(body: CallIn, request: Request, db: CrmDb, actor: Worker) -> ReportOut:
+    await phone.note_call(db, request)
     call = await S.report(
         db, actor.user.tenant_id, actor=actor, user_id=actor.user.id, source="app",
         external_id=body.external_id, direction=body.direction, status=body.status,

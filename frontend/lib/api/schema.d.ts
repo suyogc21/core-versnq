@@ -4642,6 +4642,82 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/phone/all-devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All Devices */
+        get: operations["phone-app-all_devices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/phone/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Devices */
+        get: operations["phone-app-my_devices"];
+        put?: never;
+        /**
+         * Connect
+         * @description A key for this phone, asked for by the signed-in rep's page inside the app. Only a person
+         *     signed in normally can ask (not an API key, not another phone).
+         */
+        post: operations["phone-app-connect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/phone/devices/{device_id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remove
+         * @description The rep removes their own phone; an admin (settings.manage) anyone's.
+         */
+        post: operations["phone-app-remove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/phone/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Phone Me */
+        get: operations["phone-app-phone_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pipeline-stages/{stage_id}": {
         parameters: {
             query?: never;
@@ -8131,22 +8207,6 @@ export interface components {
              */
             values: string[];
         };
-        /** ConnectIn */
-        ConnectIn: {
-            /** Code */
-            code: string;
-            /** Device */
-            device?: string | null;
-        };
-        /** ConnectOut */
-        ConnectOut: {
-            /** Token */
-            token: string;
-            /** User Name */
-            user_name: string;
-            /** Workspace */
-            workspace: string;
-        };
         /** ConsentIn */
         ConsentIn: {
             /**
@@ -8934,6 +8994,34 @@ export interface components {
             next_try_at: string | null;
             /** Status */
             status: string;
+        };
+        /** DeviceOut */
+        DeviceOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Device */
+            device: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Call At */
+            last_call_at: string | null;
+            /** Last Used At */
+            last_used_at: string | null;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name: string;
+            /** Version */
+            version: string | null;
         };
         /** DocumentOut */
         DocumentOut: {
@@ -11776,6 +11864,15 @@ export interface components {
             /** Unit Id */
             unit_id: string | null;
         };
+        /** PhoneMeOut */
+        PhoneMeOut: {
+            /** Company */
+            company: string;
+            /** Record Calls */
+            record_calls: boolean;
+            /** User Name */
+            user_name: string;
+        };
         /** PipelineIn */
         PipelineIn: {
             /** Currency */
@@ -14243,6 +14340,25 @@ export interface components {
             /** Scope */
             scope: string;
         };
+        /** ConnectIn */
+        app__modules__calls__phone__ConnectIn: {
+            /** Device */
+            device?: string | null;
+            /** Install Id */
+            install_id: string;
+            /** Version */
+            version?: string | null;
+        };
+        /** ConnectOut */
+        app__modules__calls__phone__ConnectOut: {
+            /**
+             * Device Id
+             * Format: uuid
+             */
+            device_id: string;
+            /** Token */
+            token: string;
+        };
         /** RejectIn */
         app__modules__crm__customers_router__RejectIn: {
             /** Reason */
@@ -14464,6 +14580,22 @@ export interface components {
             name?: string | null;
             /** Required Fields */
             required_fields?: string[] | null;
+        };
+        /** ConnectIn */
+        app__modules__engage__extension__ConnectIn: {
+            /** Code */
+            code: string;
+            /** Device */
+            device?: string | null;
+        };
+        /** ConnectOut */
+        app__modules__engage__extension__ConnectOut: {
+            /** Token */
+            token: string;
+            /** User Name */
+            user_name: string;
+            /** Workspace */
+            workspace: string;
         };
         /** LinkIn */
         app__modules__engage__extension__LinkIn: {
@@ -19253,7 +19385,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ConnectIn"];
+                "application/json": components["schemas"]["app__modules__engage__extension__ConnectIn"];
             };
         };
         responses: {
@@ -19263,7 +19395,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConnectOut"];
+                    "application/json": components["schemas"]["app__modules__engage__extension__ConnectOut"];
                 };
             };
             /** @description Validation Error */
@@ -24816,6 +24948,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PermissionOut"][];
+                };
+            };
+        };
+    };
+    "phone-app-all_devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOut"][];
+                };
+            };
+        };
+    };
+    "phone-app-my_devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOut"][];
+                };
+            };
+        };
+    };
+    "phone-app-connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__modules__calls__phone__ConnectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__modules__calls__phone__ConnectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "phone-app-remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "phone-app-phone_me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhoneMeOut"];
                 };
             };
         };

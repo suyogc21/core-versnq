@@ -48,3 +48,20 @@ class CallingAccount(TenantScoped, TimestampMixin, Base):
     auth_token_enc: Mapped[str] = mapped_column(Text)
     numbers: Mapped[list] = mapped_column(JSONB, default=list)  # the company's numbers, E.164
     forward_to: Mapped[str | None] = mapped_column(String(32))  # unanswered incoming calls
+
+
+class PhoneDevice(TenantScoped, Base):
+    """A rep's phone with the Versnq Android app (C4.2). Its token (`vq_app_…`) only reports
+    the rep's calls and uploads their recordings; it can't read anything else."""
+
+    __tablename__ = "phone_devices"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    token_hash: Mapped[str | None] = mapped_column(String(64))
+    install_id: Mapped[str] = mapped_column(String(64))  # the app install: reconnecting replaces
+    device: Mapped[str | None] = mapped_column(String(120))  # e.g. "samsung SM-A155F"
+    version: Mapped[str | None] = mapped_column(String(20))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_call_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

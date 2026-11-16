@@ -96,6 +96,28 @@ async def _extension_user(request: Request, db: AsyncSession, token: str):
     )
 
 
+async def _phone_user(request: Request, db: AsyncSession, token: str):
+    """The Android app's phone key acts as its rep, only on the few endpoints the app needs
+    (calls plan C4.2: report a call, upload its recording, read its own status)."""
+    from app.modules.calls import phone
+
+    if not phone.allowed(request.method, request.url.path):
+        raise _unauthorized()
+    found = await phone.token_user(db, token)
+    if found is None:
+        raise _unauthorized()
+    device, user = found
+    request.state.phone_device = device.id
+    request_actor.set((user.id, "user"))  # the rep, through their phone
+    role = await db.get(Role, user.role_id)
+    return CurrentUser(
+        user=user,
+        role=role,
+        restrictions=restrictions(user, role),
+        permissions=await effective_permissions(db, role),
+    )
+
+
 async def current_user_any(
     request: Request,
     workspace: WorkspaceDep,
@@ -110,6 +132,8 @@ async def current_user_any(
         return await _key_user(request, workspace, db, creds.credentials)
     if creds.credentials.startswith("vq_ext_"):  # the WhatsApp extension (step 10a)
         return await _extension_user(request, db, creds.credentials)
+    if creds.credentials.startswith("vq_app_"):  # the Android app's phone key (C4.2)
+        return await _phone_user(request, db, creds.credentials)
     try:
         claims = decode_access_token(creds.credentials, expected_typ="user")
     except InvalidToken:

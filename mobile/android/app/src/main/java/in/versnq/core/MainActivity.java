@@ -32,6 +32,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(ShellPlugin.class);
+        registerPlugin(PhonePlugin.class);
         String slug = prefs(this).getString("slug", null);
         if (slug != null && ShellPlugin.validSlug(slug)) {
             String host = companyHost(slug);
@@ -43,5 +44,16 @@ public class MainActivity extends BridgeActivity {
                 .create();
         }
         super.onCreate(savedInstanceState);
+    }
+
+    /** Opening the app sends any calls not yet in Core (the background job does it otherwise). */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (prefs(this).getString(CallSync.KEY_TOKEN, null) != null) {
+            final android.content.Context context = getApplicationContext();
+            new Thread(() -> CallSync.run(context)).start();
+            CallSyncJob.schedule(context);
+        }
     }
 }

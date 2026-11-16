@@ -24,6 +24,12 @@
 
         </activity>
 
+        <!-- Sends calls from the call log to Core in the background (calls plan C4.2). -->
+        <service
+            android:name=".CallSyncJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -38,4 +44,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Call tracking (C4.2): read the rep's call log; the rep allows it in the app. -->
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- Keep the 15-minute call check after the phone restarts. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 </manifest>
