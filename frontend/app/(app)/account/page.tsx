@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { PhoneNotifications } from "@/components/app/phone-notifications";
 import { Field, PASSWORD_RULE } from "@/components/app/field";
 import { BackupCodes } from "@/components/app/backup-codes";
 import { TwoFactorSetupForm } from "@/components/app/restriction-screens";
@@ -48,6 +49,9 @@ export default function AccountPage() {
         </Section>
         {can("inbox.reply") && <MyMailbox />}
         {can("inbox.reply") && <MyWhatsAppExtension />}
+        <Section title="Phone notifications" description="New leads for you, missed calls and tasks that are due pop up on this phone or computer.">
+          <PhoneNotifications />
+        </Section>
         <ChangePassword onDone={logout} />
         <TwoFactor />
         <Section

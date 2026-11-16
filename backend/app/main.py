@@ -41,6 +41,7 @@ from app.modules.integrations.router import router as integrations_router
 from app.modules.money.router import public as money_webhooks_router
 from app.modules.money.router import router as money_router
 from app.modules.outreach.router import router as outreach_router
+from app.modules.push.router import router as push_router
 from app.modules.replies.router import router as replies_router
 from app.modules.reports.router import router as reports_router
 from app.modules.roles.router import router as roles_router
@@ -100,6 +101,7 @@ app.include_router(pool_router)
 app.include_router(outreach_router)
 app.include_router(replies_router)
 app.include_router(calls_router)
+app.include_router(push_router)
 app.include_router(ace_console_router)
 app.include_router(extension_account_router)
 app.include_router(extension_router)

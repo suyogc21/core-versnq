@@ -140,6 +140,21 @@ async def webhooks_job(ctx) -> dict:
     return await run_all(await _active_tenants())
 
 
+async def push_job(ctx) -> int:
+    """Every 10 seconds: new notifications go to the phones where people turned them on (C2)."""
+    from app.core.tenancy import tenant_session
+    from app.modules.crm.automation import _active_tenants
+    from app.modules.push.service import configured, send_pending
+
+    if not configured():
+        return 0
+    total = 0
+    for tenant_id in await _active_tenants():
+        async with tenant_session(tenant_id) as db:
+            total += await send_pending(db)
+    return total
+
+
 async def sequences_job(ctx) -> int:
     """Every 30 seconds: run the sequence steps that are due (step 9a)."""
     from app.modules.crm.automation import _active_tenants

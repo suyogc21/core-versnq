@@ -14,6 +14,7 @@ from app.workers.jobs import (
     no_response_job,
     notify_due_tasks_job,
     ping_job,
+    push_job,
     rescore_job,
     routing_checks_job,
     sequences_job,
@@ -45,6 +46,7 @@ class WorkerSettings:
         rescore_job,
         nightly_job,
         webhook_job,
+        push_job,
         webhooks_job,
         sequences_job,
         campaigns_job,
@@ -61,6 +63,7 @@ class WorkerSettings:
         cron(money_mail_sweep_job, second=30),
         cron(automation_job, second=set(range(2, 60, 5)), unique=True),  # every 5 seconds
         cron(webhooks_job, second=set(range(7, 60, 10)), unique=True),  # every 10 seconds
+        cron(push_job, second=set(range(4, 60, 10)), unique=True),  # every 10 seconds (C2)
         cron(sequences_job, second={15, 45}, unique=True),  # every 30 seconds
         cron(campaigns_job, second={0, 30}, unique=True),  # every 30 seconds
         cron(mailboxes_job, second=25, unique=True),

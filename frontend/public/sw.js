@@ -21,3 +21,33 @@ self.addEventListener("fetch", (event) => {
   if (event.request.mode !== "navigate") return; // pages only; everything else goes to the network
   event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE)));
 });
+
+// Phone notifications (C2): show what Core sent; a tap opens the lead (or Core).
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { title: event.data ? event.data.text() : "Versnq" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Versnq", {
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: data.tag,
+      data: { url: data.url || "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      const open = wins.find((w) => w.url.startsWith(self.location.origin));
+      if (open) return open.navigate(url).then((w) => (w || open).focus());
+      return self.clients.openWindow(url);
+    }),
+  );
+});

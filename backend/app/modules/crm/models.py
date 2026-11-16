@@ -448,6 +448,7 @@ class Notification(TenantScoped, Base):
     lead_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+    pushed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # sent to phones
 
 
 # ---------- step 2: records and links (migration 0012) ----------
