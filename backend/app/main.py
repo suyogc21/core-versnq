@@ -47,6 +47,7 @@ from app.modules.money.router import router as money_router
 from app.modules.outreach.router import router as outreach_router
 from app.modules.push.router import router as push_router
 from app.modules.replies.router import router as replies_router
+from app.modules.reports.custom_router import router as custom_reports_router
 from app.modules.reports.router import router as reports_router
 from app.modules.roles.router import router as roles_router
 from app.modules.security.router import router as security_router
@@ -76,6 +77,7 @@ app.include_router(teams_router)
 app.include_router(users_router)
 app.include_router(audit_router)
 app.include_router(reports_router)  # before the CRM routers: /leads/export is not a lead id
+app.include_router(custom_reports_router)
 app.include_router(crm_setup_router)
 app.include_router(layouts_router)
 app.include_router(accounts_router)
