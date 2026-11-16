@@ -169,4 +169,66 @@ public class PhonePlugin extends Plugin {
         MainActivity.prefs(context).edit().remove(Recordings.KEY_FOLDER).remove(Recordings.KEY_PENDING).apply();
         call.resolve(status());
     }
+
+    /** Calls with numbers Core doesn't know, waiting for the rep (newest first). */
+    @PluginMethod
+    public void unknownCalls(PluginCall call) {
+        org.json.JSONArray list = UnknownCalls.list(getContext());
+        com.getcapacitor.JSArray out = new com.getcapacitor.JSArray();
+        for (int i = list.length() - 1; i >= 0; i--) {
+            org.json.JSONObject c = list.optJSONObject(i);
+            JSObject item = new JSObject();
+            item.put("id", c.optString("id"));
+            item.put("number", c.optString("number"));
+            item.put("direction", c.optString("direction"));
+            item.put("status", c.optString("status"));
+            item.put("date", c.optLong("date"));
+            item.put("seconds", c.optLong("seconds"));
+            out.put(item);
+        }
+        JSObject res = new JSObject();
+        res.put("calls", out);
+        call.resolve(res);
+    }
+
+    /** The rep said who it was (a new lead was made, or the number added to a lead): send the
+     * call again; Core now finds the lead by its number. */
+    @PluginMethod
+    public void sendUnknown(PluginCall call) {
+        String id = call.getString("id", "");
+        Context context = getContext();
+        new Thread(() -> {
+            org.json.JSONObject item = UnknownCalls.take(context, id);
+            JSObject out = new JSObject();
+            if (item == null) {
+                out.put("tracked", false);
+                call.resolve(out);
+                return;
+            }
+            SharedPreferences prefs = MainActivity.prefs(context);
+            String token = prefs.getString(CallSync.KEY_TOKEN, null);
+            String slug = prefs.getString("slug", null);
+            CallSync.Response r = token == null || slug == null ? null
+                : CallSync.post("https://" + MainActivity.companyHost(slug) + "/api/v1/calls", token, item.optJSONObject("call"));
+            boolean tracked = r != null && r.code < 300 && r.json != null && r.json.optBoolean("tracked");
+            if (tracked) {
+                org.json.JSONObject kept = r.json.optJSONObject("call");
+                if (kept != null && "answered".equals(kept.optString("status"))) {
+                    Recordings.queue(context, kept.optString("id"), item.optLong("date"), item.optLong("seconds"), item.optString("number"));
+                    Recordings.uploadPending(context, "https://" + MainActivity.companyHost(slug), token);
+                }
+            } else {
+                UnknownCalls.add(context, item.optJSONObject("call"), item.optLong("date"), item.optLong("seconds"));
+            }
+            out.put("tracked", tracked);
+            call.resolve(out);
+        }).start();
+    }
+
+    /** Personal: forgotten on this phone; Core never gets it. */
+    @PluginMethod
+    public void dismissUnknown(PluginCall call) {
+        UnknownCalls.take(getContext(), call.getString("id", ""));
+        call.resolve();
+    }
 }

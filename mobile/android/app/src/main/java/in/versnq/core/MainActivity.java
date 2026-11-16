@@ -92,7 +92,7 @@ public class MainActivity extends BridgeActivity {
     private void openFrom(Intent intent) {
         String path = intent == null ? null : intent.getStringExtra(CallerPopup.EXTRA_OPEN);
         String slug = prefs(this).getString("slug", null);
-        if (path == null || slug == null || !path.matches("^/leads/[0-9a-f-]{36}$") || getBridge() == null) return;
+        if (path == null || slug == null || !path.matches("^/leads/[0-9a-f-]{36}$|^/calls/unknown$") || getBridge() == null) return;
         intent.removeExtra(CallerPopup.EXTRA_OPEN);
         getBridge().getWebView().loadUrl("https://" + companyHost(slug) + path);
     }

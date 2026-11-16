@@ -6,6 +6,7 @@ key from another company doesn't work."""
 import uuid
 
 from tests.calls.test_calls import MP3, _call, _setup
+from tests.crm.helpers import new_lead, setup_ids
 from tests.factories import login_as, make_custom_role, make_workspace
 
 
@@ -95,3 +96,26 @@ async def test_the_caller_popup_names_only_leads_the_rep_can_see(ws):
     assert mine.status_code == 200 and mine.json()["lead_id"] == lead["id"]
     assert mine.json()["is_yours"] is True and mine.json()["stage"]
     assert unknown.json() is None and hidden.json() is None and junk.json() is None
+
+
+async def test_another_number_is_added_to_the_lead_and_the_call_then_lands_there(ws):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    key = bearer((await _connect(c, rep))["token"])
+    call = _call(number="98111 00011", direction="in")
+
+    before = await c.post("/api/v1/calls", json=call, headers=key)  # unknown: not kept
+    added = await c.post(f"/api/v1/leads/{lead['id']}/numbers", json={"number": "98111 00011"},
+                         headers=rep)  # fmt: skip
+    again = await c.post(f"/api/v1/leads/{lead['id']}/numbers", json={"number": "+919811100011"},
+                         headers=rep)  # fmt: skip
+    after = await c.post("/api/v1/calls", json=call, headers=key)  # the same call, sent again
+    _, sources = await setup_ids(c, admin)
+    other = (await new_lead(c, admin, sources["Website"], phone="98222 00022")).json()
+    taken = await c.post(f"/api/v1/leads/{lead['id']}/numbers", json={"number": "98222 00022"},
+                         headers=admin)  # fmt: skip
+
+    assert before.json() == {"tracked": False, "call": None}
+    assert added.status_code == 204 and again.status_code == 204
+    assert after.json()["tracked"] and after.json()["call"]["lead_id"] == lead["id"]
+    assert taken.status_code == 409 and taken.json()["code"] == "number_on_another_lead"
+    assert other["id"] != lead["id"]

@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.core import storage
-from app.core.errors import Forbidden, NotFound
+from app.core.errors import Conflict, Forbidden, NotFound
 from app.modules.auth.deps import CurrentUser, require
 from app.modules.calls import phone
 from app.modules.calls import service as S
@@ -236,3 +236,36 @@ async def put_call_settings(body: CallSettings, db: CrmDb, actor: Admin) -> Call
     s.calls = body.model_dump()
     await audit(db, actor, "call_settings.updated", "settings", None, before, s.calls)
     return body
+
+
+class NumberIn(BaseModel):
+    number: str = Field(min_length=3, max_length=40)
+
+
+@router.post("/leads/{lead_id}/numbers", status_code=204)
+async def add_number(lead_id: uuid.UUID, body: NumberIn, db: CrmDb, actor: Worker) -> None:
+    """They called from another number (phone app, unknown calls): the number is added to the
+    lead, so this call and every later one land on them. Nothing else on the lead changes, so
+    it never clashes with someone editing it."""
+    from app.modules.crm.identities import normalize
+    from app.modules.crm.models import LeadIdentity
+
+    lead = await L.get_visible(db, actor, lead_id)
+    phone = normalize("phone", body.number, await L.tenant_country(db, actor.user.tenant_id))
+    owner = await S.find_lead(db, phone)
+    if owner is not None and owner.id != lead.id:
+        raise Conflict(
+            "This number is already on another lead", code="number_on_another_lead",
+        )  # fmt: skip
+    if owner is None:
+        db.add(LeadIdentity(tenant_id=lead.tenant_id, lead_id=lead.id, type="phone",
+                            value=body.number.strip(), value_normalized=phone,
+                            is_primary=lead.primary_phone is None, label="other"))  # fmt: skip
+        if lead.primary_phone is None:
+            lead.primary_phone = phone
+        lead.version += 1
+        await L.log(db, lead, "lead_updated", f"Number added: {phone} (called from it)", actor,
+                    {"changed": ["identities"], "number": phone})  # fmt: skip
+        await L.event(db, lead, "lead.updated", {"fields": ["identities"]})
+    await db.flush()
+    return None

@@ -91,6 +91,9 @@ final class CallSync {
                             break;
                         }
                         result.sent++; // 2xx, or a call Core can't take (4xx): don't retry it
+                        if (code < 300 && r.json != null && !r.json.optBoolean("tracked", true)) {
+                            UnknownCalls.add(context, body, date, seconds); // ask who it was
+                        }
                         JSONObject kept = r.json == null ? null : r.json.optJSONObject("call");
                         if (code < 300 && kept != null && "answered".equals(kept.optString("status"))) {
                             Recordings.queue(context, kept.optString("id"), date, seconds, number);

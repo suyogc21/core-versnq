@@ -20,7 +20,7 @@ import { useUsers } from "@/lib/directory";
 import { useLabels } from "@/lib/settings";
 
 /** Quick-add: name, a phone or email, source, owner, first follow-up, custom fields. */
-export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (lead: Lead) => void }) {
+export function AddLeadDialog({ onClose, onCreated, phone }: { onClose: () => void; onCreated: (lead: Lead) => void; phone?: string }) {
   const { me, can } = useAuth();
   const label = useLabels();
   const stages = useStages();
@@ -32,7 +32,7 @@ export function AddLeadDialog({ onClose, onCreated }: { onClose: () => void; onC
   const users = useUsers(canAssign && can("users.read"));
   const refresh = useRefreshLead();
   const [kind, setKind] = useState<"person" | "organisation">("person");
-  const [v, setV] = useState({ first_name: "", last_name: "", org_name: "", phone: "", email: "", linkedin: "", city: "" });
+  const [v, setV] = useState({ first_name: "", last_name: "", org_name: "", phone: phone ?? "", email: "", linkedin: "", city: "" });
   const [sourceId, setSourceId] = useState("");
   const [stageId, setStageId] = useState("");
   const brands = useBrandChoices(); // shown only with two or more brands

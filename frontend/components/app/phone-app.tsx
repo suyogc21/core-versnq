@@ -29,7 +29,13 @@ type VersnqPhone = {
   syncNow(): Promise<PhoneStatus>;
   pickRecordingFolder(): Promise<PhoneStatus>;
   forgetRecordingFolder(): Promise<PhoneStatus>;
+  unknownCalls(): Promise<{ calls: UnknownCall[] }>;
+  sendUnknown(o: { id: string }): Promise<{ tracked: boolean }>;
+  dismissUnknown(o: { id: string }): Promise<void>;
 };
+
+/** A call with a number Core doesn't know, kept only on the phone until the rep decides. */
+export type UnknownCall = { id: string; number: string; direction: "in" | "out"; status: string; date: number; seconds: number };
 
 /** The phone part, present only when Core is open inside the Versnq Android app. */
 export function phoneApp(): VersnqPhone | null {
@@ -115,8 +121,26 @@ export function PhoneAppCallTracking() {
           Turn off
         </Button>
       </div>
+      <UnknownLink phone={phone} />
       <Recordings status={status} busy={busy} run={run} phone={phone} />
     </div>
+  );
+}
+
+/** "Calls not in Core (3)": calls with numbers that aren't a lead, waiting for the rep. */
+function UnknownLink({ phone }: { phone: VersnqPhone }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    phone
+      .unknownCalls()
+      .then((r) => setCount(r.calls.length))
+      .catch(() => {});
+  }, [phone]);
+  if (!count) return null;
+  return (
+    <a href="/calls/unknown" className="block font-medium underline">
+      {count === 1 ? "1 call isn't in Core: who was it?" : `${count} calls aren't in Core: who were they?`}
+    </a>
   );
 }
 

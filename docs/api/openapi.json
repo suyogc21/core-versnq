@@ -14628,6 +14628,21 @@
         "title": "NotificationPage",
         "type": "object"
       },
+      "NumberIn": {
+        "properties": {
+          "number": {
+            "maxLength": 40,
+            "minLength": 3,
+            "title": "Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number"
+        ],
+        "title": "NumberIn",
+        "type": "object"
+      },
       "OrgSuggestion": {
         "properties": {
           "display_name": {
@@ -40064,6 +40079,58 @@
         "summary": "Merged Into",
         "tags": [
           "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{lead_id}/numbers": {
+      "post": {
+        "description": "They called from another number (phone app, unknown calls): the number is added to the\nlead, so this call and every later one land on them. Nothing else on the lead changes, so\nit never clashes with someone editing it.",
+        "operationId": "calls-add_number",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumberIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Number",
+        "tags": [
+          "calls"
         ]
       }
     },

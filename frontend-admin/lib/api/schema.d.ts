@@ -3901,6 +3901,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leads/{lead_id}/numbers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Number
+         * @description They called from another number (phone app, unknown calls): the number is added to the
+         *     lead, so this call and every later one land on them. Nothing else on the lead changes, so
+         *     it never clashes with someone editing it.
+         */
+        post: operations["calls-add_number"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leads/{lead_id}/organisation": {
         parameters: {
             query?: never;
@@ -12138,6 +12160,11 @@ export interface components {
             items: components["schemas"]["NotificationOut"][];
             /** Unread */
             unread: number;
+        };
+        /** NumberIn */
+        NumberIn: {
+            /** Number */
+            number: string;
         };
         /** OrgSuggestion */
         OrgSuggestion: {
@@ -24272,6 +24299,39 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    "calls-add_number": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
