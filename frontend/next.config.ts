@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
       { source: "/((?!f/).*)", headers: SECURITY_HEADERS },
       // hosted forms (/f/<id>) are made to be embedded on the company's own website
       { source: "/f/:path*", headers: [...SECURITY_HEADERS.slice(2), { key: "Content-Security-Policy", value: "frame-ancestors *" }] },
+      // the service worker (installable app, C2) is always fetched fresh
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
     ];
   },
 };

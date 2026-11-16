@@ -30,6 +30,16 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 120s;
     }
+    # call recordings from the phone app (calls step C1) may be up to 50 MB
+    location ~ ^/api/v1/calls/[^/]+/recording\$ {
+        client_max_body_size 55m;
+        proxy_pass http://127.0.0.1:8100;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-Host \$host;
+        proxy_set_header X-Forwarded-For \$remote_addr;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300s;
+    }
     location / {
         proxy_pass http://127.0.0.1:3100;
         proxy_set_header Host \$host;

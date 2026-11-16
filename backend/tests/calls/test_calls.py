@@ -16,7 +16,7 @@ from app.modules.calls.models import Call
 from app.modules.calls.service import expire_recordings
 from app.modules.crm.models import Activity, Lead, Task
 from tests.crm.helpers import new_lead, setup_ids
-from tests.factories import login_as, make_custom_role, make_workspace
+from tests.factories import login_as, make_custom_role, make_workspace, switch_on
 
 MP3 = b"ID3\x04\x00\x00\x00\x00\x00\x00" + b"\x00" * 2000
 
@@ -151,6 +151,7 @@ async def test_recordings_audio_only_played_by_who_sees_the_lead_and_removed_lat
 
 async def test_recording_off_and_ace_analysis(ws):
     tenant_id, c, admin, _, rep, lead = await _setup(ws)
+    await switch_on(tenant_id, "ace")  # call.recorded / call.analyzed are ACE's events
     call = (await c.post("/api/v1/calls", json=_call(), headers=rep)).json()["call"]
     role = await make_custom_role(tenant_id, "ACE", "all", ("leads.edit",))
     r = await c.post("/api/v1/integrations/keys", json={"name": "ACE", "role_id": str(role)},
@@ -161,6 +162,7 @@ async def test_recording_off_and_ace_analysis(ws):
 
     by_person = await c.put(f"/api/v1/calls/{call['id']}/analysis", json=analysis, headers=admin)
     by_ace = await c.put(f"/api/v1/calls/{call['id']}/analysis", json=analysis, headers=ace)
+    retry = await c.put(f"/api/v1/calls/{call['id']}/analysis", json=analysis, headers=ace)
     await c.put("/api/v1/call-settings", json={"record": False, "keep_days": 30,
                 "new_leads": False}, headers=admin)  # fmt: skip
     off = await c.put(f"/api/v1/calls/{call['id']}/recording", content=MP3, headers=rep)
@@ -168,7 +170,9 @@ async def test_recording_off_and_ace_analysis(ws):
     assert by_person.status_code == 403 and by_ace.status_code == 200, by_ace.text
     assert by_ace.json()["summary"].startswith("Asked about weekend")
     assert by_ace.json()["analysis"] == {"intent": "warm", "red_flags": ["price concern"]}
-    assert off.json()["code"] == "recording_off"
+    assert off.json()["code"] == "recording_off" and retry.status_code == 200
+    [ev] = await _events(tenant_id, "call.analyzed")  # the retry sent nothing new
+    assert ev["call_id"] == call["id"]
     async with tenant_session(tenant_id) as db:
         act = await db.get(Activity, uuid.UUID(call["activity_id"]))
     assert act.data["summary"].startswith("Asked about weekend")

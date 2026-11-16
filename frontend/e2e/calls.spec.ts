@@ -35,6 +35,9 @@ test("a reported call shows on the lead with its recording and outcome", async (
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
   await signIn(page, base, manager.email, manager.password);
   await page.getByRole("heading", { name: "My Day" }).waitFor();
+  await expect // the signed-in app registers the service worker (installable app, C2)
+    .poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL ?? ""))
+    .toContain("/sw.js");
   await page.goto(`${base}/leads/${lead.id}`);
   await expect(page.getByText("Outgoing call · 1m 05s")).toBeVisible();
   await page.getByRole("button", { name: "Play recording" }).click();

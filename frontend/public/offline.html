@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>You're offline · Versnq</title>
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f5f5f7; color: #1d1d1f;
+             font: 15px/1.5 system-ui, -apple-system, sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+      @media (prefers-color-scheme: dark) { body { background: #1d1d1f; color: #f5f5f7; } }
+      button { margin-top: 16px; padding: 10px 18px; border-radius: 10px; border: 0; background: currentColor; font: inherit; }
+      button span { color: #f5f5f7; } @media (prefers-color-scheme: dark) { button span { color: #1d1d1f; } }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1 style="font-size: 20px; margin: 0 0 8px">You're offline</h1>
+      <p style="margin: 0">Versnq needs a connection. Your work is safe; try again when you're back online.</p>
+      <button onclick="location.reload()"><span>Try again</span></button>
+    </div>
+  </body>
+</html>

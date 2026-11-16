@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 
+import { InstallApp } from "@/components/app/install-app";
 import { NotificationBell } from "@/components/app/notification-bell";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -150,6 +151,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </>
         )}
         <div className="flex-1" />
+        <InstallApp />
         {me.ace_console && (
           <a
             href="/ace/open"

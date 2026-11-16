@@ -83,7 +83,7 @@ Each item has a size: S = 1, M = 2, L = 3.
 ### Phase 3: phone app (5): decided Nov 16 (installable web app now, Android app next)
 | Item | Size | |
 |---|---|---|
-| Installable app (PWA): home-screen icon, notifications | M | ⬜ |
+| Installable app (PWA): home-screen icon, offline page, service worker (C2) | M | 🟡 built Nov 16 (deploy pending); phone notifications wait for your OK on the `pywebpush` library |
 | Native iOS and Android app | L | ⬜ |
 
 ### Phase 4: marketing (13)

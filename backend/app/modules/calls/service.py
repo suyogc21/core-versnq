@@ -209,6 +209,10 @@ async def recordings_used(db: AsyncSession) -> int:
 
 
 async def save_analysis(db: AsyncSession, call: Call, summary: str, analysis: dict) -> Call:
+    """A newer analysis replaces the old one; the same one sent again (a retry) changes nothing
+    and sends no second call.analyzed. Never a second timeline entry."""
+    if call.analyzed_at is not None and call.summary == summary and call.analysis == analysis:
+        return call
     call.summary, call.analysis, call.analyzed_at = summary, analysis, datetime.now(UTC)
     if act := await _activity(db, call):
         act.data = {**act.data, "summary": summary[:2000]}
