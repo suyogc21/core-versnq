@@ -213,6 +213,94 @@
   </div>
 </div>
 
+<h2>7. The dialer: LeadSquared leads in the rep's pocket (proposed, Nov 17)</h2>
+<div class="card ask">
+  <h3>The idea (Suyog)</h3>
+  <p>Runo makes someone <b>export leads, upload them, then call</b>. We pull each rep's own LeadSquared leads into our app automatically (by owner), so the rep just opens the app and calls. Calls, WhatsApp, recordings and summaries flow back into LeadSquared. We sell this as a <b>dialer + tracker on top of LeadSquared</b>, not as a CRM.</p>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3>How the leads get there (no export, no upload)</h3>
+  <div class="flow">
+    <div class="node"><b>LeadSquared</b><span class="small muted">Leads with an owner (OwnerId).</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Owner matching</b><span class="small muted">Each LeadSquared user ↔ the Versnq user with the same email. Admin checks the list once.</span></div>
+    <div class="arrow">→</div>
+    <div class="node core"><b>Versnq Core</b><span class="small muted">First: pulls every open lead of the matched owners. Then: LeadSquared's webhooks (new lead, owner changed, updated) + a catch-up every few minutes.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Rep's app</b><span class="small muted">"My call list": only their leads, newest follow-ups first.</span></div>
+  </div>
+  <p class="small muted" style="margin-top:10px">LeadSquared stays the boss: names, stages and owners come from it. A lead moved to another rep in LeadSquared moves in our app too.</p>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3>How a calling session works (the auto-dialer)</h3>
+  <div class="flow">
+    <div class="node"><b>1. Start</b><span class="small muted">Rep opens "My call list" and taps Start.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>2. Call</b><span class="small muted">The app dials the next lead from the rep's own SIM; the lead's name and last notes on screen.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>3. After the call</b><span class="small muted">One tap: Outcome + next follow-up. WhatsApp button opens their chat.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>4. Next</b><span class="small muted">Next lead dials after a few seconds (Pause any time).</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>LeadSquared</b><span class="small muted">Call activity, outcome, recording link, then the summary.</span></div>
+  </div>
+  <p class="small muted" style="margin-top:10px">The company decides who's in the list (e.g. stages "New" and "Follow-up"). India: calling rules (DND, calling hours) stay the company's responsibility; we can block calling outside hours.</p>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3>WhatsApp with the same leads</h3>
+  <p>The extension already asks Core "is this number a lead?". With the leads synced, every chat with a LeadSquared lead is recognised at once, shown with its owner and stage, and logged into LeadSquared. From the call list, a WhatsApp button opens that lead's chat.</p>
+</div>
+
+<h2>8. Speech-to-text and summaries (where it runs)</h2>
+<div class="card">
+  <div class="flow">
+    <div class="node"><b>Recording</b><span class="small muted">From the phone, kept in Core (30 days).</span></div>
+    <div class="arrow">→</div>
+    <div class="node core"><b>ACE on our server</b><span class="small muted">ace.versnq.in, next to Core. Gets "call recorded", fetches the audio.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Speech-to-text</b><span class="small muted">A cloud service with the <b>customer's own key</b>: Sarvam (Indian languages), Deepgram, or OpenAI.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>AI summary</b><span class="small muted">The model the customer picks, with their own key: summary, intent, next step.</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Core → LeadSquared</b><span class="small muted">"Call notes" activity on the lead.</span></div>
+  </div>
+  <div class="grid g2" style="margin-top:12px">
+    <div>
+      <h3>Why not run speech-to-text on our own server</h3>
+      <ul class="small">
+        <li>Our server has no graphics card; a 5-minute call would take minutes to transcribe and slow Core down.</li>
+        <li>A GPU server costs far more per month than cloud speech-to-text for one customer.</li>
+        <li>Cloud services handle Hindi / Hinglish and Indian accents better out of the box (Sarvam is built for it).</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Why "customer's own key"</h3>
+      <ul class="small">
+        <li>Their AI usage is billed to them; our ₹4,000 / month is pure subscription.</li>
+        <li>They choose the model; we can switch providers without touching Core.</li>
+        <li>Their audio goes only to the provider they chose.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<h2>9. What's needed to sell this</h2>
+<div class="card scroll">
+<table>
+  <thead><tr><th>Piece</th><th>Status</th><th>Effort</th></tr></thead>
+  <tbody>
+    <tr><td>Calls + WhatsApp tracked, sent into LeadSquared with recording link</td><td><span class="tag warn">Built</span> needs a real LeadSquared test</td><td>—</td></tr>
+    <tr><td>Owner matching + pulling each rep's LeadSquared leads (first pull, webhooks, catch-up)</td><td><span class="tag no">Not built</span></td><td>Me, 2–3 days (+ a small database change)</td></tr>
+    <tr><td>"My call list" + auto-dialer in the app (dial, outcome, next)</td><td><span class="tag no">Not built</span></td><td>Me, 2–3 days</td></tr>
+    <tr><td>ACE hosted + "bring your own key" (speech-to-text + model)</td><td><span class="tag warn">ACE built on test data</span></td><td>ACE session, ~2 days</td></tr>
+    <tr><td>A real LeadSquared account (test or theirs) to prove it end to end</td><td><span class="tag no">Needed</span></td><td>You / the customer</td></tr>
+  </tbody>
+</table>
+</div>
+
 <div class="card" style="margin-top:14px">
   <h3>What the customer does on day one</h3>
   <ol class="steps">
