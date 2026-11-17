@@ -10,10 +10,20 @@ const READER = {
   composer: "#main footer div[contenteditable='true']",
 };
 
-/** data-id looks like "true_919876543210@c.us_3EB0C0FFEE" (sent by me, chat, message id). */
-function parseDataId(dataId: string): { fromMe: boolean; chatJid: string; msgId: string } | null {
+/** data-id used to be "true_919876543210@c.us_3EB0C0FFEE" (sent by me, chat, message id). Since
+ * Nov 2026 WhatsApp Web shows only the message id ("3EB0C0FFEE"): then who sent it comes from the
+ * bubble (outgoing style or the ticks only my messages have), and the chat from the header. */
+function parseDataId(dataId: string, el?: Element): { fromMe: boolean; chatJid: string | null; msgId: string } | null {
   const m = /^(true|false)_([^_]+@[a-z.]+)_(.+)$/.exec(dataId);
-  return m ? { fromMe: m[1] === "true", chatJid: m[2], msgId: m[3] } : null;
+  if (m) return { fromMe: m[1] === "true", chatJid: m[2], msgId: m[3] };
+  if (!/^[A-Za-z0-9]{8,64}$/.test(dataId) || !el) return null;
+  return { fromMe: sentByMe(el), chatJid: null, msgId: dataId };
+}
+
+function sentByMe(el: Element): boolean {
+  if (el.closest(".message-out") || el.querySelector(".message-out")) return true;
+  if (el.closest(".message-in") || el.querySelector(".message-in")) return false;
+  return !!el.querySelector("[data-icon='msg-check'], [data-icon='msg-dblcheck'], [data-icon='msg-time'], [data-icon='msg-dblcheck-ack']");
 }
 
 function phoneFromJid(jid: string): string | null {
@@ -63,7 +73,7 @@ function readChat(doc: Document = document): ChatSnapshot {
   let chatJid: string | null = null;
   const messages: WaMessage[] = [];
   for (const el of rows) {
-    const parsed = parseDataId(el.getAttribute("data-id") || "");
+    const parsed = parseDataId(el.getAttribute("data-id") || "", el);
     if (!parsed) continue;
     chatJid = chatJid || parsed.chatJid;
     const pre = el.querySelector(READER.meta)?.getAttribute("data-pre-plain-text") ?? null;
@@ -73,7 +83,7 @@ function readChat(doc: Document = document): ChatSnapshot {
       .trim();
     messages.push({ id: parsed.msgId, from_me: parsed.fromMe, text, kind: kindOf(el), at: parsePrePlain(pre) });
   }
-  const isGroup = !!chatJid && chatJid.endsWith("@g.us");
+  const isGroup = (!!chatJid && chatJid.endsWith("@g.us")) || !!main.querySelector("header [data-icon^='default-group']");
   const phone = (chatJid && phoneFromJid(chatJid)) || phoneFromTitle(title);
   return {
     chat: { key: chatJid || title, title, phone, is_group: isGroup },
