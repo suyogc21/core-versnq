@@ -20,10 +20,14 @@ function parseDataId(dataId: string, el?: Element): { fromMe: boolean; chatJid: 
   return { fromMe: sentByMe(el), chatJid: null, msgId: dataId };
 }
 
+/** Only my messages carry a "You:" label and a delivery status (Sent / Delivered / Read), and an
+ * outgoing bubble ("tail-out", checked in WhatsApp Web Nov 17); theirs have "tail-in". */
 function sentByMe(el: Element): boolean {
+  const labels = Array.from(el.querySelectorAll("[aria-label]")).map((e) => (e.getAttribute("aria-label") || "").trim());
+  if (labels.some((l) => /^You\b|^(Sent|Delivered|Read|Pending)$/i.test(l))) return true;
+  if (el.querySelector("[data-icon='tail-out'], [data-icon='msg-check'], [data-icon='msg-dblcheck'], [data-icon='msg-time']")) return true;
   if (el.closest(".message-out") || el.querySelector(".message-out")) return true;
-  if (el.closest(".message-in") || el.querySelector(".message-in")) return false;
-  return !!el.querySelector("[data-icon='msg-check'], [data-icon='msg-dblcheck'], [data-icon='msg-time'], [data-icon='msg-dblcheck-ack']");
+  return false;
 }
 
 function phoneFromJid(jid: string): string | null {
