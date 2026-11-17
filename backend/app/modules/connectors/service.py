@@ -28,6 +28,7 @@ from app.modules.calls import service as C
 from app.modules.calls.models import Call
 from app.modules.connectors import base as B
 from app.modules.connectors.custom import CustomCrm
+from app.modules.connectors.hubspot import HubSpot
 from app.modules.connectors.leadsquared import LeadSquared
 from app.modules.connectors.models import CrmConnection, CrmSync
 from app.modules.crm.models import ExternalRef, Lead, LeadIdentity
@@ -54,6 +55,8 @@ def connector_for(conn: CrmConnection) -> B.Connector:
     secret = decrypt(conn.secret_enc)
     if conn.provider == "leadsquared":
         return LeadSquared(conn.host or "", json.loads(secret), conn.config or {})
+    if conn.provider == "hubspot":
+        return HubSpot(secret, conn.config or {})
     return CustomCrm(conn.config or {}, secret)
 
 

@@ -5547,7 +5547,8 @@
           "provider": {
             "enum": [
               "custom",
-              "leadsquared"
+              "leadsquared",
+              "hubspot"
             ],
             "title": "Provider",
             "type": "string"
@@ -5573,6 +5574,19 @@
             "default": true,
             "title": "Send Whatsapp",
             "type": "boolean"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
           }
         },
         "required": [

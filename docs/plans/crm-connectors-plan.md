@@ -86,3 +86,16 @@ All CRMs sit behind one small interface, so LeadSquared is never written into th
 - **Recording link:** `/api/v1/calls/{id}/recording/shared?until=…&sig=…`, signed by Core, no
   login; it stops working when the recording is removed (keep_days). A wrong or old link is a
   404. Migration 0048 lets crm_syncs hold `recording` and `summary` sends.
+
+## HubSpot (built Nov 17; checked against developers.hubspot.com)
+- **Key:** HubSpot stopped new private-app tokens (Sept / Oct 2026); the admin makes a **Service
+  Key** (Development → Keys → Service keys), sent as `Authorization: Bearer`. Old private-app
+  tokens still work.
+- **Find:** `POST /crm/objects/2026-09/contacts/search` on phone / mobilephone, number without
+  the country code (HubSpot compares area code + local number).
+- **Calls:** `POST /crm/v3/objects/calls` (direction, duration in ms, status COMPLETED /
+  NO_ANSWER / BUSY / FAILED, numbers, owner), linked to the contact with type 194.
+- **Call notes and WhatsApp:** `POST /crm/v3/objects/notes`, linked with type 202.
+- **Owner:** `GET /crm/v3/owners`, matched by the rep's email.
+- **To confirm on a real account:** the exact scope names for calls and notes (not in the scopes
+  table we read).

@@ -9781,7 +9781,7 @@ export interface components {
              * Provider
              * @enum {string}
              */
-            provider: "custom" | "leadsquared";
+            provider: "custom" | "leadsquared" | "hubspot";
             /** Secret Key */
             secret_key?: string | null;
             /**
@@ -9794,6 +9794,8 @@ export interface components {
              * @default true
              */
             send_whatsapp: boolean;
+            /** Token */
+            token?: string | null;
         };
         /** CrmConnectionOut */
         CrmConnectionOut: {

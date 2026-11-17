@@ -1,6 +1,6 @@
 """Settings → Connected CRM (settings.manage). One CRM per company: Custom CRM (any CRM, through
-the company's own addresses) or LeadSquared. Keys are encrypted and never shown again; the
-Custom CRM signing secret is shown once, when it is made."""
+the company's own addresses), LeadSquared or HubSpot (its Service Key). Keys are encrypted and
+never shown again; the Custom CRM signing secret is shown once, when it is made."""
 
 import json
 import secrets
@@ -29,10 +29,11 @@ Url = Annotated[str, Field(max_length=500)]
 
 
 class CrmConnectionIn(BaseModel):
-    provider: Literal["custom", "leadsquared"]
+    provider: Literal["custom", "leadsquared", "hubspot"]
     host: str | None = None  # leadsquared: one of the region hosts
     access_key: str | None = Field(default=None, max_length=200)  # leadsquared; keep if empty
     secret_key: str | None = Field(default=None, max_length=200)
+    token: str | None = Field(default=None, min_length=10, max_length=500)  # hubspot; keep if empty
     lookup_url: Url | None = None  # custom
     create_url: Url | None = None
     activity_url: Url | None = None
@@ -94,9 +95,15 @@ def _out(conn: CrmConnection | None, signing_secret: str | None = None) -> CrmCo
         return CrmConnectionOut(connected=False)
     cfg = S.options(conn)
     hint = None
-    if conn.provider == "leadsquared":
+    if conn.provider in ("leadsquared", "hubspot"):
         try:
-            hint = SEC.hint(json.loads(SEC.decrypt(conn.secret_enc)).get("access_key", ""))
+            stored = SEC.decrypt(conn.secret_enc)
+            key = (
+                json.loads(stored).get("access_key", "")
+                if conn.provider == "leadsquared"
+                else stored
+            )
+            hint = SEC.hint(key)
         except ValueError:
             hint = "••••"
     return CrmConnectionOut(
@@ -135,6 +142,11 @@ async def put_connection(body: CrmConnectionIn, db: CrmDb, actor: Admin) -> CrmC
             options["activity_event"] = body.activity_event
         elif conn and (conn.config or {}).get("activity_event"):
             options["activity_event"] = conn.config["activity_event"]
+    elif body.provider == "hubspot":
+        token = body.token or (SEC.decrypt(conn.secret_enc) if conn else None)
+        if not token:
+            raise Invalid("Paste the HubSpot service key", code="crm_keys")
+        secret_enc, host = SEC.encrypt(token.strip()), None
     else:
         for u in (body.lookup_url, body.create_url, body.activity_url):
             if not u or not u.startswith("https://"):

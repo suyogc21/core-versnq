@@ -21,6 +21,7 @@ from app.core.tenancy import tenant_session
 from app.modules.connectors import base as B
 from app.modules.connectors import custom as C
 from app.modules.connectors import service as S
+from app.modules.connectors.hubspot import national
 from app.modules.connectors.models import CrmSync
 from app.modules.crm.models import ExternalRef
 from app.modules.engage.inbox import message_event
@@ -39,6 +40,7 @@ class FakeCrm:
         self.leads: dict[str, str] = {}  # phone digits -> id
         self.busy = 0  # answer 429 this many times
         self.status = None  # force a status
+        self.owners: dict[str, str] = {}  # HubSpot: owner email -> id
 
     def handler(self, req: httpx.Request) -> httpx.Response:
         self.requests.append(req)
@@ -64,6 +66,20 @@ class FakeCrm:
             return httpx.Response(200, json={"Status": "Success", "Message": {"Id": code}})
         if path.endswith(("LogCall", "ProspectActivity.svc/Create")):
             return httpx.Response(200, json={"Status": "Success", "Message": {"Id": "act-1"}})
+        # HubSpot (paths from developers.hubspot.com)
+        if path == "/crm/objects/2026-09/contacts/search":
+            number = body["filterGroups"][0]["filters"][0]["value"]
+            found = self.leads.get(number)
+            results = [{"id": found}] if found else []
+            return httpx.Response(200, json={"total": len(results), "results": results})
+        if path == "/crm/v3/owners":
+            owners = [{"id": i, "email": e} for e, i in self.owners.items()]
+            return httpx.Response(200, json={"results": owners})
+        if path == "/crm/v3/objects/contacts":
+            self.leads[national(body["properties"]["phone"])] = "hs-new"
+            return httpx.Response(201, json={"id": "hs-new"})
+        if path in ("/crm/v3/objects/calls", "/crm/v3/objects/notes"):
+            return httpx.Response(201, json={"id": path.rsplit("/", 1)[1] + "-1"})
         if path == "/lookup":
             return httpx.Response(200, json={"lead_id": self.leads.get(body["phone"])})
         if path == "/create":
@@ -383,3 +399,55 @@ async def test_custom_crm_gets_the_call_note(ws, crm):
     note = next(x for x in sent if x["type"] == "call_note")
     assert note["lead_id"] == "c-9" and note["call_id"] == call["id"]
     assert "/recording/shared?until=" in note["recording_url"] and note["summary"] is None
+
+
+async def test_hubspot_gets_calls_and_call_notes_on_the_contact(ws, crm):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    me = (await c.get("/api/v1/auth/me", headers=rep)).json()
+    crm.leads["9876543210"] = "hs-asha"  # HubSpot compares the number without +91
+    crm.owners[me["email"]] = "own-7"
+    hub = {"provider": "hubspot", "token": "pat-na1-secret-token-1234"}
+    put = await c.put("/api/v1/crm-connection", headers=admin, json=hub)
+    keep = await c.put("/api/v1/crm-connection", headers=admin,
+                       json={"provider": "hubspot", "send_whatsapp": False})  # fmt: skip
+    test = await c.post("/api/v1/crm-connection/test", json={"phone": "98765 43210"},
+                        headers=admin)  # fmt: skip
+    call = await _recorded_call(c, rep)
+    await _call(c, rep, direction="in", status="missed")
+    await S.run_tenant(tenant_id)
+    shown = (await c.get("/api/v1/crm-connection", headers=admin)).text
+
+    assert put.status_code == 200 and put.json()["key_hint"] == "••••1234"
+    assert keep.status_code == 200 and "pat-na1-secret" not in shown
+    assert test.json()["lead_id"] == "hs-asha"
+    assert all(r.headers["authorization"] == "Bearer pat-na1-secret-token-1234"
+               for r in crm.requests)  # fmt: skip
+    calls = [json.loads(r.content) for r in crm.to("/crm/v3/objects/calls")]
+    out = next(x for x in calls if x["properties"]["hs_call_direction"] == "OUTBOUND")
+    missed = next(x for x in calls if x["properties"]["hs_call_direction"] == "INBOUND")
+    assert out["properties"]["hs_call_duration"] == 95_000  # milliseconds
+    assert out["properties"]["hs_call_status"] == "COMPLETED"
+    assert out["properties"]["hs_call_to_number"] == "+919876543210"
+    assert out["properties"]["hubspot_owner_id"] == "own-7"
+    assert out["associations"] == [{"to": {"id": "hs-asha"}, "types": [
+        {"associationCategory": "HUBSPOT_DEFINED", "associationTypeId": 194}]}]  # fmt: skip
+    assert missed["properties"]["hs_call_status"] == "NO_ANSWER"
+    note = json.loads(crm.to("/crm/v3/objects/notes")[0].content)
+    assert note["associations"][0]["types"][0]["associationTypeId"] == 202
+    body = note["properties"]["hs_note_body"]
+    assert body.startswith("Call notes (Versnq)\nRecording: https://")
+    assert f"/calls/{call['id']}/recording/shared" in body
+    assert {s.status for s in await _syncs(tenant_id)} == {"sent"}
+
+
+async def test_hubspot_creates_the_contact_when_missing(ws, crm):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    await c.put("/api/v1/crm-connection", headers=admin,
+                json={"provider": "hubspot", "token": "pat-na1-secret-token-1234"})  # fmt: skip
+    await _call(c, rep)
+    await S.run_tenant(tenant_id)
+
+    made = json.loads(crm.to("/crm/v3/objects/contacts")[0].content)
+    assert made["properties"]["phone"] == "+919876543210"
+    assert made["properties"]["firstname"] == "Rahul"
+    assert (await _syncs(tenant_id))[0].external_lead_id == "hs-new"

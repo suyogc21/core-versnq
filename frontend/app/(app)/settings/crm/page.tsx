@@ -14,7 +14,7 @@ import { unwrap } from "@/lib/api/errors";
 import type { components } from "@/lib/api/schema";
 
 type Conn = components["schemas"]["CrmConnectionOut"];
-type Provider = "leadsquared" | "custom";
+type Provider = "leadsquared" | "hubspot" | "custom";
 
 /** Settings → Connected CRM (docs/plans/crm-connectors-plan.md): calls and WhatsApp messages go
  * to the company's own CRM, on the right lead. */
@@ -59,6 +59,7 @@ function ConnectionForm({ conn }: { conn: Conn }) {
     host: conn.host ?? "",
     access_key: "",
     secret_key: "",
+    token: "",
     lookup_url: conn.lookup_url ?? "",
     create_url: conn.create_url ?? "",
     activity_url: conn.activity_url ?? "",
@@ -87,9 +88,10 @@ function ConnectionForm({ conn }: { conn: Conn }) {
             host: lsq ? v.host : null,
             access_key: lsq ? v.access_key || null : null,
             secret_key: lsq ? v.secret_key || null : null,
-            lookup_url: lsq ? null : v.lookup_url,
-            create_url: lsq ? null : v.create_url,
-            activity_url: lsq ? null : v.activity_url,
+            token: v.provider === "hubspot" ? v.token || null : null,
+            lookup_url: v.provider === "custom" ? v.lookup_url : null,
+            create_url: v.provider === "custom" ? v.create_url : null,
+            activity_url: v.provider === "custom" ? v.activity_url : null,
             activity_event:
               lsq && v.activity_event ? Number(v.activity_event) : null,
             send_calls: v.send_calls,
@@ -131,6 +133,7 @@ function ConnectionForm({ conn }: { conn: Conn }) {
           onChange={set("provider")}
         >
           <option value="leadsquared">LeadSquared</option>
+          <option value="hubspot">HubSpot</option>
           <option value="custom">
             Another CRM (your own addresses, or Zapier / Make)
           </option>
@@ -194,6 +197,23 @@ function ConnectionForm({ conn }: { conn: Conn }) {
             </div>
           )}
         </>
+      ) : v.provider === "hubspot" ? (
+        <div className="space-y-1">
+          <Label htmlFor="crm-token">HubSpot service key</Label>
+          <Input
+            id="crm-token"
+            type="password"
+            placeholder={conn.key_hint ? `Saved ${conn.key_hint}` : "pat-…"}
+            value={v.token}
+            onChange={set("token")}
+          />
+          <p className="text-xs text-muted-foreground">
+            In HubSpot (a super admin): Development → Keys → Service keys →
+            Create service key. Tick Contacts (read and write), Owners (read),
+            Calls and Notes, then copy the key here. Calls go onto the contact
+            as calls; recordings, summaries and WhatsApp messages as notes.
+          </p>
+        </div>
       ) : (
         <>
           {(["lookup_url", "create_url", "activity_url"] as const).map((k) => (

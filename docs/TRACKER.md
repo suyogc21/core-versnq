@@ -107,7 +107,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | Choice of data region (EU, US) | L | ⬜ |
 | Import from HubSpot and LeadSquared | M | 🟡 built Nov 16 (batch 2); check one real export file from each |
 | Calls and WhatsApp into any CRM: Custom CRM (any CRM, Zapier / Make) and LeadSquared; the "Calls + WhatsApp" plan switch | L | 🟡 built Nov 16 (plan `plans/crm-connectors-plan.md`); needs a deploy and a real LeadSquared account to try |
-| More CRMs on the same connector: HubSpot, Zoho, Salesforce, Pipedrive, Freshsales | L | ⬜ approved, one at a time |
+| More CRMs on the same connector: HubSpot, Zoho, Salesforce, Pipedrive, Freshsales | L | 🟡 HubSpot built Nov 17 (needs a real HubSpot account to try); Zoho, Salesforce, Pipedrive, Freshsales next |
 
 ### Later (2)
 | Item | Size | |
@@ -137,3 +137,4 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | 2026-11-16 | Batches 5a–5d (landing pages, A/B, newsletters, custom reports, lead ads, SMS; migrations 0043–0046) and batch 6 part 1 (tax presets, a person's data) merged and tested (676 tests); unknown calls never become leads by themselves. Not deployed yet |
 | 2026-11-16 | Arabic and Hindi (partly translated), right-to-left layout; 14 browser tests green |
 | 2026-11-16 | Connect any CRM: Custom CRM + LeadSquared, the Calls + WhatsApp switch (migration 0047); 683 tests. Goal grew by 6 points (any-CRM work) |
+| 2026-11-17 | Old-phone fix (Android 9 / Chrome 101) live; app 0.5.1 signed and downloadable; call notes (summary + private recording link) to the CRM; HubSpot connector (migrations 0048–0049); 688 tests |
