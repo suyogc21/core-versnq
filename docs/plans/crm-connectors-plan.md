@@ -118,3 +118,24 @@ No more native connectors until a paying customer on that CRM asks. LeadSquared,
 Zoho cover the first market; "Another CRM" (any API, or Zapier / Make) covers the rest.
 Pipedrive is half-built on the branch `parked/pipedrive-connector` (not merged, not tested);
 Freshsales waits on a confirmed phone lookup in its API; Salesforce on a customer.
+
+## Lead pull and the dialer (built Nov 17; Suyog: "build the dialer")
+- **Why:** the LeadSquared demo company wants tracking only, with reps calling their own
+  LeadSquared leads from our app, with no export / upload like Runo.
+- **Pull** (`connectors/pull.py`, Settings → Connected CRM → "Bring each rep's leads from
+  LeadSquared"): every 5 minutes, `Leads.RecentlyModified` (the first time, all leads), page by
+  page (1000 a page, 10 pages a run, carries on next run). Owners: `Users.Get`, matched to active
+  Core users by the same email. A rep's lead is created in Core for them (quietly: no "new lead"
+  alert, no response timers; LeadSquared does those) or linked to the person Core already has;
+  a reassigned lead moves; leads of people not in Core stay in LeadSquared. Linked through
+  `external_refs` (system `leadsquared`), so calls go back to the same lead without a lookup.
+  **No database change.**
+- **Not used, and why:** filtering by owner on LeadSquared's side isn't documented; webhook payload
+  fields aren't documented and webhooks aren't signed. The 5-minute catch-up is enough for now.
+- **To confirm on a real account:** which date `Leads.RecentlyModified` filters on (the docs don't
+  say; we assume "modified", which an owner change should update), and the phone formats.
+- **Dialer** (My Day → "Start calling"): due follow-ups first, then the rep's own leads never
+  contacted (`to_call` in `/me/day`). In the Android app (0.6.0+, `VersnqPhone.dial`, CALL_PHONE
+  asked once) the first call is placed at once; after the outcome is logged the next follows in
+  5 seconds; Pause stops it. Without the permission, the phone's dialer opens with the number. In a
+  browser: a Call button.
