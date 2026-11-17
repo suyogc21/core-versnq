@@ -7,8 +7,8 @@ android {
         applicationId "in.versnq.core"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "0.5.0"
+        versionCode 7
+        versionName "0.5.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -19,8 +19,24 @@ android {
     buildFeatures {
         buildConfig = true
     }
+    // The permanent Versnq key (Nov 17): only when VERSNQ_KEYSTORE is given (the key and its
+    // password stay on the builder's computer, never in git). Without it a release build is
+    // unsigned; GitHub's test builds (assembleDebug) are unaffected.
+    signingConfigs {
+        if (System.getenv("VERSNQ_KEYSTORE")) {
+            release {
+                storeFile file(System.getenv("VERSNQ_KEYSTORE"))
+                storePassword System.getenv("VERSNQ_KEYSTORE_PASSWORD")
+                keyAlias "versnq"
+                keyPassword System.getenv("VERSNQ_KEYSTORE_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            if (System.getenv("VERSNQ_KEYSTORE")) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
