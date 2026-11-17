@@ -149,3 +149,30 @@
     letter-spacing: -0.01em;
   }
 }
+
+/* Older Android phones (Suyog's Android 9 phone has a Chrome 101 engine, Nov 17). Tailwind v4
+ * moves things with the separate translate / rotate properties (Chrome 104+) and sizes the app
+ * with dvh units (Chrome 108+); older engines ignore both, so the phone menu never slid away (its
+ * X seemed dead) and long dialogs ran off the screen. A script in app/layout.tsx marks <html>
+ * when a feature is missing; only then do these older equivalents apply. */
+html[data-no-translate] [class*="translate-"] {
+  transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));
+}
+html[data-no-translate] .rotate-2 {
+  transform: rotate(2deg);
+}
+html[data-no-translate] .rotate-45 {
+  transform: rotate(45deg);
+}
+html[data-no-translate] .rotate-90 {
+  transform: rotate(90deg);
+}
+html[data-no-dvh] .h-dvh {
+  height: 100vh;
+}
+html[data-no-dvh] .min-h-dvh {
+  min-height: 100vh;
+}
+html[data-no-dvh] .max-h-\[90dvh\] {
+  max-height: 90vh;
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Test builds only (src/debug): the browser tests point the app at the local test stack on
+     this computer (adb reverse), which is plain http. Release builds never allow plain http. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+</network-security-config>
