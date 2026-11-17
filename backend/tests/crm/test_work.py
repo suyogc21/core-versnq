@@ -247,6 +247,8 @@ async def test_my_day_buckets_and_queue_order(ws):
     assert fresh["id"] in {lead["id"] for lead in day["new_leads"]}
     assert {late["id"], later["id"]} <= {t["lead_id"] for t in day["overdue"]}
     assert day["unassigned_count"] is None and mgr_day["unassigned_count"] == 1
+    # The dialer's list after the follow-ups: own leads never contacted with nothing booked.
+    assert [lead["id"] for lead in day["to_call"]] == [fresh["id"]]
 
 
 async def test_task_due_is_emitted_once(ws):

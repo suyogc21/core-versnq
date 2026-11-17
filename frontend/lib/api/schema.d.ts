@@ -9788,6 +9788,11 @@ export interface components {
              * @enum {string}
              */
             provider: "custom" | "leadsquared" | "hubspot" | "zoho";
+            /**
+             * Pull Leads
+             * @default false
+             */
+            pull_leads: boolean;
             /** Secret Key */
             secret_key?: string | null;
             /**
@@ -9835,6 +9840,12 @@ export interface components {
             lookup_url?: string | null;
             /** Provider */
             provider?: string | null;
+            pull?: components["schemas"]["PullStatus"] | null;
+            /**
+             * Pull Leads
+             * @default false
+             */
+            pull_leads: boolean;
             /**
              * Regions
              * @default {
@@ -12970,6 +12981,11 @@ export interface components {
             new_leads: components["schemas"]["LeadOut"][];
             /** Overdue */
             overdue: components["schemas"]["TaskOut"][];
+            /**
+             * To Call
+             * @default []
+             */
+            to_call: components["schemas"]["LeadOut"][];
             /** Today */
             today: components["schemas"]["TaskOut"][];
             /** Unassigned Count */
@@ -13797,6 +13813,28 @@ export interface components {
             slug: string;
             /** Title */
             title: string;
+        };
+        /** PullStatus */
+        PullStatus: {
+            /** At */
+            at?: string | null;
+            /**
+             * Created
+             * @default 0
+             */
+            created: number;
+            /**
+             * Linked
+             * @default 0
+             */
+            linked: number;
+            /**
+             * Moved
+             * @default 0
+             */
+            moved: number;
+            /** Owners */
+            owners?: number | null;
         };
         /** PushKeyOut */
         PushKeyOut: {

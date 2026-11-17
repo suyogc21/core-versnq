@@ -70,6 +70,7 @@ function ConnectionForm({ conn }: { conn: Conn }) {
     send_calls: conn.send_calls,
     send_whatsapp: conn.send_whatsapp,
     create_leads: conn.create_leads,
+    pull_leads: conn.pull_leads ?? false,
     is_active: conn.connected ? conn.is_active : true,
   });
   const set =
@@ -77,7 +78,14 @@ function ConnectionForm({ conn }: { conn: Conn }) {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setV({ ...v, [k]: e.target.value });
   const tick =
-    (k: "send_calls" | "send_whatsapp" | "create_leads" | "is_active") =>
+    (
+      k:
+        | "send_calls"
+        | "send_whatsapp"
+        | "create_leads"
+        | "pull_leads"
+        | "is_active",
+    ) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setV({ ...v, [k]: e.target.checked });
 
@@ -104,6 +112,7 @@ function ConnectionForm({ conn }: { conn: Conn }) {
             send_calls: v.send_calls,
             send_whatsapp: v.send_whatsapp,
             create_leads: v.create_leads,
+            pull_leads: lsq && v.pull_leads,
             is_active: v.is_active,
           },
         }),
@@ -336,6 +345,27 @@ function ConnectionForm({ conn }: { conn: Conn }) {
           />{" "}
           Create the lead in the CRM when it isn&apos;t there yet
         </label>
+        {v.provider === "leadsquared" && (
+          <div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={v.pull_leads}
+                onChange={tick("pull_leads")}
+                data-pull-leads
+              />{" "}
+              Bring each rep&apos;s leads from LeadSquared (for calling)
+            </label>
+            <p className="ms-6 text-xs text-muted-foreground">
+              Reps are matched by the same email in both. Every 5 minutes, new
+              and changed leads come in for their owner; a lead reassigned in
+              LeadSquared moves here too. Reps call them from My Day → Start
+              calling.
+              {conn.pull?.at &&
+                ` Last pull ${new Date(conn.pull.at).toLocaleString()}: ${conn.pull.owners ?? 0} reps matched, ${conn.pull.created} new, ${conn.pull.moved} moved, ${conn.pull.linked} linked.`}
+            </p>
+          </div>
+        )}
         {conn.connected && (
           <label className="flex items-center gap-2">
             <input

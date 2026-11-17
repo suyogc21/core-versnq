@@ -68,6 +68,7 @@ class Incoming:
     via_label: str = "quick-add"  # "the Contact us form", "import of leads.csv"
     created_summary: str | None = None  # default: "Added via <via_label>"
     brand_id: uuid.UUID | None = None  # the brand it came in through; None: the default (batch 4)
+    quiet: bool = False  # from the company's CRM: it already told the rep, runs its timers
 
 
 @dataclass
@@ -255,7 +256,7 @@ async def _create(
     )
     if owner:
         await L.event(db, lead, "lead.assigned", {"owner_user_id": str(owner.id)})
-        if actor is None or owner.id != actor.user.id:
+        if not inc.quiet and (actor is None or owner.id != actor.user.id):
             await notify(
                 db,
                 tenant_id,
@@ -266,7 +267,8 @@ async def _create(
             )
     await _consents_and_refs(db, lead, inc, actor)
     await O.on_new_person(db, lead)
-    await R.start_slas(db, lead, "lead_created")
+    if not inc.quiet:
+        await R.start_slas(db, lead, "lead_created")
     return lead
 
 

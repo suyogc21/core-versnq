@@ -47,7 +47,16 @@ class CrmConnectionIn(BaseModel):
     send_calls: bool = True
     send_whatsapp: bool = True
     create_leads: bool = True
+    pull_leads: bool = False  # leadsquared: bring each rep's leads into Core (the dialer)
     is_active: bool = True
+
+
+class PullStatus(BaseModel):
+    owners: int | None = None  # LeadSquared users matched to Core users by email
+    at: str | None = None
+    created: int = 0
+    moved: int = 0
+    linked: int = 0
 
 
 class CrmConnectionOut(BaseModel):
@@ -64,6 +73,8 @@ class CrmConnectionOut(BaseModel):
     send_calls: bool = True
     send_whatsapp: bool = True
     create_leads: bool = True
+    pull_leads: bool = False
+    pull: PullStatus | None = None
     is_active: bool = False
     last_ok_at: datetime | None = None
     last_error: str | None = None
@@ -97,6 +108,13 @@ async def _conn(db) -> CrmConnection | None:
     return await db.scalar(select(CrmConnection))
 
 
+def _pull(cfg: dict) -> PullStatus | None:
+    st = cfg.get("pull") or {}
+    if not st:
+        return None
+    return PullStatus(owners=st.get("owners"), **(st.get("last") or {}))
+
+
 def _out(conn: CrmConnection | None, signing_secret: str | None = None) -> CrmConnectionOut:
     if conn is None:
         return CrmConnectionOut(connected=False)
@@ -116,6 +134,7 @@ def _out(conn: CrmConnection | None, signing_secret: str | None = None) -> CrmCo
         activity_url=cfg.get("activity_url"), activity_event=cfg.get("activity_event"),
         send_calls=cfg["send_calls"], send_whatsapp=cfg["send_whatsapp"],
         create_leads=cfg["create_leads"], is_active=conn.is_active,
+        pull_leads=bool(cfg.get("pull_leads")), pull=_pull(cfg),
         last_ok_at=conn.last_ok_at, last_error=conn.last_error, signing_secret=signing_secret,
     )  # fmt: skip
 
@@ -142,6 +161,9 @@ async def put_connection(body: CrmConnectionIn, db: CrmDb, actor: Admin) -> CrmC
         if not keys["access_key"] or not keys["secret_key"]:
             raise Invalid("Enter the access key and secret key", code="crm_keys")
         secret_enc, host = SEC.encrypt(json.dumps(keys)), body.host
+        options["pull_leads"] = body.pull_leads
+        if conn and (conn.config or {}).get("pull"):  # where the pull is, kept
+            options["pull"] = conn.config["pull"]
         if body.activity_event:
             options["activity_event"] = body.activity_event
         elif conn and (conn.config or {}).get("activity_event"):

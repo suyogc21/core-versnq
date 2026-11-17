@@ -5590,6 +5590,11 @@
             "title": "Provider",
             "type": "string"
           },
+          "pull_leads": {
+            "default": false,
+            "title": "Pull Leads",
+            "type": "boolean"
+          },
           "secret_key": {
             "anyOf": [
               {
@@ -5747,6 +5752,21 @@
               }
             ],
             "title": "Provider"
+          },
+          "pull": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PullStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pull_leads": {
+            "default": false,
+            "title": "Pull Leads",
+            "type": "boolean"
           },
           "regions": {
             "additionalProperties": {
@@ -15115,6 +15135,14 @@
             "title": "Overdue",
             "type": "array"
           },
+          "to_call": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/LeadOut"
+            },
+            "title": "To Call",
+            "type": "array"
+          },
           "today": {
             "items": {
               "$ref": "#/components/schemas/TaskOut"
@@ -17624,6 +17652,49 @@
           "blocks"
         ],
         "title": "PublicPageOut",
+        "type": "object"
+      },
+      "PullStatus": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "created": {
+            "default": 0,
+            "title": "Created",
+            "type": "integer"
+          },
+          "linked": {
+            "default": 0,
+            "title": "Linked",
+            "type": "integer"
+          },
+          "moved": {
+            "default": 0,
+            "title": "Moved",
+            "type": "integer"
+          },
+          "owners": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owners"
+          }
+        },
+        "title": "PullStatus",
         "type": "object"
       },
       "PushKeyOut": {

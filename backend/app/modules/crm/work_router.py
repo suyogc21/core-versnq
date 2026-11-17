@@ -98,6 +98,7 @@ class MyDayOut(BaseModel):
     today: list[TaskOut]
     upcoming: list[TaskOut]
     new_leads: list[LeadOut]
+    to_call: list[LeadOut] = []  # the dialer, after due follow-ups: never contacted, none booked
     unassigned_count: int | None
 
 
@@ -325,6 +326,18 @@ async def my_day(db: CrmDb, actor: ActiveUser) -> MyDayOut:
         .order_by(Lead.assigned_at.desc())
         .limit(50)
     )
+    to_call = await db.scalars(
+        select(Lead)
+        .where(
+            Lead.owner_user_id == actor.user.id,
+            Lead.is_open.is_(True),
+            Lead.last_contacted_at.is_(None),
+            Lead.next_follow_up_at.is_(None),
+            Lead.primary_phone.is_not(None),
+        )
+        .order_by(Lead.assigned_at.desc().nulls_last())
+        .limit(200)
+    )
     unassigned = None
     if actor.role.scope in ("team", "all"):
         unassigned = await db.scalar(
@@ -338,5 +351,6 @@ async def my_day(db: CrmDb, actor: ActiveUser) -> MyDayOut:
         today=[t for t in out if now <= t.due_at < tomorrow],
         upcoming=[t for t in out if t.due_at >= tomorrow],
         new_leads=await _out(db, list(new_leads.all()), actor),
+        to_call=await _out(db, list(to_call.all()), actor),
         unassigned_count=unassigned,
     )

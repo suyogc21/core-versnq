@@ -10,6 +10,13 @@ x-LSQ-SecretKey headers; the host depends on the account's region.
 - call notes: the same activity API with a "Call notes (Versnq)" type (summary, next step,
            recording link), made the first time it's needed
 - users:   GET  /v2/UserManagement.svc/User/Retrieve/ByEmailAddress → [{"UserId"}]
+- all users (lead pull, Nov 17): GET /v2/UserManagement.svc/Users.Get
+           → [{"ID", "EmailAddress", "StatusCode": 0 active / 1 inactive}]
+- leads changed in a window (lead pull): POST /v2/LeadManagement.svc/Leads.RecentlyModified
+           {Parameter: {FromDate, ToDate} (UTC "YYYY-MM-DD HH:MM:SS"), Columns.Include_CSV,
+           Paging {PageIndex from 1, PageSize}, Sorting} → {RecordCount, Leads: [{LeadPropertyList:
+           [{Attribute, Value}]}]}; at most 5000 per call. Filtering by owner isn't documented,
+           so Core reads every changed lead and keeps those of its own reps.
 
 Not in the docs, so to confirm on a real account: the recording link's field, whether the
 activity date is UTC, and whether CreateType's Message.Id is the activity code.
@@ -29,6 +36,7 @@ HOSTS = {
     "api-ca12.leadsquared.com": "Canada",
 }
 WHEN = "%Y-%m-%d %H:%M:%S"
+COLUMNS = "ProspectID,FirstName,LastName,EmailAddress,Phone,Mobile,OwnerId"
 
 
 class LeadSquared:
@@ -139,3 +147,38 @@ class LeadSquared:
             "ActivityDateTime": note.at.astimezone(UTC).strftime(WHEN),
         }
         return self._id(await self._call("POST", "ProspectActivity.svc/Create", json=body))
+
+    async def users(self) -> list[dict]:
+        """Every user: {"id", "email", "active"} (lead pull: owners matched by email)."""
+        out = await self._call("GET", "UserManagement.svc/Users.Get")
+        if not isinstance(out, list):
+            raise B.CrmError("LeadSquared's user list wasn't a list", retry=False)
+        return [
+            {
+                "id": str(u.get("ID") or ""),
+                "email": (u.get("EmailAddress") or "").strip().lower(),
+                "active": u.get("StatusCode") in (0, "0"),
+            }
+            for u in out
+            if u.get("ID")
+        ]
+
+    async def changed_leads(self, since, until, page: int, size: int) -> list[dict]:
+        """Leads changed between two UTC times, one page (from 1): {Attribute: Value} each."""
+        body = {
+            "Parameter": {
+                "FromDate": since.astimezone(UTC).strftime(WHEN),
+                "ToDate": until.astimezone(UTC).strftime(WHEN),
+            },
+            "Columns": {"Include_CSV": COLUMNS},
+            "Paging": {"PageIndex": page, "PageSize": size},
+            "Sorting": {"ColumnName": "ProspectAutoId", "Direction": "0"},
+        }
+        out = await self._call("POST", "LeadManagement.svc/Leads.RecentlyModified", json=body)
+        leads = out.get("Leads") if isinstance(out, dict) else None
+        if not isinstance(leads, list):
+            raise B.CrmError("LeadSquared's lead list wasn't readable", retry=False)
+        return [
+            {p.get("Attribute"): p.get("Value") for p in (x.get("LeadPropertyList") or [])}
+            for x in leads
+        ]

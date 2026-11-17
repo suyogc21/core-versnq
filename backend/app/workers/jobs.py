@@ -153,6 +153,15 @@ async def crm_sync_job(ctx) -> dict:
     return await run_all(await _active_tenants())
 
 
+async def crm_pull_job(ctx) -> dict:
+    """Every minute: each rep's leads from the connected LeadSquared (a pull every 5 minutes;
+    a big first pull carries on page by page)."""
+    from app.modules.connectors.pull import pull_all
+    from app.modules.crm.automation import _active_tenants
+
+    return await pull_all(await _active_tenants())
+
+
 async def call_recordings_job(ctx) -> int:
     """Every minute (and right after Twilio says a recording is ready): fetch providers'
     recordings into Core (C3). Given up after a day."""
