@@ -51,7 +51,7 @@ async function act(fn: () => Promise<unknown>, after?: () => void): Promise<void
 }
 
 function connectView(): HTMLElement {
-  const base = h("input", { placeholder: "yourcompany.versnq.in", id: "base", "aria-label": "Workspace address" }) as HTMLInputElement;
+  const base = h("input", { placeholder: "yourcompany.core.versnq.in", id: "base", "aria-label": "Workspace address" }) as HTMLInputElement;
   const code = h("input", { placeholder: "1234-5678", id: "code", inputmode: "numeric", "aria-label": "Connect code" }) as HTMLInputElement;
   return h(
     "div",
