@@ -1,6 +1,6 @@
 """Settings → Connected CRM (settings.manage). One CRM per company: Custom CRM (any CRM, through
-the company's own addresses), LeadSquared, HubSpot (its Service Key) or Zoho CRM (a Self
-Client). Keys are encrypted and never shown again; the Custom CRM signing secret is shown once,
+the company's own addresses), LeadSquared, HubSpot (its Service Key), Zoho CRM (a Self Client)
+or Pipedrive (company address + API token). Keys are encrypted and never shown again; the Custom CRM signing secret is shown once,
 when it is made."""
 
 import json
@@ -20,6 +20,7 @@ from app.modules.connectors import base as B
 from app.modules.connectors import service as S
 from app.modules.connectors.leadsquared import HOSTS, LeadSquared
 from app.modules.connectors.models import CrmConnection, CrmSync
+from app.modules.connectors.pipedrive import DOMAIN as PIPEDRIVE_DOMAIN
 from app.modules.connectors.zoho import REGIONS as ZOHO_REGIONS
 from app.modules.connectors.zoho import exchange_code as zoho_exchange
 from app.modules.crm import leads as L
@@ -32,7 +33,7 @@ Url = Annotated[str, Field(max_length=500)]
 
 
 class CrmConnectionIn(BaseModel):
-    provider: Literal["custom", "leadsquared", "hubspot", "zoho"]
+    provider: Literal["custom", "leadsquared", "hubspot", "zoho", "pipedrive"]
     host: str | None = None  # leadsquared: one of the region hosts
     access_key: str | None = Field(default=None, max_length=200)  # leadsquared; keep if empty
     secret_key: str | None = Field(default=None, max_length=200)
@@ -102,7 +103,7 @@ def _out(conn: CrmConnection | None, signing_secret: str | None = None) -> CrmCo
         return CrmConnectionOut(connected=False)
     cfg = S.options(conn)
     hint = None
-    if conn.provider in ("leadsquared", "hubspot", "zoho"):
+    if conn.provider in ("leadsquared", "hubspot", "zoho", "pipedrive"):
         try:
             stored = SEC.decrypt(conn.secret_enc)
             field = {"leadsquared": "access_key", "zoho": "client_id"}.get(conn.provider)
@@ -161,11 +162,16 @@ async def put_connection(body: CrmConnectionIn, db: CrmDb, actor: Admin) -> CrmC
         elif not keys:
             raise Invalid("Paste the one-time code from Zoho's API console", code="crm_code")
         secret_enc, host = SEC.encrypt(json.dumps(keys)), keys["accounts"]
-    elif body.provider == "hubspot":
+    elif body.provider in ("hubspot", "pipedrive"):
         token = body.token or (SEC.decrypt(conn.secret_enc) if conn else None)
         if not token:
-            raise Invalid("Paste the HubSpot service key", code="crm_keys")
+            raise Invalid("Paste the API key", code="crm_keys")
         secret_enc, host = SEC.encrypt(token.strip()), None
+        if body.provider == "pipedrive":
+            host = (body.host or "").strip().lower().removesuffix(".pipedrive.com")
+            if not PIPEDRIVE_DOMAIN.match(host):
+                raise Invalid("Type your Pipedrive address, like acme.pipedrive.com",
+                              code="crm_region")  # fmt: skip
     else:
         for u in (body.lookup_url, body.create_url, body.activity_url):
             if not u or not u.startswith("https://"):

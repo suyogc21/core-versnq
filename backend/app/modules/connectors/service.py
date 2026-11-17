@@ -31,6 +31,7 @@ from app.modules.connectors.custom import CustomCrm
 from app.modules.connectors.hubspot import HubSpot
 from app.modules.connectors.leadsquared import LeadSquared
 from app.modules.connectors.models import CrmConnection, CrmSync
+from app.modules.connectors.pipedrive import Pipedrive
 from app.modules.connectors.zoho import Zoho
 from app.modules.crm.models import ExternalRef, Lead, LeadIdentity
 from app.modules.engage.models import Message
@@ -60,6 +61,8 @@ def connector_for(conn: CrmConnection) -> B.Connector:
         return HubSpot(secret, conn.config or {})
     if conn.provider == "zoho":
         return Zoho(json.loads(secret), conn.config or {})
+    if conn.provider == "pipedrive":
+        return Pipedrive(conn.host or "", secret, conn.config or {})
     return CustomCrm(conn.config or {}, secret)
 
 
