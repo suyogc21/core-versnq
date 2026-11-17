@@ -32,6 +32,8 @@ type VersnqPhone = {
   unknownCalls(): Promise<{ calls: UnknownCall[] }>;
   sendUnknown(o: { id: string }): Promise<{ tracked: boolean }>;
   dismissUnknown(o: { id: string }): Promise<void>;
+  /** Places the call from the rep's SIM (asks once; else opens the phone's dialer). App 0.6.0+. */
+  dial?(o: { number: string }): Promise<{ direct: boolean }>;
 };
 
 /** A call with a number Core doesn't know, kept only on the phone until the rep decides. */

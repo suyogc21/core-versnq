@@ -1,10 +1,11 @@
 "use client";
 
-import { Play } from "lucide-react";
+import { Pause, Phone, Play } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { phoneApp } from "@/components/app/phone-app";
 import { LeadRecord } from "@/components/crm/lead-record";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -17,12 +18,13 @@ export default function MyDayPage() {
   const { me, can } = useAuth();
   const label = useLabels();
   const day = useMyDay();
-  const [queue, setQueue] = useState<TaskItem[] | null>(null);
+  const [queue, setQueue] = useState<QueueItem[] | null>(null);
   const [position, setPosition] = useState(0);
   const leadsWord = label("lead", true).toLowerCase();
 
-  // Calling queue (#21): overdue first, then today; one lead at a time.
-  const workable = [...(day.data?.overdue ?? []), ...(day.data?.today ?? [])].filter((t) => t.lead_id);
+  // Calling queue (#21): overdue first, then today, then (the dialer, Nov 17) own leads never
+  // contacted, e.g. those that came in from LeadSquared; one lead at a time.
+  const workable = callQueue(day.data);
   if (queue) {
     const item = queue[position];
     if (!item) {
@@ -31,7 +33,7 @@ export default function MyDayPage() {
           <PageHeader title="Working the queue" />
           <div className="p-8 text-center">
             <h2 className="text-lg font-semibold">All done. 🎉</h2>
-            <p className="mt-1 text-muted-foreground">You worked through {queue.length} follow-ups.</p>
+            <p className="mt-1 text-muted-foreground">You worked through {queue.length} calls.</p>
             <Button className="mt-4" onClick={() => setQueue(null)}>
               Back to My Day
             </Button>
@@ -54,9 +56,10 @@ export default function MyDayPage() {
             </>
           }
         />
+        <Dialer key={`${item.lead_id}-${position}`} item={item} first={position === 0} />
         <LeadRecord
-          key={item.id}
-          leadId={item.lead_id!}
+          key={item.lead_id}
+          leadId={item.lead_id}
           onLogged={() => setPosition(position + 1)} // logging the outcome moves to the next one
         />
       </>
@@ -76,7 +79,7 @@ export default function MyDayPage() {
                 setPosition(0);
               }}
             >
-              <Play /> Start working ({workable.length})
+              <Play /> Start calling ({workable.length})
             </Button>
           )
         }
@@ -123,6 +126,84 @@ export default function MyDayPage() {
         {!can("leads.edit") && <p className="text-xs text-muted-foreground">Your role does not work {leadsWord}.</p>}
       </div>
     </>
+  );
+}
+
+type QueueItem = { lead_id: string; name: string; phone: string | null };
+type Day = NonNullable<ReturnType<typeof useMyDay>["data"]>;
+
+function callQueue(day: Day | undefined): QueueItem[] {
+  if (!day) return [];
+  const seen = new Set<string>();
+  const out: QueueItem[] = [];
+  for (const t of [...day.overdue, ...day.today]) {
+    if (!t.lead_id || seen.has(t.lead_id)) continue;
+    seen.add(t.lead_id);
+    out.push({ lead_id: t.lead_id, name: t.lead_name ?? t.title, phone: t.lead_phone ?? null });
+  }
+  for (const l of day.to_call ?? []) {
+    if (seen.has(l.id)) continue;
+    seen.add(l.id);
+    out.push({ lead_id: l.id, name: l.display_name, phone: l.primary_phone ?? null });
+  }
+  return out;
+}
+
+const NEXT_IN = 5; // seconds before the next call is placed
+
+/** The dialer bar over the lead: inside the Android app the call is placed by itself (the
+ * first at once, then after a short countdown once the outcome of the last one is logged);
+ * Pause stops it. In a browser it's a Call button. */
+function Dialer({ item, first }: { item: QueueItem; first: boolean }) {
+  const [app] = useState(phoneApp);
+  const auto = !!app?.dial && !!item.phone;
+  const [left, setLeft] = useState(first ? 0 : NEXT_IN);
+  const [paused, setPaused] = useState(false);
+  const [called, setCalled] = useState(false);
+
+  const call = async () => {
+    if (!item.phone) return;
+    setCalled(true);
+    if (app?.dial) await app.dial({ number: item.phone }).catch(() => setCalled(false));
+    else window.location.href = `tel:${item.phone}`;
+  };
+
+  useEffect(() => {
+    if (!auto || paused || called) return;
+    const t = setTimeout(() => (left <= 0 ? void call() : setLeft(left - 1)), left <= 0 ? 0 : 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, paused, called, left]);
+
+  return (
+    <div className="flex items-center gap-3 border-b bg-accent/40 px-4 py-2.5 text-sm" data-dialer>
+      <Phone className="size-4 shrink-0 text-muted-foreground" />
+      <span className="min-w-0 flex-1 truncate">
+        <b>{item.name}</b>
+        {item.phone && <span className="text-muted-foreground"> · {phone(item.phone)}</span>}
+        <span className="block text-xs text-muted-foreground">
+          {!item.phone
+            ? "No phone number: skip, or reach them another way."
+            : called
+              ? "Calling… after the call, log the outcome: the next one follows."
+              : auto && !paused
+                ? `Calling in ${left}s`
+                : auto
+                  ? "Paused"
+                  : "Tap Call, then log the outcome."}
+        </span>
+      </span>
+      {auto && !called && (
+        <Button size="sm" variant="outline" onClick={() => setPaused(!paused)}>
+          {paused ? <Play /> : <Pause />} {paused ? "Resume" : "Pause"}
+        </Button>
+      )}
+      {item.phone && (
+        <Button size="sm" onClick={() => void call()}>
+          <Phone /> {called ? "Call again" : "Call"}
+        </Button>
+      )}
+    </div>
   );
 }
 

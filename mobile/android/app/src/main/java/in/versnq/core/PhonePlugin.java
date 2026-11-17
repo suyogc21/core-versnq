@@ -29,6 +29,7 @@ import java.util.UUID;
     permissions = {
         @Permission(alias = "calls", strings = { Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_PHONE_STATE }),
         @Permission(alias = "notify", strings = { Manifest.permission.POST_NOTIFICATIONS }),
+        @Permission(alias = "dial", strings = { Manifest.permission.CALL_PHONE }),
     }
 )
 public class PhonePlugin extends Plugin {
@@ -84,6 +85,43 @@ public class PhonePlugin extends Plugin {
     @PermissionCallback
     private void afterPermission(PluginCall call) {
         call.resolve(status());
+    }
+
+    /** The dialer (Nov 17): calls the number from the rep's own SIM straight away. The first time
+     * Android asks the rep to allow it; without that, the phone's dialer opens with the number
+     * (one more tap). The call log then sends the call to Core as any other call. */
+    @PluginMethod
+    public void dial(PluginCall call) {
+        String number = call.getString("number", "");
+        if (number == null || !number.matches("\\+?[0-9]{4,16}")) {
+            call.reject("That isn't a phone number");
+            return;
+        }
+        if (getPermissionState("dial") == PermissionState.GRANTED) {
+            placeCall(call);
+        } else {
+            requestPermissionForAlias("dial", call, "afterDialPermission");
+        }
+    }
+
+    @PermissionCallback
+    private void afterDialPermission(PluginCall call) {
+        placeCall(call);
+    }
+
+    private void placeCall(PluginCall call) {
+        boolean direct = getPermissionState("dial") == PermissionState.GRANTED;
+        Intent intent = new Intent(direct ? Intent.ACTION_CALL : Intent.ACTION_DIAL, Uri.parse("tel:" + call.getString("number")));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            getContext().startActivity(intent);
+        } catch (SecurityException | android.content.ActivityNotFoundException e) {
+            call.reject("This phone can't place the call");
+            return;
+        }
+        JSObject out = new JSObject();
+        out.put("direct", direct);
+        call.resolve(out);
     }
 
     /** Keeps the phone key Core gave this rep and starts sending calls from now on. */

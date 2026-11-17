@@ -55,6 +55,8 @@
     <!-- Call tracking (C4.2): read the rep's call log; the rep allows it in the app. -->
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- The dialer (Nov 17): place the next call from the app; the rep allows it in the app. -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <!-- Keep the 15-minute call check after the phone restarts. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- The caller popup is a notification (Android 13+ asks the rep). -->
