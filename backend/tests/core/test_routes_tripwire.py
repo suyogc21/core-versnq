@@ -7,6 +7,9 @@ from app.modules.auth.deps import current_user_any
 from app.platform.staff.router import current_staff_any
 
 PUBLIC = {
+    # The company's own CRM plays a call recording through a link Core signed (Nov 17); it
+    # expires when the recording is removed; a wrong or old signature is a 404.
+    ("GET", "/api/v1/calls/{call_id}/recording/shared"),
     ("GET", "/health"),
     ("POST", "/platform/auth/login"),
     ("POST", "/platform/auth/2fa/verify"),

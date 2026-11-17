@@ -29796,6 +29796,67 @@
         ]
       }
     },
+    "/api/v1/calls/{call_id}/recording/shared": {
+      "get": {
+        "description": "For the company's own CRM: only with Core's signature, only until the recording is\nremoved. Anything else is a 404, never a hint.",
+        "operationId": "calls-play_shared_recording",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "call_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Call Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": true,
+            "schema": {
+              "title": "Until",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sig",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "title": "Sig",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Play Shared Recording",
+        "tags": [
+          "calls"
+        ]
+      }
+    },
     "/api/v1/campaigns": {
       "get": {
         "operationId": "outreach-list_campaigns",

@@ -13,6 +13,8 @@ rep's own SIM), the company's own Twilio or later Exotel, goes the same way:
 Events: call.logged, call.recorded (ACE fetches and analyses it), call.analyzed.
 """
 
+import hashlib
+import hmac
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -20,6 +22,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import storage
+from app.core.config import get_settings
 from app.core.errors import Invalid
 from app.core.events import emit
 from app.modules.auth.deps import CurrentUser
@@ -240,3 +243,27 @@ async def expire_recordings(db: AsyncSession, tenant_id: uuid.UUID) -> int:
         if act := await _activity(db, call):
             act.data = {**act.data, "recording": False, "recording_removed": True}
     return len(old)
+
+
+# ---------- a recording link for the company's CRM (Nov 17) ----------
+def _link_sig(call_id: uuid.UUID, until: int) -> str:
+    key = get_settings().jwt_secret.encode()
+    return hmac.new(key, f"recording|{call_id}|{until}".encode(), hashlib.sha256).hexdigest()[:40]
+
+
+async def recording_link(db: AsyncSession, call: Call, slug: str) -> str | None:
+    """A private address for this one recording, for the company's own CRM: signed by Core,
+    it stops working when the recording is removed (keep_days after the call). None: no
+    recording."""
+    if not call.recording_path:
+        return None
+    keep = (await settings_of(db, call.tenant_id))["keep_days"]
+    until = int((call.started_at + timedelta(days=keep)).timestamp())
+    base = f"https://{slug}.{get_settings().base_domain}/api/v1/calls/{call.id}/recording/shared"
+    return f"{base}?until={until}&sig={_link_sig(call.id, until)}"
+
+
+def link_ok(call_id: uuid.UUID, until: int, sig: str) -> bool:
+    return until > datetime.now(UTC).timestamp() and hmac.compare_digest(
+        sig, _link_sig(call_id, until)
+    )

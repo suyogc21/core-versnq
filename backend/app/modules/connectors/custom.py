@@ -4,7 +4,9 @@ Zapier / Make flow); Core POSTs JSON signed like its webhooks:
 
 - lookup:   {"phone": "+91…"}                         → {"lead_id": "…" or null}
 - create:   {"phone", "name", "email", "owner_email"} → {"lead_id": "…"}
-- activity: {"lead_id", "type": "call" | "whatsapp", …} → any 2xx ({"activity_id": "…"} optional)
+- activity: {"lead_id", "type": "call" | "whatsapp" | "call_note", …} → any 2xx
+            ({"activity_id": "…"} optional); a call_note has the call's summary, next step and a
+            private recording link
 """
 
 import json
@@ -69,5 +71,13 @@ class CustomCrm:
             "lead_id": lead_id, "type": "whatsapp", "message_id": str(msg.message_id),
             "direction": msg.direction, "text": msg.text, "at": msg.at.isoformat(),
             "rep_email": msg.rep_email,
+        })  # fmt: skip
+        return str(out["activity_id"])[:100] if out.get("activity_id") else None
+
+    async def log_note(self, lead_id: str, note: B.CallNote) -> str | None:
+        out = await self._post("activity", {
+            "lead_id": lead_id, "type": "call_note", "call_id": str(note.call_id),
+            "at": note.at.isoformat(), "summary": note.summary, "next_step": note.next_step,
+            "recording_url": note.recording_url,
         })  # fmt: skip
         return str(out["activity_id"])[:100] if out.get("activity_id") else None

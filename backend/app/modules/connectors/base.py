@@ -46,11 +46,29 @@ class MessageInfo:
     rep_email: str | None
 
 
+@dataclass(frozen=True)
+class CallNote:
+    """After a call: its recording link and, with ACE, the summary and next step."""
+
+    call_id: uuid.UUID
+    at: datetime
+    summary: str | None
+    next_step: str | None
+    recording_url: str | None
+
+    def text(self) -> str:
+        parts = [f"Summary: {self.summary}" if self.summary else None,
+                 f"Next step: {self.next_step}" if self.next_step else None,
+                 f"Recording: {self.recording_url}" if self.recording_url else None]  # fmt: skip
+        return "\n".join(p for p in parts if p)
+
+
 class Connector(Protocol):
     async def find_by_phone(self, phone: str) -> str | None: ...
     async def create_lead(self, lead: NewLead) -> str: ...
     async def log_call(self, lead_id: str, call: CallInfo) -> str | None: ...
     async def log_message(self, lead_id: str, msg: MessageInfo) -> str | None: ...
+    async def log_note(self, lead_id: str, note: CallNote) -> str | None: ...
 
 
 def client() -> httpx.AsyncClient:  # patched in tests

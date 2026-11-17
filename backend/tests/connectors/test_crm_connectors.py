@@ -60,7 +60,8 @@ class FakeCrm:
         if path.endswith("ByEmailAddress"):
             return httpx.Response(200, json=[{"UserId": "user-1"}])
         if path.endswith("CreateType"):
-            return httpx.Response(200, json={"Status": "Success", "Message": {"Id": "206"}})
+            code = "207" if body["ActivityEventName"].startswith("Call notes") else "206"
+            return httpx.Response(200, json={"Status": "Success", "Message": {"Id": code}})
         if path.endswith(("LogCall", "ProspectActivity.svc/Create")):
             return httpx.Response(200, json={"Status": "Success", "Message": {"Id": "act-1"}})
         if path == "/lookup":
@@ -287,3 +288,98 @@ async def test_calls_and_whatsapp_plan_hides_the_crm_screens(ws):
     assert (await c.get("/api/v1/calls", headers=admin)).status_code == 200
     modules = {m["key"]: m["enabled"] for m in (await c.get("/api/v1/modules", headers=rep)).json()}
     assert modules["crm_screens"] is False  # the app hides the menu entries from this
+
+
+MP3 = b"ID3\x04\x00\x00\x00\x00\x00\x00" + b"\x00" * 2000
+
+
+async def _recorded_call(c, rep):
+    call = await _call(c, rep)
+    up = await c.put(f"/api/v1/calls/{call['id']}/recording", content=MP3,
+                     headers={**rep, "X-File-Name": "call.mp3"})  # fmt: skip
+    assert up.status_code == 200, up.text
+    return call
+
+
+def _notes(crm):
+    return [json.loads(r.content) for r in crm.to("ProspectActivity.svc/Create")]
+
+
+async def test_the_recording_goes_to_the_crm_as_a_private_link(ws, crm):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    crm.leads["919876543210"] = "lsq-asha"
+    await c.put("/api/v1/crm-connection", json=_lsq(), headers=admin)
+    call = await _recorded_call(c, rep)
+    await S.run_tenant(tenant_id)
+    await S.run_tenant(tenant_id)  # nothing twice
+
+    syncs = {s.kind: s for s in await _syncs(tenant_id)}
+    notes = _notes(crm)
+    made = [json.loads(r.content)["ActivityEventName"] for r in crm.to("CreateType")]
+
+    assert syncs["call"].status == "sent" and syncs["recording"].status == "sent"
+    assert made == ["WhatsApp (Versnq)", "Call notes (Versnq)"]  # each type made once
+    assert len(notes) == 1 and notes[0]["ActivityEvent"] == 207
+    assert notes[0]["RelatedProspectId"] == "lsq-asha"
+    link = notes[0]["ActivityNote"].removeprefix("Recording: ")
+    assert f"/api/v1/calls/{call['id']}/recording/shared?until=" in link
+    async with tenant_session(tenant_id) as db:
+        from app.modules.connectors.models import CrmConnection
+
+        conn = await db.scalar(select(CrmConnection))
+    assert conn.config["notes_event"] == 207  # kept: the type isn't made again
+
+    path = link[link.index("/api/") :]
+    played = await c.get(path)  # the CRM has no Core login: the signature is the key
+    forged = await c.get(path[:-4] + "0000")
+    other = await c.get(path.replace(call["id"], str(uuid.uuid4())))
+    until = int(path.split("until=")[1].split("&")[0])
+    expired = await c.get(path.replace(f"until={until}", f"until={until - 40 * 86400}"))
+
+    assert played.status_code == 200 and played.content == MP3
+    assert played.headers["cache-control"] == "private, no-store"
+    assert forged.status_code == other.status_code == expired.status_code == 404
+
+
+async def test_with_ace_the_summary_and_link_go_as_one_note(ws, crm):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    crm.leads["919876543210"] = "lsq-asha"
+    async with tenant_session(tenant_id) as db:
+        await set_module(db, tenant_id, "ace", True)
+    await c.put("/api/v1/crm-connection", json=_lsq(), headers=admin)
+    call = await _recorded_call(c, rep)
+    await S.run_tenant(tenant_id)
+    before = len(_notes(crm))
+    async with tenant_session(tenant_id) as db:
+        from app.modules.calls.models import Call
+        from app.modules.calls.service import save_analysis
+
+        row = await db.get(Call, uuid.UUID(call["id"]))
+        said = "Asked about the weekend batch; wants fees by email."
+        await save_analysis(db, row, said, {"intent": "high",
+                                            "next_step": "Email the fee sheet today"})  # fmt: skip
+    await S.run_tenant(tenant_id)
+
+    syncs = {s.kind: s for s in await _syncs(tenant_id)}
+    notes = _notes(crm)
+    assert before == 0 and "recording" not in syncs  # the summary's note carries the link
+    assert syncs["summary"].status == "sent" and len(notes) == 1
+    text = notes[0]["ActivityNote"]
+    assert text.startswith("Summary: Asked about the weekend batch; wants fees by email.\n")
+    assert "Next step: Email the fee sheet today\nRecording: https://" in text
+
+
+async def test_custom_crm_gets_the_call_note(ws, crm):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    crm.leads["+919876543210"] = "c-9"
+    body = {"provider": "custom", "lookup_url": "https://crm.example.com/lookup",
+            "create_url": "https://crm.example.com/create",
+            "activity_url": "https://crm.example.com/activity"}  # fmt: skip
+    await c.put("/api/v1/crm-connection", json=body, headers=admin)
+    call = await _recorded_call(c, rep)
+    await S.run_tenant(tenant_id)
+
+    sent = [json.loads(r.content) for r in crm.to("/activity")]
+    note = next(x for x in sent if x["type"] == "call_note")
+    assert note["lead_id"] == "c-9" and note["call_id"] == call["id"]
+    assert "/recording/shared?until=" in note["recording_url"] and note["summary"] is None

@@ -23,6 +23,8 @@ from app.modules.crm.models import Activity, Lead
 from app.modules.settings.models import TenantSettings
 
 router = APIRouter(prefix="/api/v1", tags=["calls"], dependencies=CRM)
+# The company's CRM plays a recording through a link Core signed (service.recording_link).
+public = APIRouter(prefix="/api/v1", tags=["calls"], dependencies=CRM)
 Worker = Annotated[CurrentUser, require("leads.edit")]
 Admin = Annotated[CurrentUser, require("settings.manage")]
 Status = Literal["answered", "missed", "no_answer", "busy", "failed"]
@@ -210,6 +212,21 @@ async def play_recording(call_id: uuid.UUID, db: CrmDb, actor: Worker) -> FileRe
     return FileResponse(
         storage.full_path(call.recording_path), media_type=call.recording_type,
         headers={"Cache-Control": "private, no-store"},
+    )  # fmt: skip
+
+
+@public.get("/calls/{call_id}/recording/shared")
+async def play_shared_recording(
+    call_id: uuid.UUID, db: CrmDb, until: int = Query(...), sig: str = Query(max_length=64)
+) -> FileResponse:
+    """For the company's own CRM: only with Core's signature, only until the recording is
+    removed. Anything else is a 404, never a hint."""
+    call = await db.get(Call, call_id) if S.link_ok(call_id, until, sig) else None
+    if call is None or not call.recording_path:
+        raise NotFound("Not found")
+    return FileResponse(
+        storage.full_path(call.recording_path), media_type=call.recording_type,
+        headers={"Cache-Control": "private, no-store", "X-Robots-Tag": "noindex"},
     )  # fmt: skip
 
 

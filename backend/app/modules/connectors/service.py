@@ -2,7 +2,9 @@
 
 Every ten seconds, for each company with a connected CRM:
 1. new call.logged / message.received / message.sent (WhatsApp) events since the connection's
-   cursor become crm_syncs rows (one per event: a repeat is harmless);
+   cursor become crm_syncs rows (one per event: a repeat is harmless). Call notes (Nov 17):
+   with ACE, call.analyzed sends the summary, next step and the recording's private link;
+   without ACE (no analysis comes), each call that got a recording sends its link;
 2. due rows are sent one at a time (CRMs limit requests per second): the lead is found in the
    CRM by its id kept on Core's lead, else by phone; if it isn't there, it's created when the
    company asked for that (calls from a number the rep said is a new lead), else skipped.
@@ -19,8 +21,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.events_model import Event
+from app.core.modules import is_enabled
 from app.core.secrets import decrypt
-from app.core.tenancy import tenant_session
+from app.core.tenancy import platform_session, tenant_session
+from app.modules.calls import service as C
 from app.modules.calls.models import Call
 from app.modules.connectors import base as B
 from app.modules.connectors.custom import CustomCrm
@@ -29,6 +33,7 @@ from app.modules.connectors.models import CrmConnection, CrmSync
 from app.modules.crm.models import ExternalRef, Lead, LeadIdentity
 from app.modules.engage.models import Message
 from app.modules.users.models import User
+from app.platform.models import Tenant
 
 RETRY_DELAYS = [60, 300, 1800, 7200, 21600]
 MAX_TRIES = len(RETRY_DELAYS) + 1
@@ -52,9 +57,13 @@ def connector_for(conn: CrmConnection) -> B.Connector:
     return CustomCrm(conn.config or {}, secret)
 
 
+CALL_EVENTS = {"call.logged": "call", "call.analyzed": "summary"}
+EVENTS = (*CALL_EVENTS, "message.received", "message.sent")
+
+
 def _kind(event: Event) -> str | None:
-    if event.type == "call.logged":
-        return "call"
+    if event.type in CALL_EVENTS:
+        return CALL_EVENTS[event.type]
     channel = (event.payload or {}).get("channel")
     if event.type in ("message.received", "message.sent") and channel in (
         "whatsapp", "whatsapp_extension"
@@ -70,7 +79,7 @@ async def collect(db: AsyncSession, conn: CrmConnection) -> int:
         await db.scalars(
             select(Event)
             .where(
-                Event.type.in_(("call.logged", "message.received", "message.sent")),
+                Event.type.in_(EVENTS),
                 Event.occurred_at >= conn.cursor_at,
             )
             .order_by(Event.occurred_at)
@@ -81,10 +90,10 @@ async def collect(db: AsyncSession, conn: CrmConnection) -> int:
     for e in events:
         kind = _kind(e)
         p = e.payload or {}
-        ref = p.get("call_id") if kind == "call" else p.get("message_id")
+        ref = p.get("message_id") if kind == "whatsapp" else p.get("call_id")
         if not kind or not ref or not p.get("lead_id"):
             continue
-        if not opts["send_calls" if kind == "call" else "send_whatsapp"]:
+        if not opts["send_whatsapp" if kind == "whatsapp" else "send_calls"]:
             continue
         r = await db.execute(
             insert(CrmSync)
@@ -105,6 +114,47 @@ async def collect(db: AsyncSession, conn: CrmConnection) -> int:
         made += r.rowcount or 0
     if events:
         conn.cursor_at = events[-1].occurred_at
+    if opts["send_calls"] and not await is_enabled(db, conn.tenant_id, "ace"):
+        made += await _collect_recordings(db, conn)
+    return made
+
+
+async def _collect_recordings(db: AsyncSession, conn: CrmConnection) -> int:
+    """Without ACE: calls since the connection that got a recording and whose link wasn't sent
+    yet. call.recorded belongs to ACE (it isn't written without it), so these are found here;
+    the made-up event id keeps each one to a single send."""
+    sent = select(CrmSync.id).where(CrmSync.ref_id == Call.id, CrmSync.kind == "recording")
+    calls = (
+        await db.execute(
+            select(Call.id, Call.lead_id)
+            .where(
+                Call.recording_path.is_not(None),
+                Call.lead_id.is_not(None),
+                Call.started_at >= conn.created_at - timedelta(days=1),
+                ~sent.exists(),
+            )
+            .limit(200)
+        )
+    ).all()
+    made = 0
+    for call_id, lead_id in calls:
+        r = await db.execute(
+            insert(CrmSync)
+            .values(
+                id=uuid.uuid4(),
+                tenant_id=conn.tenant_id,
+                connection_id=conn.id,
+                event_id=uuid.uuid5(uuid.NAMESPACE_URL, f"versnq:recording:{call_id}"),
+                kind="recording",
+                ref_id=call_id,
+                lead_id=lead_id,
+                status="pending",
+                attempts=0,
+                next_try_at=now(),
+            )  # fmt: skip
+            .on_conflict_do_nothing(constraint="uq_crm_syncs_event")
+        )
+        made += r.rowcount or 0
     return made
 
 
@@ -156,12 +206,44 @@ async def _external_lead(
     return found
 
 
-async def _send_one(db: AsyncSession, crm: B.Connector, conn: CrmConnection, s: CrmSync) -> str:
+async def _send_note(
+    db: AsyncSession, crm: B.Connector, conn: CrmConnection, s: CrmSync, lead: Lead, slug: str
+) -> str:
+    """A call's recording link, or ACE's summary (with the link): one note on the CRM's lead."""
+    call = await db.get(Call, s.ref_id)
+    if call is None:
+        return "skipped"
+    link = await C.recording_link(db, call, slug)
+    if s.kind == "recording" and not link:
+        s.last_error = "The recording was removed"
+        return "skipped"
+    ext = await _external_lead(db, crm, conn, lead, call.number)
+    if not ext:
+        s.last_error = "Not in the CRM, and leads aren't created there"
+        return "skipped"
+    s.external_lead_id = ext
+    analysis = call.analysis or {}
+    s.external_activity_id = await crm.log_note(ext, B.CallNote(
+        call_id=call.id, at=call.started_at, recording_url=link,
+        summary=call.summary if s.kind == "summary" else None,
+        next_step=analysis.get("next_step") if s.kind == "summary" else None,
+    ))  # fmt: skip
+    made = getattr(crm, "made_notes_event", None)
+    if made:  # LeadSquared made its "Call notes (Versnq)" type: keep the code
+        conn.config = {**(conn.config or {}), "notes_event": made}
+    return "sent"
+
+
+async def _send_one(
+    db: AsyncSession, crm: B.Connector, conn: CrmConnection, s: CrmSync, slug: str
+) -> str:
     """Returns 'sent' or 'skipped'; raises CrmError."""
     lead = await db.get(Lead, s.lead_id) if s.lead_id else None
     if lead is None:
         s.last_error = "The lead is no longer in Core"
         return "skipped"
+    if s.kind in ("recording", "summary"):
+        return await _send_note(db, crm, conn, s, lead, slug)
     if s.kind == "call":
         call = await db.get(Call, s.ref_id)
         if call is None:
@@ -211,6 +293,8 @@ def _failed(conn: CrmConnection, s: CrmSync, e: B.CrmError) -> None:
 
 
 async def run_tenant(tenant_id: uuid.UUID) -> dict:
+    async with platform_session() as p:
+        slug = await p.scalar(select(Tenant.slug).where(Tenant.id == tenant_id))
     async with tenant_session(tenant_id) as db:
         conn = await db.scalar(select(CrmConnection).where(CrmConnection.is_active.is_(True)))
         if conn is None:
@@ -234,7 +318,7 @@ async def run_tenant(tenant_id: uuid.UUID) -> dict:
                 continue
             try:
                 crm = connector_for(conn)
-                s.status = await _send_one(db, crm, conn, s)
+                s.status = await _send_one(db, crm, conn, s, slug)
                 s.attempts += 1
                 s.next_try_at = None
                 if s.status == "sent":

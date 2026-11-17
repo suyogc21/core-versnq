@@ -7,6 +7,8 @@ x-LSQ-SecretKey headers; the host depends on the account's region.
 - calls:   POST /v2/Telephony.svc/LogCall (their call-log API for telephony connectors)
 - WhatsApp: POST /v2/ProspectActivity.svc/Create with the company's activity code
            (made once with ProspectActivity.svc/CreateType, or typed in by the admin)
+- call notes: the same activity API with a "Call notes (Versnq)" type (summary, next step,
+           recording link), made the first time it's needed
 - users:   GET  /v2/UserManagement.svc/User/Retrieve/ByEmailAddress → [{"UserId"}]
 
 Not in the docs, so to confirm on a real account: the recording link's field, whether the
@@ -36,7 +38,8 @@ class LeadSquared:
         self.base = f"https://{host}/v2"
         self.headers = {"x-LSQ-AccessKey": keys.get("access_key", ""),
                         "x-LSQ-SecretKey": keys.get("secret_key", "")}  # fmt: skip
-        self.config = config
+        self.config = dict(config)
+        self.made_notes_event: int | None = None  # set when log_note made the activity type
         self._users: dict[str, str | None] = {}
 
     async def _call(self, method: str, path: str, **kw):
@@ -113,10 +116,26 @@ class LeadSquared:
         }
         return self._id(await self._call("POST", "ProspectActivity.svc/Create", json=body))
 
-    async def make_activity_type(self) -> str:
-        """Once, when connecting: the "WhatsApp (Versnq)" activity type; its code is kept."""
-        out = await self._call("POST", "ProspectActivity.svc/CreateType", json={
-            "ActivityEventName": "WhatsApp (Versnq)",
-            "Description": "WhatsApp messages from Versnq Core",
-        })  # fmt: skip
+    async def make_activity_type(
+        self, name: str = "WhatsApp (Versnq)", about: str = "WhatsApp messages from Versnq Core"
+    ) -> str:
+        """Once: an activity type in their LeadSquared; its code is kept in the connection."""
+        out = await self._call("POST", "ProspectActivity.svc/CreateType",
+                               json={"ActivityEventName": name, "Description": about})  # fmt: skip
         return self._id(out)
+
+    async def log_note(self, lead_id: str, note: B.CallNote) -> str | None:
+        code = self.config.get("notes_event")
+        if not code:  # the first note: make the type, the sync keeps its code
+            code = await self.make_activity_type(
+                "Call notes (Versnq)", "Call summaries and recordings from Versnq Core"
+            )
+            self.config["notes_event"] = int(code)
+            self.made_notes_event = int(code)
+        body = {
+            "RelatedProspectId": lead_id,
+            "ActivityEvent": int(code),
+            "ActivityNote": note.text()[:2000],
+            "ActivityDateTime": note.at.astimezone(UTC).strftime(WHEN),
+        }
+        return self._id(await self._call("POST", "ProspectActivity.svc/Create", json=body))

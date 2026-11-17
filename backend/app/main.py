@@ -8,6 +8,7 @@ from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
 from app.modules.brands.router import router as brands_router
 from app.modules.calls.phone import router as phone_router
+from app.modules.calls.router import public as calls_public_router
 from app.modules.calls.router import router as calls_router
 from app.modules.calls.twilio_router import public as twilio_public_router
 from app.modules.calls.twilio_router import router as twilio_router
@@ -116,6 +117,7 @@ app.include_router(pool_router)
 app.include_router(outreach_router)
 app.include_router(replies_router)
 app.include_router(calls_router)
+app.include_router(calls_public_router)
 app.include_router(phone_router)
 app.include_router(lead_ads_router)
 app.include_router(crm_connection_router)

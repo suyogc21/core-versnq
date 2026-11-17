@@ -77,3 +77,12 @@ All CRMs sit behind one small interface, so LeadSquared is never written into th
 2. WhatsApp messages to LeadSquared.
 3. The "Calls + WhatsApp" switch.
 4. Next CRMs on the same interface: HubSpot, Zoho (each checked against its own docs first).
+
+## Added Nov 17 (Suyog: "build both")
+- **Call notes to the CRM:** with ACE, when the summary is ready, one activity goes to the lead:
+  summary, next step and the recording's private link. Without ACE, each call that gets a
+  recording sends its link. LeadSquared: a "Call notes (Versnq)" activity type, made once.
+  Custom CRM: an activity of type `call_note`.
+- **Recording link:** `/api/v1/calls/{id}/recording/shared?until=…&sig=…`, signed by Core, no
+  login; it stops working when the recording is removed (keep_days). A wrong or old link is a
+  404. Migration 0048 lets crm_syncs hold `recording` and `summary` sends.
