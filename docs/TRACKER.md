@@ -11,9 +11,9 @@ Each item has a size: S = 1, M = 2, L = 3.
 
 | | Points | Share |
 |---|---|---|
-| ✅ Live and usable | 45 | **39%** |
-| 🟡 Built, waiting on an account, key or your try | 38 | 33% |
-| ⬜ Not built | 33 | 28% |
+| ✅ Live and usable | 56 | **48%** |
+| 🟡 Built, waiting on an account, key or your try | 30 | 26% |
+| ⬜ Not built | 30 | 26% |
 | **Total (goal above)** | 116 | |
 
 Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 done" counted the 🟡 rows in the Done table as done. It's a rough count by size, not hours; most of what's left is the new scope: calls, apps, marketing and global.
@@ -62,7 +62,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | Item | Size | |
 |---|---|---|
 | **Real forms: builder plus a hosted page to share or embed** (the old form "link" only accepted posts; opening it gave an error) | M | ✅ live Nov 16 (waiting for Suyog's own try) |
-| Green-tick walk-through of every feature on the live server, fixing what fails | L | ⬜ |
+| Green-tick walk-through of every feature on the live server, fixing what fails | L | ✅ Nov 17: `frontend/e2e-live/walkthrough.spec.ts`, re-runnable; results in `walkthrough.md` |
 | WhatsApp extras: photos and PDFs, templates with images and buttons | M | 🟡 built Nov 16 (batch 3); waits on Meta verification |
 | Several brands and sending domains in one company | M | 🟡 built Nov 16 (batch 4) |
 
@@ -73,7 +73,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | Sign-out after idle time, per company | S | 🟡 built Nov 16 (batch 1) |
 | IP allowlist, per company | S | 🟡 built Nov 16 (batch 1) |
 | Email after repeated failed sign-ins | S | 🟡 built Nov 16 (batch 1) |
-| Data protection: export everything, full erasure, breach runbook (DPDP and GDPR) | M | 🟡 built Nov 16 (batch 1; runbook in `security/breach-runbook.md`) |
+| Data protection: export everything, full erasure, breach runbook (DPDP and GDPR) | M | ✅ live; walk-through Nov 17: export zip downloads, a person's data, erasure (runbook in `security/breach-runbook.md`) |
 
 ### Phase 2: phone calls (7): decided Nov 16 (plan: `plans/calls-plan.md`)
 | Item | Size | |
@@ -91,11 +91,11 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 ### Phase 4: marketing (13)
 | Item | Size | |
 |---|---|---|
-| Landing pages | L | 🟡 built Nov 16 (batch 5a): builder, /p/<page>, visits, forms on the page |
+| Landing pages | L | ✅ live; walk-through Nov 17: published page at /p/…, its form makes a lead |
 | Email newsletters to your own audience | M | 🟡 built Nov 16 (batch 5b): sends from the company mailbox (capped); Postmark later |
 | Facebook and Google lead ads straight in | M | 🟡 built Nov 16 (batch 5d) on test events; needs a Meta app and a Google Ads account to try live |
 | A/B tests | S | 🟡 built Nov 16 (batch 5a, landing pages; email sequences already had them) |
-| Custom reports | L | 🟡 built Nov 16 (batch 5c) |
+| Custom reports | L | ✅ live; walk-through Nov 17 |
 | SMS | M | 🟡 built Nov 16 (batch 5d): MSG91 (India, DLT ids), Twilio, a test sender; SMS steps in sequences; needs a provider account |
 
 ### Phase 5: global (12)
@@ -138,3 +138,4 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | 2026-11-16 | Arabic and Hindi (partly translated), right-to-left layout; 14 browser tests green |
 | 2026-11-16 | Connect any CRM: Custom CRM + LeadSquared, the Calls + WhatsApp switch (migration 0047); 683 tests. Goal grew by 6 points (any-CRM work) |
 | 2026-11-17 | Old-phone fix (Android 9 / Chrome 101) live; app 0.5.1 signed and downloadable; call notes (summary + private recording link) to the CRM; HubSpot connector (migrations 0048–0049); 688 tests |
+| 2026-11-17 | Deployed (0050). Walk-through on the live server in the test company: every screen on laptop and phone, and 18 journeys, all pass. Data region and extra CRM connectors parked until a customer asks |
