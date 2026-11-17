@@ -12,8 +12,8 @@ Each item has a size: S = 1, M = 2, L = 3.
 | | Points | Share |
 |---|---|---|
 | ✅ Live and usable | 56 | **48%** |
-| 🟡 Built, waiting on an account, key or your try | 30 | 26% |
-| ⬜ Not built | 30 | 26% |
+| 🟡 Built, waiting on an account, key or your try | 45 | 39% |
+| ⬜ Not built | 15 | 13% |
 | **Total (goal above)** | 116 | |
 
 Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 done" counted the 🟡 rows in the Done table as done. It's a rough count by size, not hours; most of what's left is the new scope: calls, apps, marketing and global.
@@ -139,3 +139,4 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | 2026-11-16 | Connect any CRM: Custom CRM + LeadSquared, the Calls + WhatsApp switch (migration 0047); 683 tests. Goal grew by 6 points (any-CRM work) |
 | 2026-11-17 | Old-phone fix (Android 9 / Chrome 101) live; app 0.5.1 signed and downloadable; call notes (summary + private recording link) to the CRM; HubSpot connector (migrations 0048–0049); 688 tests |
 | 2026-11-17 | Deployed (0050). Walk-through on the live server in the test company: every screen on laptop and phone, and 18 journeys, all pass. Data region and extra CRM connectors parked until a customer asks |
+| 2026-11-17 | Recounted from the rows (the summary had drifted): ✅ 56 (48%), 🟡 45 (39%), ⬜ 15 (13%) of 116 |
