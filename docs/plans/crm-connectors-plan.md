@@ -112,3 +112,9 @@ All CRMs sit behind one small interface, so LeadSquared is never written into th
 - **Call notes and WhatsApp:** `POST /crm/v7/Notes` with Parent_Id {module, id}.
 - **To confirm on a real Zoho account:** linking a call to a Lead (docs only show Contacts), the
   duration format. v8 exists with the same fields; we use v7 (fully documented).
+
+## Decision (Nov 17, Suyog: "do we really need Pipedrive and all?")
+No more native connectors until a paying customer on that CRM asks. LeadSquared, HubSpot and
+Zoho cover the first market; "Another CRM" (any API, or Zapier / Make) covers the rest.
+Pipedrive is half-built on the branch `parked/pipedrive-connector` (not merged, not tested);
+Freshsales waits on a confirmed phone lookup in its API; Salesforce on a customer.
