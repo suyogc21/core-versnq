@@ -107,7 +107,7 @@ Recounted Nov 16 by the rule above: 🟡 doesn't count as done. The earlier "46 
 | Choice of data region (EU, US) | L | ⬜ |
 | Import from HubSpot and LeadSquared | M | 🟡 built Nov 16 (batch 2); check one real export file from each |
 | Calls and WhatsApp into any CRM: Custom CRM (any CRM, Zapier / Make) and LeadSquared; the "Calls + WhatsApp" plan switch | L | 🟡 built Nov 16 (plan `plans/crm-connectors-plan.md`); needs a deploy and a real LeadSquared account to try |
-| More CRMs on the same connector: HubSpot, Zoho, Salesforce, Pipedrive, Freshsales | L | 🟡 HubSpot built Nov 17 (needs a real HubSpot account to try); Zoho, Salesforce, Pipedrive, Freshsales next |
+| More CRMs on the same connector: HubSpot, Zoho, Salesforce, Pipedrive, Freshsales | L | 🟡 HubSpot and Zoho built Nov 17 (each needs a real account to try); Salesforce, Pipedrive, Freshsales next |
 
 ### Later (2)
 | Item | Size | |

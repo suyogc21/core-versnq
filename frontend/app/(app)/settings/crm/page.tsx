@@ -14,7 +14,7 @@ import { unwrap } from "@/lib/api/errors";
 import type { components } from "@/lib/api/schema";
 
 type Conn = components["schemas"]["CrmConnectionOut"];
-type Provider = "leadsquared" | "hubspot" | "custom";
+type Provider = "leadsquared" | "hubspot" | "zoho" | "custom";
 
 /** Settings → Connected CRM (docs/plans/crm-connectors-plan.md): calls and WhatsApp messages go
  * to the company's own CRM, on the right lead. */
@@ -60,6 +60,9 @@ function ConnectionForm({ conn }: { conn: Conn }) {
     access_key: "",
     secret_key: "",
     token: "",
+    client_id: "",
+    client_secret: "",
+    code: "",
     lookup_url: conn.lookup_url ?? "",
     create_url: conn.create_url ?? "",
     activity_url: conn.activity_url ?? "",
@@ -85,10 +88,14 @@ function ConnectionForm({ conn }: { conn: Conn }) {
         await api.PUT("/api/v1/crm-connection", {
           body: {
             provider: v.provider,
-            host: lsq ? v.host : null,
+            host: lsq || v.provider === "zoho" ? v.host : null,
             access_key: lsq ? v.access_key || null : null,
             secret_key: lsq ? v.secret_key || null : null,
             token: v.provider === "hubspot" ? v.token || null : null,
+            client_id: v.provider === "zoho" ? v.client_id || null : null,
+            client_secret:
+              v.provider === "zoho" ? v.client_secret || null : null,
+            code: v.provider === "zoho" ? v.code || null : null,
             lookup_url: v.provider === "custom" ? v.lookup_url : null,
             create_url: v.provider === "custom" ? v.create_url : null,
             activity_url: v.provider === "custom" ? v.activity_url : null,
@@ -134,6 +141,7 @@ function ConnectionForm({ conn }: { conn: Conn }) {
         >
           <option value="leadsquared">LeadSquared</option>
           <option value="hubspot">HubSpot</option>
+          <option value="zoho">Zoho CRM</option>
           <option value="custom">
             Another CRM (your own addresses, or Zapier / Make)
           </option>
@@ -196,6 +204,66 @@ function ConnectionForm({ conn }: { conn: Conn }) {
               </p>
             </div>
           )}
+        </>
+      ) : v.provider === "zoho" ? (
+        <>
+          <div className="space-y-1">
+            <Label htmlFor="crm-zregion">Zoho region</Label>
+            <NativeSelect
+              id="crm-zregion"
+              value={v.host}
+              onChange={set("host")}
+            >
+              <option value="">Choose…</option>
+              {Object.entries(conn.zoho_regions).map(([host, name]) => (
+                <option key={host} value={host}>
+                  {name} ({host})
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label htmlFor="crm-zid">Client ID</Label>
+              <Input
+                id="crm-zid"
+                placeholder={
+                  conn.provider === "zoho" && conn.key_hint
+                    ? `Saved ${conn.key_hint}`
+                    : "1000.…"
+                }
+                value={v.client_id}
+                onChange={set("client_id")}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="crm-zsecret">Client secret</Label>
+              <Input
+                id="crm-zsecret"
+                type="password"
+                value={v.client_secret}
+                onChange={set("client_secret")}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="crm-zcode">One-time code</Label>
+            <Input
+              id="crm-zcode"
+              placeholder={conn.connected ? "Only to connect again" : "1000.…"}
+              value={v.code}
+              onChange={set("code")}
+            />
+            <p className="text-xs text-muted-foreground">
+              In Zoho: api-console.zoho.com → Add client → Self Client. Copy the
+              client ID and secret. Then Generate Code with these scopes
+              (comma-separated), choose 10 minutes, and paste the code here
+              within that time: ZohoCRM.modules.leads.ALL,
+              ZohoCRM.modules.contacts.ALL, ZohoCRM.modules.calls.CREATE,
+              ZohoCRM.modules.notes.CREATE, ZohoCRM.users.READ,
+              ZohoSearch.securesearch.READ
+            </p>
+          </div>
         </>
       ) : v.provider === "hubspot" ? (
         <div className="space-y-1">

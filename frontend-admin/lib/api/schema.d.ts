@@ -9761,6 +9761,12 @@ export interface components {
             activity_event?: number | null;
             /** Activity Url */
             activity_url?: string | null;
+            /** Client Id */
+            client_id?: string | null;
+            /** Client Secret */
+            client_secret?: string | null;
+            /** Code */
+            code?: string | null;
             /**
              * Create Leads
              * @default true
@@ -9781,7 +9787,7 @@ export interface components {
              * Provider
              * @enum {string}
              */
-            provider: "custom" | "leadsquared" | "hubspot";
+            provider: "custom" | "leadsquared" | "hubspot" | "zoho";
             /** Secret Key */
             secret_key?: string | null;
             /**
@@ -9856,6 +9862,22 @@ export interface components {
             send_whatsapp: boolean;
             /** Signing Secret */
             signing_secret?: string | null;
+            /**
+             * Zoho Regions
+             * @default {
+             *       "accounts.zoho.com": "United States",
+             *       "accounts.zoho.com.au": "Australia",
+             *       "accounts.zoho.com.cn": "China",
+             *       "accounts.zoho.eu": "Europe",
+             *       "accounts.zoho.in": "India",
+             *       "accounts.zoho.jp": "Japan",
+             *       "accounts.zoho.sa": "Saudi Arabia",
+             *       "accounts.zohocloud.ca": "Canada"
+             *     }
+             */
+            zoho_regions: {
+                [key: string]: string;
+            };
         };
         /** CrmRules */
         CrmRules: {

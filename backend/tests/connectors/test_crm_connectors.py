@@ -50,7 +50,8 @@ class FakeCrm:
         if self.status:
             return httpx.Response(self.status, text="no")
         path = req.url.path
-        body = json.loads(req.content) if req.content else None
+        is_json = req.headers.get("content-type", "").startswith("application/json")
+        body = json.loads(req.content) if req.content and is_json else None
         if path.endswith("RetrieveLeadByPhoneNumber"):
             found = self.leads.get(req.url.params["phone"])
             return httpx.Response(200, json=[{"ProspectID": found}] if found else [])
@@ -80,6 +81,32 @@ class FakeCrm:
             return httpx.Response(201, json={"id": "hs-new"})
         if path in ("/crm/v3/objects/calls", "/crm/v3/objects/notes"):
             return httpx.Response(201, json={"id": path.rsplit("/", 1)[1] + "-1"})
+        # Zoho (paths from zoho.com/crm/developer/docs, v7)
+        if path == "/oauth/v2/token":
+            form = dict(httpx.QueryParams(req.content.decode())) if req.content else {}
+            grant = form.get("grant_type") or req.url.params.get("grant_type")
+            if grant == "authorization_code":
+                if form.get("code") != "1000.good-code":
+                    return httpx.Response(200, json={"error": "invalid_code"})
+                return httpx.Response(200, json={"access_token": "at-1", "refresh_token": "rt-1",
+                                                 "api_domain": "https://www.zohoapis.in",
+                                                 "expires_in": 3600})  # fmt: skip
+            return httpx.Response(200, json={"access_token": "at-2", "expires_in": 3600,
+                                             "api_domain": "https://www.zohoapis.in"})  # fmt: skip
+        if path.startswith("/crm/v7/") and path.endswith("/search"):
+            module = path.split("/")[3]
+            found = self.leads.get(f"{module}:{req.url.params['phone']}")
+            return (
+                httpx.Response(200, json={"data": [{"id": found}]})
+                if found
+                else httpx.Response(204)
+            )
+        if path == "/crm/v7/users":
+            users = [{"id": i, "email": e} for e, i in self.owners.items()]
+            return httpx.Response(200, json={"users": users})
+        if path in ("/crm/v7/Leads", "/crm/v7/Calls", "/crm/v7/Notes"):
+            made = {"code": "SUCCESS", "status": "success", "details": {"id": path[8:] + "-1"}}
+            return httpx.Response(201, json={"data": [made]})
         if path == "/lookup":
             return httpx.Response(200, json={"lead_id": self.leads.get(body["phone"])})
         if path == "/create":
@@ -451,3 +478,66 @@ async def test_hubspot_creates_the_contact_when_missing(ws, crm):
     assert made["properties"]["phone"] == "+919876543210"
     assert made["properties"]["firstname"] == "Rahul"
     assert (await _syncs(tenant_id))[0].external_lead_id == "hs-new"
+
+
+@pytest.fixture
+def fresh_zoho(monkeypatch):
+    from app.modules.connectors import zoho
+
+    monkeypatch.setattr(zoho, "_TOKENS", {})
+
+
+ZOHO = {"provider": "zoho", "host": "accounts.zoho.in", "client_id": "1000.CLIENTABCD",
+        "client_secret": "zoho-secret-value", "code": "1000.good-code"}  # fmt: skip
+
+
+async def test_zoho_connects_with_a_one_time_code_and_logs_calls(ws, crm, fresh_zoho):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    me = (await c.get("/api/v1/auth/me", headers=rep)).json()
+    crm.owners[me["email"]] = "zuser-3"
+    crm.leads["Leads:+919876543210"] = "z-lead-9"
+    bad = await c.put("/api/v1/crm-connection", headers=admin, json={**ZOHO, "code": "1000.old"})
+    put = await c.put("/api/v1/crm-connection", headers=admin, json=ZOHO)
+    again = await c.put("/api/v1/crm-connection", headers=admin,
+                        json={"provider": "zoho", "send_whatsapp": False})  # fmt: skip
+    shown = (await c.get("/api/v1/crm-connection", headers=admin)).text
+    await _recorded_call(c, rep)
+    await _call(c, rep, direction="in", status="missed")
+    await S.run_tenant(tenant_id)
+
+    assert bad.json()["code"] == "crm_code" and "make a new one" in bad.json()["detail"]
+    assert put.status_code == 200 and put.json()["key_hint"] == "••••ABCD"
+    assert again.status_code == 200  # no new code needed to change options
+    assert "zoho-secret-value" not in shown and "rt-1" not in shown
+    refreshes = [r for r in crm.to("/oauth/v2/token") if r.url.params.get("grant_type")]
+    assert len(refreshes) == 1  # one access token, reused for every send
+    assert all(r.headers["authorization"] == "Zoho-oauthtoken at-2"
+               for r in crm.requests if r.url.path.startswith("/crm/"))  # fmt: skip
+    calls = [json.loads(r.content)["data"][0] for r in crm.to("/crm/v7/Calls")]
+    out = next(x for x in calls if x["Call_Type"] == "Outbound")
+    missed = next(x for x in calls if x["Call_Type"] == "Missed")
+    assert out["What_Id"] == {"id": "z-lead-9"} and out["$se_module"] == "Leads"
+    assert out["Call_Duration"] == "00:02" and out["Description"].startswith("95 seconds")
+    assert out["Owner"] == {"id": "zuser-3"} and missed["Subject"] == "Incoming call (Versnq)"
+    note = json.loads(crm.to("/crm/v7/Notes")[0].content)["data"][0]
+    assert note["Parent_Id"] == {"module": {"api_name": "Leads"}, "id": "z-lead-9"}
+    assert "Recording: https://" in note["Note_Content"]
+    assert {s.status for s in await _syncs(tenant_id)} == {"sent"}
+
+
+async def test_zoho_contacts_are_found_and_missing_leads_made(ws, crm, fresh_zoho):
+    tenant_id, c, admin, rep_id, rep, lead = await _setup(ws)
+    await c.put("/api/v1/crm-connection", headers=admin, json=ZOHO)
+    crm.leads["Contacts:+919876543210"] = "z-contact-4"
+    await _call(c, rep)
+    await _call(c, rep, number="98765 11111")  # in Core? no: not a lead, never sent
+    other = (await new_lead(c, admin, (await setup_ids(c, admin))[1]["Website"],
+                            phone="98765 22222", first_name="Meera")).json()  # fmt: skip
+    await _call(c, rep, number="98765 22222")
+    await S.run_tenant(tenant_id)
+
+    calls = [json.loads(r.content)["data"][0] for r in crm.to("/crm/v7/Calls")]
+    assert calls[0]["Who_Id"] == {"id": "z-contact-4"} and "$se_module" not in calls[0]
+    made = json.loads(crm.to("/crm/v7/Leads")[0].content)["data"][0]
+    assert made["Last_Name"] == "Meera" and made["Phone"] == "+919876522222"
+    assert other["id"] and calls[1]["What_Id"] == {"id": "Leads-1"}

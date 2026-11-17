@@ -99,3 +99,16 @@ All CRMs sit behind one small interface, so LeadSquared is never written into th
 - **Owner:** `GET /crm/v3/owners`, matched by the rep's email.
 - **To confirm on a real account:** the exact scope names for calls and notes (not in the scopes
   table we read).
+
+## Zoho CRM (built Nov 17; checked against zoho.com/crm/developer/docs, API v7)
+- **Connect:** the admin makes a Self Client (api-console.zoho.com), generates a one-time code
+  with the scopes listed on the settings page, and pastes client id, secret and code with the
+  region. Core swaps the code for a refresh token (kept encrypted); access tokens (1 hour) are
+  reused until they expire (Zoho allows 10 new ones per 10 minutes); a 401 gets one new token.
+- **Find:** `GET /crm/v7/{Leads|Contacts}/search?phone=` (204 = none), Leads first; the id is
+  kept as `Leads:<id>` or `Contacts:<id>`. **Create:** a Lead (Last_Name required).
+- **Calls:** `POST /crm/v7/Calls` (Inbound / Outbound / Missed, start time, duration "HH:mm",
+  exact seconds in the description); a Contact via Who_Id, a Lead via What_Id + $se_module.
+- **Call notes and WhatsApp:** `POST /crm/v7/Notes` with Parent_Id {module, id}.
+- **To confirm on a real Zoho account:** linking a call to a Lead (docs only show Contacts), the
+  duration format. v8 exists with the same fields; we use v7 (fully documented).

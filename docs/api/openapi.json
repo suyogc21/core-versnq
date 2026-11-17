@@ -5499,6 +5499,42 @@
             ],
             "title": "Activity Url"
           },
+          "client_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Secret"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
           "create_leads": {
             "default": true,
             "title": "Create Leads",
@@ -5548,7 +5584,8 @@
             "enum": [
               "custom",
               "leadsquared",
-              "hubspot"
+              "hubspot",
+              "zoho"
             ],
             "title": "Provider",
             "type": "string"
@@ -5747,6 +5784,23 @@
               }
             ],
             "title": "Signing Secret"
+          },
+          "zoho_regions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {
+              "accounts.zoho.com": "United States",
+              "accounts.zoho.com.au": "Australia",
+              "accounts.zoho.com.cn": "China",
+              "accounts.zoho.eu": "Europe",
+              "accounts.zoho.in": "India",
+              "accounts.zoho.jp": "Japan",
+              "accounts.zoho.sa": "Saudi Arabia",
+              "accounts.zohocloud.ca": "Canada"
+            },
+            "title": "Zoho Regions",
+            "type": "object"
           }
         },
         "required": [

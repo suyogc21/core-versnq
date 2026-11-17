@@ -1,6 +1,7 @@
 """Settings → Connected CRM (settings.manage). One CRM per company: Custom CRM (any CRM, through
-the company's own addresses), LeadSquared or HubSpot (its Service Key). Keys are encrypted and
-never shown again; the Custom CRM signing secret is shown once, when it is made."""
+the company's own addresses), LeadSquared, HubSpot (its Service Key) or Zoho CRM (a Self
+Client). Keys are encrypted and never shown again; the Custom CRM signing secret is shown once,
+when it is made."""
 
 import json
 import secrets
@@ -19,6 +20,8 @@ from app.modules.connectors import base as B
 from app.modules.connectors import service as S
 from app.modules.connectors.leadsquared import HOSTS, LeadSquared
 from app.modules.connectors.models import CrmConnection, CrmSync
+from app.modules.connectors.zoho import REGIONS as ZOHO_REGIONS
+from app.modules.connectors.zoho import exchange_code as zoho_exchange
 from app.modules.crm import leads as L
 from app.modules.crm.deps import CRM, CrmDb, audit
 from app.modules.crm.identities import normalize
@@ -29,11 +32,14 @@ Url = Annotated[str, Field(max_length=500)]
 
 
 class CrmConnectionIn(BaseModel):
-    provider: Literal["custom", "leadsquared", "hubspot"]
+    provider: Literal["custom", "leadsquared", "hubspot", "zoho"]
     host: str | None = None  # leadsquared: one of the region hosts
     access_key: str | None = Field(default=None, max_length=200)  # leadsquared; keep if empty
     secret_key: str | None = Field(default=None, max_length=200)
     token: str | None = Field(default=None, min_length=10, max_length=500)  # hubspot; keep if empty
+    client_id: str | None = Field(default=None, max_length=200)  # zoho Self Client
+    client_secret: str | None = Field(default=None, max_length=200)
+    code: str | None = Field(default=None, max_length=300)  # zoho: one-time; needed to connect
     lookup_url: Url | None = None  # custom
     create_url: Url | None = None
     activity_url: Url | None = None
@@ -47,6 +53,7 @@ class CrmConnectionIn(BaseModel):
 class CrmConnectionOut(BaseModel):
     connected: bool
     regions: dict[str, str] = HOSTS
+    zoho_regions: dict[str, str] = ZOHO_REGIONS
     provider: str | None = None
     host: str | None = None
     key_hint: str | None = None
@@ -95,14 +102,11 @@ def _out(conn: CrmConnection | None, signing_secret: str | None = None) -> CrmCo
         return CrmConnectionOut(connected=False)
     cfg = S.options(conn)
     hint = None
-    if conn.provider in ("leadsquared", "hubspot"):
+    if conn.provider in ("leadsquared", "hubspot", "zoho"):
         try:
             stored = SEC.decrypt(conn.secret_enc)
-            key = (
-                json.loads(stored).get("access_key", "")
-                if conn.provider == "leadsquared"
-                else stored
-            )
+            field = {"leadsquared": "access_key", "zoho": "client_id"}.get(conn.provider)
+            key = json.loads(stored).get(field, "") if field else stored
             hint = SEC.hint(key)
         except ValueError:
             hint = "••••"
@@ -142,6 +146,21 @@ async def put_connection(body: CrmConnectionIn, db: CrmDb, actor: Admin) -> CrmC
             options["activity_event"] = body.activity_event
         elif conn and (conn.config or {}).get("activity_event"):
             options["activity_event"] = conn.config["activity_event"]
+    elif body.provider == "zoho":
+        keys = json.loads(SEC.decrypt(conn.secret_enc)) if conn else {}
+        if body.code:  # connecting (again): the one-time code becomes a refresh token
+            if body.host not in ZOHO_REGIONS or not body.client_id or not body.client_secret:
+                raise Invalid("Choose the region and paste the client id and secret",
+                              code="crm_keys")  # fmt: skip
+            try:
+                made = await zoho_exchange(body.host, body.client_id, body.client_secret, body.code)
+            except B.CrmError as e:
+                raise Invalid(str(e), code="crm_code") from None
+            keys = {"accounts": body.host, "client_id": body.client_id,
+                    "client_secret": body.client_secret, **made}  # fmt: skip
+        elif not keys:
+            raise Invalid("Paste the one-time code from Zoho's API console", code="crm_code")
+        secret_enc, host = SEC.encrypt(json.dumps(keys)), keys["accounts"]
     elif body.provider == "hubspot":
         token = body.token or (SEC.decrypt(conn.secret_enc) if conn else None)
         if not token:
