@@ -8,8 +8,6 @@ import { PageHeader } from "@/components/app/app-shell";
 import { GetTheApp, PhonesWithTheApp } from "@/components/app/phone-app";
 import { TwilioSettings } from "@/components/crm/calling-settings";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/errors";
@@ -46,7 +44,7 @@ function Form({ initial }: { initial: CallSettings }) {
   async function save() {
     setSaving(true);
     try {
-      unwrap(await api.PUT("/api/v1/call-settings", { body: v }));
+      unwrap(await api.PUT("/api/v1/call-settings", { body: { record: v.record, new_leads: v.new_leads } }));
       qc.invalidateQueries({ queryKey: ["call-settings"] });
       toast.success("Saved");
     } catch (e) {
@@ -67,19 +65,9 @@ function Form({ initial }: { initial: CallSettings }) {
           </span>
         </span>
       </label>
-      <div className="space-y-1.5">
-        <Label htmlFor="keep-days">Keep recordings for (days)</Label>
-        <Input
-          id="keep-days"
-          type="number"
-          min={1}
-          max={3650}
-          className="w-28"
-          value={v.keep_days ?? 30}
-          onChange={(e) => setV({ ...v, keep_days: Number(e.target.value) })}
-        />
-        <p className="text-xs text-muted-foreground">After this, the recording is removed; the call stays on the timeline.</p>
-      </div>
+      <p className="text-xs text-muted-foreground" data-keep-days>
+        Recordings are kept for {v.keep_days} days, then removed; the call stays on the timeline.
+      </p>
       <label className="flex items-start gap-3">
         <Switch aria-label="New leads from unknown callers" checked={v.new_leads ?? false} onCheckedChange={(on) => setV({ ...v, new_leads: on })} />
         <span>

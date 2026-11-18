@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     vapid_subject: str = "mailto:support@versnq.in"
     # Calling with the company's own Twilio (C3): "test" never reaches Twilio (dev, tests)
     twilio_mode: Literal["test", "live"] = "test"
+    # Call recordings are removed this many days after the call (Suyog, Nov 18: decided by
+    # Versnq for every company, not a company setting); the call itself stays
+    recording_keep_days: int = 30
     # SMS (batch 5d): "test" never reaches MSG91 or Twilio (dev, tests); live on the server
     sms_mode: Literal["test", "live"] = "test"
     # Lead ads (batch 5d): "test" never calls Meta's Graph API; META_LEADS_APP_SECRET is

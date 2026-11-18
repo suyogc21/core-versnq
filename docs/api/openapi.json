@@ -2440,9 +2440,6 @@
       "CallSettings": {
         "properties": {
           "keep_days": {
-            "default": 30,
-            "maximum": 3650.0,
-            "minimum": 1.0,
             "title": "Keep Days",
             "type": "integer"
           },
@@ -2457,7 +2454,26 @@
             "type": "boolean"
           }
         },
+        "required": [
+          "keep_days"
+        ],
         "title": "CallSettings",
+        "type": "object"
+      },
+      "CallSettingsIn": {
+        "properties": {
+          "new_leads": {
+            "default": false,
+            "title": "New Leads",
+            "type": "boolean"
+          },
+          "record": {
+            "default": true,
+            "title": "Record",
+            "type": "boolean"
+          }
+        },
+        "title": "CallSettingsIn",
         "type": "object"
       },
       "CallStartOut": {
@@ -29306,7 +29322,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CallSettings"
+                "$ref": "#/components/schemas/CallSettingsIn"
               }
             }
           },

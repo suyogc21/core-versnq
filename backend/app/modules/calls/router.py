@@ -83,10 +83,13 @@ class AnalysisIn(BaseModel):
     transcript: str | None = Field(default=None, max_length=200000)
 
 
-class CallSettings(BaseModel):
+class CallSettingsIn(BaseModel):
     record: bool = True
-    keep_days: int = Field(default=30, ge=1, le=3650)
     new_leads: bool = False  # an unknown incoming number makes a lead
+
+
+class CallSettings(CallSettingsIn):
+    keep_days: int  # read-only: set by Versnq for every company (RECORDING_KEEP_DAYS)
 
 
 async def _out(db, calls: list[Call]) -> list[CallOut]:
@@ -247,12 +250,12 @@ async def get_call_settings(db: CrmDb, actor: Worker) -> CallSettings:
 
 
 @router.put("/call-settings", response_model=CallSettings)
-async def put_call_settings(body: CallSettings, db: CrmDb, actor: Admin) -> CallSettings:
+async def put_call_settings(body: CallSettingsIn, db: CrmDb, actor: Admin) -> CallSettings:
     s = await db.get(TenantSettings, actor.user.tenant_id)
     before = dict(s.calls or {})
     s.calls = body.model_dump()
     await audit(db, actor, "call_settings.updated", "settings", None, before, s.calls)
-    return body
+    return CallSettings(**await S.settings_of(db, actor.user.tenant_id))
 
 
 class NumberIn(BaseModel):

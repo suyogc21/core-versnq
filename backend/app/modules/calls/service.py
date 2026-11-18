@@ -54,8 +54,12 @@ def summary_of(call: Call) -> str:
 
 
 async def settings_of(db: AsyncSession, tenant_id: uuid.UUID) -> dict:
+    """The company's call settings. keep_days is Versnq's (RECORDING_KEEP_DAYS), the same for
+    every company; a value a company saved earlier is ignored."""
     s = await db.get(TenantSettings, tenant_id)
-    return {**CALL_DEFAULTS, **((s.calls if s else None) or {})}
+    out = {**CALL_DEFAULTS, **((s.calls if s else None) or {})}
+    out["keep_days"] = get_settings().recording_keep_days
+    return out
 
 
 async def find_lead(db: AsyncSession, phone: str) -> Lead | None:

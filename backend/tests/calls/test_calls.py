@@ -190,3 +190,19 @@ async def test_another_company_sees_no_calls_and_settings_need_admin(ws, client_
     assert (await oc.get("/api/v1/calls", headers=other_admin)).json() == []
     assert (await c.put("/api/v1/call-settings", json={"record": False}, headers=rep)
             ).status_code == 403  # fmt: skip
+
+
+async def test_how_long_recordings_are_kept_is_versnqs_not_the_companys(ws, monkeypatch):
+    """Suyog, Nov 18: Versnq decides how long recordings are kept (RECORDING_KEEP_DAYS), the same
+    for every company; a company can't change it, even through the API."""
+    from app.core.config import get_settings
+
+    tenant_id, c = ws
+    _, admin = await login_as(tenant_id, "admin")
+    body = {"record": True, "keep_days": 3650, "new_leads": False}
+    tried = await c.put("/api/v1/call-settings", json=body, headers=admin)
+    monkeypatch.setattr(get_settings(), "recording_keep_days", 7)
+    shown = await c.get("/api/v1/call-settings", headers=admin)
+
+    assert tried.status_code == 200 and tried.json()["keep_days"] == 30
+    assert shown.json()["keep_days"] == 7

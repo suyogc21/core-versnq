@@ -8671,11 +8671,21 @@ export interface components {
         };
         /** CallSettings */
         CallSettings: {
-            /**
-             * Keep Days
-             * @default 30
-             */
+            /** Keep Days */
             keep_days: number;
+            /**
+             * New Leads
+             * @default false
+             */
+            new_leads: boolean;
+            /**
+             * Record
+             * @default true
+             */
+            record: boolean;
+        };
+        /** CallSettingsIn */
+        CallSettingsIn: {
             /**
              * New Leads
              * @default false
@@ -18449,7 +18459,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CallSettings"];
+                "application/json": components["schemas"]["CallSettingsIn"];
             };
         };
         responses: {
