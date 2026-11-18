@@ -52,6 +52,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The call-sync job waits for a network; Android 14+ refuses to schedule it without this
+         (crashed "Turn on call tracking" on a Motorola Edge 60 Pro, Nov 18). Granted silently. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Call tracking (C4.2): read the rep's call log; the rep allows it in the app. -->
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
